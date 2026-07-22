@@ -11,6 +11,8 @@ public class SettingsStatus {
     public static boolean commentTranslationEnabled = false;
     public static boolean downloadEnabled = false;
     public static boolean simSpoofEnabled = false;
+    public static boolean captchaPopupSuppressionEnabled = false;
+    public static boolean promotionalBannersEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -30,6 +32,14 @@ public class SettingsStatus {
 
     public static void enableSimSpoof() {
         simSpoofEnabled = true;
+    }
+
+    public static void enableCaptchaPopupSuppression() {
+        captchaPopupSuppressionEnabled = true;
+    }
+
+    public static void enablePromotionalBanners() {
+        promotionalBannersEnabled = true;
     }
 
     public static void load() {

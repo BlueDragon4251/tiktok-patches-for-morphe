@@ -39,6 +39,9 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 - `Fix Google login`: Restores Google sign-in behavior after patching.
 - `Feed filter`: Filters feed items such as ads, livestreams, stories, shop content, image videos, and videos outside configured view or like ranges.
 - `Feed tab navigation`: Adds controls for choosing which loaded top and bottom feed tabs stay visible, with an option to block tabs TikTok adds later.
+- `Hide CAPTCHA popups`: Prevents client-side verification puzzle dialogs from opening, including those shown while browsing LIVE. It does not bypass server-side checks.
+- `Hide floating promotions`: Removes floating promotional badges, coin icons, and timer banners from the Home feed.
+- `Feature Gate Lab`: Adds an optional, default-disabled local catalog and typed override lab for TikTok feature gates.
 - `Downloads`: Adds download-related controls.
   - Downloads videos without watermark.
   - Downloads images without watermark.
