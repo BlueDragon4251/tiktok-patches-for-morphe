@@ -21,7 +21,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
     @Override
     public boolean getSettingsStatus() {
         return SettingsStatus.captchaPopupSuppressionEnabled
-                || SettingsStatus.promotionalBannersEnabled;
+                || SettingsStatus.promotionalBannersEnabled
+                || SettingsStatus.alwaysShowPublishDateEnabled;
     }
 
     @Override
@@ -40,6 +41,14 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Hide CAPTCHA popups",
                     "Hide client puzzle dialogs, including those shown while browsing LIVE. This does not bypass server verification.",
                     Settings.HIDE_CAPTCHA_POPUPS
+            ));
+        }
+        if (SettingsStatus.alwaysShowPublishDateEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Always show publish date",
+                    "Always show the publish date in video author information. Requires restart.",
+                    Settings.ALWAYS_SHOW_PUBLISH_DATE
             ));
         }
     }

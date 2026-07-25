@@ -15,6 +15,7 @@ public class SettingsStatus {
     public static boolean promotionalBannersEnabled = false;
     public static boolean longPressSpeedLockEnabled = false;
     public static boolean externalBrowserEnabled = false;
+    public static boolean alwaysShowPublishDateEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -50,6 +51,10 @@ public class SettingsStatus {
 
     public static void enableExternalBrowser() {
         externalBrowserEnabled = true;
+    }
+
+    public static void enableAlwaysShowPublishDate() {
+        alwaysShowPublishDateEnabled = true;
     }
 
     public static void load() {
