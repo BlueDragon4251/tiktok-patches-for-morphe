@@ -10,6 +10,7 @@ import android.preference.PreferenceScreen;
 
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
+import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.MorpheTikTokAboutPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
@@ -42,12 +43,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Show the native seekbar on videos where TikTok would normally hide it.",
                 Settings.SHOW_SEEKBAR
         ));
-        addPreference(new TogglePreference(
-                context,
-                "Enable hold-and-slide 2x lock",
-                "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
-                Settings.ENABLE_LONG_PRESS_SPEED_LOCK
-        ));
+        if (SettingsStatus.longPressSpeedLockEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Enable hold-and-slide 2x lock",
+                    "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
+                    Settings.ENABLE_LONG_PRESS_SPEED_LOCK
+            ));
+        }
 
     }
 }

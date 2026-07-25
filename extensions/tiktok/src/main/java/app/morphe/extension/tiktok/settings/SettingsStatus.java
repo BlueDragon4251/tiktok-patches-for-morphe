@@ -13,6 +13,7 @@ public class SettingsStatus {
     public static boolean simSpoofEnabled = false;
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
+    public static boolean longPressSpeedLockEnabled = false;
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
@@ -40,6 +41,10 @@ public class SettingsStatus {
 
     public static void enablePromotionalBanners() {
         promotionalBannersEnabled = true;
+    }
+
+    public static void enableLongPressSpeedLock() {
+        longPressSpeedLockEnabled = true;
     }
 
     public static void load() {
