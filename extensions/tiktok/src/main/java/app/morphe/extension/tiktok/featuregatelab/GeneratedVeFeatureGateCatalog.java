@@ -1,3 +1,7 @@
+/*
+ * Copyright 2026 icysymmetra/tiktok-patches-for-morphe contributors
+ * https://github.com/icysymmetra/tiktok-patches-for-morphe
+ */
 package app.morphe.extension.tiktok.featuregatelab;
 
 // Generated from target TikTok 43.8.3 VEConfigCenter registry and direct typed Java-consumer evidence.
