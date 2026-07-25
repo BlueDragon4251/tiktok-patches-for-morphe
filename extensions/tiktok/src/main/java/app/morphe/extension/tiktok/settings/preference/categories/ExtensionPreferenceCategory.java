@@ -36,6 +36,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Remove tracking parameters from shared links.",
                 BaseSettings.SANITIZE_SHARING_LINKS
         ));
+        if (SettingsStatus.externalBrowserEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Open external links directly",
+                    "Open profile and story website links in your system browser instead of TikTok's in-app browser.",
+                    Settings.OPEN_EXTERNAL_LINKS
+            ));
+        }
 
         addPreference(new TogglePreference(
                 context,
