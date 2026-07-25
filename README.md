@@ -52,9 +52,11 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 - `Remember clear display`: Keeps the clear-display state across videos.
 - `SIM spoof`: Spoofs SIM-related values used by TikTok region logic, with popular country/operator presets for easier setup. TikTok may still use other region signals such as IP, account history, and language.
 - `Sanitize sharing links`: Cleans TikTok share links before they leave the app.
+- `Open external links directly`: Opens profile and story website links in the system browser instead of TikTok's in-app browser.
 - `Copy comments without username`: Copies only the comment text when using TikTok's copy comment action.
 - `Auto Translate comments`: Automatically translates loaded and expanded comment batches using TikTok's translation system, while skipping comments that already match the device language when TikTok exposes that language clearly.
 - `Show seekbar`: Shows the video seekbar where TikTok would normally hide it.
+- `Always show publish date`: Shows the publish date in video author information.
 
 <br>
 
@@ -74,12 +76,7 @@ You can also copy this repository URL and paste it into Morphe's add source fiel
 
 ### In Progress
 
-- [~] Drama mini series feed video filter
-
-### Planned
-
-- [ ] Add comments section sorting options
-
+- [~] Update patch compatibility and bytecode hooks for a newer TikTok version.
 
 <br>
 
@@ -118,7 +115,7 @@ Morphe reads `patches-bundle.json` from this repository, downloads the `.mpp` re
 
 ## Credits
 
-- Thanks to [@lyyako](https://github.com/lyyako) for the original contributions behind the simplified sanitize sharing links hook, show seekbar patch, and anti-recording patch.
+- Thanks to [@lyyako](https://github.com/lyyako) for the original contributions behind the simplified sanitize sharing links hook, show seekbar patch, anti-recording patch, `Open external links directly`, and `Always show publish date`.
 
 ## Notes
 
