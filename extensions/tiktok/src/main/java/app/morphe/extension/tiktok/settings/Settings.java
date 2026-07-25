@@ -81,6 +81,7 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting CLEAR_DISPLAY = new BooleanSetting("clear_display", FALSE);
     public static final BooleanSetting COPY_COMMENTS_WITHOUT_USERNAME = new BooleanSetting("copy_comments_without_username", TRUE);
     public static final FloatSetting REMEMBERED_SPEED = new FloatSetting("REMEMBERED_SPEED", 1.0f);
+    public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
     public static final BooleanSetting SIM_SPOOF = new BooleanSetting("simspoof", FALSE, true);
     public static final StringSetting SIM_SPOOF_ISO = new StringSetting("simspoof_iso", "us");
     public static final StringSetting SIMSPOOF_MCCMNC = new StringSetting("simspoof_mccmnc", "310260");

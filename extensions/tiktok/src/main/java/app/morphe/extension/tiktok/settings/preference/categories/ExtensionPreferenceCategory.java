@@ -17,7 +17,7 @@ import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
     public ExtensionPreferenceCategory(Context context, PreferenceScreen screen) {
         super(context, screen);
-        setTitle("Miscellaneous");
+        setTitle("App behavior");
     }
 
     @Override
@@ -41,6 +41,12 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Show seekbar",
                 "Show the native seekbar on videos where TikTok would normally hide it.",
                 Settings.SHOW_SEEKBAR
+        ));
+        addPreference(new TogglePreference(
+                context,
+                "Enable hold-and-slide 2x lock",
+                "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
+                Settings.ENABLE_LONG_PRESS_SPEED_LOCK
         ));
 
     }

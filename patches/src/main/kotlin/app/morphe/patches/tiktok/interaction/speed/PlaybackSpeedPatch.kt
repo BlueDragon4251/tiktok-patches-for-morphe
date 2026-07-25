@@ -18,6 +18,8 @@ import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
+private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
+
 @Suppress("unused")
 val playbackSpeedPatch = bytecodePatch(
     name = "Playback speed",
@@ -93,6 +95,40 @@ val playbackSpeedPatch = bytecodePatch(
                 nop
             """,
         )
+
+        LongPressSpeedUpEnableFingerprint.method.let { method ->
+            val lookupIndex = method.indexOfFirstInstructionOrThrow {
+                getReference<MethodReference>()?.let { reference ->
+                    reference.parameterTypes == listOf("I", "Ljava/lang/String;", "Z", "Z") &&
+                        reference.returnType == "Z"
+                } == true
+            }
+            val resultRegister = method.getInstruction<OneRegisterInstruction>(lookupIndex + 1).registerA
+            method.addInstructions(
+                lookupIndex + 2,
+                """
+                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpEnabled(Z)Z
+                    move-result v$resultRegister
+                """,
+            )
+        }
+
+        LongPressSpeedUpLockFingerprint.method.let { method ->
+            val lookupIndex = method.indexOfFirstInstructionOrThrow {
+                getReference<MethodReference>()?.let { reference ->
+                    reference.parameterTypes == listOf("I", "I", "Ljava/lang/String;", "Z") &&
+                        reference.returnType == "I"
+                } == true
+            }
+            val resultRegister = method.getInstruction<OneRegisterInstruction>(lookupIndex + 1).registerA
+            method.addInstructions(
+                lookupIndex + 2,
+                """
+                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->overrideLongPressSpeedUpLockDistance(I)I
+                    move-result v$resultRegister
+                """,
+            )
+        }
 
         // Kept in Morphe: supported on 43.8.3.
     }
