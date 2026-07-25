@@ -95,6 +95,13 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
             } else {
                 Setting.privateSetValueFromString(setting, tabSelectionPref.getValue());
             }
+        } else if (pref instanceof LanguageSelectionPreference) {
+            LanguageSelectionPreference languagePreference = (LanguageSelectionPreference) pref;
+            if (applySettingToPreference) {
+                languagePreference.setValue(setting.get().toString());
+            } else {
+                Setting.privateSetValueFromString(setting, languagePreference.getValue());
+            }
         } else {
             super.syncSettingWithPreference(pref, setting, applySettingToPreference);
         }
@@ -114,6 +121,9 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         }
         if (pref instanceof TabSelectionPreference) {
             return defaultValue.equals(((TabSelectionPreference) pref).getValue());
+        }
+        if (pref instanceof LanguageSelectionPreference) {
+            return defaultValue.equals(((LanguageSelectionPreference) pref).getValue());
         }
 
         return super.prefIsSetToDefault(pref, setting);
