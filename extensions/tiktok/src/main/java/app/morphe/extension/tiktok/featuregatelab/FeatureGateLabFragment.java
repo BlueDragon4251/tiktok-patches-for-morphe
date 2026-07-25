@@ -190,7 +190,7 @@ public final class FeatureGateLabFragment extends Fragment {
         searchRow.setBackground(SettingsUi.borderedSurface(context, 6, false));
         search = new EditText(context);
         search.setSingleLine(true);
-        search.setHint("Search title or exact key");
+        search.setHint("Search words or key");
         search.setBackgroundColor(Color.TRANSPARENT);
         search.setTextColor(SettingsUi.textPrimary());
         search.setHintTextColor(SettingsUi.textSecondary());
@@ -476,8 +476,9 @@ public final class FeatureGateLabFragment extends Fragment {
 
     private void rebuild() {
         if (snapshot == null || adapter == null) return;
-        String query = searchQuery.trim().toLowerCase(Locale.ROOT);
+        String query = normalizeSearchText(searchQuery);
         Map<String, FeatureGateLabStore.Rule> rules = rulesByIdentity();
+        Map<FeatureGateCatalog.Entry, Integer> searchRanks = new HashMap<>();
 
         visible.clear();
         for (FeatureGateCatalog.Entry entry : snapshot.entries) {
@@ -488,7 +489,11 @@ public final class FeatureGateLabFragment extends Fragment {
             if (selectedView == 0 && !entry.loaded) continue;
             if (selectedView == 2 && rule == null) continue;
             if (!matchesFilter(entry)) continue;
-            if (!query.isEmpty() && !entry.searchText.contains(query)) continue;
+            if (!query.isEmpty()) {
+                int rank = searchRank(entry, query);
+                if (rank < 0) continue;
+                searchRanks.put(entry, rank);
+            }
             visible.add(entry);
         }
 
@@ -503,7 +508,7 @@ public final class FeatureGateLabFragment extends Fragment {
             });
         } else if (!query.isEmpty()) {
             visible.sort((left, right) -> {
-                int rank = Integer.compare(searchRank(left, query), searchRank(right, query));
+                int rank = Integer.compare(searchRanks.get(left), searchRanks.get(right));
                 return rank != 0 ? rank : left.title.compareToIgnoreCase(right.title);
             });
         }
@@ -924,13 +929,107 @@ public final class FeatureGateLabFragment extends Fragment {
     }
 
     private static int searchRank(FeatureGateCatalog.Entry entry, String query) {
-        String key = entry.key.toLowerCase(Locale.ROOT);
-        String title = entry.title.toLowerCase(Locale.ROOT);
+        String key = normalizeSearchText(entry.key);
+        String title = normalizeSearchText(entry.title);
         if (key.equals(query)) return 0;
         if (title.equals(query)) return 1;
         if (key.startsWith(query)) return 2;
         if (title.startsWith(query)) return 3;
-        return 4;
+        if (key.contains(query)) return 4;
+        if (title.contains(query)) return 5;
+
+        String[] queryTokens = query.split(" ");
+        String[] candidateTokens = (key + " " + title).split(" ");
+        int score = 10;
+        for (String queryToken : queryTokens) {
+            int bestTokenScore = Integer.MAX_VALUE;
+            for (String candidateToken : candidateTokens) {
+                bestTokenScore = Math.min(
+                        bestTokenScore,
+                        tokenMatchScore(queryToken, candidateToken)
+                );
+                if (bestTokenScore == 0) break;
+            }
+            if (bestTokenScore == Integer.MAX_VALUE) return -1;
+            score += bestTokenScore;
+        }
+        return score;
+    }
+
+    private static String normalizeSearchText(String text) {
+        if (text == null || text.isEmpty()) return "";
+        String lower = text.toLowerCase(Locale.ROOT);
+        StringBuilder normalized = new StringBuilder(lower.length());
+        boolean previousWasSpace = true;
+        for (int index = 0; index < lower.length(); index++) {
+            char character = lower.charAt(index);
+            if (Character.isLetterOrDigit(character)) {
+                normalized.append(character);
+                previousWasSpace = false;
+            } else if (!previousWasSpace) {
+                normalized.append(' ');
+                previousWasSpace = true;
+            }
+        }
+        int length = normalized.length();
+        if (length > 0 && normalized.charAt(length - 1) == ' ') {
+            normalized.setLength(length - 1);
+        }
+        return normalized.toString();
+    }
+
+    private static int tokenMatchScore(String queryToken, String candidateToken) {
+        if (queryToken.equals(candidateToken)) return 0;
+        if (candidateToken.startsWith(queryToken)) return 1;
+        if (queryToken.length() >= 3 && queryToken.startsWith(candidateToken)) return 2;
+        if (queryToken.length() >= 4 && candidateToken.contains(queryToken)) return 3;
+
+        int allowedDistance;
+        if (queryToken.length() >= 7) {
+            allowedDistance = 2;
+        } else if (queryToken.length() >= 4) {
+            allowedDistance = 1;
+        } else {
+            return Integer.MAX_VALUE;
+        }
+        int distance = editDistanceWithin(queryToken, candidateToken, allowedDistance);
+        return distance < 0 ? Integer.MAX_VALUE : 4 + distance;
+    }
+
+    private static int editDistanceWithin(String left, String right, int maximum) {
+        if (Math.abs(left.length() - right.length()) > maximum) return -1;
+
+        int[] previousPrevious = null;
+        int[] previous = new int[right.length() + 1];
+        for (int column = 0; column <= right.length(); column++) previous[column] = column;
+
+        for (int row = 1; row <= left.length(); row++) {
+            int[] current = new int[right.length() + 1];
+            current[0] = row;
+            int rowMinimum = current[0];
+            for (int column = 1; column <= right.length(); column++) {
+                int substitutionCost = left.charAt(row - 1) == right.charAt(column - 1) ? 0 : 1;
+                current[column] = Math.min(
+                        Math.min(current[column - 1] + 1, previous[column] + 1),
+                        previous[column - 1] + substitutionCost
+                );
+                if (previousPrevious != null
+                        && row > 1
+                        && column > 1
+                        && left.charAt(row - 1) == right.charAt(column - 2)
+                        && left.charAt(row - 2) == right.charAt(column - 1)) {
+                    current[column] = Math.min(
+                            current[column],
+                            previousPrevious[column - 2] + 1
+                    );
+                }
+                rowMinimum = Math.min(rowMinimum, current[column]);
+            }
+            if (rowMinimum > maximum) return -1;
+            previousPrevious = previous;
+            previous = current;
+        }
+        return previous[right.length()] <= maximum ? previous[right.length()] : -1;
     }
 
     private static int findFragmentContainer(Activity activity) {
