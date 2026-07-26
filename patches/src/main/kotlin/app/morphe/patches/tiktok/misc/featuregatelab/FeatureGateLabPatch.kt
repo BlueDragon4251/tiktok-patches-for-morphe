@@ -69,8 +69,8 @@ private val boundaries = listOf(
 @Suppress("unused")
 val featureGateLabPatch = bytecodePatch(
     name = "Feature Gate Lab",
-    description = "Adds an isolated local catalog and sparse typed override lab for TikTok 43.8.3 feature gates.",
-    default = false,
+    description = "Adds a menu for viewing and overriding supported TikTok feature flags and configuration values.",
+    default = true,
 ) {
     dependsOn(settingsPatch, enableOpenDebugPatch)
     compatibleWith(*AppCompatibilities.tiktok4383())
