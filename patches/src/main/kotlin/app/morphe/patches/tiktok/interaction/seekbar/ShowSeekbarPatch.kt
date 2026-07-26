@@ -14,7 +14,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/see
 @Suppress("unused")
 val showSeekbarPatch = bytecodePatch(
     name = "Show seekbar",
-    description = "Shows a progress bar for all videos. (Supports TikTok 43.8.3.)",
+    description = "Shows TikTok's native video seekbar where it would normally be hidden.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)

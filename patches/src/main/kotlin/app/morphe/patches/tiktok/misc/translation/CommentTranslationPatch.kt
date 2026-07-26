@@ -15,7 +15,7 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/tra
 @Suppress("unused")
 val commentTranslationPatch = bytecodePatch(
     name = "Translate comments",
-    description = "Adds comment translation controls that use TikTok's loaded comment batch. Supports TikTok 43.8.3.",
+    description = "Adds comment translation controls using TikTok's translation system, with selectable language exclusions.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
