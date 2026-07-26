@@ -155,6 +155,7 @@ public class TikTokPreferenceFragment extends AbstractPreferenceFragment {
         new SimSpoofPreferenceCategory(context, preferenceScreen);
         new ExtensionPreferenceCategory(context, preferenceScreen);
         new FeatureGateLabPreferenceCategory(context, preferenceScreen);
+        preferenceScreen.addPreference(new MorpheTikTokAboutPreference(context));
         new DebugPreferenceCategory(context, preferenceScreen);
     }
 

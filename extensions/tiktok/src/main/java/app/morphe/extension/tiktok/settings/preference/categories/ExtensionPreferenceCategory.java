@@ -11,7 +11,6 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
-import app.morphe.extension.tiktok.settings.preference.MorpheTikTokAboutPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -28,8 +27,6 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
 
     @Override
     public void addPreferences(Context context) {
-        addPreference(new MorpheTikTokAboutPreference(context));
-
         addPreference(new TogglePreference(
                 context,
                 "Sanitize sharing links",
