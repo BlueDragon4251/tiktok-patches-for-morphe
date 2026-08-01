@@ -23,7 +23,7 @@ val showSeekbarPatch = bytecodePatch(
 
     execute {
         // This target is TikTok's story predicate. Do not call another method in
-        // the same utility class here: LIZIZ(Aweme) calls this method on 43.8.3.
+        // Keep the hook in the same utility class as TikTok's LIZIZ(Aweme) caller.
         ShouldShowProgressBarFingerprint.method.addInstructions(
             0,
             """
