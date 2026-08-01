@@ -57,7 +57,7 @@ private object LiveHostCaptchaPopupFingerprint : Fingerprint(
 @Suppress("unused")
 val hideCaptchaPopupsPatch = bytecodePatch(
     name = "Hide CAPTCHA popups",
-    description = "Prevents client-side verification puzzle dialogs from opening, including those shown while browsing LIVE. This does not bypass server-side checks.",
+    description = "Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available and server checks are not bypassed.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -72,7 +72,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         CaptchaPopupFingerprint.method.addInstructions(
             0,
             """
-                invoke-static {}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup()Z
+                invoke-static {p1}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;)Z
                 move-result v0
                 if-eqz v0, :morphe_show_captcha_popup
                 if-eqz p3, :morphe_hide_captcha_popup_return
@@ -87,7 +87,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         LegacyCaptchaPopupFingerprint.method.addInstructions(
             0,
             """
-                invoke-static {}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup()Z
+                invoke-static {p1}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;)Z
                 move-result v0
                 if-eqz v0, :morphe_show_legacy_captcha_popup
                 if-eqz p3, :morphe_hide_legacy_captcha_popup_return
@@ -119,7 +119,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
         LiveHostCaptchaPopupFingerprint.method.addInstructions(
             0,
             """
-                invoke-static {}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup()Z
+                invoke-static {p1}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;)Z
                 move-result v0
                 if-eqz v0, :morphe_show_live_captcha_popup
                 if-eqz p3, :morphe_hide_live_captcha_popup_return

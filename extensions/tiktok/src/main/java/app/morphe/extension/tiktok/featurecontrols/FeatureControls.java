@@ -4,6 +4,8 @@
  */
 package app.morphe.extension.tiktok.featurecontrols;
 
+import android.app.Activity;
+
 import app.morphe.extension.tiktok.settings.Settings;
 
 public final class FeatureControls {
@@ -14,6 +16,16 @@ public final class FeatureControls {
 
     public static boolean shouldHideCaptchaPopup() {
         return Settings.HIDE_CAPTCHA_POPUPS.get();
+    }
+
+    public static boolean shouldHideCaptchaPopup(Activity activity) {
+        if (!Settings.HIDE_CAPTCHA_POPUPS.get()) return false;
+        if (activity == null) return true;
+
+        // Account flows must be able to present server-required verification.
+        return !activity.getClass().getName().startsWith(
+                "com.ss.android.ugc.aweme.account."
+        );
     }
 
     public static Object filterNormalPendant(Object pendant) {

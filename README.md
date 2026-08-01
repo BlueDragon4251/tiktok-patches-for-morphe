@@ -46,7 +46,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Feed filter` | Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges. |
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
 | `Fix Google login` | Restores Google account sign-in after patching. |
-| `Hide CAPTCHA popups` | Prevents client-side verification puzzle dialogs from opening, including those shown while browsing LIVE. It does not bypass server-side checks. |
+| `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |
 | `Open external links directly` | Opens profile and story website links in the system browser instead of TikTok's in-app browser. |
