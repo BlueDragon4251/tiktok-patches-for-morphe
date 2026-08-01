@@ -14,6 +14,8 @@ public class SettingsStatus {
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
     public static boolean longPressSpeedLockEnabled = false;
+    public static boolean stopVideoLoopingEnabled = false;
+    public static boolean resumeVideoAfterScrollEnabled = false;
     public static boolean externalBrowserEnabled = false;
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
@@ -48,6 +50,14 @@ public class SettingsStatus {
 
     public static void enableLongPressSpeedLock() {
         longPressSpeedLockEnabled = true;
+    }
+
+    public static void enableStopVideoLooping() {
+        stopVideoLoopingEnabled = true;
+    }
+
+    public static void enableResumeVideoAfterScroll() {
+        resumeVideoAfterScrollEnabled = true;
     }
 
     public static void enableExternalBrowser() {

@@ -78,6 +78,12 @@ public class Settings extends BaseSettings {
             Setting.parent(CUSTOM_OFFLINE_VIDEOS)
     );
     public static final BooleanSetting SHOW_SEEKBAR = new BooleanSetting("show_seekbar", TRUE);
+    public static final BooleanSetting STOP_VIDEO_LOOPING = new BooleanSetting("stop_video_looping", FALSE, true);
+    public static final BooleanSetting RESUME_VIDEO_AFTER_SCROLL = new BooleanSetting(
+            "resume_video_after_scroll",
+            TRUE,
+            true
+    );
     public static final BooleanSetting OPEN_EXTERNAL_LINKS = new BooleanSetting("open_external_links", TRUE);
     public static final BooleanSetting ALWAYS_SHOW_PUBLISH_DATE = new BooleanSetting("always_show_publish_date", TRUE, true);
     public static final BooleanSetting CLEAR_DISPLAY = new BooleanSetting("clear_display", FALSE);

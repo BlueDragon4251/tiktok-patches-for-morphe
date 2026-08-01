@@ -48,6 +48,22 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Show the native seekbar on videos where TikTok would normally hide it.",
                 Settings.SHOW_SEEKBAR
         ));
+        if (SettingsStatus.stopVideoLoopingEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Stop video looping",
+                    "Pause videos at the end instead of replaying them.",
+                    Settings.STOP_VIDEO_LOOPING
+            ));
+        }
+        if (SettingsStatus.resumeVideoAfterScrollEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Resume videos after scrolling",
+                    "Continue supported videos from where you stopped when you scroll back to them.",
+                    Settings.RESUME_VIDEO_AFTER_SCROLL
+            ));
+        }
         if (SettingsStatus.longPressSpeedLockEnabled) {
             addPreference(new TogglePreference(
                     context,
