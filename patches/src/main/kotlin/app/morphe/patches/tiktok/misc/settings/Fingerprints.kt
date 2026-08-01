@@ -46,8 +46,11 @@ internal object NpthExtentTaskInitFingerprint : Fingerprint(
 internal object SettingsComposeRowsFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith("/SettingsComposeRvmpFragment;") &&
-            method.name == "XN" &&
-            method.parameterTypes.size == 8
+            method.returnType == "V" &&
+            (
+                (method.name == "XN" && method.parameterTypes.size == 8) ||
+                    (method.name == "ER" && method.parameterTypes.size == 11)
+            )
     },
 )
 

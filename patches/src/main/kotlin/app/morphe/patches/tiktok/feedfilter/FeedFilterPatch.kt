@@ -27,7 +27,7 @@ val feedFilterPatch = bytecodePatch(
         sharedExtensionPatch,
     )
 
-    compatibleWith(*AppCompatibilities.tiktok4383())
+    compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
         // Enables the feed filter extension after settings were loaded.

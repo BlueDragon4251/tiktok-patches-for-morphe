@@ -27,14 +27,14 @@ internal object FollowFeedFingerprint : Fingerprint(
 
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
-    name = "rn",
+    name = "bq",
     returnType = "V",
     parameters = listOf("Z"),
 )
 
 internal object TakoAiFeedButtonBindFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
-    name = "rm",
+    name = "onViewCreated",
     returnType = "V",
     parameters = listOf("Landroid/view/View;"),
 )

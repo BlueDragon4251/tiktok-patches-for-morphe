@@ -45,7 +45,7 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4383())
+    compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
         val clipboardHelperMatch = clipboardTextHelperFingerprint.match()

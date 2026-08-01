@@ -39,7 +39,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
             addPreference(new TogglePreference(
                     context,
                     "Hide CAPTCHA popups",
-                    "Hide non-account puzzle dialogs, including those shown while browsing LIVE. Account verification remains available.",
+                    "Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.",
                     Settings.HIDE_CAPTCHA_POPUPS
             ));
         }

@@ -19,7 +19,7 @@ val showSeekbarPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4383())
+    compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
         // This target is TikTok's story predicate. Do not call another method in

@@ -8,6 +8,8 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
+import app.morphe.util.findInstructionIndicesReversedOrThrow
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/translation/CommentBatchTranslator;"
@@ -20,7 +22,7 @@ val commentTranslationPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4383())
+    compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
         SettingsStatusLoadFingerprint.method.addInstruction(
@@ -29,22 +31,18 @@ val commentTranslationPatch = bytecodePatch(
         )
 
         BaseCommentCellBindFingerprint.method.apply {
-            val managerReadyIndex = implementation!!.instructions.withIndex()
-                .firstOrNull { (_, instruction) ->
-                    instruction.getReference<FieldReference>()?.let { reference ->
-                        reference.definingClass == "LX/0QMJ;" &&
-                            reference.name == "LLILLJJLI" &&
-                            reference.type == "LX/0QMK;"
-                    } == true
-                }?.index ?: throw PatchException(
-                "Translate comments: could not locate bound comment translation manager.",
-            )
+            val returnIndex = findInstructionIndicesReversedOrThrow {
+                opcode == Opcode.RETURN_VOID
+            }.first()
 
             addInstructions(
-                managerReadyIndex + 1,
+                returnIndex,
                 """
-                    iget-object v0, v6, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
-                    invoke-static {v0, v5}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
+                    move-object/from16 v2, p0
+                    iget-object v0, v2, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
+                    invoke-virtual {v2}, Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;->m6()Lcom/ss/android/ugc/aweme/comment/model/Comment;
+                    move-result-object v1
+                    invoke-static {v0, v1}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
                 """,
             )
         }

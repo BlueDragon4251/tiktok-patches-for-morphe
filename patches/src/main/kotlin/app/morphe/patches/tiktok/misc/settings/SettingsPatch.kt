@@ -44,12 +44,12 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "Settings",
-    description = "Adds the Morphe settings menu to TikTok. Supports TikTok 43.8.3.",
+    description = "Adds the Morphe settings menu to TikTok. Supports TikTok 46.2.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4383())
+    compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
         addLegacySettingsEntryFallback()
@@ -267,7 +267,7 @@ val settingsPatch = bytecodePatch(
                 if (it.opcode != Opcode.INVOKE_STATIC) return@indexOfLast false
                 val reference = (it as? ReferenceInstruction)?.reference as? MethodReference
                     ?: return@indexOfLast false
-                reference.name == "LJLJLLL" &&
+                reference.name in setOf("LJLJLLL", "LJLLLL") &&
                     reference.parameterTypes == listOf("Ljava/util/Comparator;", "Ljava/lang/Iterable;") &&
                     reference.returnType == "Ljava/util/List;"
             } ?: -1
@@ -280,7 +280,8 @@ val settingsPatch = bytecodePatch(
                 sortedListIndex + 2,
                 """
                     new-instance v0, Ljava/util/ArrayList;
-                    invoke-direct {v0, v$listRegister}, Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V
+                    move-object v1, v$listRegister
+                    invoke-direct {v0, v1}, Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V
                     sget-object v1, ${openDebugField.definingClass}->OPEN_DEBUG:${openDebugField.type}
                     const/4 v2, 0x0
                     invoke-virtual {v0, v2, v1}, Ljava/util/ArrayList;->add(ILjava/lang/Object;)V
