@@ -16,6 +16,7 @@ public class LogExportFilterPreference extends Preference {
     private static final String VALUE_FOLLOW = "follow";
     private static final String VALUE_DOWNLOADS = "downloads";
     private static final String VALUE_FEED = "feed";
+    private static final String VALUE_FEATURE_GATE = "feature_gate";
     private static final String VALUE_SETTINGS = "settings";
     private static final String VALUE_ERRORS = "errors";
     private static final String VALUE_OTHER = "other";
@@ -25,16 +26,18 @@ public class LogExportFilterPreference extends Preference {
             VALUE_FOLLOW,
             VALUE_DOWNLOADS,
             VALUE_FEED,
+            VALUE_FEATURE_GATE,
             VALUE_SETTINGS,
             VALUE_ERRORS,
             VALUE_OTHER
     };
 
     private static final String[] LABELS = {
-            "All logs",
+            "All events",
             "Follow probe",
             "Downloads",
             "Feed and navigation",
+            "Feature Gate Lab",
             "Settings",
             "Errors",
             "Other"
@@ -71,7 +74,7 @@ public class LogExportFilterPreference extends Preference {
         boolean[] checked = checkedValues();
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Choose logs to copy")
+                .setTitle("Include diagnostic events")
                 .setMultiChoiceItems(LABELS, checked, (dialog, which, isChecked) -> {
                     checked[which] = isChecked;
                     AlertDialog alertDialog = (AlertDialog) dialog;
@@ -127,11 +130,11 @@ public class LogExportFilterPreference extends Preference {
     private void updateSummary() {
         Set<String> selected = parse(BaseSettings.DEBUG_LOG_FILTERS.get());
         if (selected.isEmpty() || selected.contains(VALUE_ALL)) {
-            setSummary("Copies all Morphe debug logs.");
+            setSummary("Includes all Morphe diagnostic events.");
             return;
         }
 
-        StringBuilder builder = new StringBuilder("Copies ");
+        StringBuilder builder = new StringBuilder("Includes ");
         int labelCount = 0;
         for (int i = 1; i < VALUES.length; i++) {
             if (!selected.contains(VALUES[i])) continue;
@@ -140,7 +143,7 @@ public class LogExportFilterPreference extends Preference {
             builder.append(LABELS[i].toLowerCase());
             labelCount++;
         }
-        builder.append(" logs.");
+        builder.append(" events.");
 
         setSummary(builder.toString());
     }

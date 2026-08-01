@@ -35,6 +35,14 @@ internal object SettingsStatusLoadFingerprint : Fingerprint(
     },
 )
 
+internal object NpthExtentTaskInitFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("/NpthExtentTask;") &&
+            method.name == "LIZ" &&
+            method.returnType == "V"
+    },
+)
+
 internal object SettingsComposeRowsFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith("/SettingsComposeRvmpFragment;") &&

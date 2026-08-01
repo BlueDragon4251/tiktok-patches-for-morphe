@@ -9,7 +9,6 @@ import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patches.tiktok.misc.settings.enableOpenDebugPatch
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -72,7 +71,7 @@ val featureGateLabPatch = bytecodePatch(
     description = "Adds a menu for viewing and overriding supported TikTok feature flags and configuration values.",
     default = true,
 ) {
-    dependsOn(settingsPatch, enableOpenDebugPatch)
+    dependsOn(settingsPatch)
     compatibleWith(*AppCompatibilities.tiktok4383())
 
     execute {
