@@ -52,7 +52,7 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
             addPreference(new TogglePreference(
                     context,
                     "Stop video looping",
-                    "Pause videos at the end instead of replaying them.",
+                    "Stop videos at the end instead of replaying them.",
                     Settings.STOP_VIDEO_LOOPING
             ));
         }
@@ -70,6 +70,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     "Enable hold-and-slide 2x lock",
                     "Use TikTok's native hold, slide down, and release gesture to lock 2x speed.",
                     Settings.ENABLE_LONG_PRESS_SPEED_LOCK
+            ));
+        }
+        if (SettingsStatus.disableLongPressQuickShareEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Disable long-press quick share",
+                    "Keep long-pressing Share from opening TikTok's quick-share interaction.",
+                    Settings.DISABLE_LONG_PRESS_QUICK_SHARE
             ));
         }
 

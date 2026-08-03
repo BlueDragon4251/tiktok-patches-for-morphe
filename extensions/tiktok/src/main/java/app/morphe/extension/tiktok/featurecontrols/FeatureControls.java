@@ -76,4 +76,12 @@ public final class FeatureControls {
         if (!Settings.ENABLE_LONG_PRESS_SPEED_LOCK.get()) return distanceDp;
         return distanceDp > 0 ? distanceDp : DEFAULT_LONG_PRESS_LOCK_DISTANCE_DP;
     }
+
+    public static boolean overrideHideQuickCommentEmoji(boolean original, int followStatus) {
+        return Settings.HIDE_COMMENT_QUICK_REACTIONS.get() || original;
+    }
+
+    public static int overrideLongPressQuickShare(int originalMode) {
+        return Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() ? 0 : originalMode;
+    }
 }

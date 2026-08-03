@@ -9,11 +9,14 @@ public class SettingsStatus {
     public static boolean feedFilterEnabled = false;
     public static boolean feedNavigationEnabled = false;
     public static boolean commentTranslationEnabled = false;
+    public static boolean hideCommentQuickReactionsEnabled = false;
+    public static boolean copyCommentsWithoutUsernameEnabled = false;
     public static boolean downloadEnabled = false;
     public static boolean simSpoofEnabled = false;
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
     public static boolean longPressSpeedLockEnabled = false;
+    public static boolean disableLongPressQuickShareEnabled = false;
     public static boolean stopVideoLoopingEnabled = false;
     public static boolean resumeVideoAfterScrollEnabled = false;
     public static boolean externalBrowserEnabled = false;
@@ -30,6 +33,14 @@ public class SettingsStatus {
 
     public static void enableCommentTranslation() {
         commentTranslationEnabled = true;
+    }
+
+    public static void enableHideCommentQuickReactions() {
+        hideCommentQuickReactionsEnabled = true;
+    }
+
+    public static void enableCopyCommentsWithoutUsername() {
+        copyCommentsWithoutUsernameEnabled = true;
     }
 
     public static void enableDownload() {
@@ -50,6 +61,10 @@ public class SettingsStatus {
 
     public static void enableLongPressSpeedLock() {
         longPressSpeedLockEnabled = true;
+    }
+
+    public static void enableDisableLongPressQuickShare() {
+        disableLongPressQuickShareEnabled = true;
     }
 
     public static void enableStopVideoLooping() {
