@@ -12,6 +12,9 @@ import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.util.getReference
+import app.morphe.util.indexOfFirstInstructionReversedOrThrow
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/interaction/ResumeVideoAfterScrollPatch;"
@@ -67,6 +70,30 @@ val resumeVideoAfterScrollPatch = bytecodePatch(
                     sput-object v0, LX/0Lze;->LJFF:Ljava/lang/String;
                 """,
                 ExternalLabel("continue_completion", getInstruction(0)),
+            )
+        }
+
+        FeedPlayProgressFingerprint.method.apply {
+            val cachePutIndex = indexOfFirstInstructionReversedOrThrow {
+                val reference = getReference<MethodReference>()
+                reference?.definingClass == "Landroid/util/LruCache;" &&
+                    reference.name == "put" &&
+                    reference.parameterTypes.size == 2
+            }
+            val continueInstruction = getInstruction(cachePutIndex + 1)
+
+            addInstructionsWithLabels(
+                cachePutIndex + 1,
+                """
+                    invoke-static/range {p2 .. p5}, $EXTENSION_DESCRIPTOR->shouldClearCompletedProgress(JJ)Z
+                    move-result v5
+                    if-eqz v5, :continue_progress
+                    invoke-virtual {v14, v6}, Landroid/util/LruCache;->remove(Ljava/lang/Object;)Ljava/lang/Object;
+                    const/4 v5, 0x0
+                    sput-object v5, LX/0Lze;->LJ:LX/0LxV;
+                    sput-object v5, LX/0Lze;->LJFF:Ljava/lang/String;
+                """,
+                ExternalLabel("continue_progress", continueInstruction),
             )
         }
     }

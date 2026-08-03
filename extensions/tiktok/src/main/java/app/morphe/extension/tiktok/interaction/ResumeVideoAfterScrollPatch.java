@@ -13,4 +13,8 @@ public final class ResumeVideoAfterScrollPatch {
     public static boolean shouldResumeVideoAfterScroll() {
         return Settings.RESUME_VIDEO_AFTER_SCROLL.get();
     }
+
+    public static boolean shouldClearCompletedProgress(long position, long duration) {
+        return Settings.RESUME_VIDEO_AFTER_SCROLL.get() && duration > 0 && position >= duration;
+    }
 }
