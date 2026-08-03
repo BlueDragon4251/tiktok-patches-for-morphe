@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 public class ExportDiagnosticReportPreference extends Preference {
     {
         setOnPreferenceClickListener(pref -> {
-            new AlertDialog.Builder(getContext())
+            AlertDialog shownDialog = new AlertDialog.Builder(getContext())
                     .setTitle("Export diagnostic report")
                     .setItems(
                             new String[]{"Copy quick report", "Save full report"},
@@ -21,8 +21,12 @@ public class ExportDiagnosticReportPreference extends Preference {
                     )
                     .setNegativeButton("Cancel", null)
                     .show();
+            onDialogShown(shownDialog);
             return true;
         });
+    }
+
+    protected void onDialogShown(AlertDialog dialog) {
     }
 
     public ExportDiagnosticReportPreference(

@@ -18,6 +18,15 @@ internal object AdPersonalizationActivityOnCreateFingerprint : Fingerprint(
     },
 )
 
+internal object AdPersonalizationActivityOnBackPressedFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("/AdPersonalizationActivity;") &&
+            method.name == "onBackPressed" &&
+            method.parameterTypes.isEmpty() &&
+            method.returnType == "V"
+    },
+)
+
 internal object SettingsEntryFingerprint : Fingerprint(
     strings = listOf("pls pass item or extends the EventUnit"),
 )

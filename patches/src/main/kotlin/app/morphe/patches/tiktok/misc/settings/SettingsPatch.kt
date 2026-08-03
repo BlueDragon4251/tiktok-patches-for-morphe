@@ -331,6 +331,19 @@ val settingsPatch = bytecodePatch(
             )
         }
 
+        AdPersonalizationActivityOnBackPressedFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static/range {p0 .. p0}, $SETTINGS_EXTENSION_CLASS_DESCRIPTOR->handleBackPressed(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
+                    move-result v0
+                    if-eqz v0, :morphe_settings_not_handled
+                    return-void
+                """,
+                ExternalLabel("morphe_settings_not_handled", getInstruction(0)),
+            )
+        }
+
         val compose: SmaliMethod = composeMutable
         val getStringInvokeIndex = compose.indexOfFirstInstructionOrThrow {
             opcode == Opcode.INVOKE_VIRTUAL &&

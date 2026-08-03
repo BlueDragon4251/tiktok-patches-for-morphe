@@ -73,7 +73,7 @@ public class LogExportFilterPreference extends Preference {
     private void showPicker() {
         boolean[] checked = checkedValues();
 
-        new AlertDialog.Builder(getContext())
+        AlertDialog shownDialog = new AlertDialog.Builder(getContext())
                 .setTitle("Include diagnostic events")
                 .setMultiChoiceItems(LABELS, checked, (dialog, which, isChecked) -> {
                     checked[which] = isChecked;
@@ -95,6 +95,10 @@ public class LogExportFilterPreference extends Preference {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+        onDialogShown(shownDialog);
+    }
+
+    protected void onDialogShown(AlertDialog dialog) {
     }
 
     private boolean[] checkedValues() {

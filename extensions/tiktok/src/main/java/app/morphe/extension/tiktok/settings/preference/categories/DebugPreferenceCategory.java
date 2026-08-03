@@ -1,5 +1,6 @@
 package app.morphe.extension.tiktok.settings.preference.categories;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.preference.PreferenceScreen;
 import android.view.View;
@@ -10,6 +11,7 @@ import app.morphe.extension.shared.settings.preference.ExportDiagnosticReportPre
 import app.morphe.extension.shared.settings.preference.LogExportFilterPreference;
 import app.morphe.extension.tiktok.Utils;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.SettingsUi;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -65,6 +67,11 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
             super.onBindView(view);
             Utils.setTitleAndSummaryColor(view);
         }
+
+        @Override
+        protected void onDialogShown(AlertDialog dialog) {
+            SettingsUi.styleStandardAlertDialog(dialog);
+        }
     }
 
     private static class TintedLogExportFilterPreference extends LogExportFilterPreference {
@@ -76,6 +83,11 @@ public class DebugPreferenceCategory extends ConditionalPreferenceCategory {
         protected void onBindView(View view) {
             super.onBindView(view);
             Utils.setTitleAndSummaryColor(view);
+        }
+
+        @Override
+        protected void onDialogShown(AlertDialog dialog) {
+            SettingsUi.styleStandardAlertDialog(dialog);
         }
     }
 

@@ -79,6 +79,22 @@ public class TikTokActivityHook {
         return true;
     }
 
+    public static boolean handleBackPressed(AdPersonalizationActivity activity) {
+        Intent intent = activity.getIntent();
+        if (intent == null
+                || (!SETTINGS_ACTION.equals(intent.getAction())
+                && !intent.getBooleanExtra(SETTINGS_EXTRA, false))) {
+            return false;
+        }
+
+        if (activity.getFragmentManager().getBackStackEntryCount() > 0) {
+            activity.getFragmentManager().popBackStack();
+        } else {
+            activity.finish();
+        }
+        return true;
+    }
+
     private static void startSettingsActivity() {
         Context appContext = Utils.getContext();
         if (appContext != null) {
