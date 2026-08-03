@@ -19,7 +19,7 @@ private const val EXTENSION_DESCRIPTOR =
 @Suppress("unused")
 val stopVideoLoopingPatch = bytecodePatch(
     name = "Stop video looping",
-    description = "Pauses videos at the end instead of replaying them.",
+    description = "Stops videos at the end instead of replaying them.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -51,20 +51,5 @@ val stopVideoLoopingPatch = bytecodePatch(
             )
         }
 
-        FeedPlayCompletedFingerprint.method.apply {
-            addInstructionsWithLabels(
-                0,
-                """
-                    invoke-static {}, $EXTENSION_DESCRIPTOR->shouldStopVideoLooping()Z
-                    move-result v0
-                    if-eqz v0, :continue_completion
-                    move-object/from16 v0, p0
-                    invoke-virtual {v0}, Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;->getPlayerManager()LX/0M31;
-                    move-result-object v0
-                    invoke-interface {v0}, LX/0M31;->LIZ()V
-                """,
-                ExternalLabel("continue_completion", getInstruction(0)),
-            )
-        }
     }
 }

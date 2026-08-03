@@ -23,12 +23,3 @@ internal object FeedPrepareNextRequestFingerprint : Fingerprint(
             method.name == "LJJJLZIJ"
     },
 )
-
-internal object FeedPlayCompletedFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;"),
-    custom = { method, classDef ->
-        classDef.type == "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;" &&
-            method.name == "onPlayCompleted"
-    },
-)
