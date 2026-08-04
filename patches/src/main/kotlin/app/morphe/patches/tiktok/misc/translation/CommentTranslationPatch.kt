@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.misc.translation
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -10,6 +11,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/translation/CommentBatchTranslator;"
@@ -31,18 +33,46 @@ val commentTranslationPatch = bytecodePatch(
         )
 
         BaseCommentCellBindFingerprint.method.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow {
-                opcode == Opcode.RETURN_VOID
-            }.first()
+            val instructions = implementation!!.instructions
+            val managerMatch = instructions.withIndex().mapNotNull { (index, instruction) ->
+                val field = instruction.getReference<FieldReference>()
+                    ?: return@mapNotNull null
+                if (instruction.opcode != Opcode.IPUT_OBJECT ||
+                    field.type != "Lcom/ss/android/ugc/aweme/comment/model/Comment;" ||
+                    instruction !is TwoRegisterInstruction
+                ) {
+                    return@mapNotNull null
+                }
+
+                val managerRegister = instruction.registerB
+                var matchingWrites = 0
+                var lastWriteIndex = index
+                val searchEnd = (index + 6).coerceAtMost(instructions.lastIndex)
+                for (candidateIndex in (index + 1)..searchEnd) {
+                    val candidate = instructions[candidateIndex]
+                    val candidateField = candidate.getReference<FieldReference>()
+                    if (candidate.opcode == Opcode.IPUT_OBJECT &&
+                        candidate is TwoRegisterInstruction &&
+                        candidate.registerB == managerRegister &&
+                        candidateField?.definingClass == field.definingClass
+                    ) {
+                        matchingWrites++
+                        lastWriteIndex = candidateIndex
+                    }
+                }
+
+                if (matchingWrites >= 2) lastWriteIndex to managerRegister else null
+            }.lastOrNull() ?: throw PatchException(
+                "Translate comments: could not locate initialized native comment translation manager.",
+            )
+            val (managerReadyIndex, managerRegister) = managerMatch
 
             addInstructions(
-                returnIndex,
+                managerReadyIndex + 1,
                 """
-                    move-object/from16 v2, p0
-                    iget-object v0, v2, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
-                    invoke-virtual {v2}, Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;->m6()Lcom/ss/android/ugc/aweme/comment/model/Comment;
-                    move-result-object v1
-                    invoke-static {v0, v1}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
+                    move-object/from16 v0, p0
+                    iget-object v0, v0, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
+                    invoke-static {v0, v$managerRegister}, $EXTENSION_CLASS_DESCRIPTOR->registerCommentCell(Landroid/view/View;Ljava/lang/Object;)V
                 """,
             )
         }
