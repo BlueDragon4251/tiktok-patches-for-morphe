@@ -77,6 +77,19 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
+        FollowFeedPresenterPostProcessFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                method.addInstructions(
+                    returnIndex,
+                    "invoke-static/range {p1 .. p1}, $EXTENSION_CLASS_DESCRIPTOR->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
+                )
+            }
+        }
+
         TakoAiFeedButtonSetVisibleFingerprint.method.addInstructions(
             0,
             """

@@ -5,7 +5,9 @@
 package app.morphe.patches.tiktok.feedfilter
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal object FeedItemListGetItemsFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC),
@@ -30,6 +32,26 @@ internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     name = "bq",
     returnType = "V",
     parameters = listOf("Z"),
+)
+
+internal object FollowFeedPresenterPostProcessFingerprint : Fingerprint(
+    returnType = "V",
+    parameters = listOf("Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"),
+    custom = { method, _ ->
+        val references = method.implementation?.instructions
+            ?.mapNotNull { it.getReference<MethodReference>() }
+            ?: emptyList()
+        references.any {
+            it.definingClass == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" &&
+                it.name == "isAd"
+        } && references.any {
+            it.definingClass == "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;" &&
+                it.name == "setItems"
+        } && references.any {
+            it.definingClass == "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;" &&
+                it.name == "setInsertedResults"
+        }
+    },
 )
 
 internal object TakoAiFeedButtonBindFingerprint : Fingerprint(
