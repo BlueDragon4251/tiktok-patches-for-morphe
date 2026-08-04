@@ -5,21 +5,15 @@
 package app.morphe.patches.tiktok.interaction.looping
 
 import app.morphe.patcher.Fingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
 
-internal object FeedPlayRequestFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf("LX/0MIK;"),
-    custom = { method, classDef ->
-        classDef.type == "LX/0pZG;" &&
-            method.name == "LJJJJLI"
-    },
-)
+private const val VIDEO_ENGINE_CLASS_DESCRIPTOR =
+    "Lcom/ss/ttvideoengine/TTVideoEngine;"
 
-internal object FeedPrepareNextRequestFingerprint : Fingerprint(
+internal object VideoEngineSetLoopingFingerprint : Fingerprint(
+    definingClass = VIDEO_ENGINE_CLASS_DESCRIPTOR,
+    name = "setLooping",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "V",
-    parameters = listOf("LX/0MIK;"),
-    custom = { method, classDef ->
-        classDef.type == "LX/0pZG;" &&
-            method.name == "LJJJLZIJ"
-    },
+    parameters = listOf("Z"),
 )

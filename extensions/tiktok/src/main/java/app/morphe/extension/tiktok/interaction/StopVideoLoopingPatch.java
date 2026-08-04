@@ -10,7 +10,7 @@ public final class StopVideoLoopingPatch {
     private StopVideoLoopingPatch() {
     }
 
-    public static boolean shouldStopVideoLooping() {
-        return Settings.STOP_VIDEO_LOOPING.get();
+    public static boolean overrideLooping(boolean requested) {
+        return Settings.STOP_VIDEO_LOOPING.get() ? false : requested;
     }
 }
