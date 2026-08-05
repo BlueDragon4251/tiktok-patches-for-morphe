@@ -1,8 +1,13 @@
 package app.morphe.extension.tiktok.translation;
 
+import android.content.Context;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.os.LocaleList;
 import android.view.View;
 
 import app.morphe.extension.shared.Logger;
+import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
@@ -31,6 +36,8 @@ public final class CommentBatchTranslator {
     private static final LinkedHashSet<String> requestedLoadedBatchKeys = new LinkedHashSet<>();
     private static LoadedBatch latestLoadedBatch;
     private static WeakReference<Object> lastManager = new WeakReference<>(null);
+    private static volatile Object nativeLanguageService;
+    private static volatile Method nativeTargetLanguageGetter;
     private static volatile Object nativeLanguageSettings;
     private static volatile Method nativeDoNotTranslateGetter;
 
@@ -348,6 +355,9 @@ public final class CommentBatchTranslator {
         String commentLanguage = primaryLanguageTag(invokeStringQuiet(comment, "getCommentLanguage"));
         if (isBlank(commentLanguage)) return false;
 
+        String targetLanguage = primaryLanguageTag(getNativeTranslationTargetLanguage());
+        if (!isBlank(targetLanguage) && commentLanguage.equals(targetLanguage)) return true;
+
         for (String language : getNativeDoNotTranslateLanguages()) {
             if (commentLanguage.equals(primaryLanguageTag(language))) return true;
         }
@@ -355,11 +365,63 @@ public final class CommentBatchTranslator {
     }
 
     private static String currentLanguagePolicyKey() {
-        StringBuilder key = new StringBuilder("native-dnt");
+        StringBuilder key = new StringBuilder("native-target:")
+                .append(value(primaryLanguageTag(getNativeTranslationTargetLanguage())))
+                .append(":dnt");
         for (String language : getNativeDoNotTranslateLanguages()) {
             key.append(':').append(value(primaryLanguageTag(language)));
         }
         return key.toString().toLowerCase(Locale.ROOT);
+    }
+
+    private static String getNativeTranslationTargetLanguage() {
+        try {
+            Object service = nativeLanguageService;
+            Method getter = nativeTargetLanguageGetter;
+            if (service == null || getter == null) {
+                synchronized (LOCK) {
+                    service = nativeLanguageService;
+                    getter = nativeTargetLanguageGetter;
+                    if (service == null || getter == null) {
+                        Class<?> serviceClass = Class.forName(
+                                "com.ss.android.ugc.aweme.translation.service.TranslationLangKevaServiceImpl"
+                        );
+                        service = serviceClass.getDeclaredConstructor().newInstance();
+                        for (Method candidate : serviceClass.getDeclaredMethods()) {
+                            if (candidate.getParameterTypes().length == 0 &&
+                                    candidate.getReturnType() == String.class) {
+                                candidate.setAccessible(true);
+                                getter = candidate;
+                                nativeLanguageService = service;
+                                nativeTargetLanguageGetter = getter;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (service != null && getter != null) {
+                Object selected = getter.invoke(service);
+                if (selected instanceof String && !isBlank((String) selected)) {
+                    return (String) selected;
+                }
+            }
+        } catch (Throwable ex) {
+            Logger.printDebug(() -> "[Morphe CommentBatchTranslator] native target language unavailable", asException(ex));
+        }
+
+        Context context = Utils.getContext();
+        if (context != null) {
+            Configuration configuration = context.getResources().getConfiguration();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                LocaleList locales = configuration.getLocales();
+                if (!locales.isEmpty()) return locales.get(0).toLanguageTag();
+            } else if (configuration.locale != null) {
+                return configuration.locale.toLanguageTag();
+            }
+        }
+        return Locale.getDefault().toLanguageTag();
     }
 
     private static String[] getNativeDoNotTranslateLanguages() {
