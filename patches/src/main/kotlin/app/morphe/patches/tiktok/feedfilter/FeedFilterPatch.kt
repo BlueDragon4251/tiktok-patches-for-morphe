@@ -77,6 +77,19 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
+        FollowFeedListGetItemsFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                method.addInstructions(
+                    returnIndex,
+                    "invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
+                )
+            }
+        }
+
         FollowFeedPresenterPostProcessFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }

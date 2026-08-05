@@ -27,6 +27,14 @@ internal object FollowFeedFingerprint : Fingerprint(
     },
 )
 
+internal object FollowFeedListGetItemsFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+    name = "getItems",
+    accessFlags = listOf(AccessFlags.PUBLIC),
+    returnType = "Ljava/util/List;",
+    parameters = emptyList(),
+)
+
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
     name = "bq",
