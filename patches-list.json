@@ -1,5 +1,5 @@
 {
-  "version": "0.4.1",
+  "version": "0.5.0",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -142,6 +142,34 @@
       "options": []
     },
     {
+      "name": "Disable long-press quick share",
+      "description": "Keeps long-pressing Share from opening TikTok's quick-share interaction.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Disable screen capture detection",
       "description": "Prevents TikTok from reacting to screenshots and screen recordings.",
       "use": true,
@@ -172,6 +200,62 @@
     {
       "name": "Downloads",
       "description": "Adds watermark-free video and photo downloads, comment sticker saving, and configurable download-folder controls.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable Live search",
+      "description": "Shows TikTok's search entry in the Live drawer where supported.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Enable non-personalized search",
+      "description": "Uses TikTok's non-personalized search mode instead of its saved account choice.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -364,6 +448,34 @@
       "options": []
     },
     {
+      "name": "Hide quick comment reactions",
+      "description": "Hides TikTok's exposed quick emoji row in supported comment inputs.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hold-and-slide 2x lock",
       "description": "Enables TikTok's native hold, slide down, and release gesture to lock 2x speed.",
       "use": true,
@@ -474,6 +586,34 @@
       "options": []
     },
     {
+      "name": "Resume videos after scrolling",
+      "description": "Continues supported videos from where playback stopped when returning after a scroll.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "SIM spoof",
       "description": "Spoofs SIM country and operator information retrieved by TikTok, with country presets for easier setup.",
       "use": true,
@@ -532,7 +672,7 @@
     },
     {
       "name": "Settings",
-      "description": "Adds the Morphe settings menu to TikTok. Supports TikTok 46.2.3.",
+      "description": "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -561,6 +701,62 @@
     {
       "name": "Show seekbar",
       "description": "Shows TikTok's native video seekbar where it would normally be hidden.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Show seekbar thumbnail",
+      "description": "Shows TikTok's video preview thumbnail while dragging the seekbar.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.2.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.2.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Stop video looping",
+      "description": "Stops videos at the end instead of replaying them.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
