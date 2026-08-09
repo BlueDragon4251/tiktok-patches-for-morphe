@@ -39,6 +39,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Copy comments without username` | Copies only the comment text without including the creator's username. |
 | `Custom offline videos limit` | Adds a custom entry to TikTok's offline videos menu with a configurable limit of up to 500 videos. |
 | `Disable login requirement` | Removes TikTok's mandatory login gate from supported flows. |
+| `Disable long-press quick share` | Keeps long-pressing Share from opening TikTok's quick-share interaction. |
 | `Disable screen capture detection` | Prevents TikTok from detecting screenshots and screen recordings. |
 | `Diagnostic tools` | Adds optional structured Morphe logs, Java crash capture, and clipboard or file report export. |
 | `Downloads` | Adds watermark-free video and photo downloads, comment sticker saving, and configurable download-folder controls. |
@@ -50,6 +51,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Fix Google login` | Restores Google account sign-in after patching. |
 | `Hide CAPTCHA popups` | Hides non-account verification puzzle dialogs, including those shown while browsing LIVE. Account verification remains available, and server checks are not bypassed. |
 | `Hide floating promotions` | Removes floating promotional badges, coin icons, and timer banners from the Home feed. |
+| `Hide quick comment reactions` | Hides TikTok's exposed quick emoji row in supported comment inputs. |
 | `Hold-and-slide 2x lock` | Enables TikTok's native hold, slide down, and release gesture for locking playback at 2x speed. |
 | `Open external links directly` | Opens profile and story website links in the system browser instead of TikTok's in-app browser. |
 | `Playback speed` | Enables playback-speed controls for all videos and remembers the selected speed between videos. |
