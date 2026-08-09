@@ -48,6 +48,14 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                 "Show the native seekbar on videos where TikTok would normally hide it.",
                 Settings.SHOW_SEEKBAR
         ));
+        if (SettingsStatus.seekbarThumbnailEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Show seekbar thumbnail",
+                    "Show a video preview thumbnail while dragging the seekbar.",
+                    Settings.SHOW_SEEKBAR_THUMBNAIL
+            ));
+        }
         if (SettingsStatus.stopVideoLoopingEnabled) {
             addPreference(new TogglePreference(
                     context,
@@ -78,6 +86,22 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     "Disable long-press quick share",
                     "Keep long-pressing Share from opening TikTok's quick-share interaction.",
                     Settings.DISABLE_LONG_PRESS_QUICK_SHARE
+            ));
+        }
+        if (SettingsStatus.nonPersonalizedSearchEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Use non-personalized search",
+                    "Use TikTok's non-personalized search state instead of the saved account choice.",
+                    Settings.ENABLE_NON_PERSONALIZED_SEARCH
+            ));
+        }
+        if (SettingsStatus.liveSearchEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Show Live search",
+                    "Show TikTok's search entry in the Live drawer where supported.",
+                    Settings.ENABLE_LIVE_SEARCH
             ));
         }
 

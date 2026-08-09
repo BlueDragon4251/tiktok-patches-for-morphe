@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme-header.png" alt="TikTok Patches for Morphe" width="290"/>
+  <img src="assets/readme-header.png" alt="Metra TikTok Patches" width="290"/>
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
   <sub><em>If you are using these patches and want to support the work, it helps me keep testing, improving, and keeping the patches maintained.</em></sub>
 </p>
 
-# TikTok Patches for Morphe
+# Metra TikTok Patches
 
 <br>
 
@@ -42,6 +42,8 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Disable screen capture detection` | Prevents TikTok from detecting screenshots and screen recordings. |
 | `Diagnostic tools` | Adds optional structured Morphe logs, Java crash capture, and clipboard or file report export. |
 | `Downloads` | Adds watermark-free video and photo downloads, comment sticker saving, and configurable download-folder controls. |
+| `Enable Live search` | Shows TikTok's search entry in the Live drawer where supported. |
+| `Enable non-personalized search` | Uses TikTok's non-personalized search mode instead of its saved account choice. |
 | `Feature Gate Lab` | Adds a searchable menu for viewing and overriding supported TikTok feature flags and configuration values. Client-side overrides cannot bypass server enforcement. |
 | `Feed filter` | Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges. |
 | `Feed tab navigation` | Controls which loaded top and bottom navigation tabs remain visible, blocks newly added tabs when requested, and can hide the Tako AI bubble. |
@@ -55,8 +57,9 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 | `Resume videos after scrolling` | Restores a video's prior playback position when returning to it in the feed. |
 | `SIM spoof` | Replaces SIM country and operator values reported to TikTok and provides country presets. TikTok may still use IP address, account history, language, and other region signals. |
 | `Sanitize sharing links` | Removes tracking parameters from TikTok links before they are shared. |
-| `Settings` | Adds the Morphe settings screen inside TikTok. |
+| `Settings` | Adds the Metra patches settings screen inside TikTok. |
 | `Show seekbar` | Shows TikTok's native video seekbar where it would normally be hidden. |
+| `Show seekbar thumbnail` | Shows TikTok's video preview thumbnail while dragging the seekbar. |
 | `Stop video looping` | Stops a completed video instead of automatically replaying it. |
 | `Translate comments` | Adds comment translation controls using TikTok's translation system, with selectable language exclusions. |
 
@@ -66,7 +69,7 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 Open this link on the Android device where Morphe is installed:
 
-[Add TikTok Patches for Morphe](https://morphe.software/add-source?github=icysymmetra/tiktok-patches-for-morphe)
+[Add Metra TikTok Patches](https://morphe.software/add-source?github=icysymmetra/tiktok-patches-for-morphe)
 
 You can also copy this repository URL and paste it into Morphe's add source field:
 

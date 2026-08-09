@@ -84,4 +84,17 @@ public final class FeatureControls {
     public static int overrideLongPressQuickShare(int originalMode) {
         return Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() ? 0 : originalMode;
     }
+
+    public static boolean enableNonPersonalizedSearch(boolean original) {
+        return Settings.ENABLE_NON_PERSONALIZED_SEARCH.get() || original;
+    }
+
+    public static int forceNonPersonalizedSearchGate(String key, int value) {
+        if (!"enable_non_personalized_search".equals(key)) return value;
+        return Settings.ENABLE_NON_PERSONALIZED_SEARCH.get() ? 1 : value;
+    }
+
+    public static boolean enableLiveSearch(boolean original) {
+        return Settings.ENABLE_LIVE_SEARCH.get() || original;
+    }
 }

@@ -17,6 +17,9 @@ public class SettingsStatus {
     public static boolean promotionalBannersEnabled = false;
     public static boolean longPressSpeedLockEnabled = false;
     public static boolean disableLongPressQuickShareEnabled = false;
+    public static boolean nonPersonalizedSearchEnabled = false;
+    public static boolean liveSearchEnabled = false;
+    public static boolean seekbarThumbnailEnabled = false;
     public static boolean stopVideoLoopingEnabled = false;
     public static boolean resumeVideoAfterScrollEnabled = false;
     public static boolean externalBrowserEnabled = false;
@@ -65,6 +68,18 @@ public class SettingsStatus {
 
     public static void enableDisableLongPressQuickShare() {
         disableLongPressQuickShareEnabled = true;
+    }
+
+    public static void enableNonPersonalizedSearch() {
+        nonPersonalizedSearchEnabled = true;
+    }
+
+    public static void enableLiveSearch() {
+        liveSearchEnabled = true;
+    }
+
+    public static void enableSeekbarThumbnail() {
+        seekbarThumbnailEnabled = true;
     }
 
     public static void enableStopVideoLooping() {

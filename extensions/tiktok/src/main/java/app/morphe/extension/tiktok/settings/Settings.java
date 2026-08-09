@@ -80,6 +80,10 @@ public class Settings extends BaseSettings {
             Setting.parent(CUSTOM_OFFLINE_VIDEOS)
     );
     public static final BooleanSetting SHOW_SEEKBAR = new BooleanSetting("show_seekbar", TRUE);
+    public static final BooleanSetting SHOW_SEEKBAR_THUMBNAIL = new BooleanSetting(
+            "show_seekbar_thumbnail",
+            TRUE
+    );
     public static final BooleanSetting STOP_VIDEO_LOOPING = new BooleanSetting("stop_video_looping", FALSE, true);
     public static final BooleanSetting RESUME_VIDEO_AFTER_SCROLL = new BooleanSetting(
             "resume_video_after_scroll",
@@ -94,6 +98,10 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
     public static final BooleanSetting DISABLE_LONG_PRESS_QUICK_SHARE =
             new BooleanSetting("disable_long_press_quick_share", FALSE);
+    public static final BooleanSetting ENABLE_NON_PERSONALIZED_SEARCH =
+            new BooleanSetting("enable_non_personalized_search", FALSE, true);
+    public static final BooleanSetting ENABLE_LIVE_SEARCH =
+            new BooleanSetting("enable_live_search", FALSE, true);
     public static final BooleanSetting SIM_SPOOF = new BooleanSetting("simspoof", FALSE, true);
     public static final StringSetting SIM_SPOOF_ISO = new StringSetting("simspoof_iso", "us");
     public static final StringSetting SIMSPOOF_MCCMNC = new StringSetting("simspoof_mccmnc", "310260");

@@ -9,7 +9,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -44,7 +43,7 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "Settings",
-    description = "Adds the Morphe settings menu to TikTok. Supports TikTok 46.2.3.",
+    description = "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -352,17 +351,21 @@ val settingsPatch = bytecodePatch(
         val moveResultIndex = getStringInvokeIndex + 1
         val titleStringRegister = compose.getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
 
-        composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"Morphe settings\"")
+        composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"Metra patches\"")
 
         OpenDebugCellVmDefaultStateFingerprint.methodOrNull?.apply {
-            val iconIdLiteralIndex = implementation?.instructions?.indexOfFirst {
-                it is NarrowLiteralInstruction && (it.narrowLiteral == 0x7f0107e3 || it.narrowLiteral == 0x7f0107e7)
-            } ?: -1
-
-            if (iconIdLiteralIndex >= 0) {
-                val iconRegister = getInstruction<OneRegisterInstruction>(iconIdLiteralIndex).registerA
-                replaceInstruction(iconIdLiteralIndex, "const v$iconRegister, 0x7f010088")
-            }
+            val returnIndex = indexOfFirstInstructionOrThrow(Opcode.RETURN_OBJECT)
+            val stateRegister = getInstruction<OneRegisterInstruction>(returnIndex).registerA
+            addInstructions(
+                returnIndex,
+                """
+                    new-instance v0, LX/08EY;
+                    const v1, 0x7f010088
+                    invoke-direct {v0, v1}, LX/08EY;-><init>(I)V
+                    iput-object v0, v$stateRegister, LX/0HQM;->LLILLL:LX/08EY;
+                    iput-object v0, v$stateRegister, LX/0HQM;->LLILZLL:LX/08EY;
+                """,
+            )
         }
 
         val clickWrapperMethod = resolveClickWrapperMethod()
