@@ -21,7 +21,7 @@ private object CaptchaPopupFingerprint : Fingerprint(
     parameters = listOf(
         "Landroid/app/Activity;",
         "Ljava/lang/String;",
-        "LX/13fZ;",
+        "LX/0yiJ;",
         "Landroidx/fragment/app/Fragment;",
     ),
     strings = listOf("popCaptchaV2 - riskInfo ="),
@@ -31,7 +31,7 @@ private object LegacyCaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
     name = "popCaptcha",
     returnType = "V",
-    parameters = listOf("Landroid/app/Activity;", "I", "LX/13fZ;"),
+    parameters = listOf("Landroid/app/Activity;", "I", "LX/0yiJ;"),
     strings = listOf("popCaptcha - errorcode = "),
 )
 
@@ -39,7 +39,7 @@ private object OecCaptchaPopupFingerprint : Fingerprint(
     definingClass = "Lcom/tts/oecverify/verify/RiskControlService;",
     name = "execute",
     returnType = "Z",
-    parameters = listOf("LX/13eU;", "Lcom/tts/oecverify/BdTuringCallback;"),
+    parameters = listOf("LX/0yhh;", "Lcom/tts/oecverify/BdTuringCallback;"),
 )
 
 private object LiveHostCaptchaPopupFingerprint : Fingerprint(
@@ -49,7 +49,7 @@ private object LiveHostCaptchaPopupFingerprint : Fingerprint(
     parameters = listOf(
         "Landroid/app/Activity;",
         "Ljava/lang/String;",
-        "LX/1Cc3;",
+        "LX/1DPS;",
         "Landroidx/fragment/app/Fragment;",
     ),
 )
@@ -76,7 +76,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_captcha_popup
                 if-eqz p3, :morphe_hide_captcha_popup_return
-                invoke-virtual {p3}, LX/13fZ;->LIZJ()V
+                invoke-virtual {p3}, LX/0yiJ;->LIZJ()V
                 :morphe_hide_captcha_popup_return
                 return-void
                 :morphe_show_captcha_popup
@@ -91,7 +91,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_legacy_captcha_popup
                 if-eqz p3, :morphe_hide_legacy_captcha_popup_return
-                invoke-virtual {p3}, LX/13fZ;->LIZJ()V
+                invoke-virtual {p3}, LX/0yiJ;->LIZJ()V
                 :morphe_hide_legacy_captcha_popup_return
                 return-void
                 :morphe_show_legacy_captcha_popup
@@ -123,7 +123,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_live_captcha_popup
                 if-eqz p3, :morphe_hide_live_captcha_popup_return
-                invoke-interface {p3}, LX/1Cc3;->LIZIZ()V
+                invoke-interface {p3}, LX/1DPS;->LIZIZ()V
                 :morphe_hide_live_captcha_popup_return
                 return-void
                 :morphe_show_live_captcha_popup
