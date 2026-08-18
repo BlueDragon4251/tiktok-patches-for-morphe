@@ -113,8 +113,36 @@ jobs:
           code=${PIPESTATUS[0]}
 
           if grep -q 'INFO: Applying 0 patches' morphe.log; then
-            echo 'Morphe selected zero patches; treating this as an acceptance failure.' >&2
+            echo 'Morphe selected zero default patches; treating this as an acceptance failure.' >&2
             code=97
+          fi
+
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Apply full catalog including Diagnostic tools
+        id: full_catalog
+        shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          set +e
+          java -jar morphe-desktop.jar patch \
+            -p "$MPP" -e "Diagnostic tools" \
+            --continue-on-error \
+            --unsigned \
+            --result-file morphe-full-result.json \
+            -o /tmp/tiktok-full-patched.apk \
+            tiktok-46.4.3.apk 2>&1 | tee morphe-full.log
+          code=${PIPESTATUS[0]}
+
+          if grep -q 'INFO: Applying 0 patches' morphe-full.log; then
+            echo 'Morphe selected zero patches for full-catalog run; treating this as an acceptance failure.' >&2
+            code=97
+          fi
+          if ! grep -q '^INFO: Applied: Diagnostic tools' morphe-full.log; then
+            echo 'Diagnostic tools was not applied in the full-catalog run.' >&2
+            code=98
           fi
 
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -131,24 +159,28 @@ jobs:
           import sys
           from pathlib import Path
 
-          path = Path("morphe-result.json")
-          if not path.exists():
-              print("morphe-result.json was not produced", file=sys.stderr)
+          failures = []
+          for label, filename in (
+              ("defaults", "morphe-result.json"),
+              ("full catalog", "morphe-full-result.json"),
+          ):
+              path = Path(filename)
+              if not path.exists():
+                  failures.append(f"{label}: {filename} was not produced")
+                  continue
+              data = json.loads(path.read_text())
+              applied = data.get("appliedPatches") or []
+              failed = data.get("failedPatches") or []
+              print(f"{label}: applied={len(applied)} failed={len(failed)}")
+              if not applied:
+                  failures.append(f"{label}: no patches were applied")
+              if failed:
+                  failures.append(f"{label}: failed patches: {failed}")
+
+          if failures:
+              for failure in failures:
+                  print(failure, file=sys.stderr)
               raise SystemExit(1)
-
-          data = json.loads(path.read_text())
-          applied = data.get("appliedPatches") or []
-          failed = data.get("failedPatches") or []
-          print(f"Applied patches: {len(applied)}")
-          print(f"Failed patches: {len(failed)}")
-          for item in failed:
-              print("FAILED:", item)
-
-          if not applied:
-              print("Acceptance is invalid because no patches were applied.", file=sys.stderr)
-              raise SystemExit(2)
-          if failed:
-              raise SystemExit(3)
           PY
           code=$?
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
@@ -158,12 +190,18 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo '=== FAILED PATCHES ==='
+          echo '=== DEFAULT PATCH FAILURES ==='
           grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe.log || true
-          echo '=== APPLIED COUNT ==='
+          echo '=== DEFAULT APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe.log || true
-          echo '=== RESULT JSON ==='
+          echo '=== FULL-CATALOG PATCH FAILURES ==='
+          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe-full.log || true
+          echo '=== FULL-CATALOG APPLIED COUNT ==='
+          grep -c '^INFO: Applied:' morphe-full.log || true
+          echo '=== DEFAULT RESULT JSON ==='
           cat morphe-result.json 2>/dev/null || true
+          echo '=== FULL-CATALOG RESULT JSON ==='
+          cat morphe-full-result.json 2>/dev/null || true
 
       - name: Upload diagnostics
         if: always()
@@ -173,12 +211,15 @@ jobs:
           path: |
             morphe.log
             morphe-result.json
+            morphe-full.log
+            morphe-full-result.json
           if-no-files-found: warn
           retention-days: 1
 
       - name: Fail if acceptance reported failures
-        if: steps.patch.outputs.exit_code != '0' || steps.result.outputs.exit_code != '0'
+        if: steps.patch.outputs.exit_code != '0' || steps.full_catalog.outputs.exit_code != '0' || steps.result.outputs.exit_code != '0'
         run: |
-          echo "Morphe exit code: ${{ steps.patch.outputs.exit_code }}"
+          echo "Default Morphe exit code: ${{ steps.patch.outputs.exit_code }}"
+          echo "Full-catalog Morphe exit code: ${{ steps.full_catalog.outputs.exit_code }}"
           echo "Result validation exit code: ${{ steps.result.outputs.exit_code }}"
           exit 1
