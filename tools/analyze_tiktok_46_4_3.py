@@ -94,49 +94,15 @@ def analyze() -> None:
         cls = class_map[enum_desc]
         print("dex:", class_dex[enum_desc])
         print("fields:", [(f.get_name(), f.get_descriptor()) for f in cls.get_fields()])
-        for method in cls.get_methods():
-            if method.get_name() == "<clinit>" and method.get_code():
-                for index, ins in enumerate(method.get_instructions()):
-                    output = ins.get_output()
-                    if "DOWNLOAD_200_VIDEOS" in output or ins.get_name().startswith("invoke-direct"):
-                        print(f"  {index:04d}: {ins.get_name():28s} {output}")
-
-    print("\n=== REFERENCES TO OFFLINE ENUM DOWNLOAD_* FIELDS ===")
-    candidates: dict[tuple[str, str, str], list[int]] = defaultdict(list)
-    if enum_desc:
-        needle = enum_desc + "->DOWNLOAD_"
-        for cls_name, cls in class_map.items():
-            for method in cls.get_methods():
-                code = method.get_code()
-                if code is None:
-                    continue
-                instructions = list(method.get_instructions())
-                for index, ins in enumerate(instructions):
-                    if needle in ins.get_output():
-                        candidates[(cls_name, method.get_name(), method.get_descriptor())].append(index)
-
-        for (cls_name, method_name, method_desc), indexes in candidates.items():
-            print(
-                f"CANDIDATE {cls_name} dex={class_dex[cls_name]} "
-                f"{method_name}{method_desc} refs={indexes}"
-            )
-            methods = [
-                method
-                for method in class_map[cls_name].get_methods()
-                if method.get_name() == method_name and method.get_descriptor() == method_desc
-            ]
-            if not methods:
-                continue
-            instructions = list(methods[0].get_instructions())
-            keep: set[int] = set()
-            for index in indexes:
-                keep.update(range(max(0, index - 10), min(len(instructions), index + 16)))
-            for index in sorted(keep):
-                ins = instructions[index]
-                print(f"  {index:04d}: {ins.get_name():28s} {ins.get_output()}")
-            print("  fields:", [(f.get_name(), f.get_descriptor()) for f in class_map[cls_name].get_fields()])
+        clinit = next((m for m in cls.get_methods() if m.get_name() == "<clinit>"), None)
+        if clinit and clinit.get_code():
+            for index, ins in enumerate(clinit.get_instructions()):
+                output = ins.get_output()
+                if "DOWNLOAD_200_VIDEOS" in output or ins.get_name().startswith("invoke-direct"):
+                    print(f"  {index:04d}: {ins.get_name():28s} {output}")
 
     print("\n=== STATIC LIST CONFIG CANDIDATES ===")
+    config_candidates = []
     for cls_name, cls in class_map.items():
         list_fields = [field for field in cls.get_fields() if field.get_descriptor() == "Ljava/util/List;"]
         if len(list_fields) < 2:
@@ -146,17 +112,16 @@ def analyze() -> None:
             continue
         instructions = list(clinit.get_instructions())
         enum_refs = [
-            index
-            for index, ins in enumerate(instructions)
+            index for index, ins in enumerate(instructions)
             if enum_desc and enum_desc in ins.get_output()
         ]
         list_writes = [
-            index
-            for index, ins in enumerate(instructions)
+            index for index, ins in enumerate(instructions)
             if ins.get_name().startswith("sput-object") and "Ljava/util/List;" in ins.get_output()
         ]
         if not enum_refs and len(list_writes) < 2:
             continue
+        config_candidates.append(cls_name)
         print(
             f"LIST-CANDIDATE {cls_name} dex={class_dex[cls_name]} "
             f"list_fields={[(f.get_name(), f.get_descriptor()) for f in list_fields]} "
@@ -164,10 +129,11 @@ def analyze() -> None:
         )
         interesting: set[int] = set()
         for index in enum_refs + list_writes:
-            interesting.update(range(max(0, index - 10), min(len(instructions), index + 10)))
+            interesting.update(range(max(0, index - 12), min(len(instructions), index + 12)))
         for index in sorted(interesting):
             ins = instructions[index]
             print(f"  {index:04d}: {ins.get_name():28s} {ins.get_output()}")
+        print()
 
     print("\n=== STABLE OFFLINE CLASSES ===")
     for suffix in ("/OfflineModeSheetPageAssem;", "/OfflineModeListVM;"):
@@ -177,7 +143,7 @@ def analyze() -> None:
     print("\n=== SUMMARY ===")
     print("missing descriptors:", missing)
     print("offline enum:", enum_desc)
-    print("enum reference candidate count:", len(candidates))
+    print("config candidates:", config_candidates)
 
 
 if __name__ == "__main__":
