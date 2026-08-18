@@ -18,7 +18,7 @@ permissions:
 jobs:
   analyze:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -27,6 +27,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
 
       - name: Install analysis dependencies
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4 androguard==4.1.3
@@ -201,10 +207,7 @@ jobs:
                       if code is None:
                           continue
                       insns = list(method.get_instructions())
-                      matching = [
-                          i for i, insn in enumerate(insns)
-                          if target in insn.get_output()
-                      ]
+                      matching = [i for i, insn in enumerate(insns) if target in insn.get_output()]
                       if not matching:
                           continue
 
@@ -232,6 +235,76 @@ jobs:
           print("methods referencing", target, ":", hits)
           PY
 
+      - name: Build local patch bundle for 46.4.3 diagnostics
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Temporarily expose the current patch set to 46.4.3 so Morphe Desktop
+          # can exercise every default TikTok patch. Actual source compatibility
+          # changes are committed separately after validation.
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt")
+          text = path.read_text()
+          needle = 'targets = listOf(AppTarget("46.2.3"))'
+          replacement = 'targets = listOf(AppTarget("46.2.3"), AppTarget("46.4.3"))'
+          if needle not in text:
+              raise SystemExit("TikTok compatibility target was not found")
+          path.write_text(text.replace(needle, replacement, 1))
+          PY
+          ./gradlew :patches:buildAndroid :patches:generatePatchesList --no-daemon
+          MPP="$(find patches/build -type f -name '*.mpp' | head -n 1)"
+          if [ -z "$MPP" ]; then
+            echo "No MPP produced" >&2
+            exit 1
+          fi
+          echo "MPP=$MPP" >> "$GITHUB_ENV"
+          echo "Built bundle: $MPP"
+
+      - name: Download latest Morphe Desktop CLI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          API="https://api.github.com/repos/MorpheApp/morphe-desktop/releases/latest"
+          ASSET_URL="$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' "$API" | jq -r '.assets[] | select(.name | endswith("-all.jar")) | .browser_download_url' | head -n 1)"
+          if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+            echo "Could not resolve Morphe Desktop all.jar release asset" >&2
+            exit 1
+          fi
+          curl -fL --retry 3 "$ASSET_URL" -o morphe-desktop.jar
+          java -jar morphe-desktop.jar --version || true
+
+      - name: Patch TikTok 46.4.3 with all default patches
+        shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          set +e
+          java -jar morphe-desktop.jar patch \
+            -p "$MPP" \
+            --continue-on-error \
+            --unsigned \
+            --result-file tiktok-46.4.3-patch-result.json \
+            --out /tmp/tiktok-46.4.3-patched.apk \
+            tiktok-46.4.3.apk \
+            > tiktok-46.4.3-patch-log.txt 2>&1
+          STATUS=$?
+          echo "Morphe CLI exit code: $STATUS" | tee -a tiktok-46.4.3-patch-log.txt
+          if [ -f tiktok-46.4.3-patch-result.json ]; then
+            python - <<'PY' | tee tiktok-46.4.3-patch-summary.txt
+          import json
+          from pathlib import Path
+          data = json.loads(Path("tiktok-46.4.3-patch-result.json").read_text())
+          print(json.dumps(data, indent=2)[:200000])
+          PY
+          else
+            echo "No result JSON produced" | tee tiktok-46.4.3-patch-summary.txt
+            tail -n 400 tiktok-46.4.3-patch-log.txt >> tiktok-46.4.3-patch-summary.txt
+          fi
+          exit 0
+
       - name: Upload text report
         if: always()
         uses: actions/upload-artifact@v4
@@ -241,6 +314,9 @@ jobs:
             tiktok-46.4.3-download-report.txt
             tiktok-46.4.3-bytecode-report.txt
             tiktok-46.4.3-offline-xrefs.txt
+            tiktok-46.4.3-patch-log.txt
+            tiktok-46.4.3-patch-result.json
+            tiktok-46.4.3-patch-summary.txt
           if-no-files-found: warn
           retention-days: 1
 
@@ -254,6 +330,7 @@ jobs:
               'tiktok-46.4.3-download-report.txt',
               'tiktok-46.4.3-bytecode-report.txt',
               'tiktok-46.4.3-offline-xrefs.txt',
+              'tiktok-46.4.3-patch-summary.txt',
             ];
             let text = '';
             for (const path of paths) {
@@ -264,7 +341,7 @@ jobs:
             if (!text) text = 'The analysis workflow did not produce a report file.';
             if (text.length > 55000) text = text.slice(-55000);
             const body = [
-              '### TikTok 46.4.3 bytecode analysis',
+              '### TikTok 46.4.3 bytecode + patch analysis',
               '',
               `Commit: \`${context.sha}\``,
               '',
