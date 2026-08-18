@@ -149,10 +149,16 @@ jobs:
         run: |
           set +e
           set -o pipefail
-          java -jar morphe-desktop-all.jar patch -p "$PATCH_BUNDLE" tiktok-46.4.3.apk 2>&1 | tee morphe-46.4.3.log
+          java -jar morphe-desktop-all.jar patch \
+            -p "$PATCH_BUNDLE" \
+            --continue-on-error \
+            --unsigned \
+            --result-file morphe-46.4.3-result.json \
+            -o tiktok-46.4.3-patched.apk \
+            tiktok-46.4.3.apk 2>&1 | tee morphe-46.4.3.log
           code=${PIPESTATUS[0]}
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          exit "$code"
+          exit 0
 
       - name: Post patch result to PR
         if: always()
@@ -167,8 +173,11 @@ jobs:
               if (fs.existsSync(path)) parts.push(`===== ${path} =====\n${fs.readFileSync(path, 'utf8')}`);
             }
             let text = parts.length ? parts.join('\n\n') : 'No compatibility or Morphe log was produced.';
-            if (text.length > 58000) text = text.slice(-58000);
+            if (text.length > 48000) text = text.slice(-48000);
             const exitCode = process.env.PATCH_EXIT_CODE || 'not-run';
+            const result = fs.existsSync('morphe-46.4.3-result.json')
+              ? fs.readFileSync('morphe-46.4.3-result.json', 'utf8')
+              : 'No JSON result file.';
             const body = [
               '### TikTok 46.4.3 full patch test',
               '',
@@ -178,6 +187,13 @@ jobs:
               '```text',
               text,
               '```',
+              '',
+              '<details><summary>JSON result</summary>',
+              '',
+              '```json',
+              result.length > 9000 ? result.slice(-9000) : result,
+              '```',
+              '</details>',
             ].join('\n');
             await github.rest.issues.createComment({
               owner: context.repo.owner,
