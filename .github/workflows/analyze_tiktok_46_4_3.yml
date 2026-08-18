@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   analyze:
@@ -31,7 +33,8 @@ jobs:
       - name: Download TikTok 46.4.3 from provided MediaFire link
         shell: bash
         run: |
-          python - <<'PY'
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee tiktok-46.4.3-download-report.txt
           import hashlib
           import html
           import requests
@@ -72,7 +75,8 @@ jobs:
       - name: Inspect APK and relevant DEX classes
         shell: bash
         run: |
-          python - <<'PY' | tee tiktok-46.4.3-bytecode-report.txt
+          set -o pipefail
+          python - <<'PY' 2>&1 | tee tiktok-46.4.3-bytecode-report.txt
           from androguard.core.apk import APK
           from androguard.core.dex import DEX
 
@@ -150,6 +154,42 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-46.4.3-bytecode-report
-          path: tiktok-46.4.3-bytecode-report.txt
+          path: |
+            tiktok-46.4.3-download-report.txt
+            tiktok-46.4.3-bytecode-report.txt
           if-no-files-found: warn
           retention-days: 1
+
+      - name: Post analysis report to draft PR
+        if: always() && github.event_name == 'push'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const paths = [
+              'tiktok-46.4.3-download-report.txt',
+              'tiktok-46.4.3-bytecode-report.txt',
+            ];
+            let text = '';
+            for (const path of paths) {
+              if (fs.existsSync(path)) {
+                text += `\n===== ${path} =====\n` + fs.readFileSync(path, 'utf8');
+              }
+            }
+            if (!text) text = 'The analysis workflow did not produce a report file.';
+            if (text.length > 55000) text = text.slice(-55000);
+            const body = [
+              '### TikTok 46.4.3 bytecode analysis',
+              '',
+              `Commit: \`${context.sha}\``,
+              '',
+              '```text',
+              text,
+              '```',
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body,
+            });
