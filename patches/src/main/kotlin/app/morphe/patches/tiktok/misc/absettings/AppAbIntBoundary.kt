@@ -12,9 +12,9 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
-// Kept temporarily for Feature Gate Lab's 46.2.3 boundary table. The shared
-// integer hook below no longer relies on these obfuscated identifiers.
-internal const val APP_AB_DESCRIPTOR = "LX/0BYX;"
+// Feature Gate Lab still needs the concrete App-AB class to patch the complete
+// typed getter family. TikTok 46.4.3 moved that family from LX/0BYX; to LX/0Bny;.
+internal const val APP_AB_DESCRIPTOR = "LX/0Bny;"
 internal const val APP_AB_INT_METHOD = "LJFF"
 internal const val APP_AB_INT_KEY_REGISTER = "p3"
 internal val APP_AB_INT_PARAMETERS = listOf("I", "I", "Ljava/lang/String;", "Z")
@@ -23,7 +23,7 @@ internal val APP_AB_INT_PARAMETERS = listOf("I", "I", "Ljava/lang/String;", "Z")
  * TikTok obfuscates the App-AB implementation class and method names between
  * releases. The typed getter family is much more stable than those names, so
  * identify the class by the complete group of primitive/string getter
- * signatures instead of a descriptor such as LX/0BYX;.
+ * signatures instead of relying on the descriptor alone.
  */
 private fun ClassDef.hasAppAbTypedGetterFamily(): Boolean {
     fun has(returnType: String, parameters: List<String>) = methods.any { method ->
