@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - agent/tiktok-46.4.3-port
+  pull_request:
+    branches:
+      - dev
+      - main
   workflow_dispatch:
 
 permissions:
