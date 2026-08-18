@@ -13,6 +13,7 @@ import app.morphe.patches.tiktok.misc.absettings.APP_AB_DESCRIPTOR
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_KEY_REGISTER
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_METHOD
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_INT_PARAMETERS
+import app.morphe.patches.tiktok.misc.absettings.AppAbIntBoundaryFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.cloneMutableAndPreserveParameters
 import com.android.tools.smali.dexlib2.Opcode
@@ -61,7 +62,7 @@ private val boundaries = listOf(
     TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/Boolean;", listOf("Ljava/lang/String;", "Z"), "p1", Opcode.RETURN_OBJECT, "overrideVeBoolean", "(Ljava/lang/String;Ljava/lang/Boolean;)Ljava/lang/Boolean;"),
     TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "F", listOf("Ljava/lang/String;", "F"), "p1", Opcode.RETURN, "overrideVeFloat", "(Ljava/lang/String;F)F"),
     TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "I", listOf("Ljava/lang/String;", "I"), "p1", Opcode.RETURN, "overrideVeInt", "(Ljava/lang/String;I)I"),
-    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideVeLong", "(Ljava/lang/String;J)J", true),
+    TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "J", listOf("Ljava/lang/String;", "J"), "p1", Opcode.RETURN_WIDE, "overrideVeLong", "(Ljava/lang/String;J)J"),
     TypedBoundary(VE_CONFIG_DESCRIPTOR, "getValue", "Ljava/lang/String;", listOf("Ljava/lang/String;", "Ljava/lang/String;"), "p1", Opcode.RETURN_OBJECT, "overrideVeString", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
 )
 
@@ -75,20 +76,30 @@ val featureGateLabPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4623())
 
     execute {
+        // TikTok renames the App-AB implementation and its methods between
+        // releases. Reuse the structural AppAbIntBoundary fingerprint that is
+        // already validated by the non-personalized-search/seekbar patches to
+        // resolve the current App-AB class, then match its typed getter family
+        // by return/parameter signature instead of 46.2.3 obfuscated names.
+        val appAbDescriptor = AppAbIntBoundaryFingerprint.method.definingClass
+
         boundaries.forEach { boundary ->
-            val target = mutableClassDefBy(boundary.targetDescriptor)
+            val isAppAbBoundary = boundary.targetDescriptor == APP_AB_DESCRIPTOR
+            val targetDescriptor = if (isAppAbBoundary) appAbDescriptor else boundary.targetDescriptor
+            val target = mutableClassDefBy(targetDescriptor)
             val method = target.methods.singleOrNull {
-                it.name == boundary.methodName &&
+                (!isAppAbBoundary || it.name == boundary.methodName) &&
                     it.returnType == boundary.returnType &&
                     it.parameterTypes == boundary.parameters
-            } ?: throw PatchException("Feature Gate Lab boundary not found: ${boundary.targetDescriptor}->${boundary.methodName}${boundary.parameters}")
+            } ?: throw PatchException(
+                "Feature Gate Lab boundary not found: $targetDescriptor->${boundary.methodName}${boundary.parameters}",
+            )
             method.patchBoundary(boundary)
         }
 
-        val rawAbmock = mutableClassDefBy(APP_AB_DESCRIPTOR)
+        val rawAbmock = mutableClassDefBy(appAbDescriptor)
         val rawGetter = rawAbmock.methods.singleOrNull {
-            it.name == "LJIIJJI" &&
-                it.returnType == "Ljava/lang/Object;" &&
+            it.returnType == "Ljava/lang/Object;" &&
                 it.parameterTypes == listOf("Ljava/lang/String;", "Z")
         } ?: throw PatchException("Feature Gate Lab raw App AB boundary not found")
         rawGetter.patchRawAbBoundary()
@@ -102,9 +113,9 @@ val featureGateLabPatch = bytecodePatch(
         objectGetterWithoutDefault
             .cloneMutableAndPreserveParameters()
             .patchSettingsManagerObjectBoundary(
-            hasDefault = false,
-            isStatic = true,
-        )
+                hasDefault = false,
+                isStatic = true,
+            )
 
         val objectGetterWithDefault = settingsManager.methods.singleOrNull {
             it.name == "LJIIIIZZ" &&
