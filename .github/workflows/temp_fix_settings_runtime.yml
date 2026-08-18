@@ -1,0 +1,62 @@
+name: Temporary settings runtime fix
+
+on:
+  push:
+    branches:
+      - agent/fix-46.4.3-settings-crash
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: agent/fix-46.4.3-settings-crash
+          fetch-depth: 0
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Remove stale 46.2.3 runtime icon injection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt')
+          s = p.read_text()
+          old = '''        OpenDebugCellVmDefaultStateFingerprint.methodOrNull?.apply {
+            val returnIndex = indexOfFirstInstructionOrThrow(Opcode.RETURN_OBJECT)
+            val stateRegister = getInstruction<OneRegisterInstruction>(returnIndex).registerA
+            addInstructions(
+                returnIndex,
+                """
+                    new-instance v0, LX/08EY;
+                    const v1, 0x7f010088
+                    invoke-direct {v0, v1}, LX/08EY;-><init>(I)V
+                    iput-object v0, v$stateRegister, LX/0HQM;->LLILLL:LX/08EY;
+                    iput-object v0, v$stateRegister, LX/0HQM;->LLILZLL:LX/08EY;
+                """,
+            )
+        }
+
+'''
+          if old not in s:
+              raise SystemExit('stale runtime icon block not found')
+          p.write_text(s.replace(old, '', 1))
+          PY
+      - name: Build patches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList --no-daemon
+      - name: Commit fix and remove temporary workflow
+        shell: bash
+        run: |
+          rm .github/workflows/temp_fix_settings_runtime.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt patches-list.json .github/workflows/temp_fix_settings_runtime.yml
+          git commit -m 'fix(tiktok): avoid stale settings runtime injection'
+          git push origin HEAD:agent/fix-46.4.3-settings-crash
