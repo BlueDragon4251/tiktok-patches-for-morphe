@@ -61,7 +61,8 @@ val hideCaptchaPopupsPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    // Intentionally not advertised for 46.4.3: suppressing verification UI is not part of this port.
+    compatibleWith(*AppCompatibilities.tiktokCaptchaLegacy())
 
     execute {
         SettingsStatusLoadFingerprint.method.addInstruction(
