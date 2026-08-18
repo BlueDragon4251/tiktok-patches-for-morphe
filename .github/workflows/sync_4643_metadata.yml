@@ -1,0 +1,39 @@
+name: Sync TikTok 46.4.3 metadata
+
+on:
+  push:
+    branches:
+      - agent/tiktok-46.4.3-port
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: agent/tiktok-46.4.3-port
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Regenerate Morphe patch metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:generatePatchesList --no-daemon
+      - name: Commit generated metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- patches-list.json; then
+            echo 'patches-list.json already current'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add patches-list.json
+          git commit -m 'chore: regenerate patch metadata for TikTok 46.4.3'
+          git push origin HEAD:agent/tiktok-46.4.3-port
