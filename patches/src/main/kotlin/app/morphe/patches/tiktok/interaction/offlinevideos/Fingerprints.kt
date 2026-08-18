@@ -23,7 +23,7 @@ internal object OfflineModeListConstructorFingerprint : Fingerprint(
 internal object OfflineModeOptionConfigFingerprint : Fingerprint(
     returnType = "V",
     custom = { method, classDef ->
-        classDef.type == "LX/0sIr;" &&
+        classDef.type == "LX/0itW;" &&
             method.name == "<clinit>" &&
             method.parameterTypes.isEmpty()
     },
