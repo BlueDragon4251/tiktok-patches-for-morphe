@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/tiktok-46.4.3-port
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -31,7 +34,6 @@ jobs:
           python - <<'PY'
           import hashlib
           import html
-          import os
           import requests
           from bs4 import BeautifulSoup
 
