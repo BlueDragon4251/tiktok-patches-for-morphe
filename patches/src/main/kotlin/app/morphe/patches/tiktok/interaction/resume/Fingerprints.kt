@@ -25,21 +25,3 @@ internal object FeedProgressContinueGateFingerprint : Fingerprint(
             } == true
     },
 )
-
-internal object FeedPlayCompletedFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;"),
-    custom = { method, classDef ->
-        classDef.type == "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;" &&
-            method.name == "onPlayCompleted"
-    },
-)
-
-internal object FeedPlayProgressFingerprint : Fingerprint(
-    returnType = "V",
-    parameters = listOf("Ljava/lang/String;", "J", "J"),
-    custom = { method, classDef ->
-        classDef.type == "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;" &&
-            method.name == "onPlayProgressChange"
-    },
-)

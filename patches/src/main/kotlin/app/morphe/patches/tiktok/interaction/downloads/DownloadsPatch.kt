@@ -37,7 +37,7 @@ val downloadsPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         SettingsStatusLoadFingerprint.method.addInstruction(

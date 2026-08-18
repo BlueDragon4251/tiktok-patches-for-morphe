@@ -73,7 +73,7 @@ val featureGateLabPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(settingsPatch)
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         // TikTok renames the App-AB implementation and its methods between

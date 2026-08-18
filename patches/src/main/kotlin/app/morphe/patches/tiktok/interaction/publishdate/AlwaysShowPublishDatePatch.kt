@@ -1,7 +1,7 @@
 /*
  * Thanks to lyyako for the original implementation and help with this patch.
  *
- * Originally adapted for TikTok 43.8.3; ported to TikTok 46.2.3:
+ * Originally adapted for TikTok 43.8.3; ported through TikTok 46.4.3:
  * https://github.com/icysymmetra/tiktok-patches-for-morphe
  */
 package app.morphe.patches.tiktok.interaction.publishdate
@@ -30,7 +30,7 @@ val alwaysShowPublishDatePatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         SettingsStatusLoadFingerprint.method.addInstruction(
