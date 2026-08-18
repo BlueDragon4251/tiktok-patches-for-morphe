@@ -37,9 +37,23 @@ internal object FollowFeedListGetItemsFingerprint : Fingerprint(
 
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
     definingClass = "/feed/assem/tikbot/TakoAssem;",
-    name = "bq",
     returnType = "V",
     parameters = listOf("Z"),
+    custom = { method, _ ->
+        val references = method.implementation?.instructions
+            ?.mapNotNull { it.getReference<MethodReference>() }
+            ?: emptyList()
+
+        references.any {
+            it.definingClass == "Lcom/bytedance/assem/arch/reused/ReusedUIAssem;" &&
+                it.name == "LJJIJLIJ" &&
+                it.returnType == "Landroid/view/View;"
+        } && references.any {
+            it.definingClass == "Landroid/view/View;" &&
+                it.name == "getVisibility" &&
+                it.returnType == "I"
+        }
+    },
 )
 
 internal object FollowFeedPresenterPostProcessFingerprint : Fingerprint(
