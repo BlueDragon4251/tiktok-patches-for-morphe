@@ -1,9 +1,10 @@
-name: Probe TikTok 46.4.3 App AB
+name: Probe TikTok 46.4.3 targets
 
 on:
   pull_request:
     branches:
       - dev
+      - main
 
 permissions:
   contents: read
@@ -11,7 +12,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -55,8 +56,29 @@ jobs:
                   chunk = r.read(1024 * 1024)
                   if not chunk: break
                   out.write(chunk); digest.update(chunk)
-          if digest.hexdigest() != EXPECTED: raise RuntimeError('APK SHA mismatch')
+          actual = digest.hexdigest()
+          print('APK_SHA256=', actual)
+          if actual != EXPECTED: raise RuntimeError('APK SHA mismatch')
 
+          apk = APK('tiktok.apk')
+          class_map = {}
+          dex_no = {}
+          for di, data in enumerate(apk.get_all_dex(), 1):
+              dex = DEX(data)
+              for cls in dex.get_classes():
+                  class_map[cls.get_name()] = cls
+                  dex_no[cls.get_name()] = di
+
+          def desc(method): return method.get_descriptor().replace(' ', '')
+          def insns(method): return list(method.get_instructions()) if method.get_code() else []
+          def dump_method(cls, method, limit=120):
+              print(f'METHOD {cls.get_name()}->{method.get_name()}{desc(method)} flags={method.get_access_flags_string()}')
+              seq = insns(method)
+              for i, instruction in enumerate(seq[:limit]):
+                  print(f'  {i:04d}: {instruction.get_name():28s} {instruction.get_output()}')
+              if len(seq) > limit: print(f'  ... {len(seq) - limit} more ...')
+
+          # App AB structural family.
           required = {
               '(ILjava/lang/String;ZZ)Z',
               '(DILjava/lang/String;Z)D',
@@ -67,20 +89,117 @@ jobs:
               '(Ljava/lang/String;Z)Ljava/lang/Object;',
           }
           found = []
-          apk = APK('tiktok.apk')
-          for dex_no, data in enumerate(apk.get_all_dex(), 1):
-              dex = DEX(data)
-              for cls in dex.get_classes():
-                  methods = list(cls.get_methods())
-                  descriptors = {m.get_descriptor().replace(' ', '') for m in methods}
-                  if required.issubset(descriptors):
-                      found.append(cls.get_name())
-                      print(f'APP_AB_CLASS={cls.get_name()} dex={dex_no}')
-                      for m in methods:
-                          descriptor = m.get_descriptor().replace(' ', '')
-                          if descriptor in required:
-                              print(f'  {m.get_name()}{descriptor}')
+          print('\n===== APP AB =====')
+          for name, cls in class_map.items():
+              methods = list(cls.get_methods())
+              descriptors = {desc(m) for m in methods}
+              if required.issubset(descriptors):
+                  found.append(name)
+                  print(f'APP_AB_CLASS={name} dex={dex_no[name]}')
+                  for method in methods:
+                      if desc(method) in required:
+                          print(f'  {method.get_name()}{desc(method)}')
           print('APP_AB_MATCH_COUNT=', len(found))
-          if len(found) != 1:
-              raise SystemExit(f'Expected exactly one App AB class, found {found}')
+
+          # Feed filter / Tako button visibility.
+          print('\n===== TAKO ASSEM =====')
+          for name in sorted(n for n in class_map if n.endswith('/feed/assem/tikbot/TakoAssem;')):
+              cls = class_map[name]
+              print('TAKO_CLASS=', name, 'dex=', dex_no[name])
+              for method in cls.get_methods():
+                  if desc(method) == '(Z)V' or method.get_name() == 'onViewCreated':
+                      dump_method(cls, method, 80)
+
+          # Navigation tab providers.
+          print('\n===== TAB ABILITY ASSEM =====')
+          for name in sorted(n for n in class_map if n.endswith('/TabAbilityAssem;')):
+              cls = class_map[name]
+              print('TAB_CLASS=', name, 'dex=', dex_no[name])
+              for method in cls.get_methods():
+                  if desc(method) == '()Ljava/util/List;':
+                      dump_method(cls, method, 100)
+
+          # CAPTCHA callback descriptor changes.
+          print('\n===== CAPTCHA =====')
+          callback_types = set()
+          for name in sorted(n for n in class_map if n.endswith('/sec/SecApiImpl;')):
+              cls = class_map[name]
+              print('SEC_CLASS=', name, 'dex=', dex_no[name])
+              for method in cls.get_methods():
+                  if method.get_name() in {'popCaptchaV2', 'popCaptcha'}:
+                      dump_method(cls, method, 100)
+                      d = desc(method)
+                      start = 0
+                      while True:
+                          pos = d.find('LX/', start)
+                          if pos < 0: break
+                          end = d.find(';', pos)
+                          if end < 0: break
+                          callback_types.add(d[pos:end + 1]); start = end + 1
+          risk = class_map.get('Lcom/tts/oecverify/verify/RiskControlService;')
+          if risk:
+              for method in risk.get_methods():
+                  if method.get_name() == 'execute': dump_method(risk, method, 80)
+          for name in sorted(n for n in class_map if n.endswith('/live/livehostimpl/LiveHostUser;')):
+              cls = class_map[name]
+              for method in cls.get_methods():
+                  if method.get_name() == 'popCaptchaV2':
+                      dump_method(cls, method, 80)
+                      d = desc(method); start = 0
+                      while True:
+                          pos = d.find('LX/', start)
+                          if pos < 0: break
+                          end = d.find(';', pos)
+                          if end < 0: break
+                          callback_types.add(d[pos:end + 1]); start = end + 1
+          for callback in sorted(callback_types):
+              cls = class_map.get(callback)
+              if not cls: continue
+              print('CALLBACK_CLASS=', callback, 'dex=', dex_no[callback])
+              for method in cls.get_methods():
+                  print(' ', method.get_name() + desc(method), method.get_access_flags_string())
+
+          # Downloads sticker binder/source.
+          print('\n===== STICKER DOWNLOAD =====')
+          for old in ('LX/0ULN;', 'LX/0UL9;', 'LX/16zb;'):
+              cls = class_map.get(old)
+              print('OLD_STICKER_CLASS=', old, 'exists=', cls is not None, 'dex=', dex_no.get(old))
+              if cls:
+                  for method in cls.get_methods(): print(' ', method.get_name() + desc(method))
+          for name, cls in class_map.items():
+              for method in cls.get_methods():
+                  d = desc(method)
+                  if not method.get_code() or not d.endswith(')V'): continue
+                  seq = insns(method); outputs = [i.get_output() for i in seq]
+                  if ('Ljava/lang/String;' in d and 'Ljava/util/Map;' in d and 'Z' in d and
+                      any('Lcom/ss/android/ugc/aweme/base/model/UrlModel;' in out for out in outputs)):
+                      print('BINDER_CANDIDATE=', name, method.get_name() + d, 'dex=', dex_no[name])
+                      for i, instruction in enumerate(seq):
+                          out = instruction.get_output()
+                          if instruction.get_name().startswith(('invoke','iget','sget')) or 'UrlModel;' in out:
+                              print(f'  {i:04d}: {instruction.get_name():28s} {out}')
+                  if ('Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;' in d and
+                      'Landroid/view/View;' in d and d.count('Lkotlin/jvm/functions/Function0;') >= 3):
+                      print('SOURCE_CANDIDATE=', name, method.get_name() + d, 'dex=', dex_no[name])
+                      for i, instruction in enumerate(seq):
+                          if instruction.get_name().startswith('invoke'):
+                              print(f'  {i:04d}: {instruction.get_name():28s} {instruction.get_output()}')
+
+          # Resume gate lambda.
+          print('\n===== RESUME =====')
+          old = class_map.get('LX/0Lyr;')
+          print('OLD_RESUME_CLASS_EXISTS=', old is not None)
+          if old:
+              for method in old.get_methods(): print(' ', method.get_name() + desc(method))
+          candidates = []
+          for name, cls in class_map.items():
+              for method in cls.get_methods():
+                  if method.get_name() != 'invoke' or desc(method) != '()Ljava/lang/Object;' or not method.get_code(): continue
+                  seq = insns(method); outputs = [i.get_output() for i in seq]
+                  if any('LX/0Lze;' in out or 'LX/0LxV;' in out for out in outputs):
+                      candidates.append((name, cls, method))
+          print('RESUME_CANDIDATE_COUNT=', len(candidates))
+          for name, cls, method in candidates:
+              print('RESUME_CANDIDATE=', name, 'dex=', dex_no[name])
+              dump_method(cls, method, 100)
           PY
