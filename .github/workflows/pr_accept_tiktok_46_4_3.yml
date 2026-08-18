@@ -116,6 +116,10 @@ jobs:
             echo 'Morphe selected zero default patches; treating this as an acceptance failure.' >&2
             code=97
           fi
+          if grep -q '^WARNING: Skipping ".*": incompatible with com.zhiliaoapp.musically 46.4.3' morphe.log; then
+            echo 'A public patch was skipped as incompatible with TikTok 46.4.3.' >&2
+            code=96
+          fi
 
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
@@ -140,6 +144,10 @@ jobs:
             echo 'Morphe selected zero patches for full-catalog run; treating this as an acceptance failure.' >&2
             code=97
           fi
+          if grep -q '^WARNING: Skipping ".*": incompatible with com.zhiliaoapp.musically 46.4.3' morphe-full.log; then
+            echo 'A public patch was skipped as incompatible with TikTok 46.4.3.' >&2
+            code=96
+          fi
           if ! grep -q '^INFO: Applied: Diagnostic tools' morphe-full.log; then
             echo 'Diagnostic tools was not applied in the full-catalog run.' >&2
             code=98
@@ -148,7 +156,7 @@ jobs:
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
-      - name: Validate result JSON
+      - name: Validate complete 46.4.3 catalog
         id: result
         if: always()
         shell: bash
@@ -159,23 +167,50 @@ jobs:
           import sys
           from pathlib import Path
 
+          package = "com.zhiliaoapp.musically"
+          version = "46.4.3"
           failures = []
-          for label, filename in (
-              ("defaults", "morphe-result.json"),
-              ("full catalog", "morphe-full-result.json"),
+
+          metadata_path = Path("patches-list.json")
+          if not metadata_path.exists():
+              failures.append("patches-list.json was not generated")
+              metadata = {"patches": []}
+          else:
+              metadata = json.loads(metadata_path.read_text())
+
+          compatible = {}
+          for patch in metadata.get("patches") or []:
+              versions = (patch.get("compatiblePackages") or {}).get(package) or []
+              if version in versions:
+                  compatible[patch.get("name")] = bool(patch.get("use"))
+
+          expected_defaults = {name for name, use in compatible.items() if use}
+          expected_full = set(compatible)
+          print("Expected default patches:", sorted(expected_defaults))
+          print("Expected full catalog:", sorted(expected_full))
+
+          for label, filename, expected in (
+              ("defaults", "morphe-result.json", expected_defaults),
+              ("full catalog", "morphe-full-result.json", expected_full),
           ):
               path = Path(filename)
               if not path.exists():
                   failures.append(f"{label}: {filename} was not produced")
                   continue
               data = json.loads(path.read_text())
-              applied = data.get("appliedPatches") or []
+              applied = {item.get("name") for item in (data.get("appliedPatches") or [])}
               failed = data.get("failedPatches") or []
-              print(f"{label}: applied={len(applied)} failed={len(failed)}")
-              if not applied:
-                  failures.append(f"{label}: no patches were applied")
+              missing = sorted(expected - applied)
+              unexpected = sorted(applied - expected)
+              print(f"{label}: applied={len(applied)} expected={len(expected)} failed={len(failed)}")
               if failed:
                   failures.append(f"{label}: failed patches: {failed}")
+              if missing:
+                  failures.append(f"{label}: compatible patches not applied: {missing}")
+              if unexpected:
+                  failures.append(f"{label}: unexpected applied patches: {unexpected}")
+              if not expected:
+                  failures.append(f"{label}: generated metadata selected no 46.4.3 patches")
 
           if failures:
               for failure in failures:
@@ -190,12 +225,12 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo '=== DEFAULT PATCH FAILURES ==='
-          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe.log || true
+          echo '=== DEFAULT PATCH FAILURES / SKIPS ==='
+          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction|WARNING: Skipping' morphe.log || true
           echo '=== DEFAULT APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe.log || true
-          echo '=== FULL-CATALOG PATCH FAILURES ==='
-          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe-full.log || true
+          echo '=== FULL-CATALOG PATCH FAILURES / SKIPS ==='
+          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction|WARNING: Skipping' morphe-full.log || true
           echo '=== FULL-CATALOG APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe-full.log || true
           echo '=== DEFAULT RESULT JSON ==='
@@ -213,6 +248,7 @@ jobs:
             morphe-result.json
             morphe-full.log
             morphe-full-result.json
+            patches-list.json
           if-no-files-found: warn
           retention-days: 1
 
