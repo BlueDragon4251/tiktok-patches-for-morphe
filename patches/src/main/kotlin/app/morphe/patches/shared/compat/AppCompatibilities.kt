@@ -237,4 +237,13 @@ internal object AppCompatibilities {
         ),
     )
 
+    /** Legacy target retained only for patches intentionally not supported on 46.4.3. */
+    fun tiktokCaptchaLegacy(): Array<Compatibility> = arrayOf(
+        Compatibility(
+            name = "TikTok",
+            packageName = "com.zhiliaoapp.musically",
+            appIconColor = TIKTOK_COLOR,
+            targets = listOf(AppTarget("46.2.3")),
+        ),
+    )
 }
