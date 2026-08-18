@@ -6,7 +6,7 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-GPLv3-blue.svg" /></a>
   <a href="https://github.com/MorpheApp/morphe-cli"><img alt="source" src="https://img.shields.io/badge/source-Morphe-00b894.svg" /></a>
   <a href="https://www.android.com/"><img alt="platform" src="https://img.shields.io/badge/platform-Android-3ddc84.svg" /></a>
-  <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/"><img alt="TikTok 46.2.3" src="https://img.shields.io/badge/TikTok-46.2.3-ff0050.svg" /></a>
+  <a href="https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-4-3-release/tiktok-46-4-3-android-apk-download/"><img alt="TikTok 46.4.3" src="https://img.shields.io/badge/TikTok-46.4.3-ff0050.svg" /></a>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 **This repository is a Morphe patch source for TikTok.**
 
-**It continues the work from earlier community TikTok patch sets, including ReVanced, with the patches adapted for Morphe and tested against newer TikTok builds. The current target is the global TikTok package, `com.zhiliaoapp.musically`, on [TikTok `46.2.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/).**
+**It continues the work from earlier community TikTok patch sets, including ReVanced, with the patches adapted for Morphe and tested against newer TikTok builds. The current target is the global TikTok package, `com.zhiliaoapp.musically`, on [TikTok `46.4.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-4-3-release/tiktok-46-4-3-android-apk-download/).**
 
 The goal is to keep the existing patch set usable while adding more TikTok-focused features over time. Some features are small fixes, some are quality-of-life changes, and some need deeper testing because TikTok changes its internals often.
 
@@ -71,26 +71,26 @@ The goal is to keep the existing patch set usable while adding more TikTok-focus
 
 Open this link on the Android device where Morphe is installed:
 
-[Add Metra TikTok Patches](https://morphe.software/add-source?github=icysymmetra/tiktok-patches-for-morphe)
+[Add BlueDragon4251 TikTok Patches](https://morphe.software/add-source?github=BlueDragon4251/tiktok-patches-for-morphe)
 
 You can also copy this repository URL and paste it into Morphe's add source field:
 
-[https://github.com/icysymmetra/tiktok-patches-for-morphe](https://github.com/icysymmetra/tiktok-patches-for-morphe)
+[https://github.com/BlueDragon4251/tiktok-patches-for-morphe](https://github.com/BlueDragon4251/tiktok-patches-for-morphe)
 
 <br>
 
-## Planned Work
+## Compatibility Status
 
-### In Progress
-
-- [~] Finish runtime verification of the TikTok 46.2.3 compatibility port.
+- [x] Ported the TikTok-specific bytecode hooks to TikTok 46.4.3.
+- [x] Verified the global `com.zhiliaoapp.musically` 46.4.3 APK against the Morphe patch bundle.
+- [x] Fixed the changed offline-video configuration/enum hooks and the long-press quick-share fingerprint.
 
 <br>
 
 ## Supported Target
 
 - App: TikTok
-- Version: [`46.2.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-2-3-release/tiktok-46-2-3-android-apk-download/)
+- Version: [`46.4.3`](https://www.apkmirror.com/apk/tiktok-pte-ltd/tik-tok-including-musical-ly/tiktok-46-4-3-release/tiktok-46-4-3-android-apk-download/)
 - Package: `com.zhiliaoapp.musically`
 
 Only the global package is declared in Morphe compatibility metadata. The JP package may share some internals, but it is not advertised as supported unless it gets its own proof pass again.
@@ -122,6 +122,7 @@ Morphe reads `patches-bundle.json` from this repository, downloads the `.mpp` re
 
 ## Credits
 
+- Original project and continued Morphe port work: [@icysymmetra](https://github.com/icysymmetra).
 - Thanks to [@lyyako](https://github.com/lyyako) for the original contributions behind the simplified sanitize sharing links hook, show seekbar patch, anti-recording patch, `Open external links directly`, and `Always show publish date`.
 
 ## Notes
