@@ -12,7 +12,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -61,13 +61,11 @@ jobs:
           if actual != EXPECTED: raise RuntimeError('APK SHA mismatch')
 
           apk = APK('tiktok.apk')
-          classes = []
           class_map = {}
           dex_no = {}
           for di, data in enumerate(apk.get_all_dex(), 1):
               dex = DEX(data)
               for cls in dex.get_classes():
-                  classes.append(cls)
                   class_map[cls.get_name()] = cls
                   dex_no[cls.get_name()] = di
 
@@ -75,7 +73,7 @@ jobs:
               try: return method.get_descriptor().replace(' ', '')
               except Exception: return str(method.get_descriptor())
 
-          def dump_method(owner, method, limit=220):
+          def dump_method(owner, method, limit=260):
               print(f'\nMETHOD dex={dex_no.get(owner)} {owner}->{method.get_name()}{desc(method)} flags={method.get_access_flags_string()}')
               if not method.get_code(): return
               for i, ins in enumerate(method.get_instructions()):
@@ -83,44 +81,29 @@ jobs:
                       print('  ... truncated ...'); break
                   print(f'  {i:04d}: {ins.get_name():28s} {ins.get_output()}')
 
-          print('\n===== NAMED CAPTCHA CLASSES =====')
-          target_classes = []
-          for cls in classes:
-              name = cls.get_name()
-              low = name.lower()
-              if any(token in low for token in ('secapiimpl', 'riskcontrolservice', 'livehostuser', 'captcha')):
-                  target_classes.append(cls)
-                  print(f'CLASS dex={dex_no.get(name)} {name}')
-                  for method in cls.get_methods():
-                      print(f'  {method.get_name()}{desc(method)} flags={method.get_access_flags_string()}')
+          targets = []
+          tokens = ('secapiimpl', 'riskcontrolservice', 'livehostuser')
+          for name, cls in class_map.items():
+              if any(token in name.lower() for token in tokens):
+                  targets.append((name, cls))
 
-          print('\n===== METHODS WITH CAPTCHA/RISK STRINGS OR NAMES =====')
-          matched = []
-          needles = ('captcha', 'riskinfo', 'errorcode')
-          for cls in classes:
-              owner = cls.get_name()
+          print('TARGET_CLASS_COUNT=', len(targets))
+          callback_refs = set()
+          for owner, cls in sorted(targets):
+              print(f'\n===== CLASS dex={dex_no.get(owner)} {owner} =====')
               for method in cls.get_methods():
-                  hit = 'captcha' in method.get_name().lower()
-                  if method.get_code():
-                      for ins in method.get_instructions():
-                          out = ins.get_output().lower()
-                          if any(n in out for n in needles):
-                              hit = True
-                              break
-                  if hit:
-                      matched.append((owner, method))
-          print('MATCHED_METHOD_COUNT=', len(matched))
-          for owner, method in matched[:120]:
-              dump_method(owner, method)
+                  descriptor = desc(method)
+                  print(f'  {method.get_name()}{descriptor} flags={method.get_access_flags_string()}')
+                  if 'captcha' in method.get_name().lower() or (
+                      'riskcontrolservice' in owner.lower() and method.get_name() == 'execute'
+                  ):
+                      dump_method(owner, method)
+                      for ref in re.findall(r'L[^;]+;', descriptor):
+                          if ref.startswith('LX/'):
+                              callback_refs.add(ref)
 
-          print('\n===== CALLBACK-LIKE PARAMETER CLASSES =====')
-          refs = set()
-          for owner, method in matched:
-              descriptor = desc(method)
-              for ref in re.findall(r'L[^;]+;', descriptor):
-                  if ref.startswith('LX/'):
-                      refs.add(ref)
-          for ref in sorted(refs):
+          print('\n===== CALLBACK PARAMETER CLASSES =====')
+          for ref in sorted(callback_refs):
               cls = class_map.get(ref)
               if cls is None: continue
               print(f'CLASS dex={dex_no.get(ref)} {ref}')
