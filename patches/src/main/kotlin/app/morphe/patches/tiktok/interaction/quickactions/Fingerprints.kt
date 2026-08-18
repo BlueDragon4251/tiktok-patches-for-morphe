@@ -9,17 +9,15 @@ import app.morphe.patcher.Fingerprint
 internal object QuickCommentReactionGateFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf("I"),
-    custom = { method, classDef ->
-        classDef.type == "LX/0BIZ;" &&
-            method.name == "LIZ"
+    custom = { _, classDef ->
+        classDef.type == "LX/0BIZ;"
     },
 )
 
 internal object LongPressQuickShareGateFingerprint : Fingerprint(
     returnType = "I",
     parameters = emptyList(),
-    custom = { method, classDef ->
-        classDef.type == "LX/0BJV;" &&
-            method.name == "LIZ"
+    custom = { _, classDef ->
+        classDef.type == "LX/0BJV;"
     },
 )
