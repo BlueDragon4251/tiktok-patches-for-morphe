@@ -76,12 +76,13 @@ val customOfflineVideosLimitPatch = bytecodePatch(
         }
 
         OfflineModeOptionEnumFingerprint.method.apply {
+            val enumClass = definingClass
             val customEnumFieldWriteIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.SPUT_OBJECT &&
                     getReference<FieldReference>()?.let { field ->
-                        field.definingClass == "LX/0mE9;" &&
+                        field.definingClass == enumClass &&
                             field.name == "DOWNLOAD_200_VIDEOS" &&
-                            field.type == "LX/0mE9;"
+                            field.type == enumClass
                     } == true
             }
             val customEnumConstructorIndex = indexOfFirstInstructionReversedOrThrow(
@@ -89,7 +90,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             ) {
                 (opcode == Opcode.INVOKE_DIRECT || opcode == Opcode.INVOKE_DIRECT_RANGE) &&
                     getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "LX/0mE9;" &&
+                        reference.definingClass == enumClass &&
                             reference.name == "<init>" &&
                             reference.returnType == "V" &&
                             reference.parameterTypes.size == 5
