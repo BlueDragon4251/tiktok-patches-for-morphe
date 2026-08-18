@@ -120,13 +120,18 @@ val downloadsPatch = bytecodePatch(
         }
 
         // Preserve the full StickerItem behind TikTok's reduced preview model for media detection.
+        val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.method
         StickerPreviewSourceFingerprint.method.apply {
             val bindCallIndices = implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
                     instruction.getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == "LX/0ULN;" &&
-                            reference.name == "LIZ" &&
-                            reference.parameterTypes.firstOrNull() == "LX/0ULM;"
+                        reference.definingClass == stickerPreviewBinderMethod.definingClass &&
+                            reference.name == stickerPreviewBinderMethod.name &&
+                            reference.returnType == "V" &&
+                            reference.parameterTypes.size == 4 &&
+                            reference.parameterTypes[1] == "Z" &&
+                            reference.parameterTypes[2] == "Ljava/lang/String;" &&
+                            reference.parameterTypes[3] == "Ljava/util/Map;"
                     } == true
                 }
                 .map { it.index }
@@ -134,7 +139,7 @@ val downloadsPatch = bytecodePatch(
 
             if (bindCallIndices.isEmpty()) {
                 throw app.morphe.patcher.patch.PatchException(
-                    "Downloads: could not find 46.2.3 sticker preview bind calls.",
+                    "Downloads: could not find resolved sticker preview bind calls.",
                 )
             }
 
@@ -203,7 +208,7 @@ val downloadsPatch = bytecodePatch(
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
 
-                // Remove 'field load â†’ append â†’ "/Camera/" â†’ append' block.
+                // Remove 'field load → append → "/Camera/" → append' block.
                 removeInstructions(fieldIndex, 4)
 
                 addInstructions(
@@ -218,4 +223,3 @@ val downloadsPatch = bytecodePatch(
         }
     }
 }
-
