@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/fix-46.4.3-settings-crash
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -97,6 +100,7 @@ jobs:
         run: ./gradlew :patches:buildAndroid :patches:generatePatchesList --no-daemon
 
       - name: Commit audit and fixes
+        if: github.event_name == 'push'
         shell: bash
         run: |
           rm -f .github/workflows/temp_fix_settings_runtime.yml
