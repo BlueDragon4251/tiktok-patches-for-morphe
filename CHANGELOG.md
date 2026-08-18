@@ -1,3 +1,16 @@
+## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **tiktok:** remove stale 46.4.3 runtime references ([6584bd1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6584bd1f3928f68a41bedfa93703843019616a84))
+
+
+
+
+
+## 1.0.1
+
 # 1.0.0 (2026-08-18)
 
 
