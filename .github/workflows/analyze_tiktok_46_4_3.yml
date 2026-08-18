@@ -1,0 +1,153 @@
+name: Analyze TikTok 46.4.3 bytecode
+
+on:
+  push:
+    branches:
+      - agent/tiktok-46.4.3-port
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install analysis dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 androguard==4.1.3
+
+      - name: Download TikTok 46.4.3 from provided MediaFire link
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          import html
+          import os
+          import requests
+          from bs4 import BeautifulSoup
+
+          page_url = "https://www.mediafire.com/file/sd2x6vnmv1ocnv7/com.zhiliaoapp.musically_46.4.3-2024604030_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk/file"
+          headers = {
+              "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
+          }
+          page = requests.get(page_url, headers=headers, timeout=60)
+          page.raise_for_status()
+          soup = BeautifulSoup(page.text, "html.parser")
+          button = soup.find(id="downloadButton")
+          if button is None or not button.get("href"):
+              raise RuntimeError("MediaFire direct download link was not found")
+          download_url = html.unescape(button["href"])
+          if not download_url.startswith("https://"):
+              raise RuntimeError(f"Unexpected MediaFire download URL: {download_url!r}")
+
+          output = "tiktok-46.4.3.apk"
+          digest = hashlib.sha256()
+          size = 0
+          with requests.get(download_url, headers=headers, stream=True, timeout=(60, 180)) as response:
+              response.raise_for_status()
+              with open(output, "wb") as fh:
+                  for chunk in response.iter_content(chunk_size=1024 * 1024):
+                      if not chunk:
+                          continue
+                      fh.write(chunk)
+                      digest.update(chunk)
+                      size += len(chunk)
+          print(f"Downloaded bytes: {size}")
+          print(f"SHA-256: {digest.hexdigest()}")
+          if size < 100_000_000:
+              raise RuntimeError("Downloaded file is unexpectedly small; refusing to analyze it as the APK")
+          PY
+
+      - name: Inspect APK and relevant DEX classes
+        shell: bash
+        run: |
+          python - <<'PY' | tee tiktok-46.4.3-bytecode-report.txt
+          from androguard.core.apk import APK
+          from androguard.core.dex import DEX
+
+          path = "tiktok-46.4.3.apk"
+          apk = APK(path)
+          print("=== APK METADATA ===")
+          print("package:", apk.get_package())
+          print("versionName:", apk.get_androidversion_name())
+          print("versionCode:", apk.get_androidversion_code())
+          print()
+
+          wanted_exact = {"LX/0sIr;", "LX/0mE9;"}
+          wanted_suffixes = (
+              "/OfflineModeSheetPageAssem;",
+              "/OfflineModeListVM;",
+          )
+          hits = []
+          enum_hits = []
+
+          for dex_index, dex_bytes in enumerate(apk.get_all_dex(), start=1):
+              print(f"Scanning dex #{dex_index} ({len(dex_bytes)} bytes)")
+              dex = DEX(dex_bytes)
+              for cls in dex.get_classes():
+                  name = cls.get_name()
+                  fields = list(cls.get_fields())
+                  field_names = {field.get_name() for field in fields}
+                  interesting = name in wanted_exact or name.endswith(wanted_suffixes)
+                  if "DOWNLOAD_200_VIDEOS" in field_names:
+                      interesting = True
+                      enum_hits.append(name)
+                  if not interesting:
+                      continue
+
+                  hits.append(name)
+                  print("\n=== CLASS", name, "===")
+                  print("fields:")
+                  for field in fields:
+                      try:
+                          descriptor = field.get_descriptor()
+                      except Exception:
+                          descriptor = "?"
+                      print(f"  {field.get_name()} : {descriptor}")
+
+                  for method in cls.get_methods():
+                      if method.get_name() not in {"<clinit>", "<init>"}:
+                          continue
+                      print(f"\n-- METHOD {method.get_name()}{method.get_descriptor()} --")
+                      code = method.get_code()
+                      if code is None:
+                          print("  <no code>")
+                          continue
+                      for index, instruction in enumerate(method.get_instructions()):
+                          opname = instruction.get_name()
+                          output = instruction.get_output()
+                          if (
+                              opname.startswith("sput")
+                              or opname.startswith("invoke")
+                              or opname.startswith("move-result")
+                              or "DOWNLOAD_200_VIDEOS" in output
+                              or "java/util/List" in output
+                          ):
+                              print(f"  {index:04d}: {opname:28s} {output}")
+
+          print("\n=== SUMMARY ===")
+          print("interesting classes:", hits)
+          print("classes declaring DOWNLOAD_200_VIDEOS:", enum_hits)
+          if apk.get_package() != "com.zhiliaoapp.musically":
+              raise SystemExit("Unexpected package name")
+          if apk.get_androidversion_name() != "46.4.3":
+              raise SystemExit(f"Unexpected versionName: {apk.get_androidversion_name()}")
+          PY
+
+      - name: Upload text report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-46.4.3-bytecode-report
+          path: tiktok-46.4.3-bytecode-report.txt
+          if-no-files-found: warn
+          retention-days: 1
