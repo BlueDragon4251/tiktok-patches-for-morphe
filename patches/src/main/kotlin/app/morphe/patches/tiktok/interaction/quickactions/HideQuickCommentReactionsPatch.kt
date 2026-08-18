@@ -31,19 +31,23 @@ val hideQuickCommentReactionsPatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableHideCommentQuickReactions()V",
         )
 
-        QuickCommentReactionGateFingerprint.method.apply {
+        val legacyMethod = QuickCommentReactionGateLegacyFingerprint.methodOrNull
+        val gateMethod = legacyMethod ?: QuickCommentReactionGateBooleanFingerprint.method
+
+        gateMethod.apply {
             implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN }
                 .map { it.index }
                 .asReversed()
                 .forEach { returnIndex ->
-                    addInstructions(
-                        returnIndex,
-                        """
-                            invoke-static {v0, p0}, $FEATURE_CONTROLS_DESCRIPTOR->overrideHideQuickCommentEmoji(ZI)Z
-                            move-result v0
-                        """,
-                    )
+                    val instruction = if (legacyMethod != null) {
+                        "invoke-static {v0, p0}, $FEATURE_CONTROLS_DESCRIPTOR->overrideHideQuickCommentEmoji(ZI)Z\n" +
+                            "move-result v0"
+                    } else {
+                        "invoke-static {v0}, $FEATURE_CONTROLS_DESCRIPTOR->overrideHideQuickCommentEmoji(Z)Z\n" +
+                            "move-result v0"
+                    }
+                    addInstructions(returnIndex, instruction)
                 }
         }
     }
