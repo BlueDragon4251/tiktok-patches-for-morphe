@@ -113,3 +113,5 @@ jobs:
           fi
           git commit -m 'fix(tiktok): remove stale runtime references'
           git push origin HEAD:agent/fix-46.4.3-settings-crash
+
+# retrigger audit after interrupted assistant run
