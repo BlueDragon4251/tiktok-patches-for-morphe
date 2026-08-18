@@ -22,7 +22,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     description = "Adds a custom entry to TikTok's offline videos menu with a configurable limit of up to 500 videos.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         OfflineModeSheetOptionsFingerprint.method.apply {

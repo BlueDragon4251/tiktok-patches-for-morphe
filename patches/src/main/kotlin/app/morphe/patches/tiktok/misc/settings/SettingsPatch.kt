@@ -48,7 +48,7 @@ val settingsPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         addLegacySettingsEntryFallback()
@@ -352,21 +352,6 @@ val settingsPatch = bytecodePatch(
         val titleStringRegister = compose.getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
 
         composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"Metra patches\"")
-
-        OpenDebugCellVmDefaultStateFingerprint.methodOrNull?.apply {
-            val returnIndex = indexOfFirstInstructionOrThrow(Opcode.RETURN_OBJECT)
-            val stateRegister = getInstruction<OneRegisterInstruction>(returnIndex).registerA
-            addInstructions(
-                returnIndex,
-                """
-                    new-instance v0, LX/08EY;
-                    const v1, 0x7f010088
-                    invoke-direct {v0, v1}, LX/08EY;-><init>(I)V
-                    iput-object v0, v$stateRegister, LX/0HQM;->LLILLL:LX/08EY;
-                    iput-object v0, v$stateRegister, LX/0HQM;->LLILZLL:LX/08EY;
-                """,
-            )
-        }
 
         val clickWrapperMethod = resolveClickWrapperMethod()
         val openDebugClickWrapperClass = clickWrapperMethod.definingClass

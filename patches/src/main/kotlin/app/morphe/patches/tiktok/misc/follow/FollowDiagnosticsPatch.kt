@@ -34,12 +34,12 @@ private data class FollowCallPatch(
 @Suppress("unused")
 private val followDiagnosticsPatch = bytecodePatch(
     name = "Follow diagnostics",
-    description = "Adds debug-only logs around TikTok follow requests to help diagnose follow actions that do not persist. Supports TikTok 46.2.3.",
+    description = "Adds debug-only logs around TikTok follow requests to help diagnose follow actions that do not persist. Supports TikTok 46.4.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4623())
+    compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
         val patchesByMethod = linkedMapOf<Method, ArrayDeque<FollowCallPatch>>()

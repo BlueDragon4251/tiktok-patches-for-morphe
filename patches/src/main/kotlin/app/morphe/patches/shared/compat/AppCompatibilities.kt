@@ -228,22 +228,12 @@ internal object AppCompatibilities {
     )
 
     /** Target: TikTok 46.4.3 global package. */
-    fun tiktok4623(): Array<Compatibility> = arrayOf(
+    fun tiktok4643(): Array<Compatibility> = arrayOf(
         Compatibility(
             name = "TikTok",
             packageName = "com.zhiliaoapp.musically",
             appIconColor = TIKTOK_COLOR,
             targets = listOf(AppTarget("46.4.3")),
-        ),
-    )
-
-    /** Legacy target retained only for patches intentionally not supported on 46.4.3. */
-    fun tiktokCaptchaLegacy(): Array<Compatibility> = arrayOf(
-        Compatibility(
-            name = "TikTok",
-            packageName = "com.zhiliaoapp.musically",
-            appIconColor = TIKTOK_COLOR,
-            targets = listOf(AppTarget("46.2.3")),
         ),
     )
 }
