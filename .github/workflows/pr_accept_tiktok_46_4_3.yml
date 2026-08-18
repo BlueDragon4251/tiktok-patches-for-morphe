@@ -30,10 +30,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          MPP="$(find patches/build/libs -maxdepth 1 -type f -name '*.mpp' ! -name '*-sources.mpp' | sort | head -n 1)"
+          MPP="$(find patches/build/libs -maxdepth 1 -type f -name '*.mpp' ! -name '*-sources.mpp' ! -name '*-javadoc.mpp' | sort | head -n 1)"
           test -n "$MPP"
           case "$MPP" in
-            *-sources.mpp) echo "Refusing source MPP: $MPP" >&2; exit 1 ;;
+            *-sources.mpp|*-javadoc.mpp) echo "Refusing non-runtime MPP: $MPP" >&2; exit 1 ;;
           esac
           echo "Using runtime bundle: $MPP"
           echo "MPP=$MPP" >> "$GITHUB_ENV"
