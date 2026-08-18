@@ -5,6 +5,10 @@ on:
   pull_request:
     branches:
       - dev
+      - main
+
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -13,6 +17,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -20,10 +27,71 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Fix and audit 46.4.3 runtime sources
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          settings = Path('patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt')
+          s = settings.read_text()
+          pattern = re.compile(
+              r'\n\s*OpenDebugCellVmDefaultStateFingerprint\.methodOrNull\?\.apply \{.*?'
+              r'iput-object v0, v\$stateRegister, LX/0HQM;->LLILZLL:LX/08EY;\n'
+              r'\s*""",\n\s*\)\n\s*\}\n',
+              re.S,
+          )
+          s2, count = pattern.subn('\n', s, count=1)
+          if count != 1 and 'LX/08EY;' in s:
+              raise SystemExit('Could not safely remove stale Settings runtime block')
+          settings.write_text(s2)
+
+          roots = [Path('patches/src/main/kotlin/app/morphe/patches/tiktok'), Path('extensions/tiktok/src/main/java')]
+          for root in roots:
+              for p in root.rglob('*'):
+                  if p.suffix not in {'.kt', '.java'}:
+                      continue
+                  text = p.read_text()
+                  text = text.replace('AppCompatibilities.tiktok4623()', 'AppCompatibilities.tiktok4643()')
+                  text = text.replace('ported to TikTok 46.2.3', 'ported through TikTok 46.4.3')
+                  text = text.replace('Supports TikTok 46.2.3.', 'Supports TikTok 46.4.3.')
+                  p.write_text(text)
+
+          compat = Path('patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt')
+          text = compat.read_text().replace('fun tiktok4623()', 'fun tiktok4643()')
+          text = re.sub(
+              r'\n\s*/\*\* Legacy target retained only for patches intentionally not supported on 46\.4\.3\. \*/\n'
+              r'\s*fun tiktokCaptchaLegacy\(\): Array<Compatibility> = arrayOf\(\n'
+              r'.*?\n\s*\)\n',
+              '\n', text, flags=re.S,
+          )
+          compat.write_text(text)
+
+          forbidden = ['LX/08EY;', 'LX/0HQM;', 'LX/0Lze;', '0x7f010088', 'tiktok4623()']
+          failures = []
+          for p in [compat, *[p for r in roots for p in r.rglob('*') if p.suffix in {'.kt','.java'}]]:
+              text = p.read_text()
+              for token in forbidden:
+                  if token in text:
+                      failures.append(f'{p}: {token}')
+          if failures:
+              raise SystemExit('Known stale references remain:\n' + '\n'.join(failures))
+          PY
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add patches/src/main/kotlin/app/morphe/patches extensions/tiktok/src/main/java
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix(tiktok): remove remaining 46.2.3 runtime remnants'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
+
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v3
 
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid --no-daemon
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList --no-daemon
