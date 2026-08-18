@@ -3,11 +3,11 @@ group = "app.morphe"
 patches {
     about {
         name = "Metra TikTok Patches"
-        description = "Metra patches for TikTok 46.2.3, built for Morphe."
-        source = "https://github.com/icysymmetra/tiktok-patches-for-morphe"
+        description = "Metra patches for TikTok 46.4.3, built for Morphe."
+        source = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
         author = "icysymmetra"
         contact = "na"
-        website = "https://github.com/icysymmetra/tiktok-patches-for-morphe"
+        website = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
         license = "GNU General Public License v3.0, with additional GPL section 7 requirements"
     }
 }

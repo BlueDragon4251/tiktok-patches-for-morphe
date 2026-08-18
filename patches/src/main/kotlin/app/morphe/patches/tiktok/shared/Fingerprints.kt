@@ -20,9 +20,10 @@ internal object GetEnterFromFingerprint : Fingerprint(
 )
 
 internal object OnRenderFirstFrameFingerprint : Fingerprint(
-    definingClass = "/feed/controller/PlayerController;",
-    name = "onRenderFirstFrame",
     returnType = "V",
-    parameters = listOf("LX/0pb0;"),
+    custom = { method, classDef ->
+        classDef.type == "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;" &&
+            method.name == "onRenderFirstFrame" &&
+            method.parameterTypes.size == 1
+    },
 )
-

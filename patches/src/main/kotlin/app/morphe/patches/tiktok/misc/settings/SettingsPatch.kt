@@ -43,7 +43,7 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "Settings",
-    description = "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.",
+    description = "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.4.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)

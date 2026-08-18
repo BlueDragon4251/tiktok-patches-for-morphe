@@ -11,24 +11,24 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal object AclCommonShareFingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getCode",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getCode",
 )
 
 internal object AclCommonShare2Fingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getShowType",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getShowType",
 )
 
 internal object AclCommonShare3Fingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getTranscode",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getTranscode",
 )
 
 internal object DownloadUriFingerprint : Fingerprint(
@@ -62,44 +62,39 @@ internal object StickerPreviewBinderFingerprint : Fingerprint(
         "Ljava/lang/String;",
         "Ljava/util/Map;",
     ),
-    custom = { method, classDef ->
-        if (!classDef.endsWith("/0ULN;") || method.name != "LIZ") {
+    custom = { method, _ ->
+        val instructions = method.implementation?.instructions
+        if (instructions == null) {
             false
         } else {
-            val instructions = method.implementation?.instructions
-            if (instructions == null) {
-                false
-            } else {
-                var readsUrlModel = false
-                var bindsActionButton = false
-                var loadsStickerImage = false
+            var readsUrlModel = false
+            var ownsSmartImageView = false
+            var readsViewLayout = false
+            var resolvesViewIds = false
 
-                instructions.forEach { instruction ->
-                    instruction.getReference<FieldReference>()?.let { field ->
-                        if (field.type == "Lcom/ss/android/ugc/aweme/base/model/UrlModel;") {
-                            readsUrlModel = true
-                        }
-                    }
-
-                    instruction.getReference<MethodReference>()?.let { methodReference ->
-                        if (methodReference.definingClass == "LX/0ULN;" &&
-                            methodReference.name == "LIZIZ" &&
-                            methodReference.parameterTypes == listOf("LX/0GSy;", "LX/0ULU;") &&
-                            methodReference.returnType == "V"
-                        ) {
-                            bindsActionButton = true
-                        }
-
-                        if (methodReference.definingClass == "LX/16zb;" &&
-                            methodReference.name == "LIZJ"
-                        ) {
-                            loadsStickerImage = true
-                        }
+            instructions.forEach { instruction ->
+                instruction.getReference<FieldReference>()?.let { field ->
+                    when (field.type) {
+                        "Lcom/ss/android/ugc/aweme/base/model/UrlModel;" -> readsUrlModel = true
+                        "Lcom/bytedance/lighten/loader/SmartImageView;" -> ownsSmartImageView = true
                     }
                 }
 
-                readsUrlModel && bindsActionButton && loadsStickerImage
+                instruction.getReference<MethodReference>()?.let { reference ->
+                    if (reference.definingClass == "Landroid/view/View;" &&
+                        reference.name == "getLayoutParams"
+                    ) {
+                        readsViewLayout = true
+                    }
+                    if (reference.definingClass == "Landroid/view/View;" &&
+                        reference.name == "findViewById"
+                    ) {
+                        resolvesViewIds = true
+                    }
+                }
             }
+
+            readsUrlModel && ownsSmartImageView && readsViewLayout && resolvesViewIds
         }
     },
 )
@@ -117,22 +112,19 @@ internal object StickerPreviewSourceFingerprint : Fingerprint(
         "Lkotlin/jvm/functions/Function0;",
         "Lkotlin/jvm/functions/Function0;",
     ),
-    custom = { method, classDef ->
-        classDef.endsWith("/0UL9;") &&
-            method.name == "LJ" &&
-            method.implementation?.instructions?.any { instruction ->
-                instruction.getReference<MethodReference>()?.let { reference ->
-                    reference.definingClass == "LX/0ULN;" &&
-                        reference.name == "LIZ" &&
-                        reference.parameterTypes == listOf(
-                            "LX/0ULM;",
-                            "Z",
-                            "Ljava/lang/String;",
-                            "Ljava/util/Map;",
-                        ) &&
-                        reference.returnType == "V"
-                } == true
-            } == true
+    custom = { method, _ ->
+        val references = method.implementation?.instructions
+            ?.mapNotNull { it.getReference<MethodReference>() }
+            ?: emptyList()
+
+        references.any {
+            it.definingClass == "Lcom/ss/android/ugc/aweme/im/common/model/SetSticker;" &&
+                it.name == "getSetId" &&
+                it.returnType == "Ljava/lang/Long;"
+        } && references.any {
+            it.definingClass == "Lcom/ss/android/ugc/aweme/im/common/model/SetSticker;" &&
+                it.name == "getStaticUrl"
+        }
     },
 )
 
@@ -146,4 +138,3 @@ internal object DownloadSuccessCoroutineFingerprint : Fingerprint(
     ),
     custom = { method, _ -> method.name == "invokeSuspend" },
 )
-

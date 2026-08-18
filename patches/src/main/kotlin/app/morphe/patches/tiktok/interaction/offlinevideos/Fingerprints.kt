@@ -23,7 +23,7 @@ internal object OfflineModeListConstructorFingerprint : Fingerprint(
 internal object OfflineModeOptionConfigFingerprint : Fingerprint(
     returnType = "V",
     custom = { method, classDef ->
-        classDef.type == "LX/0sIr;" &&
+        classDef.type == "LX/0itW;" &&
             method.name == "<clinit>" &&
             method.parameterTypes.isEmpty()
     },
@@ -32,8 +32,11 @@ internal object OfflineModeOptionConfigFingerprint : Fingerprint(
 internal object OfflineModeOptionEnumFingerprint : Fingerprint(
     returnType = "V",
     custom = { method, classDef ->
-        classDef.type == "LX/0mE9;" &&
-            method.name == "<clinit>" &&
-            method.parameterTypes.isEmpty()
+        method.name == "<clinit>" &&
+            method.parameterTypes.isEmpty() &&
+            classDef.fields.any { field ->
+                field.name == "DOWNLOAD_200_VIDEOS" &&
+                    field.type == classDef.type
+            }
     },
 )

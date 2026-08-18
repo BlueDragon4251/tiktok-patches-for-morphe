@@ -32,14 +32,22 @@ val disableLongPressQuickSharePatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableDisableLongPressQuickShare()V",
         )
 
-        LongPressQuickShareGateFingerprint.method.apply {
+        val legacyMethod = LongPressQuickShareGateLegacyFingerprint.methodOrNull
+        val gateMethod = legacyMethod ?: LongPressQuickShareGateBooleanFingerprint.method
+
+        gateMethod.apply {
             val returnIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.RETURN
+            }
+            val descriptor = if (legacyMethod != null) {
+                "overrideLongPressQuickShare(I)I"
+            } else {
+                "overrideLongPressQuickShare(Z)Z"
             }
             addInstructions(
                 returnIndex,
                 """
-                    invoke-static {v0}, $FEATURE_CONTROLS_DESCRIPTOR->overrideLongPressQuickShare(I)I
+                    invoke-static {v0}, $FEATURE_CONTROLS_DESCRIPTOR->$descriptor
                     move-result v0
                 """,
             )
