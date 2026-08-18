@@ -48,11 +48,13 @@ val customOfflineVideosLimitPatch = bytecodePatch(
         }
 
         OfflineModeOptionConfigFingerprint.method.apply {
+            val configClass = definingClass
+
             fun postProcessOptionsField(fieldName: String) {
                 val fieldWriteIndex = indexOfFirstInstructionOrThrow {
                     opcode == Opcode.SPUT_OBJECT &&
                         getReference<FieldReference>()?.let { field ->
-                            field.definingClass == "LX/0sIr;" &&
+                            field.definingClass == configClass &&
                                 field.name == fieldName &&
                                 field.type == "Ljava/util/List;"
                         } == true
