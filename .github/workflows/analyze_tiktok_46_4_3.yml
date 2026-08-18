@@ -74,9 +74,16 @@ jobs:
 
       - name: Inspect APK and relevant DEX classes
         shell: bash
+        env:
+          LOGURU_LEVEL: ERROR
         run: |
           set -o pipefail
           python - <<'PY' 2>&1 | tee tiktok-46.4.3-bytecode-report.txt
+          import sys
+          from loguru import logger
+          logger.remove()
+          logger.add(sys.stderr, level="ERROR")
+
           from androguard.core.apk import APK
           from androguard.core.dex import DEX
 
@@ -88,7 +95,7 @@ jobs:
           print("versionCode:", apk.get_androidversion_code())
           print()
 
-          wanted_exact = {"LX/0sIr;", "LX/0mE9;"}
+          wanted_exact = {"LX/0sIr;", "LX/0mE9;", "LX/0itP;"}
           wanted_suffixes = (
               "/OfflineModeSheetPageAssem;",
               "/OfflineModeListVM;",
@@ -97,7 +104,6 @@ jobs:
           enum_hits = []
 
           for dex_index, dex_bytes in enumerate(apk.get_all_dex(), start=1):
-              print(f"Scanning dex #{dex_index} ({len(dex_bytes)} bytes)")
               dex = DEX(dex_bytes)
               for cls in dex.get_classes():
                   name = cls.get_name()
@@ -111,7 +117,16 @@ jobs:
                       continue
 
                   hits.append(name)
-                  print("\n=== CLASS", name, "===")
+                  print(f"=== CLASS {name} (dex {dex_index}) ===")
+                  try:
+                      print("super:", cls.get_superclassname())
+                  except Exception:
+                      pass
+                  try:
+                      print("interfaces:", list(cls.get_interfaces()))
+                  except Exception:
+                      pass
+
                   print("fields:")
                   for field in fields:
                       try:
@@ -120,10 +135,14 @@ jobs:
                           descriptor = "?"
                       print(f"  {field.get_name()} : {descriptor}")
 
+                  print("methods:")
+                  for method in cls.get_methods():
+                      print(f"  {method.get_name()}{method.get_descriptor()}")
+
                   for method in cls.get_methods():
                       if method.get_name() not in {"<clinit>", "<init>"}:
                           continue
-                      print(f"\n-- METHOD {method.get_name()}{method.get_descriptor()} --")
+                      print(f"-- BYTECODE {method.get_name()}{method.get_descriptor()} --")
                       code = method.get_code()
                       if code is None:
                           print("  <no code>")
@@ -135,12 +154,14 @@ jobs:
                               opname.startswith("sput")
                               or opname.startswith("invoke")
                               or opname.startswith("move-result")
+                              or opname.startswith("const")
                               or "DOWNLOAD_200_VIDEOS" in output
                               or "java/util/List" in output
                           ):
                               print(f"  {index:04d}: {opname:28s} {output}")
+                  print()
 
-          print("\n=== SUMMARY ===")
+          print("=== SUMMARY ===")
           print("interesting classes:", hits)
           print("classes declaring DOWNLOAD_200_VIDEOS:", enum_hits)
           if apk.get_package() != "com.zhiliaoapp.musically":
