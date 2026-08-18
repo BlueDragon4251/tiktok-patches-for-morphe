@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - dev
+      - main
 
 permissions:
   contents: read
@@ -107,7 +108,6 @@ jobs:
               for m in cls.get_methods():
                   d = desc(m)
                   if m.get_name() == '<init>' or not m.get_code(): continue
-                  # Binder-like: void, boolean + String + Map among parameters, reads UrlModel.
                   if d.endswith(')V') and 'ZLjava/lang/String;Ljava/util/Map;' in d:
                       insns = list(m.get_instructions())
                       outs = [ins.get_output() for ins in insns]
@@ -117,7 +117,6 @@ jobs:
                               out = ins.get_output()
                               if ins.get_name().startswith(('invoke','iget','sget','return')) or 'UrlModel' in out:
                                   print(f'  {i:04d}: {ins.get_name():28s} {out}')
-                  # Source-like: has StickerItem and View and three Function0 args.
                   if ('Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;' in d and
                       'Landroid/view/View;' in d and d.count('Lkotlin/jvm/functions/Function0;') >= 3):
                       print(f'SOURCE_CANDIDATE {name}->{m.get_name()}{d} dex={dex_no[name]}')
@@ -126,8 +125,6 @@ jobs:
                               print(f'  {i:04d}: {ins.get_name():28s} {ins.get_output()}')
 
           print('\n===== RESUME GATE CANDIDATES =====')
-          # Old gate was a zero-arg invoke() returning Object. Find such lambdas that touch the
-          # playback progress state holder or return Boolean.valueOf.
           for name, cls in class_map.items():
               for m in cls.get_methods():
                   if m.get_name() != 'invoke' or desc(m) != '()Ljava/lang/Object;' or not m.get_code():
