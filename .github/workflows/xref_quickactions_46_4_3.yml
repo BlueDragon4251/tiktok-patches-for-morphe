@@ -1,0 +1,117 @@
+name: Trace TikTok 46.4.3 quick actions
+
+on:
+  push:
+    branches:
+      - agent/tiktok-46.4.3-port
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 androguard==4.1.3
+      - name: Download exact TikTok 46.4.3 APK
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, html, requests
+          from bs4 import BeautifulSoup
+          page_url = "https://www.mediafire.com/file/sd2x6vnmv1ocnv7/com.zhiliaoapp.musically_46.4.3-2024604030_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk/file"
+          headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"}
+          page = requests.get(page_url, headers=headers, timeout=60)
+          page.raise_for_status()
+          button = BeautifulSoup(page.text, "html.parser").find(id="downloadButton")
+          if button is None or not button.get("href"):
+              raise RuntimeError("MediaFire download URL not found")
+          url = html.unescape(button["href"])
+          digest = hashlib.sha256()
+          with requests.get(url, headers=headers, stream=True, timeout=(60, 180)) as response:
+              response.raise_for_status()
+              with open("tiktok-46.4.3.apk", "wb") as fh:
+                  for chunk in response.iter_content(1024 * 1024):
+                      if chunk:
+                          fh.write(chunk)
+                          digest.update(chunk)
+          actual = digest.hexdigest()
+          expected = "79062fb88d2eef8d6e11bbf766b4b40ee08d89cdc594ff26b549ccce7b50c4b2"
+          print("SHA-256:", actual)
+          if actual != expected:
+              raise RuntimeError(f"SHA mismatch: {actual}")
+          PY
+      - name: Trace quick-action methods and fields
+        shell: bash
+        env:
+          LOGURU_LEVEL: ERROR
+        run: |
+          python - <<'PY' > quickactions-xrefs.txt
+          import sys
+          from loguru import logger
+          logger.remove()
+          logger.add(sys.stderr, level="ERROR")
+          from androguard.core.apk import APK
+          from androguard.core.dex import DEX
+
+          targets = (
+              "LX/0BIZ;->LIZ()Z",
+              "LX/0BJV;->LIZ()Z",
+              "LX/0BJV;->LIZIZ Z",
+          )
+          apk = APK("tiktok-46.4.3.apk")
+          total = 0
+          for dex_index, dex_bytes in enumerate(apk.get_all_dex(), start=1):
+              dex = DEX(dex_bytes)
+              for cls in dex.get_classes():
+                  class_name = cls.get_name()
+                  for method in cls.get_methods():
+                      code = method.get_code()
+                      if code is None:
+                          continue
+                      insns = list(method.get_instructions())
+                      matches = []
+                      for idx, insn in enumerate(insns):
+                          out = insn.get_output()
+                          if any(target in out for target in targets):
+                              matches.append(idx)
+                      if not matches:
+                          continue
+                      total += 1
+                      print(f"=== {class_name}->{method.get_name()}{method.get_descriptor()} dex={dex_index} ===")
+                      emitted = set()
+                      for match in matches:
+                          for idx in range(max(0, match - 12), min(len(insns), match + 13)):
+                              if idx in emitted:
+                                  continue
+                              emitted.add(idx)
+                              insn = insns[idx]
+                              marker = ">>" if idx == match else "  "
+                              print(f"{marker} {idx:04d}: {insn.get_name():30s} {insn.get_output()}")
+                      print()
+          print("TOTAL METHODS:", total)
+          PY
+          cat quickactions-xrefs.txt
+      - name: Post report to PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let text = fs.existsSync('quickactions-xrefs.txt') ? fs.readFileSync('quickactions-xrefs.txt', 'utf8') : 'No report produced.';
+            if (text.length > 60000) text = text.slice(0, 60000);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body: `### TikTok 46.4.3 quick-action xrefs\n\nCommit: \`${context.sha}\`\n\n\`\`\`text\n${text}\n\`\`\``
+            });
