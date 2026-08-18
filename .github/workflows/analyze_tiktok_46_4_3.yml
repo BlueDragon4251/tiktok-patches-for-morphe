@@ -1,0 +1,290 @@
+name: Analyze TikTok 46.4.3 bytecode
+
+on:
+  push:
+    branches:
+      - agent/tiktok-46.4.3-port
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install analysis dependencies
+        run: python -m pip install --disable-pip-version-check androguard==4.1.3 loguru
+
+      - name: Download exact TikTok 46.4.3 APK
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, html, urllib.request
+          from html.parser import HTMLParser
+
+          PAGE = "https://www.mediafire.com/file/sd2x6vnmv1ocnv7/com.zhiliaoapp.musically_46.4.3-2024604030_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk/file"
+          UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
+          EXPECTED = "79062fb88d2eef8d6e11bbf766b4b40ee08d89cdc594ff26b549ccce7b50c4b2"
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.url = None
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if tag == "a" and values.get("id") == "downloadButton":
+                      self.url = values.get("href")
+
+          request = urllib.request.Request(PAGE, headers={"User-Agent": UA})
+          with urllib.request.urlopen(request, timeout=60) as response:
+              page = response.read().decode("utf-8", errors="replace")
+          parser = Parser(); parser.feed(page)
+          if not parser.url:
+              raise RuntimeError("MediaFire download URL not found")
+
+          request = urllib.request.Request(html.unescape(parser.url), headers={"User-Agent": UA})
+          digest = hashlib.sha256(); size = 0
+          with urllib.request.urlopen(request, timeout=180) as response, open("tiktok-46.4.3.apk", "wb") as output:
+              while True:
+                  chunk = response.read(1024 * 1024)
+                  if not chunk:
+                      break
+                  output.write(chunk); digest.update(chunk); size += len(chunk)
+          actual = digest.hexdigest()
+          print("Downloaded bytes:", size)
+          print("SHA-256:", actual)
+          if actual != EXPECTED:
+              raise RuntimeError(f"SHA mismatch: {actual}")
+          PY
+
+      - name: Locate failed-patch targets
+        shell: bash
+        env:
+          LOGURU_LEVEL: ERROR
+        run: |
+          python - <<'PY' > tiktok-46.4.3-targeted-report.txt
+          import sys
+          from loguru import logger
+          logger.remove(); logger.add(sys.stderr, level="ERROR")
+          from androguard.core.apk import APK
+          from androguard.core.dex import DEX
+
+          APK_PATH = "tiktok-46.4.3.apk"
+          apk = APK(APK_PATH)
+          dexes = [(i, DEX(data)) for i, data in enumerate(apk.get_all_dex(), start=1)]
+
+          def desc(method):
+              return f"{method.get_name()}{method.get_descriptor()}"
+
+          def insns(method):
+              code = method.get_code()
+              return list(method.get_instructions()) if code is not None else []
+
+          def dump_method(method, context=None, max_lines=120):
+              seq = insns(method)
+              print(f"METHOD {desc(method)} flags={method.get_access_flags_string()}")
+              if not seq:
+                  return
+              indexes = range(len(seq)) if context is None else sorted(set(
+                  idx for center in context for idx in range(max(0, center - 8), min(len(seq), center + 9))
+              ))
+              for n, idx in enumerate(indexes):
+                  if n >= max_lines:
+                      print("  ... truncated ...")
+                      break
+                  op = seq[idx]
+                  print(f"  {idx:04d}: {op.get_name():30s} {op.get_output()}")
+
+          def class_by_suffix(suffix):
+              for dex_index, dex in dexes:
+                  for cls in dex.get_classes():
+                      if cls.get_name().endswith(suffix):
+                          yield dex_index, cls
+
+          print("=== APK ===")
+          print("package:", apk.get_package())
+          print("versionName:", apk.get_androidversion_name())
+          print("versionCode:", apk.get_androidversion_code())
+
+          # 1) Shared PlayerController callback used by Playback speed + Remember clear display.
+          print("\n=== PLAYER CONTROLLER / onRenderFirstFrame ===")
+          for dex_index, cls in class_by_suffix("/feed/controller/PlayerController;"):
+              print("CLASS", cls.get_name(), "dex", dex_index)
+              for method in cls.get_methods():
+                  if method.get_name() == "onRenderFirstFrame":
+                      dump_method(method, max_lines=30)
+
+          # 2) App AB typed getter family used by non-personalized search, seekbar thumbnail and Feature Gate Lab.
+          print("\n=== APP AB FAMILY CANDIDATES ===")
+          required = [
+              ("Z", ("I", "Ljava/lang/String;", "Z", "Z")),
+              ("D", ("D", "I", "Ljava/lang/String;", "Z")),
+              ("F", ("I", "Ljava/lang/String;", "Z", "F")),
+              ("I", ("I", "I", "Ljava/lang/String;", "Z")),
+              ("J", ("I", "J", "Ljava/lang/String;", "Z")),
+              ("Ljava/lang/String;", ("I", "Ljava/lang/String;", "Ljava/lang/String;", "Z")),
+              ("Ljava/lang/Object;", ("Ljava/lang/String;", "Z")),
+          ]
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  methods = list(cls.get_methods())
+                  score = 0
+                  matched = []
+                  for return_type, params in required:
+                      hits = [m for m in methods if m.get_return_type() == return_type and tuple(m.get_information().get('params', [])) == params]
+                      # get_information params formatting differs across androguard builds; fall back to descriptor parsing below.
+                      if not hits:
+                          hits = [m for m in methods if m.get_descriptor().endswith(return_type) and all(p in m.get_descriptor() for p in params)]
+                      if hits:
+                          score += 1
+                          matched.extend(hits)
+                  # Exact parameter access using encoded_method API where available.
+                  if score < 4:
+                      matched = []
+                      score = 0
+                      for return_type, params in required:
+                          hits = []
+                          for m in methods:
+                              try:
+                                  mparams = tuple(x for x in m.get_descriptor()[1:m.get_descriptor().index(')')].replace('Ljava/lang/String;', 'S').split() if x)
+                              except Exception:
+                                  mparams = ()
+                              # Prefer textual descriptor test; signatures are distinctive enough for candidate scoring.
+                              descriptor = m.get_descriptor()
+                              expected_parts = list(params)
+                              if m.get_return_type() == return_type and all(part in descriptor for part in expected_parts):
+                                  hits.append(m)
+                          if hits:
+                              score += 1; matched.extend(hits)
+                  if score >= 4:
+                      print(f"CLASS {cls.get_name()} dex={dex_index} score={score}/7")
+                      seen = set()
+                      for m in matched:
+                          key = desc(m)
+                          if key in seen: continue
+                          seen.add(key); print(" ", key)
+                      # Always print every method whose descriptor contains String and one of primitive return types.
+                      for m in methods:
+                          if "Ljava/lang/String;" in m.get_descriptor() and m.get_return_type() in {"Z","D","F","I","J","Ljava/lang/String;","Ljava/lang/Object;"}:
+                              print("  CAND", desc(m))
+
+          # Also dump old App AB class if it still exists, to prove semantic drift.
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  if cls.get_name() == "LX/0BYX;":
+                      print("OLD-DESCRIPTOR CLASS LX/0BYX; dex", dex_index)
+                      for m in cls.get_methods():
+                          print(" ", desc(m))
+
+          # 3) Quick action gates: dump current descriptors and every callsite to them.
+          print("\n=== QUICK ACTION CLASSES AND XREFS ===")
+          quick_targets = ("LX/0BIZ;", "LX/0BJV;")
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  if cls.get_name() in quick_targets:
+                      print("CLASS", cls.get_name(), "dex", dex_index)
+                      for m in cls.get_methods(): dump_method(m, max_lines=40)
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  for m in cls.get_methods():
+                      seq = insns(m)
+                      hits = [i for i, op in enumerate(seq) if any(target in op.get_output() for target in quick_targets)]
+                      if hits:
+                          print("XREF", cls.get_name(), desc(m), "dex", dex_index)
+                          dump_method(m, hits, max_lines=80)
+
+          # 4) Downloads sticker preview: inspect old classes plus structural candidates.
+          print("\n=== DOWNLOAD STICKER PREVIEW ===")
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  if cls.get_name() in {"LX/0ULN;", "LX/0UL9;"}:
+                      print("OLD CLASS", cls.get_name(), "dex", dex_index)
+                      for m in cls.get_methods():
+                          print(" ", desc(m))
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  for m in cls.get_methods():
+                      descriptor = m.get_descriptor()
+                      if m.get_return_type() != "V" or "Ljava/util/Map;" not in descriptor or "Ljava/lang/String;" not in descriptor or "Z" not in descriptor:
+                          continue
+                      seq = insns(m)
+                      outputs = [op.get_output() for op in seq]
+                      if any("Lcom/ss/android/ugc/aweme/base/model/UrlModel;" in out for out in outputs):
+                          print("STICKER-CANDIDATE", cls.get_name(), desc(m), "dex", dex_index)
+                          interesting = [i for i, out in enumerate(outputs) if "UrlModel;" in out or "StickerItem;" in out or "Lcom/bytedance/lighten" in out or "LX/16zb;" in out or "LX/0UL" in out]
+                          dump_method(m, interesting, max_lines=100)
+
+          # 5) Feed filter TakoAssem.
+          print("\n=== TAKO ASSEM ===")
+          for dex_index, cls in class_by_suffix("/feed/assem/tikbot/TakoAssem;"):
+              print("CLASS", cls.get_name(), "dex", dex_index)
+              for m in cls.get_methods():
+                  if m.get_return_type() == "V" and ("Z" in m.get_descriptor() or m.get_name() == "onViewCreated"):
+                      dump_method(m, max_lines=60)
+
+          # 6) Feed top/bottom tab providers.
+          print("\n=== TAB ABILITY ASSEM LIST METHODS ===")
+          for dex_index, cls in class_by_suffix("/TabAbilityAssem;"):
+              print("CLASS", cls.get_name(), "dex", dex_index)
+              for m in cls.get_methods():
+                  if m.get_return_type() == "Ljava/util/List;" and m.get_descriptor().startswith("()"):
+                      dump_method(m, max_lines=100)
+
+          # 7) CAPTCHA APIs: method names are stable; callback interface descriptors drift.
+          print("\n=== CAPTCHA METHODS ===")
+          for suffix in ("/sec/SecApiImpl;", "/live/livehostimpl/LiveHostUser;", "/tts/oecverify/verify/RiskControlService;"):
+              for dex_index, cls in class_by_suffix(suffix):
+                  print("CLASS", cls.get_name(), "dex", dex_index)
+                  for m in cls.get_methods():
+                      if m.get_name() in {"popCaptchaV2", "popCaptcha", "execute"}:
+                          dump_method(m, max_lines=80)
+
+          # 8) Resume gate: old lambda descriptor and zero-arg invoke/Object methods referencing the stable progress state class.
+          print("\n=== RESUME VIDEO GATE ===")
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  if cls.get_name() == "LX/0Lyr;":
+                      print("OLD CLASS LX/0Lyr; dex", dex_index)
+                      for m in cls.get_methods(): dump_method(m, max_lines=50)
+          for dex_index, dex in dexes:
+              for cls in dex.get_classes():
+                  for m in cls.get_methods():
+                      if m.get_name() != "invoke" or m.get_return_type() != "Ljava/lang/Object;" or not m.get_descriptor().startswith("()"):
+                          continue
+                      seq = insns(m)
+                      hits = [i for i, op in enumerate(seq) if "LX/0Lze;" in op.get_output() or "LX/0LxV;" in op.get_output()]
+                      if hits:
+                          print("RESUME-CANDIDATE", cls.get_name(), desc(m), "dex", dex_index)
+                          dump_method(m, hits, max_lines=80)
+          PY
+          cat tiktok-46.4.3-targeted-report.txt
+
+      - name: Upload targeted report
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-46.4.3-targeted-report
+          path: tiktok-46.4.3-targeted-report.txt
+          retention-days: 1
+
+      - name: Post targeted report to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let text = fs.readFileSync('tiktok-46.4.3-targeted-report.txt', 'utf8');
+            if (text.length > 58000) text = text.slice(-58000);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body: `### TikTok 46.4.3 targeted failed-patch analysis\n\nCommit: \`${context.sha}\`\n\n\`\`\`text\n${text}\n\`\`\``
+            });
