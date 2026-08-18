@@ -10,35 +10,9 @@ jobs:
   release:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Setup Python
-        if: github.head_ref == 'agent/tiktok-46.4.3-port'
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Install TikTok analysis dependencies
-        if: github.head_ref == 'agent/tiktok-46.4.3-port'
-        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 androguard==4.1.3
-
-      - name: Analyze TikTok 46.4.3 bytecode
-        if: github.head_ref == 'agent/tiktok-46.4.3-port'
-        env:
-          LOGURU_LEVEL: ERROR
-        run: python tools/analyze_tiktok_46_4_3.py 2>&1 | tee tiktok-46.4.3-port-report.txt
-
-      - name: Upload TikTok 46.4.3 analysis
-        if: always() && github.head_ref == 'agent/tiktok-46.4.3-port'
-        uses: actions/upload-artifact@v4
-        with:
-          name: tiktok-46.4.3-port-report
-          path: tiktok-46.4.3-port-report.txt
-          if-no-files-found: warn
-          retention-days: 1
 
       - name: Setup Java
         uses: actions/setup-java@v5
