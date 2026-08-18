@@ -15,20 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Cache Gradle
-        uses: burrunan/gradle-cache-action@v3
-
-      - name: Build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid --no-daemon
-
       - name: Setup Python
         if: github.head_ref == 'agent/tiktok-46.4.3-port'
         uses: actions/setup-python@v6
@@ -53,3 +39,17 @@ jobs:
           path: tiktok-46.4.3-port-report.txt
           if-no-files-found: warn
           retention-days: 1
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Gradle
+        uses: burrunan/gradle-cache-action@v3
+
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid --no-daemon
