@@ -78,11 +78,19 @@ public final class FeatureControls {
     }
 
     public static boolean overrideHideQuickCommentEmoji(boolean original, int followStatus) {
+        return overrideHideQuickCommentEmoji(original);
+    }
+
+    public static boolean overrideHideQuickCommentEmoji(boolean original) {
         return Settings.HIDE_COMMENT_QUICK_REACTIONS.get() || original;
     }
 
     public static int overrideLongPressQuickShare(int originalMode) {
         return Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() ? 0 : originalMode;
+    }
+
+    public static boolean overrideLongPressQuickShare(boolean originalEnabled) {
+        return !Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() && originalEnabled;
     }
 
     public static boolean enableNonPersonalizedSearch(boolean original) {
