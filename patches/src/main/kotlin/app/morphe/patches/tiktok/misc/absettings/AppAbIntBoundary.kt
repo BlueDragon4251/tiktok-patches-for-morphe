@@ -12,6 +12,10 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
+// Kept temporarily for Feature Gate Lab's 46.2.3 boundary table. The shared
+// integer hook below no longer relies on these obfuscated identifiers.
+internal const val APP_AB_DESCRIPTOR = "LX/0BYX;"
+internal const val APP_AB_INT_METHOD = "LJFF"
 internal const val APP_AB_INT_KEY_REGISTER = "p3"
 internal val APP_AB_INT_PARAMETERS = listOf("I", "I", "Ljava/lang/String;", "Z")
 
