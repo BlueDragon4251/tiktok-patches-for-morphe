@@ -85,16 +85,40 @@ jobs:
           code=${PIPESTATUS[0]}
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
+      - name: Apply optional Diagnostic tools patch
+        id: diagnostic_patch
+        shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: -Xmx6g
+        run: |
+          set +e
+          java -jar morphe-desktop.jar patch \
+            -p "$MPP" -e "Diagnostic tools" \
+            --exclusive \
+            --continue-on-error \
+            --unsigned \
+            --result-file morphe-diagnostic-result.json \
+            -o /tmp/tiktok-diagnostic-patched.apk \
+            tiktok-46.4.3.apk 2>&1 | tee morphe-diagnostic.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
       - name: Summarize failures
         if: always()
         shell: bash
         run: |
-          echo '=== FAILED PATCHES ==='
+          echo '=== DEFAULT PATCH FAILURES ==='
           grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe.log || true
-          echo '=== APPLIED COUNT ==='
+          echo '=== DEFAULT APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe.log || true
-          echo '=== RESULT JSON ==='
+          echo '=== OPTIONAL DIAGNOSTIC FAILURES ==='
+          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction' morphe-diagnostic.log || true
+          echo '=== OPTIONAL DIAGNOSTIC APPLIED ==='
+          grep '^INFO: Applied:' morphe-diagnostic.log || true
+          echo '=== DEFAULT RESULT JSON ==='
           cat morphe-result.json 2>/dev/null || true
+          echo '=== DIAGNOSTIC RESULT JSON ==='
+          cat morphe-diagnostic-result.json 2>/dev/null || true
       - name: Upload diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -103,8 +127,10 @@ jobs:
           path: |
             morphe.log
             morphe-result.json
+            morphe-diagnostic.log
+            morphe-diagnostic-result.json
           if-no-files-found: warn
           retention-days: 1
       - name: Fail if Morphe reported failures
-        if: steps.patch.outputs.exit_code != '0'
+        if: steps.patch.outputs.exit_code != '0' || steps.diagnostic_patch.outputs.exit_code != '0'
         run: exit 1
