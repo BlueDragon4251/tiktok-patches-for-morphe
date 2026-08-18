@@ -6,18 +6,34 @@ package app.morphe.patches.tiktok.interaction.quickactions
 
 import app.morphe.patcher.Fingerprint
 
-internal object QuickCommentReactionGateFingerprint : Fingerprint(
+internal object QuickCommentReactionGateLegacyFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf("I"),
-    custom = { _, classDef ->
-        classDef.type == "LX/0BIZ;"
+    custom = { method, classDef ->
+        classDef.type == "LX/0BIZ;" && method.name == "LIZ"
     },
 )
 
-internal object LongPressQuickShareGateFingerprint : Fingerprint(
+internal object QuickCommentReactionGateBooleanFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = emptyList(),
+    custom = { method, classDef ->
+        classDef.type == "LX/0BIZ;" && method.name == "LIZ"
+    },
+)
+
+internal object LongPressQuickShareGateLegacyFingerprint : Fingerprint(
     returnType = "I",
     parameters = emptyList(),
-    custom = { _, classDef ->
-        classDef.type == "LX/0BJV;"
+    custom = { method, classDef ->
+        classDef.type == "LX/0BJV;" && method.name == "LIZ"
+    },
+)
+
+internal object LongPressQuickShareGateBooleanFingerprint : Fingerprint(
+    returnType = "Z",
+    parameters = emptyList(),
+    custom = { method, classDef ->
+        classDef.type == "LX/0BJV;" && method.name == "LIZ"
     },
 )
