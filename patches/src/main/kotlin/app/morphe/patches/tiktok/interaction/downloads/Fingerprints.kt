@@ -11,24 +11,24 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal object AclCommonShareFingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getCode",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getCode",
 )
 
 internal object AclCommonShare2Fingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getShowType",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getShowType",
 )
 
 internal object AclCommonShare3Fingerprint : Fingerprint(
-    definingClass = "/ACLCommonShare;",
-    name = "getTranscode",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "I",
+    definingClass = "/ACLCommonShare;",
+    name = "getTranscode",
 )
 
 internal object DownloadUriFingerprint : Fingerprint(
@@ -63,35 +63,39 @@ internal object StickerPreviewBinderFingerprint : Fingerprint(
         "Ljava/util/Map;",
     ),
     custom = { method, _ ->
-        val instructions = method.implementation?.instructions ?: return@Fingerprint false
-        var readsUrlModel = false
-        var ownsSmartImageView = false
-        var readsViewLayout = false
-        var resolvesViewIds = false
+        val instructions = method.implementation?.instructions
+        if (instructions == null) {
+            false
+        } else {
+            var readsUrlModel = false
+            var ownsSmartImageView = false
+            var readsViewLayout = false
+            var resolvesViewIds = false
 
-        instructions.forEach { instruction ->
-            instruction.getReference<FieldReference>()?.let { field ->
-                when (field.type) {
-                    "Lcom/ss/android/ugc/aweme/base/model/UrlModel;" -> readsUrlModel = true
-                    "Lcom/bytedance/lighten/loader/SmartImageView;" -> ownsSmartImageView = true
+            instructions.forEach { instruction ->
+                instruction.getReference<FieldReference>()?.let { field ->
+                    when (field.type) {
+                        "Lcom/ss/android/ugc/aweme/base/model/UrlModel;" -> readsUrlModel = true
+                        "Lcom/bytedance/lighten/loader/SmartImageView;" -> ownsSmartImageView = true
+                    }
+                }
+
+                instruction.getReference<MethodReference>()?.let { reference ->
+                    if (reference.definingClass == "Landroid/view/View;" &&
+                        reference.name == "getLayoutParams"
+                    ) {
+                        readsViewLayout = true
+                    }
+                    if (reference.definingClass == "Landroid/view/View;" &&
+                        reference.name == "findViewById"
+                    ) {
+                        resolvesViewIds = true
+                    }
                 }
             }
 
-            instruction.getReference<MethodReference>()?.let { reference ->
-                if (reference.definingClass == "Landroid/view/View;" &&
-                    reference.name == "getLayoutParams"
-                ) {
-                    readsViewLayout = true
-                }
-                if (reference.definingClass == "Landroid/view/View;" &&
-                    reference.name == "findViewById"
-                ) {
-                    resolvesViewIds = true
-                }
-            }
+            readsUrlModel && ownsSmartImageView && readsViewLayout && resolvesViewIds
         }
-
-        readsUrlModel && ownsSmartImageView && readsViewLayout && resolvesViewIds
     },
 )
 
