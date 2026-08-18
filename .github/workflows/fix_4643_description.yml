@@ -1,0 +1,44 @@
+name: Fix TikTok 46.4.3 metadata description
+
+on:
+  push:
+    branches:
+      - agent/tiktok-46.4.3-port
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: agent/tiktok-46.4.3-port
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Fix stale Settings description and regenerate metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt')
+          text = path.read_text()
+          old = 'Adds the Metra patches settings menu to TikTok. Supports TikTok 46.2.3.'
+          new = 'Adds the Metra patches settings menu to TikTok. Supports TikTok 46.4.3.'
+          if old not in text:
+              raise SystemExit('expected stale Settings description not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+          ./gradlew :patches:generatePatchesList --no-daemon
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt patches-list.json
+          git commit -m 'docs: update Settings compatibility text for TikTok 46.4.3'
+          git push origin HEAD:agent/tiktok-46.4.3-port
