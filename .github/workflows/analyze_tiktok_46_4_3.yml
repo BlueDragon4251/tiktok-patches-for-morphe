@@ -4,15 +4,10 @@ on:
   push:
     branches:
       - agent/tiktok-46.4.3-port
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: write
 
 jobs:
   analyze:
@@ -30,187 +25,166 @@ jobs:
       - name: Install analysis dependencies
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4 androguard==4.1.3
 
-      - name: Download TikTok 46.4.3 from provided MediaFire link
+      - name: Download TikTok 46.4.3
         shell: bash
         run: |
-          set -o pipefail
-          python - <<'PY' 2>&1 | tee tiktok-46.4.3-download-report.txt
+          python - <<'PY'
           import hashlib
           import html
           import requests
           from bs4 import BeautifulSoup
 
           page_url = "https://www.mediafire.com/file/sd2x6vnmv1ocnv7/com.zhiliaoapp.musically_46.4.3-2024604030_minAPI23(arm64-v8a,armeabi-v7a)(nodpi)_apkmirror.com.apk/file"
-          headers = {
-              "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"
-          }
+          headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36"}
           page = requests.get(page_url, headers=headers, timeout=60)
           page.raise_for_status()
           soup = BeautifulSoup(page.text, "html.parser")
           button = soup.find(id="downloadButton")
           if button is None or not button.get("href"):
               raise RuntimeError("MediaFire direct download link was not found")
-          download_url = html.unescape(button["href"])
-          if not download_url.startswith("https://"):
-              raise RuntimeError(f"Unexpected MediaFire download URL: {download_url!r}")
+          direct = html.unescape(button["href"])
 
-          output = "tiktok-46.4.3.apk"
           digest = hashlib.sha256()
           size = 0
-          with requests.get(download_url, headers=headers, stream=True, timeout=(60, 180)) as response:
+          with requests.get(direct, headers=headers, stream=True, timeout=(60, 180)) as response:
               response.raise_for_status()
-              with open(output, "wb") as fh:
-                  for chunk in response.iter_content(chunk_size=1024 * 1024):
-                      if not chunk:
-                          continue
-                      fh.write(chunk)
-                      digest.update(chunk)
-                      size += len(chunk)
-          print(f"Downloaded bytes: {size}")
-          print(f"SHA-256: {digest.hexdigest()}")
-          if size < 100_000_000:
-              raise RuntimeError("Downloaded file is unexpectedly small; refusing to analyze it as the APK")
+              with open("tiktok-46.4.3.apk", "wb") as fh:
+                  for chunk in response.iter_content(1024 * 1024):
+                      if chunk:
+                          fh.write(chunk)
+                          digest.update(chunk)
+                          size += len(chunk)
+          print("bytes:", size)
+          print("sha256:", digest.hexdigest())
+          if digest.hexdigest() != "79062fb88d2eef8d6e11bbf766b4b40ee08d89cdc594ff26b549ccce7b50c4b2":
+              raise RuntimeError("Unexpected APK SHA-256")
           PY
 
-      - name: Inspect APK and relevant DEX classes
+      - name: Scan 46.4.3 descriptors and offline hooks
         shell: bash
         env:
           LOGURU_LEVEL: ERROR
         run: |
-          set -o pipefail
-          python - <<'PY' 2>&1 | tee tiktok-46.4.3-bytecode-report.txt
+          python - <<'PY' 2>&1 | tee tiktok-46.4.3-port-report.txt
+          import glob
+          import re
           import sys
+          from collections import defaultdict
           from loguru import logger
           logger.remove()
           logger.add(sys.stderr, level="ERROR")
-
           from androguard.core.apk import APK
           from androguard.core.dex import DEX
 
-          path = "tiktok-46.4.3.apk"
-          apk = APK(path)
-          print("=== APK METADATA ===")
-          print("package:", apk.get_package())
-          print("versionName:", apk.get_androidversion_name())
-          print("versionCode:", apk.get_androidversion_code())
-          print()
+          apk = APK("tiktok-46.4.3.apk")
+          print("=== APK ===")
+          print(apk.get_package(), apk.get_androidversion_name(), apk.get_androidversion_code())
 
-          wanted_exact = {"LX/0sIr;", "LX/0mE9;", "LX/0itP;"}
-          wanted_suffixes = (
-              "/OfflineModeSheetPageAssem;",
-              "/OfflineModeListVM;",
-          )
-          hits = []
-          enum_hits = []
-
+          dexes = []
+          class_map = {}
+          class_dex = {}
           for dex_index, dex_bytes in enumerate(apk.get_all_dex(), start=1):
               dex = DEX(dex_bytes)
+              dexes.append(dex)
               for cls in dex.get_classes():
-                  name = cls.get_name()
-                  fields = list(cls.get_fields())
-                  field_names = {field.get_name() for field in fields}
-                  interesting = name in wanted_exact or name.endswith(wanted_suffixes)
-                  if "DOWNLOAD_200_VIDEOS" in field_names:
-                      interesting = True
-                      enum_hits.append(name)
-                  if not interesting:
-                      continue
+                  class_map[cls.get_name()] = cls
+                  class_dex[cls.get_name()] = dex_index
 
-                  hits.append(name)
-                  print(f"=== CLASS {name} (dex {dex_index}) ===")
-                  try:
-                      print("super:", cls.get_superclassname())
-                  except Exception:
-                      pass
-                  try:
-                      print("interfaces:", list(cls.get_interfaces()))
-                  except Exception:
-                      pass
+          print("\n=== HARDCODED LX DESCRIPTORS USED BY TIKTOK PATCHES ===")
+          source_descriptors = defaultdict(set)
+          for path in glob.glob("patches/src/main/kotlin/app/morphe/patches/tiktok/**/*.kt", recursive=True):
+              text = open(path, encoding="utf-8").read()
+              for desc in re.findall(r"LX/[A-Za-z0-9_$]+;", text):
+                  source_descriptors[desc].add(path)
+          missing = []
+          for desc in sorted(source_descriptors):
+              exists = desc in class_map
+              print(("OK      " if exists else "MISSING ") + desc + " <- " + ", ".join(sorted(source_descriptors[desc])))
+              if not exists:
+                  missing.append(desc)
+          print(f"descriptor total={len(source_descriptors)} missing={len(missing)}")
 
-                  print("fields:")
-                  for field in fields:
-                      try:
-                          descriptor = field.get_descriptor()
-                      except Exception:
-                          descriptor = "?"
-                      print(f"  {field.get_name()} : {descriptor}")
+          enum_desc = None
+          for name, cls in class_map.items():
+              names = {f.get_name() for f in cls.get_fields()}
+              if "DOWNLOAD_200_VIDEOS" in names:
+                  enum_desc = name
+                  break
+          print("\n=== OFFLINE ENUM ===")
+          print("enum descriptor:", enum_desc)
+          if enum_desc:
+              cls = class_map[enum_desc]
+              print("dex:", class_dex[enum_desc])
+              print("fields:", [(f.get_name(), f.get_descriptor()) for f in cls.get_fields()])
+              for method in cls.get_methods():
+                  if method.get_name() == "<clinit>" and method.get_code():
+                      for i, ins in enumerate(method.get_instructions()):
+                          out = ins.get_output()
+                          if "DOWNLOAD_200_VIDEOS" in out or ins.get_name().startswith("invoke-direct"):
+                              print(f"  {i:04d}: {ins.get_name():24s} {out}")
 
-                  print("methods:")
+          print("\n=== REFERENCES TO OFFLINE ENUM DOWNLOAD_* FIELDS ===")
+          candidates = defaultdict(list)
+          if enum_desc:
+              needle = enum_desc + "->DOWNLOAD_"
+              for cls_name, cls in class_map.items():
                   for method in cls.get_methods():
-                      print(f"  {method.get_name()}{method.get_descriptor()}")
-
-                  for method in cls.get_methods():
-                      if method.get_name() not in {"<clinit>", "<init>"}:
-                          continue
-                      print(f"-- BYTECODE {method.get_name()}{method.get_descriptor()} --")
                       code = method.get_code()
                       if code is None:
-                          print("  <no code>")
                           continue
-                      for index, instruction in enumerate(method.get_instructions()):
-                          opname = instruction.get_name()
-                          output = instruction.get_output()
-                          if (
-                              opname.startswith("sput")
-                              or opname.startswith("invoke")
-                              or opname.startswith("move-result")
-                              or opname.startswith("const")
-                              or "DOWNLOAD_200_VIDEOS" in output
-                              or "java/util/List" in output
-                          ):
-                              print(f"  {index:04d}: {opname:28s} {output}")
-                  print()
+                      instructions = list(method.get_instructions())
+                      for i, ins in enumerate(instructions):
+                          out = ins.get_output()
+                          if needle in out:
+                              candidates[(cls_name, method.get_name(), method.get_descriptor())].append(i)
+              for (cls_name, method_name, method_desc), indexes in candidates.items():
+                  print(f"CANDIDATE {cls_name} dex={class_dex[cls_name]} {method_name}{method_desc} refs={indexes}")
+                  method = next(m for m in class_map[cls_name].get_methods() if m.get_name() == method_name and m.get_descriptor() == method_desc)
+                  instructions = list(method.get_instructions())
+                  keep = set()
+                  for idx in indexes:
+                      keep.update(range(max(0, idx - 8), min(len(instructions), idx + 12)))
+                  for i in sorted(keep):
+                      ins = instructions[i]
+                      print(f"  {i:04d}: {ins.get_name():28s} {ins.get_output()}")
+                  print("  fields:", [(f.get_name(), f.get_descriptor()) for f in class_map[cls_name].get_fields()])
 
-          print("=== SUMMARY ===")
-          print("interesting classes:", hits)
-          print("classes declaring DOWNLOAD_200_VIDEOS:", enum_hits)
-          if apk.get_package() != "com.zhiliaoapp.musically":
-              raise SystemExit("Unexpected package name")
-          if apk.get_androidversion_name() != "46.4.3":
-              raise SystemExit(f"Unexpected versionName: {apk.get_androidversion_name()}")
+          print("\n=== STATIC LIST CONFIG CANDIDATES ===")
+          for cls_name, cls in class_map.items():
+              list_fields = [f for f in cls.get_fields() if f.get_descriptor() == "Ljava/util/List;"]
+              if len(list_fields) < 2:
+                  continue
+              clinit = next((m for m in cls.get_methods() if m.get_name() == "<clinit>"), None)
+              if clinit is None or clinit.get_code() is None:
+                  continue
+              instructions = list(clinit.get_instructions())
+              enum_refs = [i for i, ins in enumerate(instructions) if enum_desc and enum_desc in ins.get_output()]
+              list_writes = [i for i, ins in enumerate(instructions) if ins.get_name().startswith("sput-object") and "Ljava/util/List;" in ins.get_output()]
+              if not enum_refs and len(list_writes) < 2:
+                  continue
+              print(f"LIST-CANDIDATE {cls_name} dex={class_dex[cls_name]} list_fields={[(f.get_name(), f.get_descriptor()) for f in list_fields]} enum_refs={enum_refs} list_writes={list_writes}")
+              interesting = set()
+              for idx in enum_refs + list_writes:
+                  interesting.update(range(max(0, idx - 10), min(len(instructions), idx + 10)))
+              for i in sorted(interesting):
+                  ins = instructions[i]
+                  print(f"  {i:04d}: {ins.get_name():28s} {ins.get_output()}")
+
+          print("\n=== STABLE OFFLINE CLASSES ===")
+          for suffix in ("/OfflineModeSheetPageAssem;", "/OfflineModeListVM;"):
+              for name in sorted(n for n in class_map if n.endswith(suffix)):
+                  print(name, "dex", class_dex[name])
+
+          print("\n=== SUMMARY ===")
+          print("missing descriptors:", missing)
+          print("offline enum:", enum_desc)
+          print("enum reference candidate count:", len(candidates))
           PY
 
-      - name: Upload text report
+      - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tiktok-46.4.3-bytecode-report
-          path: |
-            tiktok-46.4.3-download-report.txt
-            tiktok-46.4.3-bytecode-report.txt
-          if-no-files-found: warn
+          name: tiktok-46.4.3-port-report
+          path: tiktok-46.4.3-port-report.txt
           retention-days: 1
-
-      - name: Post analysis report to draft PR
-        if: always() && github.event_name == 'push'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const paths = [
-              'tiktok-46.4.3-download-report.txt',
-              'tiktok-46.4.3-bytecode-report.txt',
-            ];
-            let text = '';
-            for (const path of paths) {
-              if (fs.existsSync(path)) {
-                text += `\n===== ${path} =====\n` + fs.readFileSync(path, 'utf8');
-              }
-            }
-            if (!text) text = 'The analysis workflow did not produce a report file.';
-            if (text.length > 55000) text = text.slice(-55000);
-            const body = [
-              '### TikTok 46.4.3 bytecode analysis',
-              '',
-              `Commit: \`${context.sha}\``,
-              '',
-              '```text',
-              text,
-              '```',
-            ].join('\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: 1,
-              body,
-            });
