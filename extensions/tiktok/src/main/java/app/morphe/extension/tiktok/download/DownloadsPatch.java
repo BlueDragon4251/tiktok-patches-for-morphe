@@ -42,6 +42,14 @@ public class DownloadsPatch {
 
         try {
             UrlModel original = video.downloadNoWatermarkAddr;
+
+            UrlModel qualitySelected = DownloadQualitySelector.select(video);
+            if (qualitySelected != null) {
+                video.downloadNoWatermarkAddr = qualitySelected;
+                logSelection("quality:" + Settings.DOWNLOAD_VIDEO_QUALITY.get(), "runtimeVariant", original, qualitySelected);
+                return;
+            }
+
             String requestedSource = normalizeSource(Settings.DOWNLOAD_VIDEO_SOURCE.get());
             Candidate selected = selectRequestedSource(video, original, requestedSource);
             if (selected == null || selected.model == original) {
@@ -49,25 +57,26 @@ public class DownloadsPatch {
             }
 
             video.downloadNoWatermarkAddr = selected.model;
-
-            if (BaseSettings.DEBUG.get()) {
-                String originalSummary = describeUrlModel(original);
-                String selectedSummary = describeUrlModel(selected.model);
-                String source = selected.name;
-                String signature = requestedSource + '|' + source + '|' + originalSummary + '|' + selectedSummary;
-                if (!signature.equals(lastLoggedCleanSourceSignature)) {
-                    lastLoggedCleanSourceSignature = signature;
-                    Logger.printInfo(() -> "[BlueIT Downloads] selected video source"
-                            + " requested=" + requestedSource
-                            + " original=" + originalSummary
-                            + " source=" + source
-                            + " replacement=" + selectedSummary);
-                }
-            }
+            logSelection(requestedSource, selected.name, original, selected.model);
         } catch (Throwable ex) {
             if (BaseSettings.DEBUG.get()) {
                 Logger.printException(() -> "[BlueIT Downloads] patchVideoObject failure", ex);
             }
+        }
+    }
+
+    private static void logSelection(String requested, String source, UrlModel original, UrlModel replacement) {
+        if (!BaseSettings.DEBUG.get()) return;
+        String originalSummary = describeUrlModel(original);
+        String selectedSummary = describeUrlModel(replacement);
+        String signature = requested + '|' + source + '|' + originalSummary + '|' + selectedSummary;
+        if (!signature.equals(lastLoggedCleanSourceSignature)) {
+            lastLoggedCleanSourceSignature = signature;
+            Logger.printInfo(() -> "[BlueIT Downloads] selected video source"
+                    + " requested=" + requested
+                    + " original=" + originalSummary
+                    + " source=" + source
+                    + " replacement=" + selectedSummary);
         }
     }
 
@@ -106,24 +115,15 @@ public class DownloadsPatch {
 
     private static boolean hasUsableUrl(UrlModel model) {
         List<String> urls = getUrlListSafe(model);
-        if (urls == null || urls.isEmpty()) {
-            return false;
-        }
-
+        if (urls == null || urls.isEmpty()) return false;
         for (String url : urls) {
-            if (url != null && !url.trim().isEmpty() && !"null".equalsIgnoreCase(url.trim())) {
-                return true;
-            }
+            if (url != null && !url.trim().isEmpty() && !"null".equalsIgnoreCase(url.trim())) return true;
         }
-
         return false;
     }
 
     private static String describeUrlModel(UrlModel model) {
-        if (model == null) {
-            return "null";
-        }
-
+        if (model == null) return "null";
         List<String> urls = getUrlListSafe(model);
         int urlCount = urls == null ? -1 : urls.size();
         return "{class=" + model.getClass().getName()
@@ -136,50 +136,27 @@ public class DownloadsPatch {
 
     private static List<String> getUrlListSafe(UrlModel model) {
         if (model == null) return null;
-        try {
-            return model.getUrlList();
-        } catch (Throwable ignored) {
-            return null;
-        }
+        try { return model.getUrlList(); } catch (Throwable ignored) { return null; }
     }
 
     private static String getUriSafe(UrlModel model) {
-        try {
-            return model.getUri();
-        } catch (Throwable ignored) {
-            return null;
-        }
+        try { return model.getUri(); } catch (Throwable ignored) { return null; }
     }
 
     private static String getUrlKeySafe(UrlModel model) {
-        try {
-            return model.getUrlKey();
-        } catch (Throwable ignored) {
-            return null;
-        }
+        try { return model.getUrlKey(); } catch (Throwable ignored) { return null; }
     }
 
     private static long getSizeSafe(UrlModel model) {
-        try {
-            return model.getSize();
-        } catch (Throwable ignored) {
-            return -1;
-        }
+        try { return model.getSize(); } catch (Throwable ignored) { return -1; }
     }
 
     private static String firstUrl(List<String> urls) {
-        if (urls == null || urls.isEmpty()) {
-            return null;
-        }
-
-        return urls.get(0);
+        return urls == null || urls.isEmpty() ? null : urls.get(0);
     }
 
     private static String redactUrl(String url) {
-        if (url == null) {
-            return null;
-        }
-
+        if (url == null) return null;
         int queryIndex = url.indexOf('?');
         String withoutQuery = queryIndex >= 0 ? url.substring(0, queryIndex) : url;
         return withoutQuery.length() <= 96 ? withoutQuery : withoutQuery.substring(0, 96) + "...";
