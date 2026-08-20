@@ -61,9 +61,13 @@ val gestureDiscoveryPatch = bytecodePatch(
             }
         }
 
-        val focusedTypes = setOf("LX/0QeR;", "LX/0Qqd;", "LX/0Qdk;")
+        val focusedTypes = setOf("LX/0QeR;", "LX/0Qqd;", "LX/0Qdk;", "LX/0M6V;")
         classDefForEach { classDef ->
-            if (classDef.type !in focusedTypes) return@classDefForEach
+            val isInterfaceImplementation = classDef.interfaces.any {
+                it == "LX/0Qqd;" || it == "LX/0Qdk;" || it == "LX/0M6V;"
+            }
+            if (classDef.type !in focusedTypes && !isInterfaceImplementation) return@classDefForEach
+
             println(
                 "[BlueITGestureFocus] CLASS ${classDef.type} superclass=${classDef.superclass} " +
                     "interfaces=${classDef.interfaces.joinToString(",")}",
@@ -73,12 +77,27 @@ val gestureDiscoveryPatch = bytecodePatch(
             }
             classDef.methods.forEach { method ->
                 val implementation = method.implementation
+                val refs = linkedSetOf<String>()
+                implementation?.instructions?.forEach { instruction ->
+                    val reference = (instruction as? ReferenceInstruction)?.reference
+                    when (reference) {
+                        is MethodReference -> refs += "M:${reference.definingClass}->${reference.name}(${reference.parameterTypes.joinToString("")})${reference.returnType}"
+                        is FieldReference -> refs += "F:${reference.definingClass}->${reference.name}:${reference.type}"
+                        is TypeReference -> refs += "T:${reference.type}"
+                        is StringReference -> refs += "S:${reference.string.take(120)}"
+                    }
+                }
                 println(
                     "[BlueITGestureFocus] METHOD ${method.definingClass}->${method.name}" +
                         "(${method.parameterTypes.joinToString("")})${method.returnType} access=${method.accessFlags} " +
-                        "registers=${implementation?.registerCount ?: -1}",
+                        "registers=${implementation?.registerCount ?: -1} refs=${refs.take(45).joinToString(" || ")}",
                 )
-                if (implementation == null) return@forEach
+
+                val dumpInstructions = classDef.type in focusedTypes || method.name in setOf(
+                    "handleDoubleClick", "Sk", "LIZ", "seekTo", "seek", "getCurrentPosition", "getDuration"
+                )
+                if (implementation == null || !dumpInstructions) return@forEach
+
                 implementation.instructions.forEachIndexed { index, instruction ->
                     val details = ArrayList<String>()
                     when (instruction) {
