@@ -8,9 +8,11 @@ package app.morphe.extension.tiktok.settings.preference.categories;
 import android.content.Context;
 import android.preference.PreferenceScreen;
 
+import app.morphe.extension.tiktok.settings.AdvancedFeedSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ClearSeenVideoHistoryPreference;
+import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.PercentageInputPreference;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
 import app.morphe.extension.tiktok.settings.preference.SeenVideoRetentionPreference;
@@ -88,6 +90,30 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                     Settings.MIN_LIKE_VIEW_RATIO_PERCENT,
                     0,
                     100
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Blocked keywords / hashtags",
+                    "Comma or line separated. Case-insensitive substring match against video text and available hashtag metadata.",
+                    AdvancedFeedSettings.BLOCKED_KEYWORDS
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Blocked creators",
+                    "Comma or line separated TikTok usernames or creator IDs. A leading @ is optional.",
+                    AdvancedFeedSettings.BLOCKED_CREATORS
+            ));
+            addPreference(new InputTextPreference(
+                    context,
+                    "Blocked sounds",
+                    "Comma or line separated sound IDs, titles, or sound-author names.",
+                    AdvancedFeedSettings.BLOCKED_SOUNDS
+            ));
+            addPreference(new RangeValuePreference(
+                    context,
+                    "Min/Max duration (seconds)",
+                    "Hide videos outside this duration range. Example: 5-120.",
+                    AdvancedFeedSettings.DURATION_SECONDS
             ));
         }
         addPreference(new RangeValuePreference(
