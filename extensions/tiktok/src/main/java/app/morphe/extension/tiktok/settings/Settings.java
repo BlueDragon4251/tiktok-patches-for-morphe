@@ -23,6 +23,13 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_SHOP = new BooleanSetting("hide_shop", FALSE, true);
     public static final BooleanSetting HIDE_STORY = new BooleanSetting("hide_story", FALSE, true);
     public static final BooleanSetting HIDE_IMAGE = new BooleanSetting("hide_image", FALSE, true);
+    public static final BooleanSetting HIDE_SEEN_VIDEOS = new BooleanSetting("blueit_hide_seen_videos", FALSE, true);
+    public static final StringSetting SEEN_VIDEO_RETENTION_DAYS = new StringSetting(
+            "blueit_seen_video_retention_days",
+            "30",
+            false,
+            Setting.parent(HIDE_SEEN_VIDEOS)
+    );
     public static final BooleanSetting HIDE_CAPTCHA_POPUPS = new BooleanSetting("hide_captcha_popups", FALSE, true);
     public static final BooleanSetting HIDE_HOMEPAGE_COIN = new BooleanSetting("hide_homepage_coin", FALSE, true);
     public static final StringSetting MIN_MAX_VIEWS = new StringSetting("min_max_views", "0-" + Long.MAX_VALUE, true);
