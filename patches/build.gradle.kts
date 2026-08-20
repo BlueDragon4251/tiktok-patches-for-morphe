@@ -1,48 +1,39 @@
-group = "app.morphe"
+plugins {
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.morphe.patcher)
+}
 
 patches {
     about {
-        name = "Metra TikTok Patches"
-        description = "Metra patches for TikTok 46.4.3, built for Morphe."
+        name = "BlueIT TikTok Patches"
+        description = "BlueIT Service patches for TikTok 46.4.3, built for Morphe."
         source = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
-        author = "icysymmetra"
-        contact = "na"
+        author = "BlueIT"
+        contact = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/issues"
         website = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
-        license = "GNU General Public License v3.0, with additional GPL section 7 requirements"
+        license = "GPL-3.0"
     }
 }
 
 dependencies {
-    compileOnly(libs.morphe.patcher)
-
-    // Used by JsonGenerator.
-    implementation(libs.gson)
-
-    // Required due to smali, or build fails. Can be removed once smali is bumped.
-    implementation(libs.guava)
-
-    // Android API stubs defined here.
+    implementation(libs.morphe.patcher)
     compileOnly(project(":patches:stub"))
-}
-
-tasks {
-    register<JavaExec>("generatePatchesList") {
-        description = "Build patch with patch list"
-
-        dependsOn(build)
-
-        classpath = sourceSets["main"].runtimeClasspath
-        mainClass.set("app.morphe.util.PatchListGeneratorKt")
-        args(project.version.toString())
-    }
-    // Used by gradle-semantic-release-plugin.
-    publish {
-        dependsOn("generatePatchesList")
-    }
 }
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs = listOf("-Xcontext-receivers")
+        freeCompilerArgs.addAll("-Xcontext-receivers")
     }
+}
+
+tasks.register<Copy>("buildAndroid") {
+    group = "morphe"
+    description = "Build the TikTok patch bundle and copy it to build/outputs."
+
+    dependsOn(":extensions:tiktok:assembleRelease")
+    dependsOn(tasks.named("jar"))
+
+    from(tasks.named("jar"))
+    into(layout.buildDirectory.dir("outputs"))
+    rename { "patches.mpp" }
 }
