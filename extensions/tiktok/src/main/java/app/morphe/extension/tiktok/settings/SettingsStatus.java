@@ -7,6 +7,7 @@ package app.morphe.extension.tiktok.settings;
 
 public class SettingsStatus {
     public static boolean feedFilterEnabled = false;
+    public static boolean seenVideoFilterEnabled = false;
     public static boolean feedNavigationEnabled = false;
     public static boolean commentTranslationEnabled = false;
     public static boolean hideCommentQuickReactionsEnabled = false;
@@ -28,6 +29,10 @@ public class SettingsStatus {
 
     public static void enableFeedFilter() {
         feedFilterEnabled = true;
+    }
+
+    public static void enableSeenVideoFilter() {
+        seenVideoFilterEnabled = true;
     }
 
     public static void enableFeedNavigation() {
@@ -105,4 +110,3 @@ public class SettingsStatus {
     public static void load() {
     }
 }
-
