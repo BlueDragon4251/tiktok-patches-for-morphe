@@ -62,52 +62,49 @@ jobs:
           with urllib.request.urlopen(request, timeout=60) as response:
               page = response.read().decode("utf-8", errors="replace")
           parser = Parser(); parser.feed(page)
-          if not parser.url: raise RuntimeError("MediaFire download URL not found")
+          if not parser.url:
+              raise RuntimeError("MediaFire download URL not found")
           request = urllib.request.Request(html.unescape(parser.url), headers={"User-Agent": UA})
           digest = hashlib.sha256(); size = 0
           with urllib.request.urlopen(request, timeout=180) as response, open("tiktok-46.4.3.apk", "wb") as output:
               while True:
                   chunk = response.read(1024 * 1024)
-                  if not chunk: break
+                  if not chunk:
+                      break
                   output.write(chunk); digest.update(chunk); size += len(chunk)
           actual = digest.hexdigest()
           print("Downloaded bytes:", size); print("SHA-256:", actual)
-          if actual != EXPECTED: raise RuntimeError(f"SHA mismatch: {actual}")
+          if actual != EXPECTED:
+              raise RuntimeError(f"SHA mismatch: {actual}")
           PY
 
-      - name: Inspect exact 46.4.3 target structures
+      - name: Inspect exact 46.4.3 model structures
         continue-on-error: true
+        timeout-minutes: 2
         shell: bash
         run: |
           set +e
           ANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer 2>/dev/null | sort | tail -n 1)"
           {
-            echo "=== BlueIT exact TikTok 46.4.3 evidence ==="
+            echo "=== BlueIT exact TikTok 46.4.3 model evidence ==="
             echo "apkanalyzer=$ANALYZER"
             if [ -z "$ANALYZER" ]; then
               echo "apkanalyzer unavailable"
               exit 0
             fi
-            "$ANALYZER" dex packages --defined-only tiktok-46.4.3.apk > /tmp/tiktok-packages.txt 2>&1
-            echo "=== Relevant classes / methods ==="
-            grep -Ei 'TabAbilityAssem|PhotoModeImageInfo|VideoUrlModel|BitRate|bitrate|Gesture|DoubleTap|SingleTap|Digg|FeedClick|VideoClick|Seek' /tmp/tiktok-packages.txt | head -n 800
             echo "=== PhotoModeImageInfo ==="
-            "$ANALYZER" dex code --class com.ss.android.ugc.aweme.feed.model.PhotoModeImageInfo tiktok-46.4.3.apk 2>&1 | head -n 1200
+            timeout 25s "$ANALYZER" dex code --class com.ss.android.ugc.aweme.feed.model.PhotoModeImageInfo tiktok-46.4.3.apk 2>&1 | head -n 1200
             echo "=== Video ==="
-            "$ANALYZER" dex code --class com.ss.android.ugc.aweme.feed.model.Video tiktok-46.4.3.apk 2>&1 | head -n 2000
-            echo "=== TabAbilityAssem ==="
-            TAB_CLASS="$(awk '$1 == "C" && $NF ~ /TabAbilityAssem$/ {print $NF; exit}' /tmp/tiktok-packages.txt)"
-            echo "class=$TAB_CLASS"
-            if [ -n "$TAB_CLASS" ]; then
-              "$ANALYZER" dex code --class "$TAB_CLASS" tiktok-46.4.3.apk 2>&1 | head -n 2500
-            fi
-            echo "=== Gesture candidate class code ==="
-            awk '$1 == "C" && $NF ~ /(Gesture|DoubleTap|SingleTap|Digg|FeedClick|VideoClick)/ {print $NF}' /tmp/tiktok-packages.txt | head -n 14 | while read -r cls; do
-              echo "--- $cls ---"
-              "$ANALYZER" dex code --class "$cls" tiktok-46.4.3.apk 2>&1 | head -n 700
-            done
+            timeout 25s "$ANALYZER" dex code --class com.ss.android.ugc.aweme.feed.model.Video tiktok-46.4.3.apk 2>&1 | head -n 1800
+            echo "=== quick string evidence ==="
+            mkdir -p /tmp/blueit-dex
+            unzip -q -j tiktok-46.4.3.apk 'classes*.dex' -d /tmp/blueit-dex || true
+            find /tmp/blueit-dex -type f -name '*.dex' -print0 | xargs -0 strings 2>/dev/null \
+              | grep -Ei 'onDoubleTap|onSingleTapConfirmed|onLongPress|DoubleTap|SingleTap|Gesture|Digg|seekTo|PhotoModeImageInfo|BitRate' \
+              | sort -u | head -n 1000
           } > target-evidence.txt 2>&1
-          cat target-evidence.txt | head -n 6000
+          cat target-evidence.txt | head -n 3500
+          exit 0
 
       - name: Download Morphe Desktop CLI
         shell: bash
@@ -178,29 +175,49 @@ jobs:
           python3 - <<'PY'
           import json, sys
           from pathlib import Path
-          package = "com.zhiliaoapp.musically"; version = "46.4.3"; failures = []
+          package = "com.zhiliaoapp.musically"
+          version = "46.4.3"
+          failures = []
           metadata_path = Path("patches-list.json")
           if not metadata_path.exists():
-              failures.append("patches-list.json was not generated"); metadata = {"patches": []}
-          else: metadata = json.loads(metadata_path.read_text())
+              failures.append("patches-list.json was not generated")
+              metadata = {"patches": []}
+          else:
+              metadata = json.loads(metadata_path.read_text())
           compatible = {}
           for patch in metadata.get("patches") or []:
               versions = (patch.get("compatiblePackages") or {}).get(package) or []
-              if version in versions: compatible[patch.get("name")] = bool(patch.get("use"))
-          expected_defaults = {name for name, use in compatible.items() if use}; expected_full = set(compatible)
-          print("Expected default patches:", sorted(expected_defaults)); print("Expected full catalog:", sorted(expected_full))
-          for label, filename, expected in (("defaults", "morphe-result.json", expected_defaults), ("full catalog", "morphe-full-result.json", expected_full)):
+              if version in versions:
+                  compatible[patch.get("name")] = bool(patch.get("use"))
+          expected_defaults = {name for name, use in compatible.items() if use}
+          expected_full = set(compatible)
+          print("Expected default patches:", sorted(expected_defaults))
+          print("Expected full catalog:", sorted(expected_full))
+          for label, filename, expected in (
+              ("defaults", "morphe-result.json", expected_defaults),
+              ("full catalog", "morphe-full-result.json", expected_full),
+          ):
               path = Path(filename)
-              if not path.exists(): failures.append(f"{label}: {filename} was not produced"); continue
-              data = json.loads(path.read_text()); applied = {item.get("name") for item in (data.get("appliedPatches") or [])}; failed = data.get("failedPatches") or []
-              missing = sorted(expected - applied); unexpected = sorted(applied - expected)
+              if not path.exists():
+                  failures.append(f"{label}: {filename} was not produced")
+                  continue
+              data = json.loads(path.read_text())
+              applied = {item.get("name") for item in (data.get("appliedPatches") or [])}
+              failed = data.get("failedPatches") or []
+              missing = sorted(expected - applied)
+              unexpected = sorted(applied - expected)
               print(f"{label}: applied={len(applied)} expected={len(expected)} failed={len(failed)}")
-              if failed: failures.append(f"{label}: failed patches: {failed}")
-              if missing: failures.append(f"{label}: compatible patches not applied: {missing}")
-              if unexpected: failures.append(f"{label}: unexpected applied patches: {unexpected}")
-              if not expected: failures.append(f"{label}: generated metadata selected no 46.4.3 patches")
+              if failed:
+                  failures.append(f"{label}: failed patches: {failed}")
+              if missing:
+                  failures.append(f"{label}: compatible patches not applied: {missing}")
+              if unexpected:
+                  failures.append(f"{label}: unexpected applied patches: {unexpected}")
+              if not expected:
+                  failures.append(f"{label}: generated metadata selected no 46.4.3 patches")
           if failures:
-              for failure in failures: print(failure, file=sys.stderr)
+              for failure in failures:
+                  print(failure, file=sys.stderr)
               raise SystemExit(1)
           PY
           code=$?
@@ -217,6 +234,8 @@ jobs:
           grep -c '^INFO: Applied:' morphe.log || true
           echo '=== FULL-CATALOG PATCH FAILURES / SKIPS ==='
           grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction|WARNING: Skipping' morphe-full.log || true
+          echo '=== BLUEIT GESTURE DISCOVERY ==='
+          grep '\[BlueITGestureDiscovery\]' morphe-full.log || true
           echo '=== FULL-CATALOG APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe-full.log || true
           echo '=== DEFAULT RESULT JSON ==='
