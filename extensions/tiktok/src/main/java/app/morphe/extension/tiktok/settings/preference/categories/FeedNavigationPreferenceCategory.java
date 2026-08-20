@@ -5,6 +5,7 @@ import android.preference.PreferenceScreen;
 
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.StartupTabPreference;
 import app.morphe.extension.tiktok.settings.preference.TabSelectionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
@@ -22,6 +23,7 @@ public class FeedNavigationPreferenceCategory extends ConditionalPreferenceCateg
 
     @Override
     public void addPreferences(Context context) {
+        addPreference(new StartupTabPreference(context, Settings.STARTUP_FEED_TAB));
         addPreference(new TogglePreference(
                 context,
                 "Filter feed tabs",
