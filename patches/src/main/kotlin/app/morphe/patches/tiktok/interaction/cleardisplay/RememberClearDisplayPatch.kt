@@ -26,7 +26,6 @@ val rememberClearDisplayPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        // Prevent excessive logging in high-frequency feed paths.
         ClearModeLogCoreFingerprint.methodOrNull?.returnEarly()
         ClearModeLogStateFingerprint.methodOrNull?.returnEarly()
         ClearModeLogPlaytimeFingerprint.methodOrNull?.returnEarly()
@@ -49,23 +48,34 @@ val rememberClearDisplayPatch = bytecodePatch(
                 addInstructionsWithLabels(
                     returnIndex,
                     """
+                        invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->isEnabled()Z
+                        move-result v0
+                        if-eqz v0, :blueit_remember_clear_display
+
+                        const/4 v0, 0x1
+                        const/4 v1, 0x0
+                        const-string v2, ""
+                        const-string p1, "blueit_auto"
+                        new-instance p0, $clearDisplayEventClass
+                        invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
+                        invoke-static {p0}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->onNewVideo(Ljava/lang/Object;)V
+                        goto :blueit_clear_display_return
+
+                        :blueit_remember_clear_display
                         invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->getClearDisplayState()Z
                         move-result v0
-
-                        if-eqz v0, :morphe_clear_display_return
+                        if-eqz v0, :blueit_clear_display_return
 
                         const/4 v1, 0x0
                         const-string v2, ""
                         const-string p1, "long_press"
-
                         new-instance p0, $clearDisplayEventClass
                         invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
                         invoke-virtual {p0}, $clearDisplayEventClass->post()Lcom/ss/android/ugc/governance/eventbus/IEvent;
                     """,
-                    ExternalLabel("morphe_clear_display_return", getInstruction(returnIndex)),
+                    ExternalLabel("blueit_clear_display_return", getInstruction(returnIndex)),
                 )
             }
         }
     }
 }
-
