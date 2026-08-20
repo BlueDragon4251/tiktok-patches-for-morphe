@@ -14,20 +14,29 @@ public class RememberClearDisplayPatch {
     private static volatile Boolean lastLoggedState;
 
     public static boolean getClearDisplayState() {
+        if (AutomaticClearDisplayController.isEnabled()) {
+            return false;
+        }
+
         boolean state = Settings.CLEAR_DISPLAY.get();
         if (BaseSettings.DEBUG.get() && (lastLoggedState == null || lastLoggedState != state)) {
             lastLoggedState = state;
-            Logger.printInfo(() -> "[Morphe ClearDisplay] get state=" + state);
+            Logger.printInfo(() -> "[BlueIT ClearDisplay] get remembered state=" + state);
         }
         return state;
     }
 
     public static void rememberClearDisplayState(boolean newState) {
+        AutomaticClearDisplayController.onClearDisplayStateChanged(newState);
+
+        if (AutomaticClearDisplayController.isEnabled()) {
+            return;
+        }
+
         if (BaseSettings.DEBUG.get()) {
             boolean oldState = Settings.CLEAR_DISPLAY.get();
-            Logger.printInfo(() -> "[Morphe ClearDisplay] remember state " + oldState + " -> " + newState);
+            Logger.printInfo(() -> "[BlueIT ClearDisplay] remember state " + oldState + " -> " + newState);
         }
         Settings.CLEAR_DISPLAY.save(newState);
     }
 }
-
