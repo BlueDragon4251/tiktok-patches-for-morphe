@@ -9,6 +9,7 @@ public class SettingsStatus {
     public static boolean feedFilterEnabled = false;
     public static boolean seenVideoFilterEnabled = false;
     public static boolean advancedFeedFilterEnabled = false;
+    public static boolean featureGateRecorderEnabled = false;
     public static boolean feedNavigationEnabled = false;
     public static boolean commentTranslationEnabled = false;
     public static boolean hideCommentQuickReactionsEnabled = false;
@@ -38,6 +39,10 @@ public class SettingsStatus {
 
     public static void enableAdvancedFeedFilter() {
         advancedFeedFilterEnabled = true;
+    }
+
+    public static void enableFeatureGateRecorder() {
+        featureGateRecorderEnabled = true;
     }
 
     public static void enableFeedNavigation() {
