@@ -59,6 +59,16 @@ public class Settings extends BaseSettings {
             false,
             false
     );
+    public static final StringSetting STARTUP_FEED_TAB = new StringSetting(
+            "blueit_startup_feed_tab",
+            "default"
+    );
+    public static final StringSetting LAST_USED_FEED_TAB = new StringSetting(
+            "blueit_last_used_feed_tab",
+            NavigationTabOptions.HOT,
+            false,
+            false
+    );
     public static final BooleanSetting BOTTOM_NAVIGATION = new BooleanSetting("bottom_navigation", FALSE, true);
     public static final StringSetting BOTTOM_NAVIGATION_TABS = new StringSetting(
             "bottom_navigation_tabs",
