@@ -9,6 +9,7 @@ import android.preference.PreferenceScreen;
 
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -22,11 +23,28 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
     public boolean getSettingsStatus() {
         return SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
-                || SettingsStatus.alwaysShowPublishDateEnabled;
+                || SettingsStatus.alwaysShowPublishDateEnabled
+                || SettingsStatus.automaticClearDisplayEnabled;
     }
 
     @Override
     public void addPreferences(Context context) {
+        if (SettingsStatus.automaticClearDisplayEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Automatic Clear Display",
+                    "Automatically hide TikTok's feed controls after a short delay on each new video.",
+                    Settings.AUTOMATIC_CLEAR_DISPLAY
+            ));
+            addPreference(new NumberInputPreference(
+                    context,
+                    "Clear Display delay",
+                    "Delay in milliseconds before controls are hidden. Choose 250-15000 ms.",
+                    Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY_MS,
+                    250,
+                    15000
+            ));
+        }
         if (SettingsStatus.promotionalBannersEnabled) {
             addPreference(new TogglePreference(
                     context,
