@@ -2,7 +2,7 @@ package app.morphe.patches.tiktok.interaction.gesture
 
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
@@ -39,7 +39,8 @@ val gestureDiscoveryPatch = bytecodePatch(
             gestureMethods.forEach { method ->
                 val refs = linkedSetOf<String>()
                 method.implementation?.instructions?.forEach { instruction ->
-                    when (val reference = instruction.getReference<Any>()) {
+                    val reference = (instruction as? ReferenceInstruction)?.reference
+                    when (reference) {
                         is MethodReference -> refs += "M:${reference.definingClass}->${reference.name}(${reference.parameterTypes.joinToString("")})${reference.returnType}"
                         is FieldReference -> refs += "F:${reference.definingClass}->${reference.name}:${reference.type}"
                         is TypeReference -> refs += "T:${reference.type}"
