@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ClearSeenVideoHistoryPreference;
+import app.morphe.extension.tiktok.settings.preference.PercentageInputPreference;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
 import app.morphe.extension.tiktok.settings.preference.SeenVideoRetentionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
@@ -66,6 +67,28 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                     Settings.SEEN_VIDEO_RETENTION_DAYS
             ));
             addPreference(new ClearSeenVideoHistoryPreference(context));
+        }
+        if (SettingsStatus.advancedFeedFilterEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide promotional music",
+                    "Hide feed items TikTok marks as using promotional music.",
+                    Settings.HIDE_PROMOTIONAL_MUSIC
+            ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide LIVE replays",
+                    "Hide replay items from previous TikTok LIVE streams.",
+                    Settings.HIDE_LIVE_REPLAYS
+            ));
+            addPreference(new PercentageInputPreference(
+                    context,
+                    "Minimum like/view rate",
+                    "Hide videos whose likes are below this percentage of their view count. 0 disables the rule.",
+                    Settings.MIN_LIKE_VIEW_RATIO_PERCENT,
+                    0,
+                    100
+            ));
         }
         addPreference(new RangeValuePreference(
                 context,
