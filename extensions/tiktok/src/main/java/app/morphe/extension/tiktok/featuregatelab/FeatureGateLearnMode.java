@@ -103,7 +103,12 @@ public final class FeatureGateLearnMode {
         recording = false;
         baselineObservations = Collections.emptySet();
         baselinePlayerValues = Collections.emptyMap();
-        return report.toString(2);
+
+        try {
+            return report.toString(2);
+        } catch (Throwable ignored) {
+            return report.toString();
+        }
     }
 
     private static Set<String> observationIdentities(JSONArray observations) {
