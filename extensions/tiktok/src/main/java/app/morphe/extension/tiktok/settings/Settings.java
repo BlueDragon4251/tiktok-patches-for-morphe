@@ -97,6 +97,10 @@ public class Settings extends BaseSettings {
             "comment_{date}_{media_id}"
     );
     public static final BooleanSetting DOWNLOAD_WATERMARK = new BooleanSetting("down_watermark", TRUE);
+    public static final StringSetting DOWNLOAD_VIDEO_SOURCE = new StringSetting(
+            "blueit_download_video_source",
+            "auto"
+    );
     public static final BooleanSetting CUSTOM_OFFLINE_VIDEOS = new BooleanSetting("custom_offline_videos", FALSE, true);
     public static final IntegerSetting CUSTOM_OFFLINE_VIDEO_LIMIT = new IntegerSetting(
             "custom_offline_video_limit",
