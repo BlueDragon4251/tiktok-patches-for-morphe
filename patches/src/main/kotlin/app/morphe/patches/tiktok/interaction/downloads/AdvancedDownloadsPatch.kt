@@ -10,8 +10,8 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 @Suppress("unused")
 val advancedDownloadsPatch = bytecodePatch(
-    name = "Advanced downloads",
-    description = "Adds BlueIT video-source selection for no-watermark, H.264, and playback download streams.",
+    name = "Download quality selector",
+    description = "Selects automatic, highest, or target video quality and lets BlueIT choose the preferred TikTok download stream.",
     default = true,
 ) {
     dependsOn(downloadsPatch)
