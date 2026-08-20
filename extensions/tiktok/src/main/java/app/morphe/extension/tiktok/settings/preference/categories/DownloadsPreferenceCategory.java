@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.DownloadPathPreference;
+import app.morphe.extension.tiktok.settings.preference.DownloadQualityPreference;
 import app.morphe.extension.tiktok.settings.preference.DownloadSourcePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
@@ -59,7 +60,16 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 "Apply to video downloads and image downloads.",
                 Settings.DOWNLOAD_WATERMARK
         ));
+        if (SettingsStatus.originalPhotoModeDownloaderEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Original Photo Mode downloads",
+                    "Save original CDN image bytes and remove TikTok's rendered copies only after all originals were saved successfully.",
+                    Settings.DOWNLOAD_ORIGINAL_PHOTOS
+            ));
+        }
         if (SettingsStatus.advancedDownloadsEnabled) {
+            addPreference(new DownloadQualityPreference(context, Settings.DOWNLOAD_VIDEO_QUALITY));
             addPreference(new DownloadSourcePreference(context, Settings.DOWNLOAD_VIDEO_SOURCE));
         }
         addPreference(new TogglePreference(
