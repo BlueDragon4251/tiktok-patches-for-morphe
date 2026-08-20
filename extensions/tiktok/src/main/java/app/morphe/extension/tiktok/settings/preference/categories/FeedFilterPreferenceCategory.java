@@ -10,7 +10,9 @@ import android.preference.PreferenceScreen;
 
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.ClearSeenVideoHistoryPreference;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
+import app.morphe.extension.tiktok.settings.preference.SeenVideoRetentionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -52,6 +54,19 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                 "Hide image video", "Hide image video from feed.",
                 Settings.HIDE_IMAGE
         ));
+        if (SettingsStatus.seenVideoFilterEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide already seen videos",
+                    "Filter locally remembered video ids when TikTok loads them again.",
+                    Settings.HIDE_SEEN_VIDEOS
+            ));
+            addPreference(new SeenVideoRetentionPreference(
+                    context,
+                    Settings.SEEN_VIDEO_RETENTION_DAYS
+            ));
+            addPreference(new ClearSeenVideoHistoryPreference(context));
+        }
         addPreference(new RangeValuePreference(
                 context,
                 "Min/Max views", "The minimum or maximum views of a video to show.",
@@ -64,4 +79,3 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
         ));
     }
 }
-
