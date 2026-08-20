@@ -43,10 +43,14 @@ public final class PercentageInputPreference extends EditTextPreference {
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {
-        if (positiveResult) {
-            setText(getEditText().getText().toString());
+        if (!positiveResult) {
+            return;
         }
-        super.onDialogClosed(positiveResult);
+
+        String clamped = String.valueOf(parse(getEditText().getText().toString()));
+        if (callChangeListener(clamped)) {
+            setText(clamped);
+        }
     }
 
     @Override
