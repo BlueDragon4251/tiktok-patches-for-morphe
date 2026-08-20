@@ -23,7 +23,7 @@ public class DownloadsPatch {
         String path = Settings.DOWNLOAD_PATH.get();
         if (BaseSettings.DEBUG.get() && (lastLoggedPath == null || !lastLoggedPath.equals(path))) {
             lastLoggedPath = path;
-            Logger.printInfo(() -> "[Morphe Downloads] download_path=\"" + path + "\"");
+            Logger.printInfo(() -> "[BlueIT Downloads] download_path=\"" + path + "\"");
         }
         return path;
     }
@@ -32,7 +32,7 @@ public class DownloadsPatch {
         boolean removeWatermark = Settings.DOWNLOAD_WATERMARK.get();
         if (BaseSettings.DEBUG.get() && (lastLoggedRemoveWatermark == null || lastLoggedRemoveWatermark != removeWatermark)) {
             lastLoggedRemoveWatermark = removeWatermark;
-            Logger.printInfo(() -> "[Morphe Downloads] remove_watermark=" + removeWatermark);
+            Logger.printInfo(() -> "[BlueIT Downloads] remove_watermark=" + removeWatermark);
         }
         return removeWatermark;
     }
@@ -42,25 +42,23 @@ public class DownloadsPatch {
 
         try {
             UrlModel original = video.downloadNoWatermarkAddr;
-            if (hasUsableUrl(original)) {
+            String requestedSource = normalizeSource(Settings.DOWNLOAD_VIDEO_SOURCE.get());
+            Candidate selected = selectRequestedSource(video, original, requestedSource);
+            if (selected == null || selected.model == original) {
                 return;
             }
 
-            Candidate fallback = selectCleanFallback(video);
-            if (fallback == null) {
-                return;
-            }
-
-            video.downloadNoWatermarkAddr = fallback.model;
+            video.downloadNoWatermarkAddr = selected.model;
 
             if (BaseSettings.DEBUG.get()) {
                 String originalSummary = describeUrlModel(original);
-                String selectedSummary = describeUrlModel(fallback.model);
-                String source = fallback.name;
-                String signature = source + '|' + originalSummary + '|' + selectedSummary;
+                String selectedSummary = describeUrlModel(selected.model);
+                String source = selected.name;
+                String signature = requestedSource + '|' + source + '|' + originalSummary + '|' + selectedSummary;
                 if (!signature.equals(lastLoggedCleanSourceSignature)) {
                     lastLoggedCleanSourceSignature = signature;
-                    Logger.printInfo(() -> "[Morphe Downloads] selected missing-address fallback"
+                    Logger.printInfo(() -> "[BlueIT Downloads] selected video source"
+                            + " requested=" + requestedSource
                             + " original=" + originalSummary
                             + " source=" + source
                             + " replacement=" + selectedSummary);
@@ -68,24 +66,42 @@ public class DownloadsPatch {
             }
         } catch (Throwable ex) {
             if (BaseSettings.DEBUG.get()) {
-                Logger.printException(() -> "[Morphe Downloads] patchVideoObject failure", ex);
+                Logger.printException(() -> "[BlueIT Downloads] patchVideoObject failure", ex);
             }
         }
     }
 
-    private static Candidate selectCleanFallback(Video video) {
-        Candidate[] candidates = {
-                new Candidate("h264PlayAddr", video.h264PlayAddr),
-                new Candidate("playAddr", video.playAddr),
-        };
+    private static Candidate selectRequestedSource(Video video, UrlModel original, String requestedSource) {
+        Candidate originalCandidate = new Candidate("downloadNoWatermarkAddr", original);
+        Candidate h264 = new Candidate("h264PlayAddr", video.h264PlayAddr);
+        Candidate play = new Candidate("playAddr", video.playAddr);
 
-        for (Candidate candidate : candidates) {
-            if (candidate.usable) {
-                return candidate;
-            }
+        switch (requestedSource) {
+            case "no_watermark":
+                if (originalCandidate.usable) return originalCandidate;
+                break;
+            case "h264":
+                if (h264.usable) return h264;
+                break;
+            case "play":
+                if (play.usable) return play;
+                break;
+            case "auto":
+            default:
+                break;
         }
 
+        if (originalCandidate.usable) return originalCandidate;
+        if (h264.usable) return h264;
+        if (play.usable) return play;
         return null;
+    }
+
+    private static String normalizeSource(String source) {
+        if ("no_watermark".equals(source) || "h264".equals(source) || "play".equals(source)) {
+            return source;
+        }
+        return "auto";
     }
 
     private static boolean hasUsableUrl(UrlModel model) {
@@ -119,6 +135,7 @@ public class DownloadsPatch {
     }
 
     private static List<String> getUrlListSafe(UrlModel model) {
+        if (model == null) return null;
         try {
             return model.getUrlList();
         } catch (Throwable ignored) {
