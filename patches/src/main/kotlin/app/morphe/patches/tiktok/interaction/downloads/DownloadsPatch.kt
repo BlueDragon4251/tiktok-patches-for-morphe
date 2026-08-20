@@ -28,6 +28,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/DownloadsPatch;"
 private const val STICKER_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/StickerGallerySaver;"
 private const val FILENAME_FORMATTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/DownloadFilenameFormatter;"
+private const val ORIGINAL_PHOTO_DOWNLOADER_DESCRIPTOR = "Lapp/morphe/extension/tiktok/download/OriginalPhotoModeDownloader;"
 
 @Suppress("unused")
 val downloadsPatch = bytecodePatch(
@@ -48,7 +49,6 @@ val downloadsPatch = bytecodePatch(
         AclCommonShareFingerprint.method.returnEarly(0)
         AclCommonShare2Fingerprint.method.returnEarly(2)
 
-        // Download videos without watermark.
         AclCommonShare3Fingerprint.method.addInstructionsWithLabels(
             0,
             """
@@ -65,61 +65,47 @@ val downloadsPatch = bytecodePatch(
         AwemeGetVideoFingerprint.method.apply {
             val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.first()
             val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
-
             addInstructions(
                 returnIndex,
-                """
-                    invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V
-                """,
+                "invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V",
             )
         }
 
-        // Download images without TikTok's drawn watermark.
         CommentImageWatermarkFingerprint.method.apply {
             val drawBitmapIndex = findInstructionIndicesReversedOrThrow {
                 opcode.name == "invoke-virtual" &&
                     this is ReferenceInstruction &&
                     reference.toString().contains("->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V")
             }.first()
-
             val drawInstr = getInstruction<FiveRegisterInstruction>(drawBitmapIndex)
             val canvasReg = drawInstr.registerC
             val bitmapReg = drawInstr.registerD
             val xReg = drawInstr.registerE
             val yReg = drawInstr.registerF
             val paintReg = drawInstr.registerG
-
             removeInstructions(drawBitmapIndex, 1)
-
             addInstructionsWithLabels(
                 drawBitmapIndex,
                 """
                     invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldRemoveWatermark()Z
                     move-result v$xReg
-
                     if-nez v$xReg, :skip_watermark
-
                     const/4 v$xReg, 0x0
                     invoke-virtual {v$canvasReg, v$bitmapReg, v$xReg, v$yReg, v$paintReg}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V
-
                     :skip_watermark
                     nop
                 """,
             )
         }
 
-        // Add local gallery saving to the comment sticker/image preview sheet.
         StickerPreviewBinderFingerprint.method.apply {
             val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.first()
             addInstructions(
                 returnIndex,
-                """
-                    invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V
-                """,
+                "invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V",
             )
         }
 
-        // Preserve the full StickerItem behind TikTok's reduced preview model for media detection.
         val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.method
         StickerPreviewSourceFingerprint.method.apply {
             val bindCallIndices = implementation!!.instructions.withIndex()
@@ -138,9 +124,7 @@ val downloadsPatch = bytecodePatch(
                 .toList()
 
             if (bindCallIndices.isEmpty()) {
-                throw app.morphe.patcher.patch.PatchException(
-                    "Downloads: could not find resolved sticker preview bind calls.",
-                )
+                throw app.morphe.patcher.patch.PatchException("Downloads: could not find resolved sticker preview bind calls.")
             }
 
             bindCallIndices.asReversed().forEach { bindCallIndex ->
@@ -148,20 +132,14 @@ val downloadsPatch = bytecodePatch(
                 val previewRegister = when (bindInstruction) {
                     is FiveRegisterInstruction -> bindInstruction.registerD
                     is RegisterRangeInstruction -> bindInstruction.startRegister + 1
-                    else -> throw app.morphe.patcher.patch.PatchException(
-                        "Downloads: unsupported sticker preview bind instruction.",
-                    )
+                    else -> throw app.morphe.patcher.patch.PatchException("Downloads: unsupported sticker preview bind instruction.")
                 }
                 val registerProvider = getFreeRegisterProvider(bindCallIndex, 2, previewRegister)
                 val previewTempRegister = registerProvider.getFreeRegister()
                 val sourceTempRegister = registerProvider.getFreeRegister()
-
                 if (previewTempRegister > 15 || sourceTempRegister > 15) {
-                    throw app.morphe.patcher.patch.PatchException(
-                        "Downloads: could not allocate low registers for sticker source association.",
-                    )
+                    throw app.morphe.patcher.patch.PatchException("Downloads: could not allocate low registers for sticker source association.")
                 }
-
                 addInstructions(
                     bindCallIndex,
                     """
@@ -173,17 +151,13 @@ val downloadsPatch = bytecodePatch(
             }
         }
 
-        // Rename completed downloads while both the saved path and Aweme metadata are available.
         DownloadSuccessCoroutineFingerprint.method.apply {
-            val fieldReferences = implementation!!.instructions.mapNotNull {
-                it.getReference<FieldReference>()
-            }
+            val fieldReferences = implementation!!.instructions.mapNotNull { it.getReference<FieldReference>() }
             val pathField = fieldReferences.first {
                 it.definingClass == definingClass && it.type == "Ljava/lang/String;"
             }
             val awemeField = fieldReferences.first {
-                it.definingClass == definingClass &&
-                    it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+                it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
             }
 
             addInstructions(
@@ -194,11 +168,11 @@ val downloadsPatch = bytecodePatch(
                     invoke-static {v0, v1}, $FILENAME_FORMATTER_CLASS_DESCRIPTOR->renameDownloadedMedia(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
                     move-result-object v0
                     iput-object v0, p0, $pathField
+                    invoke-static {v0, v1}, $ORIGINAL_PHOTO_DOWNLOADER_DESCRIPTOR->onTikTokDownloadCompleted(Ljava/lang/String;Lcom/ss/android/ugc/aweme/feed/model/Aweme;)V
                 """,
             )
         }
 
-        // Change the download path.
         DownloadUriFingerprint.method.apply {
             findInstructionIndicesReversedOrThrow {
                 getReference<FieldReference>().let { ref ->
@@ -207,10 +181,7 @@ val downloadsPatch = bytecodePatch(
             }.forEach { fieldIndex ->
                 val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
                 val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-
-                // Remove 'field load → append → "/Camera/" → append' block.
                 removeInstructions(fieldIndex, 4)
-
                 addInstructions(
                     fieldIndex,
                     """
