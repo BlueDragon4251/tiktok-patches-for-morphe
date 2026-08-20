@@ -155,7 +155,7 @@ public class DownloadPathPreference extends DialogPreference {
         TextView browseButton = dialog.getButton(DialogInterface.BUTTON_NEUTRAL);
         if (browseButton != null) {
             browseButton.setOnClickListener(view -> {
-                TikTokPreferenceFragment.openDownloadPathFolderPicker(this);
+                BlueITPreferenceFragment.openDownloadPathFolderPicker(this);
                 dialog.dismiss();
             });
         }
@@ -179,4 +179,3 @@ public class DownloadPathPreference extends DialogPreference {
         return normalized;
     }
 }
-
