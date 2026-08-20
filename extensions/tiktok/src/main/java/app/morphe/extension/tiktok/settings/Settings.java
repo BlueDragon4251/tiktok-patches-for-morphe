@@ -30,6 +30,12 @@ public class Settings extends BaseSettings {
             false,
             Setting.parent(HIDE_SEEN_VIDEOS)
     );
+    public static final BooleanSetting HIDE_PROMOTIONAL_MUSIC =
+            new BooleanSetting("blueit_hide_promotional_music", FALSE, true);
+    public static final BooleanSetting HIDE_LIVE_REPLAYS =
+            new BooleanSetting("blueit_hide_live_replays", FALSE, true);
+    public static final IntegerSetting MIN_LIKE_VIEW_RATIO_PERCENT =
+            new IntegerSetting("blueit_min_like_view_ratio_percent", 0, false);
     public static final BooleanSetting HIDE_CAPTCHA_POPUPS = new BooleanSetting("hide_captcha_popups", FALSE, true);
     public static final BooleanSetting HIDE_HOMEPAGE_COIN = new BooleanSetting("hide_homepage_coin", FALSE, true);
     public static final StringSetting MIN_MAX_VIEWS = new StringSetting("min_max_views", "0-" + Long.MAX_VALUE, true);
