@@ -1,6 +1,5 @@
 /*
- * Copyright 2026 icysymmetra/tiktok-patches-for-morphe contributors
- * https://github.com/icysymmetra/tiktok-patches-for-morphe
+ * Copyright 2026 BlueIT contributors
  */
 package app.morphe.extension.tiktok.settings.preference;
 
@@ -35,7 +34,7 @@ public final class SettingsHeaderPreference extends Preference {
         return new SettingsHeaderPreference(
                 context,
                 Kind.MASTER,
-                "Settings",
+                "BlueIT Service",
                 null,
                 backAction
         );
@@ -103,7 +102,7 @@ public final class SettingsHeaderPreference extends Preference {
         int buttonSize = SettingsUi.dp(context, 40);
         topRow.addView(back, new LinearLayout.LayoutParams(buttonSize, buttonSize));
 
-        TextView kicker = SettingsUi.text(context, "METRA PATCHES", 12.5f, SettingsUi.ACCENT, 1);
+        TextView kicker = SettingsUi.text(context, "BLUEIT SERVICE", 12.5f, SettingsUi.ACCENT, 1);
         LinearLayout.LayoutParams kickerParams = new LinearLayout.LayoutParams(0, -2, 1);
         kickerParams.leftMargin = SettingsUi.dp(context, 4);
         topRow.addView(kicker, kickerParams);
@@ -115,7 +114,7 @@ public final class SettingsHeaderPreference extends Preference {
         titleParams.topMargin = SettingsUi.dp(context, 2);
         container.addView(title, titleParams);
 
-        TextView menuLabel = SettingsUi.text(context, "MENUS", 12.5f, SettingsUi.textDisabled(), 1);
+        TextView menuLabel = SettingsUi.text(context, "SETTINGS", 12.5f, SettingsUi.textDisabled(), 1);
         LinearLayout.LayoutParams menuLabelParams = new LinearLayout.LayoutParams(-1, -2);
         menuLabelParams.leftMargin = SettingsUi.dp(context, 14);
         menuLabelParams.topMargin = SettingsUi.dp(context, 18);
