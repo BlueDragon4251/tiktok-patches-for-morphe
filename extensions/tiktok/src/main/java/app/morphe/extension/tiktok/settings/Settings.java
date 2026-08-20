@@ -122,6 +122,14 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting OPEN_EXTERNAL_LINKS = new BooleanSetting("open_external_links", TRUE);
     public static final BooleanSetting ALWAYS_SHOW_PUBLISH_DATE = new BooleanSetting("always_show_publish_date", TRUE, true);
     public static final BooleanSetting CLEAR_DISPLAY = new BooleanSetting("clear_display", FALSE);
+    public static final BooleanSetting AUTOMATIC_CLEAR_DISPLAY =
+            new BooleanSetting("blueit_automatic_clear_display", FALSE);
+    public static final IntegerSetting AUTOMATIC_CLEAR_DISPLAY_DELAY_MS = new IntegerSetting(
+            "blueit_automatic_clear_display_delay_ms",
+            2000,
+            false,
+            Setting.parent(AUTOMATIC_CLEAR_DISPLAY)
+    );
     public static final BooleanSetting COPY_COMMENTS_WITHOUT_USERNAME = new BooleanSetting("copy_comments_without_username", TRUE);
     public static final FloatSetting REMEMBERED_SPEED = new FloatSetting("REMEMBERED_SPEED", 1.0f);
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
