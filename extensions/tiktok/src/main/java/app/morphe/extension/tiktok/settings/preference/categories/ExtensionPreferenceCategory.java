@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
+import app.morphe.extension.tiktok.settings.preference.FeatureGateRecorderPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -104,7 +105,8 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.ENABLE_LIVE_SEARCH
             ));
         }
-
+        if (SettingsStatus.featureGateRecorderEnabled) {
+            addPreference(new FeatureGateRecorderPreference(context));
+        }
     }
 }
-
