@@ -15,6 +15,7 @@ public class SettingsStatus {
     public static boolean hideCommentQuickReactionsEnabled = false;
     public static boolean copyCommentsWithoutUsernameEnabled = false;
     public static boolean downloadEnabled = false;
+    public static boolean advancedDownloadsEnabled = false;
     public static boolean simSpoofEnabled = false;
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
@@ -29,93 +30,29 @@ public class SettingsStatus {
     public static boolean alwaysShowPublishDateEnabled = false;
     public static boolean diagnosticsEnabled = false;
 
-    public static void enableFeedFilter() {
-        feedFilterEnabled = true;
-    }
-
-    public static void enableSeenVideoFilter() {
-        seenVideoFilterEnabled = true;
-    }
-
-    public static void enableAdvancedFeedFilter() {
-        advancedFeedFilterEnabled = true;
-    }
-
-    public static void enableFeatureGateRecorder() {
-        featureGateRecorderEnabled = true;
-    }
-
-    public static void enableFeedNavigation() {
-        feedNavigationEnabled = true;
-    }
-
-    public static void enableCommentTranslation() {
-        commentTranslationEnabled = true;
-    }
-
-    public static void enableHideCommentQuickReactions() {
-        hideCommentQuickReactionsEnabled = true;
-    }
-
-    public static void enableCopyCommentsWithoutUsername() {
-        copyCommentsWithoutUsernameEnabled = true;
-    }
-
-    public static void enableDownload() {
-        downloadEnabled = true;
-    }
-
-    public static void enableSimSpoof() {
-        simSpoofEnabled = true;
-    }
-
-    public static void enableCaptchaPopupSuppression() {
-        captchaPopupSuppressionEnabled = true;
-    }
-
-    public static void enablePromotionalBanners() {
-        promotionalBannersEnabled = true;
-    }
-
-    public static void enableLongPressSpeedLock() {
-        longPressSpeedLockEnabled = true;
-    }
-
-    public static void enableDisableLongPressQuickShare() {
-        disableLongPressQuickShareEnabled = true;
-    }
-
-    public static void enableNonPersonalizedSearch() {
-        nonPersonalizedSearchEnabled = true;
-    }
-
-    public static void enableLiveSearch() {
-        liveSearchEnabled = true;
-    }
-
-    public static void enableSeekbarThumbnail() {
-        seekbarThumbnailEnabled = true;
-    }
-
-    public static void enableStopVideoLooping() {
-        stopVideoLoopingEnabled = true;
-    }
-
-    public static void enableResumeVideoAfterScroll() {
-        resumeVideoAfterScrollEnabled = true;
-    }
-
-    public static void enableExternalBrowser() {
-        externalBrowserEnabled = true;
-    }
-
-    public static void enableAlwaysShowPublishDate() {
-        alwaysShowPublishDateEnabled = true;
-    }
-
-    public static void enableDiagnostics() {
-        diagnosticsEnabled = true;
-    }
+    public static void enableFeedFilter() { feedFilterEnabled = true; }
+    public static void enableSeenVideoFilter() { seenVideoFilterEnabled = true; }
+    public static void enableAdvancedFeedFilter() { advancedFeedFilterEnabled = true; }
+    public static void enableFeatureGateRecorder() { featureGateRecorderEnabled = true; }
+    public static void enableFeedNavigation() { feedNavigationEnabled = true; }
+    public static void enableCommentTranslation() { commentTranslationEnabled = true; }
+    public static void enableHideCommentQuickReactions() { hideCommentQuickReactionsEnabled = true; }
+    public static void enableCopyCommentsWithoutUsername() { copyCommentsWithoutUsernameEnabled = true; }
+    public static void enableDownload() { downloadEnabled = true; }
+    public static void enableAdvancedDownloads() { advancedDownloadsEnabled = true; }
+    public static void enableSimSpoof() { simSpoofEnabled = true; }
+    public static void enableCaptchaPopupSuppression() { captchaPopupSuppressionEnabled = true; }
+    public static void enablePromotionalBanners() { promotionalBannersEnabled = true; }
+    public static void enableLongPressSpeedLock() { longPressSpeedLockEnabled = true; }
+    public static void enableDisableLongPressQuickShare() { disableLongPressQuickShareEnabled = true; }
+    public static void enableNonPersonalizedSearch() { nonPersonalizedSearchEnabled = true; }
+    public static void enableLiveSearch() { liveSearchEnabled = true; }
+    public static void enableSeekbarThumbnail() { seekbarThumbnailEnabled = true; }
+    public static void enableStopVideoLooping() { stopVideoLoopingEnabled = true; }
+    public static void enableResumeVideoAfterScroll() { resumeVideoAfterScrollEnabled = true; }
+    public static void enableExternalBrowser() { externalBrowserEnabled = true; }
+    public static void enableAlwaysShowPublishDate() { alwaysShowPublishDateEnabled = true; }
+    public static void enableDiagnostics() { diagnosticsEnabled = true; }
 
     public static void load() {
     }
