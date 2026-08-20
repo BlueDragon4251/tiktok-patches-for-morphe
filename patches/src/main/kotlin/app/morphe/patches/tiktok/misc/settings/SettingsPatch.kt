@@ -29,7 +29,7 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
-private const val SETTINGS_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/settings/TikTokActivityHook;"
+private const val SETTINGS_EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/settings/BlueITActivityHook;"
 private const val OPEN_DEBUG_CELL_VM_DESCRIPTOR =
     "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
 
@@ -42,8 +42,8 @@ private data class OpenDebugTargets(
 
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
-    name = "Settings",
-    description = "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.4.3.",
+    name = "BlueIT Service",
+    description = "Adds the BlueIT Service settings menu to TikTok. Supports TikTok 46.4.3.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -230,7 +230,7 @@ val settingsPatch = bytecodePatch(
             return matches.single()
         }
 
-        fun MutableMethod.openMorpheSettingsAtStart(contextRegister: String) {
+        fun MutableMethod.openBlueITServiceAtStart(contextRegister: String) {
             addInstructions(
                 0,
                 """
@@ -242,7 +242,7 @@ val settingsPatch = bytecodePatch(
                     invoke-direct {v1, v$contextRegister, v2}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
                     const/high16 v2, 0x10000000
                     invoke-virtual { v1, v2 }, Landroid/content/Intent;->setFlags(I)Landroid/content/Intent;
-                    const-string v2, "morphe_settings"
+                    const-string v2, "blueit_service_settings"
                     invoke-virtual { v1, v2 }, Landroid/content/Intent;->setAction(Ljava/lang/String;)Landroid/content/Intent;
                     invoke-virtual { v$contextRegister, v1 }, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
                     :return_unit
@@ -336,10 +336,10 @@ val settingsPatch = bytecodePatch(
                 """
                     invoke-static/range {p0 .. p0}, $SETTINGS_EXTENSION_CLASS_DESCRIPTOR->handleBackPressed(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
                     move-result v0
-                    if-eqz v0, :morphe_settings_not_handled
+                    if-eqz v0, :blueit_service_settings_not_handled
                     return-void
                 """,
-                ExternalLabel("morphe_settings_not_handled", getInstruction(0)),
+                ExternalLabel("blueit_service_settings_not_handled", getInstruction(0)),
             )
         }
 
@@ -351,7 +351,7 @@ val settingsPatch = bytecodePatch(
         val moveResultIndex = getStringInvokeIndex + 1
         val titleStringRegister = compose.getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
 
-        composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"Metra patches\"")
+        composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"BlueIT Service\"")
 
         val clickWrapperMethod = resolveClickWrapperMethod()
         val openDebugClickWrapperClass = clickWrapperMethod.definingClass
@@ -364,7 +364,7 @@ val settingsPatch = bytecodePatch(
                     new-instance v1, Landroid/content/Intent;
                     const-class v2, Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;
                     invoke-direct {v1, v0, v2}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
-                    const-string v2, "morphe_settings"
+                    const-string v2, "blueit_service_settings"
                     invoke-virtual { v1, v2 }, Landroid/content/Intent;->setAction(Ljava/lang/String;)Landroid/content/Intent;
                     const/high16 v2, 0x10000000
                     invoke-virtual { v1, v2 }, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
@@ -375,6 +375,6 @@ val settingsPatch = bytecodePatch(
             )
         }
 
-        resolveOpenDebugFunction2Method().openMorpheSettingsAtStart("0")
+        resolveOpenDebugFunction2Method().openBlueITServiceAtStart("0")
     }
 }
