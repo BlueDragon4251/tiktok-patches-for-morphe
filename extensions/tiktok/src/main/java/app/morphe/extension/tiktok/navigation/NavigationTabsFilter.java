@@ -34,10 +34,11 @@ public final class NavigationTabsFilter {
                     Settings.FEED_NAVIGATION_OBSERVED_TABS.get()
             );
             observeTabs(tabs, previousObservedKeys);
+            StartupTabController.observeSelection(tabs);
 
             if (!Settings.FEED_NAVIGATION.get()) {
                 debugTabs("observed", tabs, tabs);
-                return tabs;
+                return StartupTabController.applyStartup(tabs);
             }
 
             Set<String> enabledKeys = NavigationTabOptions.parseEnabledKeys(Settings.FEED_NAVIGATION_TABS.get());
@@ -64,12 +65,12 @@ public final class NavigationTabsFilter {
                     filtered.add(hotTab);
                 } else {
                     debugTabs("fallback-original", tabs, tabs);
-                    return tabs;
+                    return StartupTabController.applyStartup(tabs);
                 }
             }
 
             debugTabs("filtered", tabs, filtered);
-            return filtered;
+            return StartupTabController.applyStartup(filtered);
         } catch (Throwable throwable) {
             Logger.printException(() -> "Feed tab navigation failed; returning original tabs", throwable);
             return tabs;
