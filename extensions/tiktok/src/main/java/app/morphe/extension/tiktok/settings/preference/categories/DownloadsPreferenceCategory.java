@@ -11,6 +11,7 @@ import android.preference.PreferenceScreen;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.DownloadPathPreference;
+import app.morphe.extension.tiktok.settings.preference.DownloadSourcePreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
 import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
@@ -58,6 +59,9 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 "Apply to video downloads and image downloads.",
                 Settings.DOWNLOAD_WATERMARK
         ));
+        if (SettingsStatus.advancedDownloadsEnabled) {
+            addPreference(new DownloadSourcePreference(context, Settings.DOWNLOAD_VIDEO_SOURCE));
+        }
         addPreference(new TogglePreference(
                 context,
                 "Custom offline videos",
@@ -72,7 +76,5 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                 201,
                 500
         ));
-
     }
 }
-
