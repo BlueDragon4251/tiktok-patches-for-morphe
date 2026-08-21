@@ -51,7 +51,7 @@ val rememberClearDisplayPatch = bytecodePatch(
                         const/4 v0, 0x1
                         const/4 v1, 0x0
                         const-string v2, ""
-                        const-string p1, "blueit_auto"
+                        const-string p1, "long_press"
                         new-instance p0, $clearDisplayEventClass
                         invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
                         invoke-static {p0}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->onNewVideo(Ljava/lang/Object;)V

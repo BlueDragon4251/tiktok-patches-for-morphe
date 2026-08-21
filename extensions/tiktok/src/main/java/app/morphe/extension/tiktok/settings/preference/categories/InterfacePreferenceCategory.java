@@ -42,7 +42,8 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
                     "Delay in milliseconds before controls are hidden. Choose 250-15000 ms.",
                     Settings.AUTOMATIC_CLEAR_DISPLAY_DELAY_MS,
                     250,
-                    15000
+                    15000,
+                    "ms"
             ));
         }
         if (SettingsStatus.promotionalBannersEnabled) {

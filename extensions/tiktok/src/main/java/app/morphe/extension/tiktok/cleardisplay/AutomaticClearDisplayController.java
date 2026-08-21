@@ -75,20 +75,27 @@ public final class AutomaticClearDisplayController {
      * automatic activation suppresses reactivation until the next video.
      */
     public static void onClearDisplayStateChanged(boolean enabled) {
-        if (!isEnabled()) {
+        if (!isEnabled() || enabled) {
             return;
         }
 
+        // TikTok emits an initial "clear display = false" state while a new video is
+        // being prepared. That is not a user override and must not cancel the timer.
+        long automaticPostAt = lastAutomaticPostAtMs;
+        if (automaticPostAt <= 0L) {
+            return;
+        }
+
+        // Ignore the state churn immediately caused by posting the native event itself.
+        // Only a later transition back to the normal UI is considered a manual override.
         long now = System.currentTimeMillis();
-        if (enabled) {
+        if (now - automaticPostAt <= 750L) {
             return;
         }
 
-        if (now - lastAutomaticPostAtMs > 750L) {
-            synchronized (LOCK) {
-                manualOverride = true;
-                cancelLocked();
-            }
+        synchronized (LOCK) {
+            manualOverride = true;
+            cancelLocked();
         }
     }
 
@@ -112,10 +119,17 @@ public final class AutomaticClearDisplayController {
 
     private static boolean postEvent(Object event, boolean automatic) {
         try {
+            Method post = findPostMethod(event.getClass());
+            if (post == null) {
+                throw new NoSuchMethodException(event.getClass().getName() + ".post()");
+            }
+            if (!post.isAccessible()) {
+                post.setAccessible(true);
+            }
+
             if (automatic) {
                 lastAutomaticPostAtMs = System.currentTimeMillis();
             }
-            Method post = event.getClass().getMethod("post");
             post.invoke(event);
             if (BaseSettings.DEBUG.get()) {
                 Logger.printInfo(() -> "[BlueIT ClearDisplay] "
@@ -123,10 +137,30 @@ public final class AutomaticClearDisplayController {
             }
             return true;
         } catch (Throwable throwable) {
+            if (automatic) {
+                lastAutomaticPostAtMs = 0L;
+            }
             if (BaseSettings.DEBUG.get()) {
                 Logger.printException(() -> "[BlueIT ClearDisplay] event failed", throwable);
             }
             return false;
+        }
+    }
+
+    private static Method findPostMethod(Class<?> type) {
+        Class<?> current = type;
+        while (current != null) {
+            try {
+                return current.getDeclaredMethod("post");
+            } catch (NoSuchMethodException ignored) {
+                current = current.getSuperclass();
+            }
+        }
+
+        try {
+            return type.getMethod("post");
+        } catch (NoSuchMethodException ignored) {
+            return null;
         }
     }
 }
