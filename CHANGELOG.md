@@ -1,3 +1,18 @@
+# [1.1.0-dev.5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.4...v1.1.0-dev.5) (2026-08-21)
+
+
+### Bug Fixes
+
+* **tiktok:** detect paid and late 46.4.3 ads ([6980708](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6980708b9a20f157cd3740b3f1e786681e23f1e0))
+* **tiktok:** keep filtering late For You mutations ([0503c3c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0503c3c3b4bf27cd16b92d88d33efadd646e5011))
+* **tiktok:** re-filter marked For You lists after late inserts ([5f600dc](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/5f600dc6e905f84bfc87ecf4da1649e8a529df32))
+
+
+
+
+
+## 1.1.0-dev.5
+
 ## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)
 
 
