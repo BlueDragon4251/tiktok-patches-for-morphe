@@ -11,13 +11,18 @@ import app.morphe.extension.tiktok.settings.Settings;
 import com.ss.android.ugc.aweme.base.model.UrlModel;
 import com.ss.android.ugc.aweme.feed.model.Video;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class DownloadsPatch {
+    private static final int MAX_SELECTION_LOGS = 24;
+    private static final Object SELECTION_LOG_LOCK = new Object();
+    private static final Set<String> loggedSelectionSignatures = new LinkedHashSet<>();
+
     private static volatile String lastLoggedPath;
     private static volatile Boolean lastLoggedRemoveWatermark;
-    private static volatile String lastLoggedCleanSourceSignature;
 
     public static String getDownloadPath() {
         String path = Settings.DOWNLOAD_PATH.get();
@@ -70,13 +75,21 @@ public class DownloadsPatch {
         String originalSummary = describeUrlModel(original);
         String selectedSummary = describeUrlModel(replacement);
         String signature = requested + '|' + source + '|' + originalSummary + '|' + selectedSummary;
-        if (!signature.equals(lastLoggedCleanSourceSignature)) {
-            lastLoggedCleanSourceSignature = signature;
-            Logger.printInfo(() -> "[BlueIT Downloads] selected video source"
-                    + " requested=" + requested
-                    + " original=" + originalSummary
-                    + " source=" + source
-                    + " replacement=" + selectedSummary);
+        if (!claimSelectionLog(signature)) return;
+
+        Logger.printInfo(() -> "[BlueIT Downloads] selected video source"
+                + " requested=" + requested
+                + " original=" + originalSummary
+                + " source=" + source
+                + " replacement=" + selectedSummary);
+    }
+
+    private static boolean claimSelectionLog(String signature) {
+        synchronized (SELECTION_LOG_LOCK) {
+            if (loggedSelectionSignatures.contains(signature)) return false;
+            if (loggedSelectionSignatures.size() >= MAX_SELECTION_LOGS) return false;
+            loggedSelectionSignatures.add(signature);
+            return true;
         }
     }
 
