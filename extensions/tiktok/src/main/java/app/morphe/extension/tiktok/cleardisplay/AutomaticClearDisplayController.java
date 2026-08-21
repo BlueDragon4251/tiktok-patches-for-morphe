@@ -10,7 +10,8 @@ import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
 /**
- * Schedules TikTok's native clear-display event without duplicating the bytecode hook.
+ * Owns the current video's native clear-display event and optionally schedules it.
+ * Gesture remapping reuses the same proven TikTok event path via postNow().
  */
 @SuppressWarnings("unused")
 public final class AutomaticClearDisplayController {
@@ -18,6 +19,7 @@ public final class AutomaticClearDisplayController {
     private static final Object LOCK = new Object();
 
     private static Runnable pending;
+    private static Object latestEvent;
     private static volatile boolean manualOverride;
     private static volatile long lastAutomaticPostAtMs;
 
@@ -32,11 +34,13 @@ public final class AutomaticClearDisplayController {
         return !isEnabled();
     }
 
-    /** Called for every newly rendered feed video. */
+    /** Called for every newly rendered feed video, regardless of whether auto mode is enabled. */
     public static void onNewVideo(Object clearDisplayEvent) {
         synchronized (LOCK) {
             cancelLocked();
             manualOverride = false;
+            lastAutomaticPostAtMs = 0L;
+            latestEvent = clearDisplayEvent;
             if (!isEnabled() || clearDisplayEvent == null) {
                 return;
             }
@@ -45,14 +49,25 @@ public final class AutomaticClearDisplayController {
             pending = () -> {
                 synchronized (LOCK) {
                     pending = null;
-                    if (!isEnabled() || manualOverride) {
+                    if (!isEnabled() || manualOverride || event != latestEvent) {
                         return;
                     }
                 }
-                postEvent(event);
+                postEvent(event, true);
             };
             MAIN.postDelayed(pending, delayMs());
         }
+    }
+
+    /** Immediately enters clear-display mode using the current video's native event. */
+    public static boolean postNow() {
+        final Object event;
+        synchronized (LOCK) {
+            event = latestEvent;
+            if (event == null) return false;
+            cancelLocked();
+        }
+        return postEvent(event, false);
     }
 
     /**
@@ -66,8 +81,6 @@ public final class AutomaticClearDisplayController {
 
         long now = System.currentTimeMillis();
         if (enabled) {
-            // The event bus dispatch is synchronous on supported 46.4.3 paths.
-            // Keep a small time window as a defensive fallback.
             return;
         }
 
@@ -97,18 +110,23 @@ public final class AutomaticClearDisplayController {
         }
     }
 
-    private static void postEvent(Object event) {
+    private static boolean postEvent(Object event, boolean automatic) {
         try {
-            lastAutomaticPostAtMs = System.currentTimeMillis();
+            if (automatic) {
+                lastAutomaticPostAtMs = System.currentTimeMillis();
+            }
             Method post = event.getClass().getMethod("post");
             post.invoke(event);
             if (BaseSettings.DEBUG.get()) {
-                Logger.printInfo(() -> "[BlueIT ClearDisplay] automatic clear-display event posted");
+                Logger.printInfo(() -> "[BlueIT ClearDisplay] "
+                        + (automatic ? "automatic" : "gesture") + " clear-display event posted");
             }
+            return true;
         } catch (Throwable throwable) {
             if (BaseSettings.DEBUG.get()) {
-                Logger.printException(() -> "[BlueIT ClearDisplay] automatic event failed", throwable);
+                Logger.printException(() -> "[BlueIT ClearDisplay] event failed", throwable);
             }
+            return false;
         }
     }
 }

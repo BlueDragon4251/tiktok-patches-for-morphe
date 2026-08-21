@@ -7,6 +7,7 @@ package app.morphe.extension.tiktok.featurecontrols;
 import android.app.Activity;
 import android.content.Intent;
 
+import app.morphe.extension.tiktok.interaction.gesture.GestureRemapper;
 import app.morphe.extension.tiktok.settings.Settings;
 
 public final class FeatureControls {
@@ -69,7 +70,9 @@ public final class FeatureControls {
     }
 
     public static boolean overrideLongPressSpeedUpEnabled(boolean enabled) {
-        return Settings.ENABLE_LONG_PRESS_SPEED_LOCK.get() || enabled;
+        return GestureRemapper.isLongPressSpeedAction()
+                || Settings.ENABLE_LONG_PRESS_SPEED_LOCK.get()
+                || enabled;
     }
 
     public static int overrideLongPressSpeedUpLockDistance(int distanceDp) {
@@ -86,11 +89,16 @@ public final class FeatureControls {
     }
 
     public static int overrideLongPressQuickShare(int originalMode) {
-        return Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() ? 0 : originalMode;
+        return Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get()
+                || GestureRemapper.shouldSuppressLongPressQuickShare()
+                ? 0
+                : originalMode;
     }
 
     public static boolean overrideLongPressQuickShare(boolean originalEnabled) {
-        return !Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get() && originalEnabled;
+        return !Settings.DISABLE_LONG_PRESS_QUICK_SHARE.get()
+                && !GestureRemapper.shouldSuppressLongPressQuickShare()
+                && originalEnabled;
     }
 
     public static boolean enableNonPersonalizedSearch(boolean original) {

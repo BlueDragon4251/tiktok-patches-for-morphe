@@ -4,12 +4,12 @@
  */
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
-import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.indexOfFirstInstructionOrThrow
@@ -48,10 +48,6 @@ val rememberClearDisplayPatch = bytecodePatch(
                 addInstructionsWithLabels(
                     returnIndex,
                     """
-                        invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->isEnabled()Z
-                        move-result v0
-                        if-eqz v0, :blueit_remember_clear_display
-
                         const/4 v0, 0x1
                         const/4 v1, 0x0
                         const-string v2, ""
@@ -59,9 +55,11 @@ val rememberClearDisplayPatch = bytecodePatch(
                         new-instance p0, $clearDisplayEventClass
                         invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
                         invoke-static {p0}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->onNewVideo(Ljava/lang/Object;)V
-                        goto :blueit_clear_display_return
 
-                        :blueit_remember_clear_display
+                        invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->isEnabled()Z
+                        move-result v0
+                        if-nez v0, :blueit_clear_display_return
+
                         invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->getClearDisplayState()Z
                         move-result v0
                         if-eqz v0, :blueit_clear_display_return

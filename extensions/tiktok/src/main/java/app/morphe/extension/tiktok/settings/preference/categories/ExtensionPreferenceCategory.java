@@ -12,6 +12,7 @@ import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.FeatureGateRecorderPreference;
+import app.morphe.extension.tiktok.settings.preference.GestureActionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
 
 @SuppressWarnings("deprecation")
@@ -71,6 +72,33 @@ public class ExtensionPreferenceCategory extends ConditionalPreferenceCategory {
                     "Resume videos after scrolling",
                     "Continue supported videos from where you stopped when you scroll back to them.",
                     Settings.RESUME_VIDEO_AFTER_SCROLL
+            ));
+        }
+        if (SettingsStatus.gestureRemapperEnabled) {
+            addPreference(new GestureActionPreference(
+                    context,
+                    GestureActionPreference.Kind.SINGLE_TAP,
+                    Settings.GESTURE_SINGLE_TAP_ACTION
+            ));
+            addPreference(new GestureActionPreference(
+                    context,
+                    GestureActionPreference.Kind.DOUBLE_TAP,
+                    Settings.GESTURE_DOUBLE_TAP_ACTION
+            ));
+            addPreference(new GestureActionPreference(
+                    context,
+                    GestureActionPreference.Kind.DOUBLE_TAP_LEFT,
+                    Settings.GESTURE_DOUBLE_TAP_LEFT_ACTION
+            ));
+            addPreference(new GestureActionPreference(
+                    context,
+                    GestureActionPreference.Kind.DOUBLE_TAP_RIGHT,
+                    Settings.GESTURE_DOUBLE_TAP_RIGHT_ACTION
+            ));
+            addPreference(new GestureActionPreference(
+                    context,
+                    GestureActionPreference.Kind.LONG_PRESS,
+                    Settings.GESTURE_LONG_PRESS_ACTION
             ));
         }
         if (SettingsStatus.longPressSpeedLockEnabled) {

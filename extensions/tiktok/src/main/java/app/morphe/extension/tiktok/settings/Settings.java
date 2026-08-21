@@ -146,6 +146,26 @@ public class Settings extends BaseSettings {
             false,
             Setting.parent(AUTOMATIC_CLEAR_DISPLAY)
     );
+    public static final StringSetting GESTURE_SINGLE_TAP_ACTION = new StringSetting(
+            "blueit_gesture_single_tap_action",
+            "default"
+    );
+    public static final StringSetting GESTURE_DOUBLE_TAP_ACTION = new StringSetting(
+            "blueit_gesture_double_tap_action",
+            "default"
+    );
+    public static final StringSetting GESTURE_DOUBLE_TAP_LEFT_ACTION = new StringSetting(
+            "blueit_gesture_double_tap_left_action",
+            "default"
+    );
+    public static final StringSetting GESTURE_DOUBLE_TAP_RIGHT_ACTION = new StringSetting(
+            "blueit_gesture_double_tap_right_action",
+            "default"
+    );
+    public static final StringSetting GESTURE_LONG_PRESS_ACTION = new StringSetting(
+            "blueit_gesture_long_press_action",
+            "default"
+    );
     public static final BooleanSetting COPY_COMMENTS_WITHOUT_USERNAME = new BooleanSetting("copy_comments_without_username", TRUE);
     public static final FloatSetting REMEMBERED_SPEED = new FloatSetting("REMEMBERED_SPEED", 1.0f);
     public static final BooleanSetting ENABLE_LONG_PRESS_SPEED_LOCK = new BooleanSetting("enable_long_press_speed_lock", FALSE, true);
