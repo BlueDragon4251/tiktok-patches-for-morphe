@@ -253,7 +253,7 @@ public class Logger {
     private static DiagnosticCategory legacyCategory(String source, LogLevel level) {
         if (level == LogLevel.ERROR) return DiagnosticCategory.PATCH_ERRORS;
         if (source.startsWith("FollowDiagnostics")) return DiagnosticCategory.FOLLOW;
-        if (source.startsWith("Downloads") || source.startsWith("Sticker")) {
+        if (source.startsWith("Download") || source.startsWith("Sticker")) {
             return DiagnosticCategory.DOWNLOADS;
         }
         if (source.startsWith("FeatureGateLab")) return DiagnosticCategory.FEATURE_GATE_LAB;
