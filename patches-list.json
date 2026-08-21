@@ -1,12 +1,97 @@
 {
-  "version": "1.0.1",
+  "version": "1.1.0-dev.4",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
   "patches": [
     {
+      "name": "Advanced feed filter",
+      "description": "Adds BlueIT feed rules for promotional music, LIVE replays, and minimum like/view ratio.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Always show publish date",
       "description": "Always shows the publish date in video author information. Thanks to lyyako for the original implementation.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Automatic clear display",
+      "description": "Automatically enters TikTok clear-display mode after a configurable delay for each newly played video.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "BlueIT Service",
+      "description": "Adds the BlueIT Service settings menu to TikTok. Supports TikTok 46.4.3.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -198,6 +283,34 @@
       "options": []
     },
     {
+      "name": "Download quality selector",
+      "description": "Selects automatic, highest, or target video quality and lets BlueIT choose the preferred TikTok download stream.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Downloads",
       "description": "Adds watermark-free downloads, comment sticker saving, configurable folders, and filename templates.",
       "use": true,
@@ -310,6 +423,34 @@
       "options": []
     },
     {
+      "name": "Feature Gate Recorder",
+      "description": "Adds BlueIT Learn mode for recording newly observed TikTok configuration candidates while using a feature.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Feed filter",
       "description": "Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges.",
       "use": true,
@@ -392,8 +533,67 @@
       "options": []
     },
     {
+      "name": "Gesture remapper",
+      "description": "Remaps TikTok feed single tap, double tap, left/right seek, and long-press gestures.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch",
+        "BytecodePatch",
+        "BytecodePatch",
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Hide CAPTCHA popups",
       "description": "Adds a default-off setting to hide browsing and LIVE puzzle dialogs while preserving login and account verification.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Hide already seen videos",
+      "description": "Keeps a local BlueIT watch-history and filters videos you already watched from newly loaded feed batches.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -506,6 +706,34 @@
     {
       "name": "Open external links directly",
       "description": "Opens profile and story website links in the system browser instead of TikTok's in-app browser. Thanks to lyyako for the original implementation.",
+      "use": true,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": {
+        "com.zhiliaoapp.musically": [
+          "46.4.3"
+        ]
+      },
+      "compatibility": [
+        {
+          "name": "TikTok",
+          "packageName": "com.zhiliaoapp.musically",
+          "description": null,
+          "appIconColor": 16657493,
+          "targets": [
+            {
+              "version": "46.4.3",
+              "experimental": false
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Original Photo Mode downloader",
+      "description": "Downloads the original Photo Mode CDN assets instead of keeping TikTok's rendered copies when enabled.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -645,34 +873,6 @@
     {
       "name": "Sanitize sharing links",
       "description": "Removes tracking parameters from TikTok links before they are shared.",
-      "use": true,
-      "dependencies": [
-        "BytecodePatch"
-      ],
-      "compatiblePackages": {
-        "com.zhiliaoapp.musically": [
-          "46.4.3"
-        ]
-      },
-      "compatibility": [
-        {
-          "name": "TikTok",
-          "packageName": "com.zhiliaoapp.musically",
-          "description": null,
-          "appIconColor": 16657493,
-          "targets": [
-            {
-              "version": "46.4.3",
-              "experimental": false
-            }
-          ]
-        }
-      ],
-      "options": []
-    },
-    {
-      "name": "Settings",
-      "description": "Adds the Metra patches settings menu to TikTok. Supports TikTok 46.4.3.",
       "use": true,
       "dependencies": [
         "BytecodePatch"

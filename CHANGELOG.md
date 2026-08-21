@@ -1,3 +1,31 @@
+# [1.1.0-dev.4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.3...v1.1.0-dev.4) (2026-08-21)
+
+
+### Bug Fixes
+
+* bind automatic clear display to native panel ([477f706](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/477f70675e1b29198945deb9c149886ff9e2b0b4))
+* display legacy range maximum as unlimited ([fd0415f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/fd0415f05d3fcc5ebe42d16900b2ec691dc2c69f))
+* fingerprint native clear display panel context ([d18ff1f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d18ff1f131487cbbcdc3b4a36f4e5bd383e631a3))
+* keep advanced feed rules out of profile lists ([184e20c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/184e20c90e4c7c2a20b81f82970b92e48f06f318))
+* keep base feed filter out of profile lists ([9a0811e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9a0811e7cb6e666444b27b61af0ce6cfad4f5e7d))
+* keep seen-video filtering out of profile lists ([dad3fcf](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/dad3fcf1fe308e00de9056e5f4ac3d8bfaa4ce08))
+* request clear display through TikTok native panel ([dfdb4e5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/dfdb4e597fb61872f7493e3ceec6915f6f1c5a5d))
+* scope feed filtering to real feed responses ([51ad474](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/51ad4745117c84f583a281bb7fd7c842bfbac44a))
+* **settings:** place BlueIT before TikTok activity group ([f31449f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/f31449fc92e77204c3805e00e11da3284912eca7))
+* **settings:** show clear display delay in milliseconds ([077dbe0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/077dbe07b6f6474b0e01a29f676d753c9c1a2b7c))
+* **settings:** support correct numeric preference units ([cc13dd8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cc13dd85699c705c9e250186ab52a9c78929be9a))
+* **tiktok:** detect raw 46.4.3 feed ads ([56e3cb8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/56e3cb865c31a0d806576040808630d55b0854e5))
+* **tiktok:** keep automatic clear display timer active ([2df94a3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2df94a34d13ad7701d2f3a42e91297c6c36dbf82))
+* **tiktok:** publish accepted 46.4.3 feed fixes ([a8f7102](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a8f7102b1e2338ec1e43fb1a93362f96b1b5a684))
+* **tiktok:** use proven native clear display event source ([053a933](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/053a93395e2a864cef389ae8c80e52d1c4337a8f))
+* use exact 46.4.3 duration metadata ([9e401cf](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9e401cfaf913664651aaef03805534ffab81f0b5))
+
+
+
+
+
+## 1.1.0-dev.4
+
 ## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)
 
 
