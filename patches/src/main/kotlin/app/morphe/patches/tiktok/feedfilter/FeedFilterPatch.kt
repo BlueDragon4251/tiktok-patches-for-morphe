@@ -14,6 +14,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;"
+private const val FOR_YOU_GUARD_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/ForYouFeedGuard;"
 private const val TAKO_AI_FILTER_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/TakoAiFilter;"
 
 @Suppress("unused")
@@ -35,8 +36,8 @@ val feedFilterPatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedFilter()V",
         )
 
-        // Filter only the canonical For You response. FeedItemList is a shared model and
-        // globally hooking getItems() also filters profile/detail/series surfaces.
+        // Mark only the canonical For You response. FeedItemList is shared by profiles,
+        // detail and series screens, so global re-filtering below is identity-guarded.
         ForYouFeedResponseFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -47,7 +48,25 @@ val feedFilterPatch = bytecodePatch(
                 val register = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
                 method.addInstructions(
                     returnIndex,
-                    "invoke-static/range {v$register .. v$register}, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+                    "invoke-static/range {v$register .. v$register}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+                )
+            }
+        }
+
+        // TikTok 46.4.3 applies response processors and client-side insertions after the
+        // canonical API return (including preload ad candidates). Re-filter whenever a
+        // marked FYP list is read again. Non-feed FeedItemList instances are ignored by
+        // ForYouFeedGuard, preserving profile/detail lists.
+        FeedItemListGetItemsFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                method.addInstructions(
+                    returnIndex,
+                    "invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->filterIfMarked(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
                 )
             }
         }
