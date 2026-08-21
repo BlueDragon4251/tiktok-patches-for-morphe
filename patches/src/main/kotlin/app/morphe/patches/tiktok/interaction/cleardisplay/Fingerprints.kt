@@ -13,6 +13,19 @@ internal object OnClearDisplayEventFingerprint : Fingerprint(
     },
 )
 
+/**
+ * TikTok 46.4.3 clear-mode panel reset for the currently displayed feed item.
+ * This gives BlueIT the real panel instance and current item context instead of
+ * fabricating a context-free clear-mode event from PlayerController.
+ */
+internal object ClearModePanelResetFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+    name = "ap",
+    returnType = "V",
+    parameters = listOf("LX/0SKe;", "Z"),
+    strings = listOf("resetClearMode"),
+)
+
 internal object ClearModeLogCoreFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
     returnType = "V",
@@ -56,4 +69,3 @@ internal object ClearModeLogPlaytimeFingerprint : Fingerprint(
         "Z",
     ),
 )
-

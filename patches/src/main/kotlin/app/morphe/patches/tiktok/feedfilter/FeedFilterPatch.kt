@@ -10,7 +10,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
-import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint.method
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -36,21 +35,19 @@ val feedFilterPatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedFilter()V",
         )
 
-        FeedItemListGetItemsFingerprint.method.let { method ->
-            val returnIndices =
-                method.implementation!!.instructions.withIndex()
-                    .filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                    .map { it.index }
-                    .toList()
+        // Filter only the canonical For You response. FeedItemList is a shared model and
+        // globally hooking getItems() also filters profile/detail/series surfaces.
+        ForYouFeedResponseFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
 
             returnIndices.asReversed().forEach { returnIndex ->
+                val register = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
                 method.addInstructions(
                     returnIndex,
-                    "invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
-                )
-                method.addInstructions(
-                    returnIndex + 1,
-                    "nop",
+                    "invoke-static/range {v$register .. v$register}, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
                 )
             }
         }

@@ -7,7 +7,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patches.tiktok.feedfilter.FeedItemListGetItemsFingerprint
+import app.morphe.patches.tiktok.feedfilter.ForYouFeedResponseFingerprint
 import app.morphe.patches.tiktok.feedfilter.FollowFeedFingerprint
 import app.morphe.patches.tiktok.feedfilter.FollowFeedListGetItemsFingerprint
 import app.morphe.patches.tiktok.feedfilter.FollowFeedPresenterPostProcessFingerprint
@@ -35,15 +35,16 @@ val advancedFeedFilterPatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedFeedFilter()V",
         )
 
-        FeedItemListGetItemsFingerprint.method.let { method ->
+        ForYouFeedResponseFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
                 .toList()
             returnIndices.asReversed().forEach { returnIndex ->
+                val register = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
                 method.addInstructions(
                     returnIndex,
-                    "invoke-static {p0}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+                    "invoke-static/range {v$register .. v$register}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
                 )
             }
         }
