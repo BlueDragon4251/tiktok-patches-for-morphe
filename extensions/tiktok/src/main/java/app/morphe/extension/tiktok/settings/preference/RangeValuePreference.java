@@ -125,7 +125,7 @@ public class RangeValuePreference extends DialogPreference {
         maxEditText.setInputType(InputType.TYPE_CLASS_NUMBER);
         maxEditText.setSingleLine(true);
         maxEditText.setHint("Unlimited");
-        maxEditText.setText(Long.toString(Long.MAX_VALUE).equals(maxValue) ? "" : maxValue);
+        maxEditText.setText(isUnlimited(maxValue) ? "" : maxValue);
         SettingsUi.styleEditText(maxEditText);
         dialogView.addView(maxEditText, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -194,8 +194,23 @@ public class RangeValuePreference extends DialogPreference {
 
     private static String normalizeRangeValue(String min, String max) {
         String normalizedMin = min == null || min.length() == 0 ? "0" : min;
-        String normalizedMax = max == null || max.length() == 0 ? Long.toString(Long.MAX_VALUE) : max;
+        String normalizedMax = max == null || max.length() == 0 || isUnlimited(max)
+                ? Long.toString(Long.MAX_VALUE)
+                : max;
         return normalizedMin + "-" + normalizedMax;
+    }
+
+    /**
+     * Older BlueIT builds stored Integer.MAX_VALUE as the unlimited sentinel. Treat it
+     * as unlimited as well so existing users no longer see a fake 2147483647 maximum.
+     */
+    private static boolean isUnlimited(String value) {
+        if (value == null || value.trim().isEmpty()) return true;
+        try {
+            return Long.parseLong(value.trim()) >= Integer.MAX_VALUE;
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
     }
 }
 
