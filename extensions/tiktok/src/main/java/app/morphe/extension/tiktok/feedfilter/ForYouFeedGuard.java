@@ -37,6 +37,20 @@ public final class ForYouFeedGuard {
         filterMarked(feedItemList);
     }
 
+    /**
+     * Final exact 46.4.3 Feed0VVManager handoff guard.
+     *
+     * The commit runnable stores its completed result in android.os.Message.obj after
+     * TikTok has run filter_show_ad/filter_installed_ad, FYP ad positioning, soft_ads,
+     * roi2 and the remaining client-side list processors. Accept Object here so the
+     * injected call remains verifier-safe on branches where the commit result is not a
+     * FeedItemList; only the real FYP list is marked and filtered.
+     */
+    public static void filterBeforeUiCommit(Object result) {
+        if (!(result instanceof FeedItemList)) return;
+        markAndFilter((FeedItemList) result);
+    }
+
     private static void filterMarked(FeedItemList feedItemList) {
         // TikTok can keep ad candidates outside items and inject them after the API/cache
         // response. Remove the exact 46.4.3 preloadAds source before those insertions.
