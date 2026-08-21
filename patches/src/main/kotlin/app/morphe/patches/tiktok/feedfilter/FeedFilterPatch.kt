@@ -13,6 +13,8 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;"
@@ -96,8 +98,10 @@ val feedFilterPatch = bytecodePatch(
         // runs commercial processors such as filter_show_ad/filter_installed_ad, fyp ad
         // session positioning, soft_ads and roi2 immediately before posting to feed UI.
         // Mark every FeedItemList result at its CHECK_CAST. Once marked, the getItems()
-        // hook below re-applies both base and advanced filters before every later list read,
-        // including reads that occur after TikTok's own commercial/list mutations.
+        // hook below re-applies both base and advanced filters before every later list read.
+        // Finally, re-filter the result again immediately before Message.obj receives it;
+        // this point is after TikTok's commercial processors and is the last exact handoff
+        // before the completed feed is posted to the UI handler.
         ForYouFinalCommitFingerprint.method.let { method ->
             val castIndices = method.implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
@@ -116,6 +120,34 @@ val feedFilterPatch = bytecodePatch(
                 method.addInstructions(
                     castIndex + 1,
                     "invoke-static/range {v$register .. v$register}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
+                )
+            }
+
+            // Re-read the mutated instruction list after the CHECK_CAST injections above.
+            // The exact 46.4.3 commit has one Message.obj handoff. registerA of IPUT_OBJECT
+            // is the value being posted; use an Object-typed guard so verifier merge paths
+            // where the result is not a FeedItemList remain valid.
+            val uiCommitIndices = method.implementation!!.instructions.withIndex()
+                .filter { (_, instruction) ->
+                    if (instruction.opcode != Opcode.IPUT_OBJECT) return@filter false
+                    val field = instruction.getReference<FieldReference>() ?: return@filter false
+                    field.definingClass == "Landroid/os/Message;" &&
+                        field.name == "obj" &&
+                        field.type == "Ljava/lang/Object;"
+                }
+                .map { it.index }
+                .toList()
+
+            check(uiCommitIndices.size == 1) {
+                "Exact TikTok 46.4.3 Feed0VVManager commit expected one Message.obj UI handoff, found ${uiCommitIndices.size}"
+            }
+
+            uiCommitIndices.asReversed().forEach { uiCommitIndex ->
+                val resultRegister =
+                    (method.implementation!!.instructions[uiCommitIndex] as TwoRegisterInstruction).registerA
+                method.addInstructions(
+                    uiCommitIndex,
+                    "invoke-static/range {v$resultRegister .. v$resultRegister}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->filterBeforeUiCommit(Ljava/lang/Object;)V",
                 )
             }
         }
