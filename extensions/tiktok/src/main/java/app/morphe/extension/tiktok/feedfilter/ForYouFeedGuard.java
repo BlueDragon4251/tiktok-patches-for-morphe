@@ -28,13 +28,19 @@ public final class ForYouFeedGuard {
     public static void markAndFilter(FeedItemList feedItemList) {
         if (feedItemList == null) return;
         MARKED.put(feedItemList, Boolean.TRUE);
+        FeedRuntimeDiagnostics.traceList("mark-before", feedItemList, true);
         filterMarked(feedItemList);
+        FeedRuntimeDiagnostics.traceList("mark-after", feedItemList, true);
     }
 
     /** Called from FeedItemList.getItems(); profile/detail lists are ignored. */
     public static void filterIfMarked(FeedItemList feedItemList) {
-        if (feedItemList == null || !MARKED.containsKey(feedItemList)) return;
+        if (feedItemList == null) return;
+        boolean marked = MARKED.containsKey(feedItemList);
+        FeedRuntimeDiagnostics.traceList("getItems-before", feedItemList, marked);
+        if (!marked) return;
         filterMarked(feedItemList);
+        FeedRuntimeDiagnostics.traceList("getItems-after", feedItemList, true);
     }
 
     private static void filterMarked(FeedItemList feedItemList) {
