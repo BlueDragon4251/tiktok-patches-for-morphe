@@ -139,9 +139,15 @@ public final class AdvancedFeedFilter {
 
         Range duration = durationRange();
         if (!duration.isUnbounded()) {
-            long seconds = durationSeconds(aweme);
-            if (seconds >= 0L && (seconds < duration.min || seconds > duration.max)) {
-                return "duration";
+            long durationMs = durationMilliseconds(aweme);
+            if (durationMs >= 0L) {
+                long minMs = secondsToMilliseconds(duration.min);
+                long maxMs = duration.max == Long.MAX_VALUE
+                        ? Long.MAX_VALUE
+                        : secondsToMilliseconds(duration.max);
+                if (durationMs < minMs || durationMs > maxMs) {
+                    return "duration";
+                }
             }
         }
 
@@ -199,20 +205,54 @@ public final class AdvancedFeedFilter {
         return builder.toString().toLowerCase(Locale.US);
     }
 
-    private static long durationSeconds(Aweme aweme) {
+    /**
+     * Returns the exact TikTok video duration in milliseconds.
+     *
+     * TikTok 46.4.3 stores the JSON `duration` value in Video.videoLength (int, ms).
+     * The previous BlueIT implementation looked only for getDuration()/duration, which
+     * made the value unknown and therefore fail-opened every duration rule. pilotLength
+     * is the exact 46.4.3 `real_duration` companion and is used as a secondary source.
+     */
+    private static long durationMilliseconds(Aweme aweme) {
         Object video = firstNonNull(invoke(aweme, "getVideo"), readField(aweme, "video"));
-        Object value = firstNonNull(
-                invoke(video, "getDuration"),
-                readField(video, "duration"),
+        if (video != null) {
+            Object exact = firstNonNull(
+                    readField(video, "videoLength"),
+                    readField(video, "pilotLength")
+            );
+            if (exact instanceof Number) {
+                long value = ((Number) exact).longValue();
+                if (value > 0L) return value;
+            }
+
+            Object fallback = firstNonNull(
+                    invoke(video, "getDuration"),
+                    readField(video, "duration")
+            );
+            long fallbackMs = normalizeDurationToMilliseconds(fallback);
+            if (fallbackMs >= 0L) return fallbackMs;
+        }
+
+        Object awemeFallback = firstNonNull(
                 invoke(aweme, "getDuration"),
                 readField(aweme, "duration")
         );
+        return normalizeDurationToMilliseconds(awemeFallback);
+    }
+
+    private static long normalizeDurationToMilliseconds(Object value) {
         if (!(value instanceof Number)) return -1L;
         long raw = ((Number) value).longValue();
         if (raw < 0L) return -1L;
-        // TikTok video duration is normally milliseconds. Very small values are
-        // accepted as seconds to stay compatible with alternate model wrappers.
-        return raw > 1000L ? Math.round(raw / 1000.0d) : raw;
+        // Legacy wrappers sometimes expose seconds. Values above ten minutes are safely
+        // interpreted as milliseconds; smaller fallback values are treated as seconds.
+        return raw > 600L ? raw : raw * 1000L;
+    }
+
+    private static long secondsToMilliseconds(long seconds) {
+        if (seconds <= 0L) return 0L;
+        if (seconds >= Long.MAX_VALUE / 1000L) return Long.MAX_VALUE;
+        return seconds * 1000L;
     }
 
     private static boolean containsAny(String corpus, String[] needles) {
