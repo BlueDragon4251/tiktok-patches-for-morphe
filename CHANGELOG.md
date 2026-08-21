@@ -1,3 +1,16 @@
+# [1.1.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-21)
+
+
+### Bug Fixes
+
+* scope feed filters and use TikTok native clear display ([a87eadc](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a87eadcce013498e73d46f3b493519119c3cfcf8))
+
+
+
+
+
+## 1.1.0-dev.3
+
 # [1.1.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-21)
 
 
