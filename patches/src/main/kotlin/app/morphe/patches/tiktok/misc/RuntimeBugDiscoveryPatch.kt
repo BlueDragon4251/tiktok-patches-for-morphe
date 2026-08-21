@@ -2,78 +2,57 @@ package app.morphe.patches.tiktok.misc
 
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patches.tiktok.interaction.cleardisplay.OnClearDisplayEventFingerprint
+import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 @Suppress("unused")
 val runtimeBugDiscoveryPatch = bytecodePatch(
     name = "BlueIT runtime bug discovery",
-    description = "Temporary TikTok 46.4.3 evidence collector for Clear Display and feed contexts.",
+    description = "Temporary exact TikTok 46.4.3 instruction evidence collector.",
     default = false,
 ) {
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        val eventType = OnClearDisplayEventFingerprint.method.parameters.firstOrNull()?.type
-        println("[BlueITRuntimeDiscovery] clearEventType=$eventType")
+        val clearClass = "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;"
+        val feedApiClass = "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;"
+
+        fun dumpMethod(prefix: String, method: com.android.tools.smali.dexlib2.iface.Method) {
+            println("[BlueITRuntimeDiscovery2] $prefix METHOD ${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType} registers=${method.implementation?.registerCount}")
+            method.implementation?.instructions?.forEachIndexed { index, instruction ->
+                val reference = (instruction as? ReferenceInstruction)?.reference?.toString() ?: ""
+                val literal = (instruction as? NarrowLiteralInstruction)?.narrowLiteral?.toString() ?: ""
+                val registers = when (instruction) {
+                    is Instruction35c -> "count=${instruction.registerCount},c=${instruction.registerC},d=${instruction.registerD},e=${instruction.registerE},f=${instruction.registerF},g=${instruction.registerG}"
+                    is RegisterRangeInstruction -> "start=${instruction.startRegister},count=${instruction.registerCount}"
+                    is TwoRegisterInstruction -> "a=${instruction.registerA},b=${instruction.registerB}"
+                    is OneRegisterInstruction -> "a=${instruction.registerA}"
+                    else -> ""
+                }
+                println("[BlueITRuntimeDiscovery2] $prefix I=$index op=${instruction.opcode} regs=[$registers] lit=[$literal] ref=[$reference]")
+            }
+        }
 
         classDefForEach { classDef ->
-            if (classDef.type == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;") {
-                println("[BlueITRuntimeDiscovery] FEED_ITEM_LIST class=${classDef.type} superclass=${classDef.superclass}")
-                classDef.fields.forEach { field ->
-                    println("[BlueITRuntimeDiscovery] FEED_ITEM_LIST_FIELD ${field.name}:${field.type} access=${field.accessFlags}")
-                }
-                classDef.methods.forEach { method ->
-                    println("[BlueITRuntimeDiscovery] FEED_ITEM_LIST_METHOD ${method.name}(${method.parameterTypes.joinToString("")})${method.returnType}")
-                }
-            }
-
             for (method in classDef.methods) {
+                val isTarget =
+                    (method.definingClass == clearClass && method.name in setOf("Rv0", "ap")) ||
+                    (method.definingClass == feedApiClass && method.name == "LIZIZ" &&
+                        method.returnType == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;")
+                if (isTarget) dumpMethod("TARGET", method)
+
                 val impl = method.implementation ?: continue
-                var refsEvent = false
-                var refsScale = false
-                var callsFeedGetItems = false
-                val refs = linkedSetOf<String>()
-                val strings = linkedSetOf<String>()
-
-                for (instruction in impl.instructions) {
-                    when (val reference = (instruction as? ReferenceInstruction)?.reference) {
-                        is MethodReference -> {
-                            val text = "${reference.definingClass}->${reference.name}(${reference.parameterTypes.joinToString("")})${reference.returnType}"
-                            if (eventType != null && (reference.definingClass == eventType || reference.parameterTypes.contains(eventType) || reference.returnType == eventType)) refsEvent = true
-                            if (reference.definingClass.contains("ScaleGestureDetector") || reference.name in setOf("onScale", "onScaleBegin", "onScaleEnd", "getScaleFactor", "getCurrentSpan", "getPreviousSpan", "getPointerCount")) refsScale = true
-                            if (reference.definingClass == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;" && reference.name == "getItems") callsFeedGetItems = true
-                            if (refs.size < 80) refs += text
-                        }
-                        is FieldReference -> {
-                            val text = "${reference.definingClass}->${reference.name}:${reference.type}"
-                            if (eventType != null && (reference.definingClass == eventType || reference.type == eventType)) refsEvent = true
-                            if (reference.type.contains("ScaleGestureDetector")) refsScale = true
-                            if (refs.size < 80) refs += text
-                        }
-                        is TypeReference -> {
-                            if (eventType != null && reference.type == eventType) refsEvent = true
-                            if (reference.type.contains("ScaleGestureDetector")) refsScale = true
-                        }
-                        is StringReference -> if (strings.size < 40) strings += reference.string.take(180)
-                    }
+                val callsRv0 = impl.instructions.any { instruction ->
+                    val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: return@any false
+                    ref.definingClass == clearClass && ref.name == "Rv0" &&
+                        ref.parameterTypes == listOf("I", "Ljava/lang/String;", "Z")
                 }
-
-                val classHint = classDef.type.contains("/feed/") || classDef.type.contains("/profile/") ||
-                    classDef.type.contains("/user/") || classDef.type.contains("/detail/") ||
-                    classDef.type.contains("ClearMode", ignoreCase = true) || classDef.type.contains("gesture", ignoreCase = true)
-
-                if (refsEvent || (refsScale && classHint)) {
-                    println("[BlueITRuntimeDiscovery] CLEAR_GESTURE ${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType} event=$refsEvent scale=$refsScale strings=${strings.joinToString(" || ")} refs=${refs.joinToString(" || ")}")
-                }
-
-                if (callsFeedGetItems) {
-                    println("[BlueITRuntimeDiscovery] FEED_GETITEMS_CALLER ${method.definingClass}->${method.name}(${method.parameterTypes.joinToString("")})${method.returnType} strings=${strings.joinToString(" || ")} refs=${refs.joinToString(" || ")}")
-                }
+                if (callsRv0) dumpMethod("RV0_CALLER", method)
             }
         }
     }
