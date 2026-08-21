@@ -1,3 +1,16 @@
+# [1.1.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.1...v1.1.0-dev.2) (2026-08-21)
+
+
+### Bug Fixes
+
+* update BlueIT settings placement and automatic clear display ([5cc12ee](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/5cc12eeb124ace2b88b89c4141ce7fe63961f438))
+
+
+
+
+
+## 1.1.0-dev.2
+
 # [1.1.0-dev.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.1...v1.1.0-dev.1) (2026-08-21)
 
 
