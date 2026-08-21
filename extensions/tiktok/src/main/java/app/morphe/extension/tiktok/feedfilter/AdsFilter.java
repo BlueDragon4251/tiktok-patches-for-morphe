@@ -14,6 +14,12 @@ public class AdsFilter implements IFilter {
 
     @Override
     public boolean getFiltered(Aweme item) {
+        boolean filtered = isFiltered(item);
+        FeedRuntimeDiagnostics.traceAdDecision(item, filtered);
+        return filtered;
+    }
+
+    private static boolean isFiltered(Aweme item) {
         if (item == null) return false;
 
         // Native flags present on the exact TikTok 46.4.3 Aweme model.
