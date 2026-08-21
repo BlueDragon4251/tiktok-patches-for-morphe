@@ -58,7 +58,7 @@ internal object SettingsComposeRowsFingerprint : Fingerprint(
             method.returnType == "V" &&
             (
                 (method.name == "XN" && method.parameterTypes.size == 8) ||
-                    (method.name == "ER" && method.parameterTypes.size == 11)
+                    (method.name in setOf("ER", "SR") && method.parameterTypes.size == 11)
             )
     },
 )
@@ -82,4 +82,3 @@ internal object OpenDebugCellClickWrapperFingerprint : Fingerprint(
             method.parameterTypes == listOf("Lkotlin/jvm/internal/AwS350S0200000_2;")
     },
 )
-
