@@ -9,6 +9,21 @@ import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
+/**
+ * Exact TikTok 46.4.3 For You response post-processing path.
+ *
+ * Do not hook FeedItemList.getItems() globally: that model is also consumed by profile,
+ * detail, series and other non-feed surfaces. The `fyp`/`first_feed_duration` evidence
+ * uniquely anchors the real For You response path for this target.
+ */
+internal object ForYouFeedResponseFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
+    name = "LIZIZ",
+    returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+    parameters = listOf("LX/12h2;"),
+    strings = listOf("fyp", "first_feed_duration"),
+)
+
 internal object FeedItemListGetItemsFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC),
     returnType = "Ljava/util/List;",
