@@ -36,8 +36,8 @@ val feedFilterPatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedFilter()V",
         )
 
-        // Mark only the canonical For You response. FeedItemList is shared by profiles,
-        // detail and series screens, so global re-filtering below is identity-guarded.
+        // Mark only the canonical For You network response. FeedItemList is shared by
+        // profiles, detail and series screens, so global re-filtering is identity-guarded.
         ForYouFeedResponseFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -53,10 +53,44 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        // TikTok 46.4.3 applies response processors and client-side insertions after the
-        // canonical API return (including preload ad candidates). Re-filter whenever a
-        // marked FYP list is read again. Non-feed FeedItemList instances are ignored by
-        // ForYouFeedGuard, preserving profile/detail lists.
+        // TikTok 46.4.3 has a separate cached For You fetch path which does not have to
+        // pass through FeedApi.LIZIZ(...). Its own fetchFeeds routine already removes
+        // native ads/LIVE/story entries, so it is an exact feed-only anchor. Re-run the
+        // complete BlueIT filter after TikTok finishes mutating that cached list.
+        ForYouCachedFeedFilterFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                method.addInstructions(
+                    returnIndex,
+                    "invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+                )
+            }
+        }
+
+        // `tryUseCache` can also return the cached FYP list directly. Mark/filter every
+        // non-null return before it reaches downstream UI. markAndFilter itself is null-safe.
+        ForYouCachedFeedReadFingerprint.method.let { method ->
+            val returnIndices = method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                val register = (method.implementation!!.instructions[returnIndex] as OneRegisterInstruction).registerA
+                method.addInstructions(
+                    returnIndex,
+                    "invoke-static/range {v$register .. v$register}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+                )
+            }
+        }
+
+        // TikTok applies further response processors/client-side insertions after both
+        // network and cache acquisition (including preload ad candidates). Re-filter when
+        // an already marked FYP list is read again. Non-feed lists remain untouched.
         FeedItemListGetItemsFingerprint.method.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }

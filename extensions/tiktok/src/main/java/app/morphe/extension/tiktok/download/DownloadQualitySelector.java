@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -16,8 +15,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import app.morphe.extension.shared.Logger;
-import app.morphe.extension.shared.settings.BaseSettings;
 import app.morphe.extension.tiktok.settings.Settings;
 
 /** Runtime-safe discovery of TikTok video quality variants. */
@@ -52,14 +49,6 @@ final class DownloadQualitySelector {
         Candidate selected = "highest".equals(quality)
                 ? selectHighest(candidates)
                 : selectTarget(candidates, parseTarget(quality));
-
-        if (selected != null && BaseSettings.DEBUG.get()) {
-            Candidate finalSelected = selected;
-            Logger.printInfo(() -> "[BlueIT Downloads] quality=" + quality
-                    + " selected=" + finalSelected.path
-                    + " height=" + finalSelected.height
-                    + " size=" + finalSelected.size);
-        }
         return selected == null ? null : selected.model;
     }
 

@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-21T19:36:37",
-  "description": "# [1.1.0-dev.6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.5...v1.1.0-dev.6) (2026-08-21)\n\n\n### Bug Fixes\n\n* **tiktok:** add targeted 46.4.3 feed runtime diagnostics ([0175dad](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0175dad094049aefae333bbc06bd7fb7e3ad694e))\n* **tiktok:** trace 46.4.3 ad filter decisions ([7b9ba20](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/7b9ba2010af29c1aab0c7acc67a5fd5bb2fd683a))\n* **tiktok:** trace marked and bypassed FYP list reads ([ddec85a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/ddec85a2db757be9d6ba45a62fa5932541df7c84))\n\n\n\n\n\n## 1.1.0-dev.6",
-  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.1.0-dev.6/patches-1.1.0-dev.6.mpp",
+  "created_at": "2026-08-18T19:52:35",
+  "description": "## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)\n\n\n### Bug Fixes\n\n* **tiktok:** remove stale 46.4.3 runtime references ([6584bd1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6584bd1f3928f68a41bedfa93703843019616a84))\n\n\n\n\n\n## 1.0.1",
+  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.0.1/patches-1.0.1.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.6"
+  "version": "1.0.1"
 }

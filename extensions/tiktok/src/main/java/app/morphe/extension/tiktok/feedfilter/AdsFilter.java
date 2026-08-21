@@ -14,9 +14,7 @@ public class AdsFilter implements IFilter {
 
     @Override
     public boolean getFiltered(Aweme item) {
-        boolean filtered = isFiltered(item);
-        FeedRuntimeDiagnostics.traceAdDecision(item, filtered);
-        return filtered;
+        return isFiltered(item);
     }
 
     private static boolean isFiltered(Aweme item) {

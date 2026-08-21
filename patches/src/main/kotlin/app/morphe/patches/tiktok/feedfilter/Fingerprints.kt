@@ -24,6 +24,31 @@ internal object ForYouFeedResponseFingerprint : Fingerprint(
     strings = listOf("fyp", "first_feed_duration"),
 )
 
+/**
+ * Exact 46.4.3 cached For You `fetchFeeds` filter.
+ *
+ * Device testing proved that the cache path can render without passing through
+ * FeedApi.LIZIZ(...), which previously let both short videos and ads bypass BlueIT.
+ */
+internal object ForYouCachedFeedFilterFingerprint : Fingerprint(
+    definingClass = "LX/0MPw;",
+    name = "LIZIZ",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "V",
+    parameters = listOf("Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"),
+    strings = listOf("fetchFeeds, filter by is ad", "fetchFeeds, filter by is duplicate"),
+)
+
+/** Exact 46.4.3 cached For You list read (`feed_use_cache_size` / `tryUseCache`). */
+internal object ForYouCachedFeedReadFingerprint : Fingerprint(
+    definingClass = "LX/0MPw;",
+    name = "LJIJJ",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC),
+    returnType = "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+    parameters = emptyList(),
+    strings = listOf("feed_use_cache_size", "tryUseCache list size "),
+)
+
 internal object FeedItemListGetItemsFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC),
     returnType = "Ljava/util/List;",

@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
- * Tracks only canonical For You FeedItemList instances and re-applies filtering when
- * TikTok 46.4.3 reads them again after its response processors/client-side insertions.
+ * Tracks canonical For You FeedItemList instances from both the network and exact
+ * TikTok 46.4.3 cache paths, then re-applies filtering after later client mutations.
  *
  * A global FeedItemList.getItems hook is safe only with this identity guard: the same
  * model class is also used by profile/detail/series surfaces, which must stay untouched.
@@ -24,27 +24,21 @@ public final class ForYouFeedGuard {
     private ForYouFeedGuard() {
     }
 
-    /** Called only from the exact 46.4.3 canonical For You response fingerprint. */
+    /** Called only from exact 46.4.3 For You network/cache fingerprints. */
     public static void markAndFilter(FeedItemList feedItemList) {
         if (feedItemList == null) return;
         MARKED.put(feedItemList, Boolean.TRUE);
-        FeedRuntimeDiagnostics.traceList("mark-before", feedItemList, true);
         filterMarked(feedItemList);
-        FeedRuntimeDiagnostics.traceList("mark-after", feedItemList, true);
     }
 
     /** Called from FeedItemList.getItems(); profile/detail lists are ignored. */
     public static void filterIfMarked(FeedItemList feedItemList) {
-        if (feedItemList == null) return;
-        boolean marked = MARKED.containsKey(feedItemList);
-        FeedRuntimeDiagnostics.traceList("getItems-before", feedItemList, marked);
-        if (!marked) return;
+        if (feedItemList == null || !MARKED.containsKey(feedItemList)) return;
         filterMarked(feedItemList);
-        FeedRuntimeDiagnostics.traceList("getItems-after", feedItemList, true);
     }
 
     private static void filterMarked(FeedItemList feedItemList) {
-        // TikTok can keep ad candidates outside items and inject them after the API
+        // TikTok can keep ad candidates outside items and inject them after the API/cache
         // response. Remove the exact 46.4.3 preloadAds source before those insertions.
         if (Settings.REMOVE_ADS.get()) {
             clearListProperty(feedItemList, "getPreloadAds", "preloadAds");
