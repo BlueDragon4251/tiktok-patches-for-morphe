@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-21T11:31:26",
-  "description": "# [1.1.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.2...v1.1.0-dev.3) (2026-08-21)\n\n\n### Bug Fixes\n\n* scope feed filters and use TikTok native clear display ([a87eadc](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a87eadcce013498e73d46f3b493519119c3cfcf8))\n\n\n\n\n\n## 1.1.0-dev.3",
-  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.1.0-dev.3/patches-1.1.0-dev.3.mpp",
+  "created_at": "2026-08-18T19:52:35",
+  "description": "## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)\n\n\n### Bug Fixes\n\n* **tiktok:** remove stale 46.4.3 runtime references ([6584bd1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6584bd1f3928f68a41bedfa93703843019616a84))\n\n\n\n\n\n## 1.0.1",
+  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.0.1/patches-1.0.1.mpp",
   "signature_download_url": "",
-  "version": "1.1.0-dev.3"
+  "version": "1.0.1"
 }
