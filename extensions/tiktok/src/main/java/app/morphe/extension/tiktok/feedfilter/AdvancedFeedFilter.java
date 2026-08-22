@@ -57,18 +57,58 @@ public final class AdvancedFeedFilter {
         List snapshot = new ArrayList(list);
         List kept = new ArrayList(snapshot.size());
         int removed = 0;
+        boolean removedForNonDurationRule = false;
+        Object durationFallback = null;
+        String durationFallbackAid = null;
+        long durationFallbackMs = -1L;
+        long durationFallbackDistanceMs = Long.MAX_VALUE;
+        Range activeDurationRange = durationRange();
 
         for (Object container : snapshot) {
             Aweme aweme = extractor.extract(container);
             String reason = reason(aweme);
             if (reason == null) {
                 kept.add(container);
-            } else {
-                removed++;
-                if (BaseSettings.DEBUG.get()) {
-                    String aid = safeAid(aweme);
-                    Logger.printInfo(() -> "[BlueIT AdvancedFeed] aid=" + aid + " filtered=" + reason);
+                continue;
+            }
+
+            removed++;
+            if ("duration".equals(reason)) {
+                long durationMs = durationMilliseconds(aweme);
+                long distanceMs = durationDistanceToRange(durationMs, activeDurationRange);
+                if (durationMs >= 0L && distanceMs < durationFallbackDistanceMs) {
+                    durationFallback = container;
+                    durationFallbackAid = safeAid(aweme);
+                    durationFallbackMs = durationMs;
+                    durationFallbackDistanceMs = distanceMs;
                 }
+            } else {
+                removedForNonDurationRule = true;
+            }
+
+            if (BaseSettings.DEBUG.get()) {
+                String aid = safeAid(aweme);
+                Logger.printInfo(() -> "[BlueIT AdvancedFeed] aid=" + aid + " filtered=" + reason);
+            }
+        }
+
+        // A completely empty FYP batch is interpreted by TikTok 46.4.3 as a feed
+        // failure and shows "Something went wrong" instead of requesting the next page.
+        // If the advanced filter would empty a batch solely because of the duration
+        // rule, retain exactly the closest-to-range non-ad item. Base FeedItemsFilter
+        // has already removed ads before this method is called, so this never restores
+        // an advertisement. It turns a hard error into at most one controlled duration
+        // outlier for an otherwise unusable batch.
+        if (kept.isEmpty()
+                && removed > 0
+                && !removedForNonDurationRule
+                && durationFallback != null) {
+            kept.add(durationFallback);
+            if (BaseSettings.DEBUG.get()) {
+                String aid = durationFallbackAid;
+                long durationMs = durationFallbackMs;
+                Logger.printInfo(() -> "[BlueIT AdvancedFeed] retained duration fallback aid="
+                        + aid + " durationMs=" + durationMs);
             }
         }
 
@@ -209,35 +249,40 @@ public final class AdvancedFeedFilter {
      * Returns the exact TikTok video duration in milliseconds.
      *
      * TikTok 46.4.3 stores the JSON `duration` value in Video.videoLength (int, ms).
-     * The previous BlueIT implementation looked only for getDuration()/duration, which
-     * made the value unknown and therefore fail-opened every duration rule. pilotLength
-     * is the exact 46.4.3 `real_duration` companion and is used as a secondary source.
+     * pilotLength is the exact 46.4.3 `real_duration` companion. A zero-valued
+     * videoLength must not mask a positive pilotLength: Java reflection returns the
+     * primitive field as a non-null boxed zero, so firstNonNull(videoLength,
+     * pilotLength) incorrectly skipped the real secondary value on dev.9.
      */
     private static long durationMilliseconds(Aweme aweme) {
         Object video = firstNonNull(invoke(aweme, "getVideo"), readField(aweme, "video"));
         if (video != null) {
-            Object exact = firstNonNull(
-                    readField(video, "videoLength"),
-                    readField(video, "pilotLength")
-            );
-            if (exact instanceof Number) {
-                long value = ((Number) exact).longValue();
-                if (value > 0L) return value;
-            }
+            long videoLength = positiveLong(readField(video, "videoLength"));
+            if (videoLength > 0L) return videoLength;
 
-            Object fallback = firstNonNull(
-                    invoke(video, "getDuration"),
-                    readField(video, "duration")
-            );
-            long fallbackMs = normalizeDurationToMilliseconds(fallback);
+            long pilotLength = positiveLong(readField(video, "pilotLength"));
+            if (pilotLength > 0L) return pilotLength;
+
+            long fallbackMs = normalizedDuration(invoke(video, "getDuration"));
+            if (fallbackMs >= 0L) return fallbackMs;
+
+            fallbackMs = normalizedDuration(readField(video, "duration"));
             if (fallbackMs >= 0L) return fallbackMs;
         }
 
-        Object awemeFallback = firstNonNull(
-                invoke(aweme, "getDuration"),
-                readField(aweme, "duration")
-        );
-        return normalizeDurationToMilliseconds(awemeFallback);
+        long awemeFallbackMs = normalizedDuration(invoke(aweme, "getDuration"));
+        if (awemeFallbackMs >= 0L) return awemeFallbackMs;
+        return normalizedDuration(readField(aweme, "duration"));
+    }
+
+    private static long positiveLong(Object value) {
+        if (!(value instanceof Number)) return -1L;
+        long number = ((Number) value).longValue();
+        return number > 0L ? number : -1L;
+    }
+
+    private static long normalizedDuration(Object value) {
+        return normalizeDurationToMilliseconds(value);
     }
 
     private static long normalizeDurationToMilliseconds(Object value) {
@@ -253,6 +298,17 @@ public final class AdvancedFeedFilter {
         if (seconds <= 0L) return 0L;
         if (seconds >= Long.MAX_VALUE / 1000L) return Long.MAX_VALUE;
         return seconds * 1000L;
+    }
+
+    private static long durationDistanceToRange(long durationMs, Range range) {
+        if (durationMs < 0L || range == null || range.isUnbounded()) return Long.MAX_VALUE;
+        long minMs = secondsToMilliseconds(range.min);
+        long maxMs = range.max == Long.MAX_VALUE
+                ? Long.MAX_VALUE
+                : secondsToMilliseconds(range.max);
+        if (durationMs < minMs) return minMs - durationMs;
+        if (durationMs > maxMs && maxMs != Long.MAX_VALUE) return durationMs - maxMs;
+        return 0L;
     }
 
     private static boolean containsAny(String corpus, String[] needles) {
