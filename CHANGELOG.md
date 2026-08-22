@@ -1,3 +1,20 @@
+# [1.1.0-dev.8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.7...v1.1.0-dev.8) (2026-08-22)
+
+
+### Bug Fixes
+
+* **tiktok:** anchor final 46.4.3 FYP commit ([6fe766a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6fe766ab0848c9361a2c1305c5e9d31c151f749d))
+* **tiktok:** enforce filters in final 46.4.3 FYP commit ([3e7178c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3e7178c43f7e4ff10b4355cc3dc73f0f64d6abcb))
+* **tiktok:** guard final FYP UI handoff ([3e962b9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3e962b945e69f4f7b337f548d094f1bddcb06246))
+* **tiktok:** publish final 46.4.3 FYP UI handoff filter to dev ([3ea32d8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3ea32d87edbc1adad9cd61731e34495d17a30a28))
+* **tiktok:** re-filter final FYP before UI post ([8271719](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/82717193dc1a7278e94b9b5540348c3bc4cca941))
+
+
+
+
+
+## 1.1.0-dev.8
+
 ## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)
 
 

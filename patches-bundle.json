@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-08-18T19:52:35",
-  "description": "## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)\n\n\n### Bug Fixes\n\n* **tiktok:** remove stale 46.4.3 runtime references ([6584bd1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6584bd1f3928f68a41bedfa93703843019616a84))\n\n\n\n\n\n## 1.0.1",
-  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.0.1/patches-1.0.1.mpp",
+  "created_at": "2026-08-22T07:31:34",
+  "description": "# [1.1.0-dev.8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.7...v1.1.0-dev.8) (2026-08-22)\n\n\n### Bug Fixes\n\n* **tiktok:** anchor final 46.4.3 FYP commit ([6fe766a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6fe766ab0848c9361a2c1305c5e9d31c151f749d))\n* **tiktok:** enforce filters in final 46.4.3 FYP commit ([3e7178c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3e7178c43f7e4ff10b4355cc3dc73f0f64d6abcb))\n* **tiktok:** guard final FYP UI handoff ([3e962b9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3e962b945e69f4f7b337f548d094f1bddcb06246))\n* **tiktok:** publish final 46.4.3 FYP UI handoff filter to dev ([3ea32d8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3ea32d87edbc1adad9cd61731e34495d17a30a28))\n* **tiktok:** re-filter final FYP before UI post ([8271719](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/82717193dc1a7278e94b9b5540348c3bc4cca941))\n\n\n\n\n\n## 1.1.0-dev.8",
+  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.1.0-dev.8/patches-1.1.0-dev.8.mpp",
   "signature_download_url": "",
-  "version": "1.0.1"
+  "version": "1.1.0-dev.8"
 }
