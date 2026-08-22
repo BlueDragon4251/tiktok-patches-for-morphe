@@ -1,19 +1,3 @@
-# [1.1.0-dev.7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.6...v1.1.0-dev.7) (2026-08-21)
-
-
-### Bug Fixes
-
-* **diagnostics:** classify all download logs correctly ([4201d1c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4201d1c5c6f406acce6baaa112f6b7e0f9b9be6e))
-* **tiktok:** bound download diagnostics ([b4ec80b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b4ec80b710d9291b62e5137a2266eb026d0fb7f9))
-* **tiktok:** filter exact 46.4.3 cached For You feed ([1d1fc7d](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/1d1fc7d55336e5077f15c1c1774f9e94dfcc35a1))
-* **tiktok:** stop quality selector log flooding ([a7bd597](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a7bd597c10b01b1113e15be9ff097e89078c91a2))
-
-
-
-
-
-## 1.1.0-dev.7
-
 ## [1.0.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.0...v1.0.1) (2026-08-18)
 
 

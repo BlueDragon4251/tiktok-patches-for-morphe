@@ -49,6 +49,31 @@ internal object ForYouCachedFeedReadFingerprint : Fingerprint(
     strings = listOf("feed_use_cache_size", "tryUseCache list size "),
 )
 
+/**
+ * Final exact 46.4.3 Feed0VVManager commit runnable for the For You feed.
+ *
+ * This is later than the network/cache hooks. It receives the completed FeedItemList and
+ * then runs TikTok's commercial processors (`filter_show_ad`, `filter_installed_ad`,
+ * AdSessionPositionHelper/fyp, soft_ads and roi2) immediately before posting to feed UI.
+ */
+internal object ForYouFinalCommitFingerprint : Fingerprint(
+    definingClass = "LY/ARunnableS0S0303000_29;",
+    name = "run\$1",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC, AccessFlags.FINAL),
+    returnType = "V",
+    parameters = listOf("LY/ARunnableS0S0303000_29;"),
+    strings = listOf(
+        "Feed0VVManager@569f.commit\$1L",
+        "full_feed_commit_process_data",
+        "homepage_hot",
+        "filter_show_ad",
+        "filter_installed_ad",
+        "fyp",
+        "soft_ads",
+        "roi2",
+    ),
+)
+
 internal object FeedItemListGetItemsFingerprint : Fingerprint(
     accessFlags = listOf(AccessFlags.PUBLIC),
     returnType = "Ljava/util/List;",
