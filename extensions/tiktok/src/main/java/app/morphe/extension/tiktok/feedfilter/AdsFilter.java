@@ -20,7 +20,7 @@ public class AdsFilter implements IFilter {
     private static boolean isFiltered(Aweme item) {
         if (item == null) return false;
 
-        // Native flags present on the exact TikTok 46.4.3 Aweme model.
+        // Native flags are the strongest per-card signals on TikTok 46.4.3.
         try {
             if (item.isAd() || item.isSoftAd() || item.isWithPromotionalMusic()) {
                 return true;
@@ -28,27 +28,32 @@ public class AdsFilter implements IFilter {
         } catch (Throwable ignored) {
         }
 
-        // Exact 46.4.3 discovery shows additional advertising/paid-content signals that
-        // are not guaranteed to flip isAd()/isSoftAd() on every rendered feed card.
+        // Paid-content must be explicitly true. Do not treat the mere presence of
+        // paid-content metadata as an ad: 46.4.3 populates several commercial model
+        // containers on ordinary organic videos as well.
         if (truthy(item, "isPaidContent", "isPaidContent")) return true;
-        if (nonNull(item, "getMPaidContentInfo", "mPaidContentInfo")) return true;
-        if (nonNull(item, "getAwemeRawAd", "awemeRawAd")) return true;
-        if (nonNull(item, "getLinkAdData", "linkAdData")) return true;
-        if (nonEmptyString(item, "getCommercialVideoInfo", "commercialVideoInfo")) return true;
-        if (nonZeroNumber(item, "getAdAwemeSource", "adAwemeSource")) return true;
-        if (nonZeroNumber(item, "getAdLinkType", "adLinkType")) return true;
 
-        // The exact 46.4.3 Video model also carries adVideoId/videoAdTag. These are useful
-        // for cards assembled later from preload/client-side ad paths.
+        // A real raw-ad payload is strong evidence that this feed card itself is an ad.
+        if (nonNull(item, "getAwemeRawAd", "awemeRawAd")) return true;
+
+        // The exact 46.4.3 Video model carries explicit ad identity/tag fields for
+        // cards assembled later from preload/client-side ad paths.
         Object video = firstNonNull(invoke(item, "getVideo"), readField(item, "video"));
         if (video != null) {
             if (nonEmptyString(video, null, "adVideoId")) return true;
             if (nonEmptyString(video, null, "videoAdTag")) return true;
         }
 
-        // Do not use hasEverAdvertised/promoteModel as hard blockers: those can describe
-        // an ordinary creator post that was promoted historically rather than this view
-        // being an actual paid ad. Unknown model changes therefore remain fail-open.
+        // Deliberately NOT hard blockers:
+        // - mPaidContentInfo
+        // - linkAdData
+        // - commercialVideoInfo
+        // - adAwemeSource / adLinkType
+        // - hasEverAdvertised / promoteModel
+        // Device diagnostics on dev.8 proved that at least one of these auxiliary
+        // commercial fields is populated on normal organic videos. Using them as a
+        // standalone ad signal empties entire FYP batches. Unknown metadata therefore
+        // stays fail-open unless one of the strong signals above confirms the ad.
         return false;
     }
 
@@ -59,11 +64,6 @@ public class AdsFilter implements IFilter {
 
     private static boolean nonNull(Object target, String methodName, String fieldName) {
         return firstNonNull(invoke(target, methodName), readField(target, fieldName)) != null;
-    }
-
-    private static boolean nonZeroNumber(Object target, String methodName, String fieldName) {
-        Object value = firstNonNull(invoke(target, methodName), readField(target, fieldName));
-        return value instanceof Number && ((Number) value).longValue() != 0L;
     }
 
     private static boolean nonEmptyString(Object target, String methodName, String fieldName) {
