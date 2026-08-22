@@ -83,6 +83,12 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                     "Hide replay items from previous TikTok LIVE streams.",
                     Settings.HIDE_LIVE_REPLAYS
             ));
+            addPreference(new TogglePreference(
+                    context,
+                    "Hide AI-generated content",
+                    "Hide feed items TikTok marks as AI-generated or AIGC.",
+                    Settings.HIDE_AI_GENERATED_CONTENT
+            ));
             addPreference(new PercentageInputPreference(
                     context,
                     "Minimum like/view rate",
