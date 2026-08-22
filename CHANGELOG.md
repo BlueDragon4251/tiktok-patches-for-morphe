@@ -1,3 +1,25 @@
+# [1.1.0-dev.11](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.10...v1.1.0-dev.11) (2026-08-22)
+
+
+### Bug Fixes
+
+* **tiktok:** keep hard feed blocks ahead of quantitative fallback ([111f73a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/111f73a1125cbd342f6c3af93c29eb137d5abcfa))
+* **tiktok:** prevent empty like-view-ratio feed pages ([c55919e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c55919eadbe93b37c6045f6af0b8b8634a5869f7))
+
+
+### Features
+
+* **dev:** publish AI filter and ratio feed fix ([e946561](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/e9465613fb632e72aff5db6967556ffbcec2d3c7))
+* **tiktok:** add AI-generated content filter setting ([aca486c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/aca486c5a578646671398740231ecddeca433e0d))
+* **tiktok:** expose AI-generated content filter ([8227f9c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/8227f9c81a5644ce17142a1378859f3f7a186683))
+* **tiktok:** filter TikTok-labeled AI content ([0ce4565](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0ce4565247803a54e4af6668c3a035ea78a78e1f))
+
+
+
+
+
+## 1.1.0-dev.11
+
 # [1.1.0-dev.10](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.9...v1.1.0-dev.10) (2026-08-22)
 
 
