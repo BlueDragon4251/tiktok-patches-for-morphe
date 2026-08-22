@@ -57,12 +57,13 @@ public final class AdvancedFeedFilter {
         List snapshot = new ArrayList(list);
         List kept = new ArrayList(snapshot.size());
         int removed = 0;
-        boolean removedForNonDurationRule = false;
-        Object durationFallback = null;
-        String durationFallbackAid = null;
-        long durationFallbackMs = -1L;
-        long durationFallbackDistanceMs = Long.MAX_VALUE;
+        boolean removedForHardRule = false;
+        Object quantitativeFallback = null;
+        String quantitativeFallbackAid = null;
+        String quantitativeFallbackReason = null;
+        double quantitativeFallbackDistance = Double.POSITIVE_INFINITY;
         Range activeDurationRange = durationRange();
+        int activeMinimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
 
         for (Object container : snapshot) {
             Aweme aweme = extractor.extract(container);
@@ -73,17 +74,24 @@ public final class AdvancedFeedFilter {
             }
 
             removed++;
+            double distance = Double.POSITIVE_INFINITY;
             if ("duration".equals(reason)) {
                 long durationMs = durationMilliseconds(aweme);
                 long distanceMs = durationDistanceToRange(durationMs, activeDurationRange);
-                if (durationMs >= 0L && distanceMs < durationFallbackDistanceMs) {
-                    durationFallback = container;
-                    durationFallbackAid = safeAid(aweme);
-                    durationFallbackMs = durationMs;
-                    durationFallbackDistanceMs = distanceMs;
+                if (durationMs >= 0L && distanceMs != Long.MAX_VALUE) {
+                    distance = distanceMs / 1000.0d;
                 }
+            } else if ("like_view_ratio".equals(reason)) {
+                distance = likeViewRatioDistanceToMinimum(aweme, activeMinimumRatio);
             } else {
-                removedForNonDurationRule = true;
+                removedForHardRule = true;
+            }
+
+            if (!Double.isInfinite(distance) && distance < quantitativeFallbackDistance) {
+                quantitativeFallback = container;
+                quantitativeFallbackAid = safeAid(aweme);
+                quantitativeFallbackReason = reason;
+                quantitativeFallbackDistance = distance;
             }
 
             if (BaseSettings.DEBUG.get()) {
@@ -92,23 +100,25 @@ public final class AdvancedFeedFilter {
             }
         }
 
-        // A completely empty FYP batch is interpreted by TikTok 46.4.3 as a feed
-        // failure and shows "Something went wrong" instead of requesting the next page.
-        // If the advanced filter would empty a batch solely because of the duration
-        // rule, retain exactly the closest-to-range non-ad item. Base FeedItemsFilter
-        // has already removed ads before this method is called, so this never restores
-        // an advertisement. It turns a hard error into at most one controlled duration
-        // outlier for an otherwise unusable batch.
+        // TikTok 46.4.3 treats an empty FYP page as a feed failure instead of simply
+        // requesting the next page. Quantitative quality rules (duration and minimum
+        // like/view ratio) can legitimately reject every non-ad item in a server page.
+        // If and only if quantitative rules caused the entire page to become empty,
+        // retain one non-ad candidate closest to satisfying its threshold. Base
+        // FeedItemsFilter has already removed advertisements before this method runs.
+        // Content rules such as creator/keyword/sound/promotional/live (and future AI
+        // rules) never receive this fallback, so explicitly blocked content stays gone.
         if (kept.isEmpty()
                 && removed > 0
-                && !removedForNonDurationRule
-                && durationFallback != null) {
-            kept.add(durationFallback);
+                && !removedForHardRule
+                && quantitativeFallback != null) {
+            kept.add(quantitativeFallback);
             if (BaseSettings.DEBUG.get()) {
-                String aid = durationFallbackAid;
-                long durationMs = durationFallbackMs;
-                Logger.printInfo(() -> "[BlueIT AdvancedFeed] retained duration fallback aid="
-                        + aid + " durationMs=" + durationMs);
+                String aid = quantitativeFallbackAid;
+                String fallbackReason = quantitativeFallbackReason;
+                double distance = quantitativeFallbackDistance;
+                Logger.printInfo(() -> "[BlueIT AdvancedFeed] retained quantitative fallback aid="
+                        + aid + " reason=" + fallbackReason + " distance=" + distance);
             }
         }
 
@@ -146,16 +156,9 @@ public final class AdvancedFeedFilter {
 
         int minimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
         if (minimumRatio > 0) {
-            try {
-                AwemeStatistics statistics = aweme.getStatistics();
-                if (statistics != null) {
-                    long views = statistics.getPlayCount();
-                    long likes = statistics.getDiggCount();
-                    if (views > 0L && likes * 100.0d / views < minimumRatio) {
-                        return "like_view_ratio";
-                    }
-                }
-            } catch (Throwable ignored) {
+            double ratio = likeViewRatioPercent(aweme);
+            if (ratio >= 0.0d && ratio < minimumRatio) {
+                return "like_view_ratio";
             }
         }
 
@@ -192,6 +195,27 @@ public final class AdvancedFeedFilter {
         }
 
         return null;
+    }
+
+    private static double likeViewRatioPercent(Aweme aweme) {
+        if (aweme == null) return -1.0d;
+        try {
+            AwemeStatistics statistics = aweme.getStatistics();
+            if (statistics == null) return -1.0d;
+            long views = statistics.getPlayCount();
+            long likes = statistics.getDiggCount();
+            if (views <= 0L || likes < 0L) return -1.0d;
+            return likes * 100.0d / views;
+        } catch (Throwable ignored) {
+            return -1.0d;
+        }
+    }
+
+    private static double likeViewRatioDistanceToMinimum(Aweme aweme, int minimumRatio) {
+        if (minimumRatio <= 0) return Double.POSITIVE_INFINITY;
+        double ratio = likeViewRatioPercent(aweme);
+        if (ratio < 0.0d) return Double.POSITIVE_INFINITY;
+        return Math.max(0.0d, minimumRatio - ratio);
     }
 
     private static String keywordCorpus(Aweme aweme) {
