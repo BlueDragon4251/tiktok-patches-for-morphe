@@ -1,3 +1,17 @@
+# [1.1.0-dev.10](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.9...v1.1.0-dev.10) (2026-08-22)
+
+
+### Bug Fixes
+
+* **diagnostics:** use BlueIT export branding ([d133240](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d13324038feb94c747ea05f36c6e83aacbc15874))
+* **tiktok:** avoid empty duration batches and use pilot duration ([4e25192](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4e2519289e9f23acbf9f1b4be37951e119136934))
+
+
+
+
+
+## 1.1.0-dev.10
+
 # [1.1.0-dev.9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.8...v1.1.0-dev.9) (2026-08-22)
 
 
