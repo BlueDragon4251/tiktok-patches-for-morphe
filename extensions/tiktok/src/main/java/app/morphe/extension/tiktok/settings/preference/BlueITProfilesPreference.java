@@ -123,7 +123,7 @@ public final class BlueITProfilesPreference extends Preference {
         Settings.SEEN_VIDEO_RETENTION_DAYS.resetToDefault();
         Settings.HIDE_PROMOTIONAL_MUSIC.resetToDefault();
         Settings.HIDE_LIVE_REPLAYS.resetToDefault();
-        Settings.MIN_LIKE_VIEW_RATIO_PERCENT.resetToDefault();
+        Settings.MAX_VIEWS_PER_LIKE.resetToDefault();
         BaseSettings.SANITIZE_SHARING_LINKS.resetToDefault();
     }
 }

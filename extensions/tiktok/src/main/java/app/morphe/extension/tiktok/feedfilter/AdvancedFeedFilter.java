@@ -62,7 +62,7 @@ public final class AdvancedFeedFilter {
         String quantitativeFallbackReason = null;
         double quantitativeFallbackDistance = Double.POSITIVE_INFINITY;
         Range activeDurationRange = durationRange();
-        int activeMinimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
+        int activeMaxViewsPerLike = Settings.MAX_VIEWS_PER_LIKE.get();
 
         for (Object container : snapshot) {
             Aweme aweme = extractor.extract(container);
@@ -81,7 +81,7 @@ public final class AdvancedFeedFilter {
                     distance = distanceMs / 1000.0d;
                 }
             } else if ("like_view_ratio".equals(reason)) {
-                distance = likeViewRatioDistanceToMinimum(aweme, activeMinimumRatio);
+                distance = viewsPerLikeDistanceToMaximum(aweme, activeMaxViewsPerLike);
             }
 
             // Hard content rules are evaluated before the quantitative rules in reason().
@@ -102,8 +102,8 @@ public final class AdvancedFeedFilter {
         }
 
         // TikTok 46.4.3 treats an empty FYP page as a feed failure instead of simply
-        // requesting the next page. Quantitative quality rules (duration and minimum
-        // like/view ratio) can legitimately reject every otherwise-allowed non-ad item.
+        // requesting the next page. Quantitative quality rules (duration and maximum
+        // views per like) can legitimately reject every otherwise-allowed non-ad item.
         // Retain exactly one such candidate closest to its threshold. Hard blocked
         // content can never become this fallback because those rules run first.
         if (kept.isEmpty() && removed > 0 && quantitativeFallback != null) {
@@ -127,7 +127,7 @@ public final class AdvancedFeedFilter {
         return Settings.HIDE_PROMOTIONAL_MUSIC.get()
                 || Settings.HIDE_LIVE_REPLAYS.get()
                 || Settings.HIDE_AI_GENERATED_CONTENT.get()
-                || Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get() > 0
+                || Settings.MAX_VIEWS_PER_LIKE.get() > 0
                 || terms(AdvancedFeedSettings.BLOCKED_KEYWORDS.get(), TermKind.KEYWORD).length > 0
                 || terms(AdvancedFeedSettings.BLOCKED_CREATORS.get(), TermKind.CREATOR).length > 0
                 || terms(AdvancedFeedSettings.BLOCKED_SOUNDS.get(), TermKind.SOUND).length > 0
@@ -173,10 +173,10 @@ public final class AdvancedFeedFilter {
             if (containsAny(corpus, sounds)) return "sound";
         }
 
-        int minimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
-        if (minimumRatio > 0) {
-            double ratio = likeViewRatioPercent(aweme);
-            if (ratio >= 0.0d && ratio < minimumRatio) {
+        int maxViewsPerLike = Settings.MAX_VIEWS_PER_LIKE.get();
+        if (maxViewsPerLike > 0) {
+            double ratio = viewsPerLike(aweme);
+            if (ratio >= 0.0d && ratio > maxViewsPerLike) {
                 return "like_view_ratio";
             }
         }
@@ -279,7 +279,12 @@ public final class AdvancedFeedFilter {
         return false;
     }
 
-    private static double likeViewRatioPercent(Aweme aweme) {
+    /**
+     * Returns TikTok's view-to-like ratio as views per one like.
+     * Example: 100,000 views / 4,000 likes = 25 views/like.
+     * A smaller value therefore represents stronger engagement.
+     */
+    private static double viewsPerLike(Aweme aweme) {
         if (aweme == null) return -1.0d;
         try {
             AwemeStatistics statistics = aweme.getStatistics();
@@ -287,17 +292,21 @@ public final class AdvancedFeedFilter {
             long views = statistics.getPlayCount();
             long likes = statistics.getDiggCount();
             if (views <= 0L || likes < 0L) return -1.0d;
-            return likes * 100.0d / views;
+            if (likes == 0L) return Double.POSITIVE_INFINITY;
+            return views / (double) likes;
         } catch (Throwable ignored) {
             return -1.0d;
         }
     }
 
-    private static double likeViewRatioDistanceToMinimum(Aweme aweme, int minimumRatio) {
-        if (minimumRatio <= 0) return Double.POSITIVE_INFINITY;
-        double ratio = likeViewRatioPercent(aweme);
+    private static double viewsPerLikeDistanceToMaximum(Aweme aweme, int maximum) {
+        if (maximum <= 0) return Double.POSITIVE_INFINITY;
+        double ratio = viewsPerLike(aweme);
         if (ratio < 0.0d) return Double.POSITIVE_INFINITY;
-        return Math.max(0.0d, minimumRatio - ratio);
+        // A zero-like video is the weakest possible ratio, but it can still be used as
+        // the last-resort anti-empty-page bridge if no finite candidate exists.
+        if (Double.isInfinite(ratio)) return Double.MAX_VALUE;
+        return Math.max(0.0d, ratio - maximum);
     }
 
     private static String keywordCorpus(Aweme aweme) {
