@@ -1,3 +1,19 @@
+# [1.1.0-dev.9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.8...v1.1.0-dev.9) (2026-08-22)
+
+
+### Bug Fixes
+
+* **branding:** remove legacy Metra source icon ([8524195](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/85241957abb94493c727a5d66320baa223ba5985))
+* **release:** guard dev metadata history ([406176e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/406176eaaa8dbeebccb93a81c2fd0563b5117ab6))
+* **tiktok:** keep feed diagnostics observational ([8d3fc9e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/8d3fc9ee4a27c65b257633eb2f46bb2aafc34d0e))
+* **tiktok:** stop classifying normal videos as ads ([375d724](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/375d7249cdff206c35638da65e35dc2e5e198532))
+
+
+
+
+
+## 1.1.0-dev.9
+
 # [1.1.0-dev.8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.7...v1.1.0-dev.8) (2026-08-22)
 
 ### Bug Fixes
