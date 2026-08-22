@@ -1,3 +1,20 @@
+# [1.1.0-dev.12](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.11...v1.1.0-dev.12) (2026-08-22)
+
+
+### Bug Fixes
+
+* **tiktok:** define views-per-like feed threshold ([b03e08e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b03e08ebec77e8ca5dec07ef1914985629cb3e4c))
+* **tiktok:** expose views-per-like ratio semantics ([3449c92](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3449c92cbda1e1ded19c2445d36a439033d65236))
+* **tiktok:** publish views-per-like ratio correction to dev ([c2bcd5b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c2bcd5bc1c9780d49ab99da5faaf5bf416088faf))
+* **tiktok:** reset views-per-like profile setting ([1204435](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/1204435254fcfcef69a91d628785b7202d00ff83))
+* **tiktok:** use views-per-like ratio semantics ([d5504d6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d5504d63f5f97c7f681d0e708b8823707b89db12))
+
+
+
+
+
+## 1.1.0-dev.12
+
 # [1.1.0-dev.11](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0-dev.10...v1.1.0-dev.11) (2026-08-22)
 
 
