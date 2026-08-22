@@ -106,8 +106,8 @@ public final class AdvancedFeedFilter {
         // If and only if quantitative rules caused the entire page to become empty,
         // retain one non-ad candidate closest to satisfying its threshold. Base
         // FeedItemsFilter has already removed advertisements before this method runs.
-        // Content rules such as creator/keyword/sound/promotional/live (and future AI
-        // rules) never receive this fallback, so explicitly blocked content stays gone.
+        // Content rules such as creator/keyword/sound/promotional/live/AI never receive
+        // this fallback, so explicitly blocked content stays gone.
         if (kept.isEmpty()
                 && removed > 0
                 && !removedForHardRule
@@ -131,6 +131,7 @@ public final class AdvancedFeedFilter {
     private static boolean hasActiveRule() {
         return Settings.HIDE_PROMOTIONAL_MUSIC.get()
                 || Settings.HIDE_LIVE_REPLAYS.get()
+                || Settings.HIDE_AI_GENERATED_CONTENT.get()
                 || Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get() > 0
                 || terms(AdvancedFeedSettings.BLOCKED_KEYWORDS.get(), TermKind.KEYWORD).length > 0
                 || terms(AdvancedFeedSettings.BLOCKED_CREATORS.get(), TermKind.CREATOR).length > 0
@@ -152,6 +153,9 @@ public final class AdvancedFeedFilter {
                 return "live_replay";
             }
         } catch (Throwable ignored) {
+        }
+        if (Settings.HIDE_AI_GENERATED_CONTENT.get() && isAiGeneratedContent(aweme)) {
+            return "ai_generated";
         }
 
         int minimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
@@ -195,6 +199,87 @@ public final class AdvancedFeedFilter {
         }
 
         return null;
+    }
+
+    /**
+     * TikTok exposes its own AIGC metadata in feed responses. This deliberately uses
+     * multiple known Java-shape variants because model field access changes across
+     * TikTok releases while the server concept remains aigc_info/created_by_ai and an
+     * AIGC label type. Missing metadata is fail-open: BlueIT never guesses AI content
+     * from captions, creators, sounds, or visual heuristics.
+     */
+    private static boolean isAiGeneratedContent(Aweme aweme) {
+        if (aweme == null) return false;
+
+        if (anyTruthy(
+                invoke(aweme, "isAigc"),
+                invoke(aweme, "getIsAigc"),
+                invoke(aweme, "isAiGenerated"),
+                invoke(aweme, "getAiGenerated"),
+                readField(aweme, "isAigc"),
+                readField(aweme, "aigc"),
+                readField(aweme, "aiGenerated")
+        )) {
+            return true;
+        }
+
+        if (anyPositiveNumber(
+                invoke(aweme, "getAigcLabelType"),
+                readField(aweme, "aigcLabelType")
+        )) {
+            return true;
+        }
+
+        Object info = firstNonNull(
+                invoke(aweme, "getAigcInfo"),
+                readField(aweme, "aigcInfo"),
+                readField(aweme, "mAigcInfo")
+        );
+        if (info == null) return false;
+
+        if (anyTruthy(
+                invoke(info, "isCreatedByAi"),
+                invoke(info, "getCreatedByAi"),
+                invoke(info, "isAigc"),
+                invoke(info, "getIsAigc"),
+                readField(info, "createdByAi"),
+                readField(info, "isCreatedByAi"),
+                readField(info, "isAigc")
+        )) {
+            return true;
+        }
+
+        return anyPositiveNumber(
+                invoke(info, "getAigcLabelType"),
+                invoke(info, "getLabelType"),
+                readField(info, "aigcLabelType"),
+                readField(info, "labelType")
+        );
+    }
+
+    private static boolean anyTruthy(Object... values) {
+        for (Object value : values) {
+            if (value instanceof Boolean && (Boolean) value) return true;
+            if (value instanceof Number && ((Number) value).longValue() > 0L) return true;
+            if (value instanceof String) {
+                String text = ((String) value).trim();
+                if ("true".equalsIgnoreCase(text) || "1".equals(text)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean anyPositiveNumber(Object... values) {
+        for (Object value : values) {
+            if (value instanceof Number && ((Number) value).longValue() > 0L) return true;
+            if (value instanceof String) {
+                try {
+                    if (Long.parseLong(((String) value).trim()) > 0L) return true;
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return false;
     }
 
     private static double likeViewRatioPercent(Aweme aweme) {
