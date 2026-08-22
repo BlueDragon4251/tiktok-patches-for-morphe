@@ -57,7 +57,6 @@ public final class AdvancedFeedFilter {
         List snapshot = new ArrayList(list);
         List kept = new ArrayList(snapshot.size());
         int removed = 0;
-        boolean removedForHardRule = false;
         Object quantitativeFallback = null;
         String quantitativeFallbackAid = null;
         String quantitativeFallbackReason = null;
@@ -83,10 +82,12 @@ public final class AdvancedFeedFilter {
                 }
             } else if ("like_view_ratio".equals(reason)) {
                 distance = likeViewRatioDistanceToMinimum(aweme, activeMinimumRatio);
-            } else {
-                removedForHardRule = true;
             }
 
+            // Hard content rules are evaluated before the quantitative rules in reason().
+            // Therefore an item that reaches a duration/ratio reason is guaranteed not to
+            // match AI/keyword/creator/sound/promotional/live blocking and is safe as the
+            // single anti-empty-page fallback candidate.
             if (!Double.isInfinite(distance) && distance < quantitativeFallbackDistance) {
                 quantitativeFallback = container;
                 quantitativeFallbackAid = safeAid(aweme);
@@ -102,16 +103,10 @@ public final class AdvancedFeedFilter {
 
         // TikTok 46.4.3 treats an empty FYP page as a feed failure instead of simply
         // requesting the next page. Quantitative quality rules (duration and minimum
-        // like/view ratio) can legitimately reject every non-ad item in a server page.
-        // If and only if quantitative rules caused the entire page to become empty,
-        // retain one non-ad candidate closest to satisfying its threshold. Base
-        // FeedItemsFilter has already removed advertisements before this method runs.
-        // Content rules such as creator/keyword/sound/promotional/live/AI never receive
-        // this fallback, so explicitly blocked content stays gone.
-        if (kept.isEmpty()
-                && removed > 0
-                && !removedForHardRule
-                && quantitativeFallback != null) {
+        // like/view ratio) can legitimately reject every otherwise-allowed non-ad item.
+        // Retain exactly one such candidate closest to its threshold. Hard blocked
+        // content can never become this fallback because those rules run first.
+        if (kept.isEmpty() && removed > 0 && quantitativeFallback != null) {
             kept.add(quantitativeFallback);
             if (BaseSettings.DEBUG.get()) {
                 String aid = quantitativeFallbackAid;
@@ -142,6 +137,8 @@ public final class AdvancedFeedFilter {
     private static String reason(Aweme aweme) {
         if (aweme == null) return null;
 
+        // Hard content rules always run before quantitative rules. This ordering makes
+        // the anti-empty-page fallback unable to restore explicitly blocked content.
         try {
             if (Settings.HIDE_PROMOTIONAL_MUSIC.get() && aweme.isWithPromotionalMusic()) {
                 return "promotional_music";
@@ -156,14 +153,6 @@ public final class AdvancedFeedFilter {
         }
         if (Settings.HIDE_AI_GENERATED_CONTENT.get() && isAiGeneratedContent(aweme)) {
             return "ai_generated";
-        }
-
-        int minimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
-        if (minimumRatio > 0) {
-            double ratio = likeViewRatioPercent(aweme);
-            if (ratio >= 0.0d && ratio < minimumRatio) {
-                return "like_view_ratio";
-            }
         }
 
         String[] keywords = terms(AdvancedFeedSettings.BLOCKED_KEYWORDS.get(), TermKind.KEYWORD);
@@ -182,6 +171,14 @@ public final class AdvancedFeedFilter {
         if (sounds.length > 0) {
             String corpus = soundCorpus(aweme);
             if (containsAny(corpus, sounds)) return "sound";
+        }
+
+        int minimumRatio = Settings.MIN_LIKE_VIEW_RATIO_PERCENT.get();
+        if (minimumRatio > 0) {
+            double ratio = likeViewRatioPercent(aweme);
+            if (ratio >= 0.0d && ratio < minimumRatio) {
+                return "like_view_ratio";
+            }
         }
 
         Range duration = durationRange();
