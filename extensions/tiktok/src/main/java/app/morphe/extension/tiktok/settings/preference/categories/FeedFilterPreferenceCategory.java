@@ -13,7 +13,7 @@ import app.morphe.extension.tiktok.settings.Settings;
 import app.morphe.extension.tiktok.settings.SettingsStatus;
 import app.morphe.extension.tiktok.settings.preference.ClearSeenVideoHistoryPreference;
 import app.morphe.extension.tiktok.settings.preference.InputTextPreference;
-import app.morphe.extension.tiktok.settings.preference.PercentageInputPreference;
+import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.RangeValuePreference;
 import app.morphe.extension.tiktok.settings.preference.SeenVideoRetentionPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
@@ -89,13 +89,14 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
                     "Hide feed items TikTok marks as AI-generated or AIGC.",
                     Settings.HIDE_AI_GENERATED_CONTENT
             ));
-            addPreference(new PercentageInputPreference(
+            addPreference(new NumberInputPreference(
                     context,
-                    "Minimum like/view rate",
-                    "Hide videos whose likes are below this percentage of their view count. 0 disables the rule.",
-                    Settings.MIN_LIKE_VIEW_RATIO_PERCENT,
+                    "Maximum views per like",
+                    "Hide videos with a worse like/view ratio. Example: 40 means at least about 1 like per 40 views. 0 disables the rule.",
+                    Settings.MAX_VIEWS_PER_LIKE,
                     0,
-                    100
+                    10000,
+                    "views/like"
             ));
             addPreference(new InputTextPreference(
                     context,
