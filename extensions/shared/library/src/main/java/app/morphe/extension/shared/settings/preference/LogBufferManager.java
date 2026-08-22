@@ -78,18 +78,18 @@ public final class LogBufferManager {
         try {
             String exportText = buildExportText();
             if (exportText.isEmpty()) {
-                Utils.showToastShort("No matching Morphe diagnostics found.");
+                Utils.showToastShort("No matching BlueIT diagnostics found.");
                 return;
             }
             if (exportText.length() > CLIPBOARD_MAX_CHARS) {
-                exportText = "MORPHE DIAGNOSTIC REPORT\n"
+                exportText = "BLUEIT DIAGNOSTIC REPORT\n"
                         + "clipboard_note: older content omitted; use Save full report for everything\n\n"
                         + exportText.substring(exportText.length() - CLIPBOARD_MAX_CHARS);
             }
             Utils.setClipboard(exportText);
-            Utils.showToastShort("Morphe diagnostic report copied to clipboard.");
+            Utils.showToastShort("BlueIT diagnostic report copied to clipboard.");
         } catch (Exception ex) {
-            String message = "Failed to export Morphe diagnostics: " + ex.getMessage();
+            String message = "Failed to export BlueIT diagnostics: " + ex.getMessage();
             Utils.showToastLong(message);
             Logger.printDebug(() -> message, ex);
         }
@@ -101,17 +101,17 @@ public final class LogBufferManager {
         try {
             String exportText = buildExportText();
             if (exportText.isEmpty()) {
-                Utils.showToastShort("No matching Morphe diagnostics found.");
+                Utils.showToastShort("No matching BlueIT diagnostics found.");
                 return;
             }
 
-            String fileName = "morphe-diagnostics-" + fileTimestamp() + ".txt";
+            String fileName = "blueit-diagnostics-" + fileTimestamp() + ".txt";
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
                 values.put(MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_DOWNLOADS + "/Morphe");
+                        Environment.DIRECTORY_DOWNLOADS + "/BlueIT");
                 values.put(MediaStore.MediaColumns.IS_PENDING, 1);
                 pendingUri = context.getContentResolver().insert(
                         MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
@@ -135,12 +135,12 @@ public final class LogBufferManager {
                     output.write(exportText.getBytes(StandardCharsets.UTF_8));
                 }
             }
-            Utils.showToastLong("Full report saved to Downloads/Morphe.");
+            Utils.showToastLong("Full report saved to Downloads/BlueIT.");
         } catch (Exception ex) {
             if (pendingUri != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 context.getContentResolver().delete(pendingUri, null, null);
             }
-            String message = "Failed to save Morphe diagnostics: " + ex.getMessage();
+            String message = "Failed to save BlueIT diagnostics: " + ex.getMessage();
             Utils.showToastLong(message);
             Logger.printDebug(() -> message, ex);
         }
@@ -162,12 +162,12 @@ public final class LogBufferManager {
         if (crash.isEmpty() && events.length() == 0) return "";
 
         StringBuilder report = new StringBuilder();
-        report.append("MORPHE DIAGNOSTIC REPORT\n")
+        report.append("BLUEIT DIAGNOSTIC REPORT\n")
                 .append("schema: 1\n")
                 .append("generated_utc: ").append(utcNow()).append('\n')
                 .append("tiktok: ").append(Utils.getContext().getPackageName())
                 .append(' ').append(Utils.getAppVersionName()).append('\n')
-                .append("morphe: ").append(Utils.getPatchesReleaseVersion()).append('\n');
+                .append("blueit: ").append(Utils.getPatchesReleaseVersion()).append('\n');
 
         if (!crash.isEmpty()) {
             report.append("\n[LATEST JAVA CRASH]\n").append(crash);
@@ -236,7 +236,7 @@ public final class LogBufferManager {
     public static void clearLogBuffer() {
         clearLogBufferData();
         clearCrashReport(Utils.getContext());
-        Utils.showToastShort("Morphe diagnostic data cleared.");
+        Utils.showToastShort("BlueIT diagnostic data cleared.");
     }
 
     private static void clearLogBufferData() {
