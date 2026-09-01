@@ -209,9 +209,15 @@ internal object CommentListLoadedFingerprint : Fingerprint(
     },
 )
 
+/**
+ * Native multi-comment translation completion callback.
+ *
+ * The unique task marker survives TikTok 46.7.3, while the callback parameter
+ * descriptor changed. The BlueIT hook only consumes p0 (the callback object),
+ * so pinning the unstable parameter type is unnecessary.
+ */
 internal object MultiCommentTranslationCompleteFingerprint : Fingerprint(
     returnType = "V",
-    parameters = listOf("L"),
     strings = listOf("MultiCommentTranslationTask startTranslate onComplete "),
 )
 
