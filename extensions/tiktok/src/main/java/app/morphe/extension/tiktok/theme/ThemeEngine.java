@@ -16,28 +16,18 @@ import java.util.Locale;
 
 import app.morphe.extension.shared.Logger;
 
-/**
- * Runtime theme engine for TikTok.
- *
- * The first implementation intentionally targets window chrome and a small set of identifiable
- * navigation/sheet surfaces. It never walks the video renderer with broad color replacement rules.
- */
+/** Runtime theme engine for TikTok. */
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeEngine {
     private static final int DEFAULT_TIKTOK_ACCENT = Color.rgb(254, 44, 85);
     private static final int PATCH_DEFAULT_SCHEMA = 2;
     private static volatile boolean installed;
+    private static volatile boolean applying;
     private static WeakReference<Activity> activityRef = new WeakReference<>(null);
+    private static View.OnLayoutChangeListener layoutListener;
 
     private ThemeEngine() {}
 
-    /**
-     * Applies the patch-time preset once for a fresh BlueIT settings data set.
-     *
-     * Schema 2 intentionally retries the one-time seed used by 1.2.0-dev.1: that build could mark
-     * the seed as consumed before a usable extension context existed. Existing non-default runtime
-     * choices still always win, and once schema 2 has run a later repatch cannot overwrite them.
-     */
     public static void initializePatchDefault(String preset) {
         try {
             int appliedSchema = ThemeSettings.PATCH_DEFAULT_APPLIED.get();
@@ -65,24 +55,44 @@ public final class ThemeEngine {
         activityRef = new WeakReference<>(activity);
         Logger.printInfo(() -> "[BlueIT Theme Engine] runtime installed, preset=" + normalizedPreset());
 
-        // TikTok inflates important surfaces asynchronously. Apply once immediately after onCreate
-        // and twice more after short delays. No permanent global-layout listener is installed.
         View decor = activity.getWindow().getDecorView();
         decor.post(() -> applyActivity(activity));
-        decor.postDelayed(() -> applyActivity(activity), 450L);
-        decor.postDelayed(() -> applyActivity(activity), 1400L);
+        decor.postDelayed(() -> applyActivity(activity), 350L);
+        decor.postDelayed(() -> applyActivity(activity), 1000L);
+        decor.postDelayed(() -> applyActivity(activity), 2500L);
+        decor.postDelayed(() -> applyActivity(activity), 5000L);
+
+        // TikTok rebuilds bottom navigation and sheet containers after MainActivity.onCreate. Keep a
+        // lightweight listener attached to the decor view so newly inflated surfaces receive the
+        // selected runtime theme too. Applying only changes backgrounds/system bars and is guarded
+        // against re-entrancy, so this does not create a layout loop.
+        if (layoutListener != null) {
+            try {
+                decor.removeOnLayoutChangeListener(layoutListener);
+            } catch (Throwable ignored) {
+            }
+        }
+        layoutListener = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            Activity current = activityRef.get();
+            if (current != null && !"default".equals(normalizedPreset())) {
+                v.post(() -> applyActivity(current));
+            }
+        };
+        decor.addOnLayoutChangeListener(layoutListener);
     }
 
     public static boolean isInstalled() {
         return installed;
     }
 
-    /** Best-effort live preview for settings changes. Restart remains the authoritative refresh. */
+    /** Live preview for BlueIT setting changes. */
     public static void requestReapply() {
         Activity activity = activityRef.get();
         if (activity == null) return;
         View decor = activity.getWindow().getDecorView();
-        decor.postDelayed(() -> applyActivity(activity), 80L);
+        decor.post(() -> applyActivity(activity));
+        decor.postDelayed(() -> applyActivity(activity), 250L);
+        decor.postDelayed(() -> applyActivity(activity), 900L);
     }
 
     public static int accentColor(Context context) {
@@ -102,11 +112,11 @@ public final class ThemeEngine {
     }
 
     private static void applyActivity(Activity activity) {
+        if (applying || activity == null || activity.isFinishing()) return;
+        applying = true;
         try {
             String preset = normalizedPreset();
-            if ("default".equals(preset)) {
-                return;
-            }
+            if ("default".equals(preset)) return;
 
             Palette palette = resolvePalette(activity);
             Window window = activity.getWindow();
@@ -115,10 +125,17 @@ public final class ThemeEngine {
 
             View decor = window.getDecorView();
             updateSystemBarIconContrast(decor, palette);
-            applyTargetedSurfaces(decor, palette, "liquid_glass".equals(preset));
-        } catch (Exception exception) {
-            // Theme failures must never stop TikTok from opening.
+            applyTargetedSurfaces(
+                    decor,
+                    palette,
+                    "liquid_glass".equals(preset),
+                    Math.max(1, decor.getWidth()),
+                    Math.max(1, decor.getHeight())
+            );
+        } catch (Throwable exception) {
             Logger.printDebug(() -> "BlueIT Theme Engine apply failed", exception);
+        } finally {
+            applying = false;
         }
     }
 
@@ -137,7 +154,13 @@ public final class ThemeEngine {
         decor.setSystemUiVisibility(visibility);
     }
 
-    private static void applyTargetedSurfaces(View view, Palette palette, boolean liquidGlass) {
+    private static void applyTargetedSurfaces(
+            View view,
+            Palette palette,
+            boolean liquidGlass,
+            int rootWidth,
+            int rootHeight
+    ) {
         if (!(view instanceof ViewGroup)) return;
 
         ViewGroup group = (ViewGroup) view;
@@ -146,12 +169,19 @@ public final class ThemeEngine {
 
         boolean bottomNavigation =
                 (resourceName.contains("bottom") && (resourceName.contains("nav") || resourceName.contains("tab")))
+                        || resourceName.contains("main_tab")
+                        || resourceName.contains("tab_bar")
+                        || resourceName.contains("navigation_bar")
                         || className.contains("bottomnavigation")
-                        || className.contains("bottomtab");
+                        || className.contains("bottomtab")
+                        || className.contains("tabbar")
+                        || isLikelyBottomNavigation(group, rootWidth, rootHeight);
+
         boolean sheetSurface = resourceName.contains("bottom_sheet")
                 || resourceName.contains("comments_panel")
                 || resourceName.contains("comment_panel")
                 || resourceName.contains("share_panel")
+                || resourceName.contains("panel_container")
                 || className.contains("bottomsheet");
 
         if (bottomNavigation || sheetSurface) {
@@ -160,12 +190,40 @@ public final class ThemeEngine {
                 group.setElevation(dp(group.getContext(), 8));
             } else {
                 group.setBackgroundTintList(ColorStateList.valueOf(palette.surface));
+                group.setBackgroundColor(palette.surface);
             }
         }
 
         for (int index = 0; index < group.getChildCount(); index++) {
-            applyTargetedSurfaces(group.getChildAt(index), palette, liquidGlass);
+            applyTargetedSurfaces(group.getChildAt(index), palette, liquidGlass, rootWidth, rootHeight);
         }
+    }
+
+    /**
+     * 46.7.3 uses obfuscated classes/ids for its main bottom bar on some variants. Detect only a
+     * conservative bottom-aligned navigation-shaped ViewGroup so the video renderer itself is not
+     * recolored.
+     */
+    private static boolean isLikelyBottomNavigation(ViewGroup group, int rootWidth, int rootHeight) {
+        if (group.getVisibility() != View.VISIBLE || group.getAlpha() <= 0f) return false;
+        int children = group.getChildCount();
+        if (children < 3 || children > 8) return false;
+        int width = group.getWidth();
+        int height = group.getHeight();
+        if (width < rootWidth * 0.65f) return false;
+        int minHeight = Math.round(dp(group.getContext(), 40));
+        int maxHeight = Math.round(dp(group.getContext(), 130));
+        if (height < minHeight || height > maxHeight) return false;
+
+        int[] location = new int[2];
+        try {
+            group.getLocationOnScreen(location);
+        } catch (Throwable ignored) {
+            return false;
+        }
+        int bottom = location[1] + height;
+        return bottom >= rootHeight - Math.round(dp(group.getContext(), 48))
+                && location[1] >= rootHeight * 0.70f;
     }
 
     private static GradientDrawable glassDrawable(Context context, Palette palette) {
