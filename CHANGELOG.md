@@ -1,3 +1,19 @@
+# [1.2.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.2...v1.2.0-dev.3) (2026-09-01)
+
+
+### Bug Fixes
+
+* **dev:** publish Theme Engine runtime and Interface crash fixes ([a6e5aa7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a6e5aa7fc1c5b2297b9bbaf3083937eaf4f9514d))
+* **theme:** compile runtime apply logging ([14509e0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/14509e0011bd54c06fb96c6964008c2209a80bb2))
+* **theme:** keep runtime styling attached to TikTok surfaces ([2405ee0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2405ee0bc9e2c0484938d556380841260c5d4783))
+* **theme:** remove missing color-picker resource dependency ([f62822d](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/f62822d48c2b12e2b21fb6f5ace65d6c890948af))
+
+
+
+
+
+## 1.2.0-dev.3
+
 # [1.2.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-09-01)
 
 
