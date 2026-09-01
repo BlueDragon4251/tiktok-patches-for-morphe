@@ -38,7 +38,7 @@ jobs:
           test -x "$DEXDUMP"
           : > remaining-evidence.txt
 
-          REGEX='onSingleTapConfirmed, currentMode=|onSingleTapConfirmed, multiIntercept:|TakoAssem|feed/assem/tikbot|RiskControlService|BdTuringCallback|DOWNLOAD_200_VIDEOS|OfflineModeSheetPageAssem|OfflineModeListVM'
+          REGEX='onSingleTapConfirmed, currentMode=|onSingleTapConfirmed, multiIntercept:|TakoAssem|feed/assem/tikbot|RiskControlService|BdTuringCallback|LiveHostUser|popCaptchaV2|DOWNLOAD_200_VIDEOS|OfflineModeSheetPageAssem|OfflineModeListVM'
           GESTURE_REGEX='onSingleTapConfirmed|onDoubleTap|onLongPress|handleDoubleClick|handleConfiguredSeek'
 
           for dex in /tmp/dex/*.dex; do
@@ -65,7 +65,7 @@ jobs:
               timeout 100s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
               if test -s "$dump"; then
                 echo "=== CONTEXT $(basename "$dex") ===" >> remaining-evidence.txt
-                grep -Ein -B 160 -A 140 "$REGEX|$GESTURE_REGEX" "$dump" | head -n 60000 >> remaining-evidence.txt || true
+                grep -Ein -B 160 -A 140 "$REGEX|$GESTURE_REGEX" "$dump" | head -n 70000 >> remaining-evidence.txt || true
               fi
             fi
           done
