@@ -1,11 +1,13 @@
 package app.morphe.patches.tiktok.layout.theme
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.MainActivityOnCreateFingerprint
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.Opcode
 
 private const val THEME_ENGINE_CLASS_DESCRIPTOR =
@@ -49,6 +51,11 @@ val themeEnginePatch = bytecodePatch(
     execute {
         val patchDefaultPreset = initialPreset ?: "default"
 
+        SettingsStatusLoadFingerprint.method.addInstruction(
+            0,
+            "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableThemeEngine()V",
+        )
+
         MainActivityOnCreateFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
@@ -59,6 +66,7 @@ val themeEnginePatch = bytecodePatch(
                 addInstructions(
                     returnIndex,
                     """
+                        invoke-static/range {p0 .. p0}, Lapp/morphe/extension/shared/Utils;->setContext(Landroid/content/Context;)V
                         const-string v0, "$patchDefaultPreset"
                         invoke-static {v0}, $THEME_ENGINE_CLASS_DESCRIPTOR->initializePatchDefault(Ljava/lang/String;)V
                         invoke-static/range {p0 .. p0}, $THEME_ENGINE_CLASS_DESCRIPTOR->onMainActivityCreated(Landroid/app/Activity;)V
