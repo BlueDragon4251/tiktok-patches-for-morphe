@@ -62,10 +62,6 @@ public final class ThemeEngine {
         decor.postDelayed(() -> applyActivity(activity), 2500L);
         decor.postDelayed(() -> applyActivity(activity), 5000L);
 
-        // TikTok rebuilds bottom navigation and sheet containers after MainActivity.onCreate. Keep a
-        // lightweight listener attached to the decor view so newly inflated surfaces receive the
-        // selected runtime theme too. Applying only changes backgrounds/system bars and is guarded
-        // against re-entrancy, so this does not create a layout loop.
         if (layoutListener != null) {
             try {
                 decor.removeOnLayoutChangeListener(layoutListener);
@@ -132,7 +128,7 @@ public final class ThemeEngine {
                     Math.max(1, decor.getWidth()),
                     Math.max(1, decor.getHeight())
             );
-        } catch (Throwable exception) {
+        } catch (Exception exception) {
             Logger.printDebug(() -> "BlueIT Theme Engine apply failed", exception);
         } finally {
             applying = false;
@@ -199,11 +195,6 @@ public final class ThemeEngine {
         }
     }
 
-    /**
-     * 46.7.3 uses obfuscated classes/ids for its main bottom bar on some variants. Detect only a
-     * conservative bottom-aligned navigation-shaped ViewGroup so the video renderer itself is not
-     * recolored.
-     */
     private static boolean isLikelyBottomNavigation(ViewGroup group, int rootWidth, int rootHeight) {
         if (group.getVisibility() != View.VISIBLE || group.getAlpha() <= 0f) return false;
         int children = group.getChildCount();
