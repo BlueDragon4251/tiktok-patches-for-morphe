@@ -12,13 +12,8 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 12
     steps:
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-
       - name: Download exact TikTok 46.7.3 APK
         shell: bash
         run: |
@@ -32,91 +27,36 @@ jobs:
           echo "SHA-256: $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
 
-      - name: Find 46.7.3 string xrefs
+      - name: Dexdump migration anchors
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --disable-pip-version-check --quiet 'androguard>=4.1,<5'
-          cat > /tmp/discover.py <<'PY'
-          import re
-          from androguard.misc import AnalyzeAPK
-
-          needles = re.compile(
-              r'first_feed_duration|Feed0VVManager|full_feed_commit_process_data|fetchFeeds|tryUseCache|'
-              r'resetClearMode|clear.?mode|DOWNLOAD_200_VIDEOS|offline.{0,30}(video|mode)|'
-              r'popCaptcha|captcha|long.?press.{0,40}(share|quick)|quick.{0,40}(share|comment|emoji|reaction)|'
-              r'comment.{0,40}(emoji|reaction)|MultiCommentTranslation|TranslationTask|onComplete',
-              re.I,
-          )
-          a, ds, dx = AnalyzeAPK('tiktok-46.7.3.apk')
-          rows = []
-          seen = set()
-          for sa in dx.get_strings():
-              try:
-                  value = sa.get_value()
-              except Exception:
-                  continue
-              if not value or not needles.search(value):
-                  continue
-              try:
-                  xrefs = list(sa.get_xref_from())
-              except Exception:
-                  xrefs = []
-              for x in xrefs:
-                  try:
-                      m = x[-1]
-                      if hasattr(m, 'get_method'):
-                          m = m.get_method()
-                      sig = (m.get_class_name(), m.get_name(), m.get_descriptor())
-                  except Exception:
-                      continue
-                  key = (value, sig)
-                  if key in seen:
-                      continue
-                  seen.add(key)
-                  rows.append((value, sig, m))
-
-          for value, sig, _ in sorted(rows, key=lambda r: (r[1][0], r[1][1], r[0])):
-              print(f'STRING {value!r}')
-              print(f'METHOD {sig[0]}->{sig[1]}{sig[2]}')
-
-          print('\n=== DISASSEMBLY ===')
-          done = set()
-          for value, sig, m in rows:
-              if sig in done:
-                  continue
-              done.add(sig)
-              print(f'\n--- {sig[0]}->{sig[1]}{sig[2]} via {value!r} ---')
-              try:
-                  code = m.get_code()
-                  if code is None:
-                      continue
-                  for i, ins in enumerate(code.get_bc().get_instructions()):
-                      if i >= 300:
-                          print('...truncated...')
-                          break
-                      print(f'{i:04d}: {ins.get_name()} {ins.get_output()}')
-              except Exception as e:
-                  print(f'<error {e}>')
-          PY
-          timeout 14m python3 /tmp/discover.py > discovery.txt 2>&1 || true
-
-      - name: Raw feature strings
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf /tmp/dex && mkdir -p /tmp/dex
+          rm -rf /tmp/dex /tmp/dumps && mkdir -p /tmp/dex /tmp/dumps
           unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/dex
-          find /tmp/dex -type f -name '*.dex' -print0 | xargs -0 strings 2>/dev/null \
-            | grep -Ei 'LX/0BIZ;|LX/0BJV;|LX/0itW;|LX/0MPw;|ARunnableS0S0303000_29|FeedApi|Feed0VVManager|first_feed_duration|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask' \
-            | sort -u | head -n 6000 > raw-evidence.txt || true
+          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
+          test -x "$DEXDUMP"
+          REGEX='first_feed_duration|Feed0VVManager|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask|onComplete|offline.?mode'
+          : > dex-context.txt
+          : > raw-evidence.txt
+          for dex in /tmp/dex/*.dex; do
+            if strings "$dex" | grep -Eiq "$REGEX"; then
+              echo "=== $(basename "$dex") ===" >> raw-evidence.txt
+              strings "$dex" | grep -Ei "$REGEX|LX/0BIZ;|LX/0BJV;|LX/0itW;|LX/0MPw;|ARunnableS0S0303000_29|FeedApi|ClearModePanelComponent|SecApiImpl|RiskControlService|LiveHostUser" | sort -u | head -n 2500 >> raw-evidence.txt || true
+              out="/tmp/dumps/$(basename "$dex").txt"
+              timeout 80s "$DEXDUMP" -d "$dex" > "$out" 2>&1 || true
+              if test -s "$out"; then
+                echo "=== $(basename "$dex") CONTEXT ===" >> dex-context.txt
+                grep -Ein -B 90 -A 55 "$REGEX" "$out" | head -n 14000 >> dex-context.txt || true
+              fi
+            fi
+          done
 
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-46.7.3-fingerprint-discovery
           path: |
-            discovery.txt
+            dex-context.txt
             raw-evidence.txt
           if-no-files-found: error
           retention-days: 1
