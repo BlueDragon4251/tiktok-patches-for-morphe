@@ -14,6 +14,7 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
 private const val CAPTCHA_CALLBACK_DESCRIPTOR = "LX/17qC;"
+private const val LIVE_CAPTCHA_CALLBACK_DESCRIPTOR = "LX/1NRi;"
 
 private object CaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
@@ -50,7 +51,7 @@ private object LiveHostCaptchaPopupFingerprint : Fingerprint(
     parameters = listOf(
         "Landroid/app/Activity;",
         "Ljava/lang/String;",
-        "LX/1DPS;",
+        LIVE_CAPTCHA_CALLBACK_DESCRIPTOR,
         "Landroidx/fragment/app/Fragment;",
     ),
 )
@@ -124,7 +125,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_live_captcha_popup
                 if-eqz p3, :morphe_hide_live_captcha_popup_return
-                invoke-interface {p3}, LX/1DPS;->LIZIZ()V
+                invoke-interface {p3}, $LIVE_CAPTCHA_CALLBACK_DESCRIPTOR->LIZJ()V
                 :morphe_hide_live_captcha_popup_return
                 return-void
                 :morphe_show_live_captcha_popup
