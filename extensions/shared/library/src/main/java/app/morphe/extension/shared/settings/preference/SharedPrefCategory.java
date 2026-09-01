@@ -1,8 +1,11 @@
 package app.morphe.extension.shared.settings.preference;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceFragment;
 
 import androidx.annotation.NonNull;
@@ -23,14 +26,72 @@ import app.morphe.extension.shared.Utils;
  * then store the primitive numbers using the {@link #preferences} itself.
  */
 public class SharedPrefCategory {
+    private static final String USER_SETTINGS_CATEGORY = "morphe_prefs";
+
     @NonNull
     public final String name;
     @NonNull
     public final SharedPreferences preferences;
 
+    /**
+     * Android SharedPreferences keeps a process-local in-memory snapshot and is not safe for
+     * coordinated writes from multiple app processes. TikTok uses multiple processes and the
+     * extension can be initialized outside the main activity process. A stale secondary-process
+     * snapshot can therefore overwrite unrelated newer user settings when it later saves one key.
+     *
+     * Only the main app process may persist the shared Morphe/BlueIT user settings category.
+     * Other categories retain their existing behavior, and secondary processes may still read
+     * settings and update their local Setting values without rewriting the shared settings file.
+     */
+    private final boolean persistentWritesAllowed;
+
     public SharedPrefCategory(@NonNull String name) {
         this.name = Objects.requireNonNull(name);
-        preferences = Objects.requireNonNull(Utils.getContext()).getSharedPreferences(name, Context.MODE_PRIVATE);
+        Context context = Objects.requireNonNull(Utils.getContext());
+        preferences = context.getSharedPreferences(name, Context.MODE_PRIVATE);
+        persistentWritesAllowed = !USER_SETTINGS_CATEGORY.equals(name) || isMainAppProcess(context);
+
+        if (!persistentWritesAllowed) {
+            Logger.printInfo(() -> "Preventing secondary-process writes to shared user settings");
+        }
+    }
+
+    private static boolean isMainAppProcess(@NonNull Context context) {
+        try {
+            String expectedProcessName = context.getApplicationInfo().processName;
+            if (expectedProcessName == null || expectedProcessName.isEmpty()) {
+                expectedProcessName = context.getPackageName();
+            }
+
+            String currentProcessName = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                currentProcessName = Application.getProcessName();
+            } else {
+                ActivityManager activityManager =
+                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+                if (activityManager != null) {
+                    int pid = android.os.Process.myPid();
+                    for (ActivityManager.RunningAppProcessInfo processInfo
+                            : activityManager.getRunningAppProcesses()) {
+                        if (processInfo.pid == pid) {
+                            currentProcessName = processInfo.processName;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // If Android cannot report the process name, preserve the old behavior rather than
+            // unexpectedly making settings read-only on an unsupported device.
+            return currentProcessName == null || expectedProcessName.equals(currentProcessName);
+        } catch (Throwable throwable) {
+            Logger.printException(() -> "Failed to determine app process for settings persistence", throwable);
+            return true;
+        }
+    }
+
+    private boolean canPersist() {
+        return persistentWritesAllowed;
     }
 
     private void removeConflictingPreferenceKeyValue(@NonNull String key) {
@@ -40,11 +101,13 @@ public class SharedPrefCategory {
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     private void saveObjectAsString(@NonNull String key, @Nullable Object value) {
+        if (!canPersist()) return;
         preferences.edit().putString(key, (value == null ? null : value.toString())).commit();
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void clear() {
+        if (!canPersist()) return;
         preferences.edit().clear().commit();
     }
 
@@ -53,11 +116,13 @@ public class SharedPrefCategory {
      */
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void removeKey(@NonNull String key) {
+        if (!canPersist()) return;
         preferences.edit().remove(Objects.requireNonNull(key)).commit();
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void saveBoolean(@NonNull String key, boolean value) {
+        if (!canPersist()) return;
         preferences.edit().putBoolean(key, value).commit();
     }
 
