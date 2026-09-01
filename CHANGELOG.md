@@ -1,3 +1,22 @@
+# [1.2.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.1...v1.2.0-dev.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* **dev:** publish Theme Engine and settings placement fixes ([9ec0fd7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9ec0fd7dc28816ced1bbcf85f65633a288a0444c))
+* **settings:** keep Interface section visible for Theme Engine ([200f8e3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/200f8e3950846bf72795907810b865b47b14f237))
+* **settings:** resolve 46.7.3 compose settings rows semantically ([a9c5951](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a9c59514daa100f665f8854b173cb317e27aafeb))
+* **theme:** expose Theme Engine status in BlueIT ([cac012c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cac012c42aaba6698d5a21d160980f2163ee74f2))
+* **theme:** initialize runtime after context hook ([61fc20a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/61fc20ad4b434f209d1e046bc851fca0d5598bdb))
+* **theme:** recover dev1 preset initialization ([48f0e31](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/48f0e311b2137c60beb2e534e0b49ee61e3d4eaa))
+* **theme:** show Theme Engine controls by patch status ([4089c69](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4089c69c7aec523dedd341b6f8becfefffc45975))
+
+
+
+
+
+## 1.2.0-dev.2
+
 # [1.2.0-dev.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.1...v1.2.0-dev.1) (2026-09-01)
 
 
