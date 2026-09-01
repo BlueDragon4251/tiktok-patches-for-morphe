@@ -12,13 +12,8 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-
       - name: Download exact TikTok 46.7.3 APK
         shell: bash
         run: |
@@ -31,30 +26,38 @@ jobs:
           ACTUAL="$(sha256sum tiktok-46.7.3.apk | awk '{print $1}')"
           echo "SHA-256: $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
+          rm -rf /tmp/dex /tmp/dumps
+          mkdir -p /tmp/dex /tmp/dumps
+          unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/dex
 
-      - name: Dump final migration targets
+      - name: Locate and dump remaining anchors
         shell: bash
         run: |
           set -euo pipefail
-          ANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer 2>/dev/null | sort | tail -n 1)"
-          test -x "$ANALYZER"
-          : > final-evidence.txt
-          for cls in \
-            X.17qC \
-            X.09Y7 \
-            kotlin.jvm.internal.AFwS155S0000000_28_I1 \
-            com.ss.android.ugc.aweme.comment.keyboard.keyboardv2.refactor.ExposedEmojiPanelTrigger \
-            com.ss.android.ugc.aweme.comment.experiment.PersonalizedEmojiExperiment \
-            com.ss.android.ugc.aweme.internalshare.impl.feedquickshare.QuickShareButtonTrigger \
-            com.ss.android.ugc.aweme.feed.assem.quickcomment.VideoQuickCommentTrigger; do
-            echo "=== $cls ===" >> final-evidence.txt
-            timeout 55s "$ANALYZER" dex code --class "$cls" tiktok-46.7.3.apk >> final-evidence.txt 2>&1 || true
+          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
+          test -x "$DEXDUMP"
+          : > remaining-evidence.txt
+
+          REGEX='onSingleTapConfirmed, currentMode=|onSingleTapConfirmed, multiIntercept:|TakoAssem|feed/assem/tikbot|RiskControlService|BdTuringCallback|DOWNLOAD_200_VIDEOS|OfflineModeSheetPageAssem|OfflineModeListVM'
+
+          for dex in /tmp/dex/*.dex; do
+            if strings "$dex" | grep -Eiq "$REGEX"; then
+              echo "=== MATCHING DEX $(basename "$dex") ===" >> remaining-evidence.txt
+              strings "$dex" | grep -Ei "$REGEX|PersonalizedEmojiExperiment|ExposedEmojiPanelTrigger|im_long_press_share_button_to_quick_share" \
+                | sort -u | head -n 1000 >> remaining-evidence.txt || true
+              dump="/tmp/dumps/$(basename "$dex").txt"
+              timeout 100s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
+              if test -s "$dump"; then
+                echo "=== CONTEXT $(basename "$dex") ===" >> remaining-evidence.txt
+                grep -Ein -B 130 -A 100 "$REGEX" "$dump" | head -n 30000 >> remaining-evidence.txt || true
+              fi
+            fi
           done
 
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-46.7.3-fingerprint-discovery
-          path: final-evidence.txt
+          path: remaining-evidence.txt
           if-no-files-found: error
           retention-days: 1
