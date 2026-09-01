@@ -30,6 +30,29 @@ public final class ThemeEngine {
 
     private ThemeEngine() {}
 
+    /**
+     * Applies the patch-time preset exactly once for a fresh BlueIT settings data set.
+     *
+     * The patch option is only an initial preference. If a user already selected a non-default
+     * theme (for example when updating a previously patched APK), that choice wins. After this
+     * one-shot initialization, all future changes are controlled solely from BlueIT settings.
+     */
+    public static void initializePatchDefault(String preset) {
+        try {
+            if (ThemeSettings.PATCH_DEFAULT_APPLIED.get() != 0) return;
+
+            String currentPreset = normalizedPreset();
+            String patchPreset = normalizePresetValue(preset);
+            if ("default".equals(currentPreset) && !"default".equals(patchPreset)) {
+                ThemeSettings.PRESET.save(patchPreset);
+            }
+
+            ThemeSettings.PATCH_DEFAULT_APPLIED.save(1);
+        } catch (Exception exception) {
+            Logger.printDebug(() -> "BlueIT Theme Engine patch default initialization failed", exception);
+        }
+    }
+
     /** Called from the bytecode patch after TikTok MainActivity.onCreate completes. */
     public static void onMainActivityCreated(Activity activity) {
         if (activity == null) return;
@@ -216,7 +239,10 @@ public final class ThemeEngine {
     }
 
     private static String normalizedPreset() {
-        String preset = ThemeSettings.PRESET.get();
+        return normalizePresetValue(ThemeSettings.PRESET.get());
+    }
+
+    private static String normalizePresetValue(String preset) {
         if (preset == null) return "default";
         switch (preset) {
             case "material_you":
