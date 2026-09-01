@@ -105,7 +105,7 @@ internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(
 
         references.any {
             it.definingClass == "Lcom/bytedance/assem/arch/reused/ReusedUIAssem;" &&
-                it.name == "LJJIJLIJ" &&
+                it.name == "LJJJ" &&
                 it.returnType == "Landroid/view/View;"
         } && references.any {
             it.definingClass == "Landroid/view/View;" &&
