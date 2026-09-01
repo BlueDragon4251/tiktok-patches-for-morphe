@@ -10,6 +10,20 @@ public final class ThemeSettings {
             "default"
     );
 
+    /**
+     * Internal one-shot marker for the optional patch-time preset.
+     *
+     * This is intentionally excluded from settings import/export. The patch-time value is only an
+     * initial default for a fresh install/data set and must never lock or overwrite a user's later
+     * selection in BlueIT settings.
+     */
+    public static final IntegerSetting PATCH_DEFAULT_APPLIED = new IntegerSetting(
+            "blueit_theme_patch_default_applied",
+            0,
+            false,
+            false
+    );
+
     public static final StringSetting CUSTOM_BACKGROUND = new StringSetting(
             "blueit_theme_custom_background",
             "#FF000000"
