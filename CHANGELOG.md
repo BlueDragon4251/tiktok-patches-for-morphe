@@ -1,3 +1,16 @@
+## [1.1.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.1.0...v1.1.1) (2026-09-01)
+
+
+### Bug Fixes
+
+* **settings:** prevent secondary process preference clobbering ([bc59416](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/bc5941657d90b554e08e9127a6da1e319cc499ba))
+
+
+
+
+
+## 1.1.1
+
 # [1.1.0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.0.1...v1.1.0) (2026-08-26)
 
 
