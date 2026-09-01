@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Download exact TikTok 46.7.3 APK
         shell: bash
         run: |
@@ -26,29 +31,115 @@ jobs:
           ACTUAL="$(sha256sum tiktok-46.7.3.apk | awk '{print $1}')"
           echo "SHA-256: $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
+          rm -rf /tmp/dex && mkdir -p /tmp/dex
+          unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/dex
 
-      - name: Dexdump migration anchors
+      - name: Dump stable target classes
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf /tmp/dex /tmp/dumps && mkdir -p /tmp/dex /tmp/dumps
-          unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/dex
-          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
-          test -x "$DEXDUMP"
-          REGEX='first_feed_duration|Feed0VVManager|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask|onComplete|offline.?mode'
-          : > dex-context.txt
+          ANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer 2>/dev/null | sort | tail -n 1)"
+          : > class-evidence.txt
+          for cls in \
+            com.ss.android.ugc.aweme.sec.SecApiImpl \
+            com.ss.android.ugc.feed.platform.panel.clearmode.ClearModePanelComponent \
+            com.ss.android.ugc.aweme.offlinemode.viewmodel.OfflineModeListVM; do
+            echo "=== $cls ===" >> class-evidence.txt
+            timeout 45s "$ANALYZER" dex code --class "$cls" tiktok-46.7.3.apk >> class-evidence.txt 2>&1 || true
+          done
+
+      - name: Find targeted string xrefs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --quiet 'androguard>=4.1,<5'
+          cat > /tmp/discover.py <<'PY'
+          import re
+          from pathlib import Path
+          from androguard.misc import AnalyzeDex
+
+          needles = re.compile(
+              r'first_feed_duration|Feed0VVManager|full_feed_commit_process_data|fetchFeeds|tryUseCache|'
+              r'resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|'
+              r'long.?press|quick.?share|quick.?comment|bottom_button_quick_(share|comment)|emoji|reaction|'
+              r'MultiCommentTranslation|TranslationTask|onComplete',
+              re.I,
+          )
+          selected = ['classes3.dex', 'classes4.dex', 'classes5.dex', 'classes17.dex', 'classes30.dex', 'classes35.dex']
+          rows = []
+          seen = set()
+          for name in selected:
+              path = Path('/tmp/dex') / name
+              if not path.exists():
+                  continue
+              try:
+                  _, d, dx = AnalyzeDex(str(path))
+              except Exception as e:
+                  print(f'ANALYZE_ERROR {name}: {e}')
+                  continue
+              for sa in dx.get_strings():
+                  try:
+                      value = sa.get_value()
+                  except Exception:
+                      continue
+                  if not value or not needles.search(value):
+                      continue
+                  try:
+                      xrefs = list(sa.get_xref_from())
+                  except Exception:
+                      xrefs = []
+                  for x in xrefs:
+                      try:
+                          m = x[-1]
+                          if hasattr(m, 'get_method'):
+                              m = m.get_method()
+                          sig = (m.get_class_name(), m.get_name(), m.get_descriptor())
+                      except Exception:
+                          continue
+                      key = (name, value, sig)
+                      if key in seen:
+                          continue
+                      seen.add(key)
+                      rows.append((name, value, sig, m))
+
+          for name, value, sig, _ in sorted(rows, key=lambda r: (r[0], r[2][0], r[2][1], r[1])):
+              print(f'DEX {name}')
+              print(f'STRING {value!r}')
+              print(f'METHOD {sig[0]}->{sig[1]}{sig[2]}')
+
+          print('\n=== RELEVANT DISASSEMBLY ===')
+          done = set()
+          for name, value, sig, m in rows:
+              marker = (name, sig)
+              if marker in done:
+                  continue
+              if not re.search(r'popCaptcha|resetClearMode|DOWNLOAD_200_VIDEOS|bottom_button_quick|quick.?share|quick.?comment|MultiCommentTranslation|TranslationTask', value, re.I):
+                  continue
+              done.add(marker)
+              print(f'\n--- {name} {sig[0]}->{sig[1]}{sig[2]} via {value!r} ---')
+              try:
+                  code = m.get_code()
+                  if code is None:
+                      continue
+                  for i, ins in enumerate(code.get_bc().get_instructions()):
+                      if i >= 420:
+                          print('...truncated...')
+                          break
+                      print(f'{i:04d}: {ins.get_name()} {ins.get_output()}')
+              except Exception as e:
+                  print(f'<error {e}>')
+          PY
+          timeout 7m python3 /tmp/discover.py > discovery.txt 2>&1 || true
+
+      - name: Raw feature strings
+        shell: bash
+        run: |
+          set -euo pipefail
           : > raw-evidence.txt
-          for dex in /tmp/dex/*.dex; do
-            if strings "$dex" | grep -Eiq "$REGEX"; then
-              echo "=== $(basename "$dex") ===" >> raw-evidence.txt
-              strings "$dex" | grep -Ei "$REGEX|LX/0BIZ;|LX/0BJV;|LX/0itW;|LX/0MPw;|ARunnableS0S0303000_29|FeedApi|ClearModePanelComponent|SecApiImpl|RiskControlService|LiveHostUser" | sort -u | head -n 2500 >> raw-evidence.txt || true
-              out="/tmp/dumps/$(basename "$dex").txt"
-              timeout 80s "$DEXDUMP" -d "$dex" > "$out" 2>&1 || true
-              if test -s "$out"; then
-                echo "=== $(basename "$dex") CONTEXT ===" >> dex-context.txt
-                grep -Ein -B 90 -A 55 "$REGEX" "$out" | head -n 14000 >> dex-context.txt || true
-              fi
-            fi
+          for dex in /tmp/dex/classes3.dex /tmp/dex/classes4.dex /tmp/dex/classes5.dex /tmp/dex/classes17.dex /tmp/dex/classes30.dex /tmp/dex/classes35.dex; do
+            test -f "$dex" || continue
+            echo "=== $(basename "$dex") ===" >> raw-evidence.txt
+            strings "$dex" | grep -Ei 'SecApiImpl|ClearModePanelComponent|DOWNLOAD_200_VIDEOS|FeedApi|Feed0VVManager|first_feed_duration|fetchFeeds|tryUseCache|resetClearMode|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|bottom_button_quick_(share|comment)|emoji|reaction|MultiCommentTranslation|TranslationTask' | sort -u | head -n 3500 >> raw-evidence.txt || true
           done
 
       - name: Upload discovery evidence
@@ -56,7 +147,8 @@ jobs:
         with:
           name: tiktok-46.7.3-fingerprint-discovery
           path: |
-            dex-context.txt
+            class-evidence.txt
+            discovery.txt
             raw-evidence.txt
           if-no-files-found: error
           retention-days: 1
