@@ -12,7 +12,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 18
     steps:
       - uses: actions/setup-java@v5
         with:
@@ -32,72 +32,36 @@ jobs:
           echo "SHA-256: $ACTUAL"
           test "$ACTUAL" = "$EXPECTED"
 
-      - name: Dump known migration classes
-        shell: bash
-        run: |
-          set -euo pipefail
-          ANALYZER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name apkanalyzer 2>/dev/null | sort | tail -n 1)"
-          test -n "$ANALYZER"
-          {
-            echo '=== PACKAGE / CLASS MATCHES ==='
-            "$ANALYZER" dex packages --defined-only tiktok-46.7.3.apk 2>&1 \
-              | grep -Ei 'FeedApi|Feed0VVManager|ARunnableS0S0303000_29|ClearModePanelComponent|OfflineMode|SecApiImpl|RiskControlService|LiveHostUser|MultiCommentTranslation|TranslationServiceImpl|0MPw|0itW|0BIZ|0BJV' \
-              | head -n 3000 || true
-
-            dump_class() {
-              local cls="$1"
-              echo
-              echo "=== CLASS $cls ==="
-              timeout 35s "$ANALYZER" dex code --class "$cls" tiktok-46.7.3.apk 2>&1 | head -n 5000 || true
-            }
-
-            dump_class 'com.ss.android.ugc.aweme.feed.api.FeedApi'
-            dump_class 'X.0MPw'
-            dump_class 'Y.ARunnableS0S0303000_29'
-            dump_class 'com.ss.android.ugc.feed.platform.panel.clearmode.ClearModePanelComponent'
-            dump_class 'X.0itW'
-            dump_class 'X.0BIZ'
-            dump_class 'X.0BJV'
-            dump_class 'com.ss.android.ugc.aweme.sec.SecApiImpl'
-            dump_class 'com.tts.oecverify.verify.RiskControlService'
-          } > known-classes.txt 2>&1
-
-      - name: Find string-to-method anchors with Androguard
+      - name: Find 46.7.3 string xrefs
         shell: bash
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check --quiet 'androguard>=4.1,<5'
-          cat > /tmp/blueit_discover.py <<'PY'
+          cat > /tmp/discover.py <<'PY'
           import re
           from androguard.misc import AnalyzeAPK
 
-          APK = 'tiktok-46.7.3.apk'
-          patterns = [
-              r'first_feed_duration', r'full_feed_commit_process_data', r'Feed0VVManager',
-              r'fetchFeeds', r'tryUseCache', r'resetClearMode', r'clear.?mode',
-              r'DOWNLOAD_200_VIDEOS', r'offline.{0,20}(video|mode)',
-              r'popCaptcha', r'captcha', r'long.?press.{0,30}(share|quick)',
-              r'quick.{0,30}(share|comment|emoji|reaction)', r'comment.{0,30}(emoji|reaction)',
-              r'MultiCommentTranslation', r'TranslationTask', r'onComplete',
-          ]
-          rx = re.compile('|'.join(f'(?:{p})' for p in patterns), re.I)
-
-          a, ds, dx = AnalyzeAPK(APK)
-          print('=== STRING XREFS ===')
-          seen = set()
+          needles = re.compile(
+              r'first_feed_duration|Feed0VVManager|full_feed_commit_process_data|fetchFeeds|tryUseCache|'
+              r'resetClearMode|clear.?mode|DOWNLOAD_200_VIDEOS|offline.{0,30}(video|mode)|'
+              r'popCaptcha|captcha|long.?press.{0,40}(share|quick)|quick.{0,40}(share|comment|emoji|reaction)|'
+              r'comment.{0,40}(emoji|reaction)|MultiCommentTranslation|TranslationTask|onComplete',
+              re.I,
+          )
+          a, ds, dx = AnalyzeAPK('tiktok-46.7.3.apk')
           rows = []
+          seen = set()
           for sa in dx.get_strings():
               try:
                   value = sa.get_value()
               except Exception:
                   continue
-              if not value or not rx.search(value):
+              if not value or not needles.search(value):
                   continue
-              xrefs = []
               try:
                   xrefs = list(sa.get_xref_from())
               except Exception:
-                  pass
+                  xrefs = []
               for x in xrefs:
                   try:
                       m = x[-1]
@@ -112,55 +76,47 @@ jobs:
                   seen.add(key)
                   rows.append((value, sig, m))
 
-          for value, sig, method in sorted(rows, key=lambda r: (r[1][0], r[1][1], r[0])):
+          for value, sig, _ in sorted(rows, key=lambda r: (r[1][0], r[1][1], r[0])):
               print(f'STRING {value!r}')
-              print(f'  METHOD {sig[0]}->{sig[1]}{sig[2]}')
+              print(f'METHOD {sig[0]}->{sig[1]}{sig[2]}')
 
-          print('\n=== SELECTED METHOD DISASSEMBLY ===')
-          method_seen = set()
-          focus = re.compile(r'Feed0VVManager|first_feed_duration|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask', re.I)
-          for value, sig, method in rows:
-              if not focus.search(value):
+          print('\n=== DISASSEMBLY ===')
+          done = set()
+          for value, sig, m in rows:
+              if sig in done:
                   continue
-              if sig in method_seen:
-                  continue
-              method_seen.add(sig)
+              done.add(sig)
               print(f'\n--- {sig[0]}->{sig[1]}{sig[2]} via {value!r} ---')
               try:
-                  code = method.get_code()
+                  code = m.get_code()
                   if code is None:
-                      print('  <no code>')
                       continue
-                  for idx, ins in enumerate(code.get_bc().get_instructions()):
-                      if idx >= 450:
-                          print('  ... truncated ...')
+                  for i, ins in enumerate(code.get_bc().get_instructions()):
+                      if i >= 300:
+                          print('...truncated...')
                           break
-                      print(f'  {idx:04d}: {ins.get_name()} {ins.get_output()}')
-              except Exception as exc:
-                  print(f'  <disassembly error: {exc}>')
+                      print(f'{i:04d}: {ins.get_name()} {ins.get_output()}')
+              except Exception as e:
+                  print(f'<error {e}>')
           PY
-          timeout 12m python3 /tmp/blueit_discover.py > string-xrefs.txt 2>&1 || true
+          timeout 14m python3 /tmp/discover.py > discovery.txt 2>&1 || true
 
-      - name: Raw descriptor and feature evidence
+      - name: Raw feature strings
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf /tmp/blueit-dex && mkdir -p /tmp/blueit-dex
-          unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/blueit-dex
-          {
-            echo '=== RAW FEATURE STRINGS ==='
-            find /tmp/blueit-dex -type f -name '*.dex' -print0 | xargs -0 strings 2>/dev/null \
-              | grep -Ei 'LX/0BIZ;|LX/0BJV;|LX/0itW;|LX/0MPw;|ARunnableS0S0303000_29|FeedApi|first_feed_duration|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask' \
-              | sort -u | head -n 5000 || true
-          } > raw-evidence.txt
+          rm -rf /tmp/dex && mkdir -p /tmp/dex
+          unzip -q -j tiktok-46.7.3.apk 'classes*.dex' -d /tmp/dex
+          find /tmp/dex -type f -name '*.dex' -print0 | xargs -0 strings 2>/dev/null \
+            | grep -Ei 'LX/0BIZ;|LX/0BJV;|LX/0itW;|LX/0MPw;|ARunnableS0S0303000_29|FeedApi|Feed0VVManager|first_feed_duration|full_feed_commit_process_data|fetchFeeds|tryUseCache|resetClearMode|DOWNLOAD_200_VIDEOS|popCaptcha|captcha|long.?press|quick.?share|quick.?comment|emoji|reaction|MultiCommentTranslation|TranslationTask' \
+            | sort -u | head -n 6000 > raw-evidence.txt || true
 
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-46.7.3-fingerprint-discovery
           path: |
-            known-classes.txt
-            string-xrefs.txt
+            discovery.txt
             raw-evidence.txt
           if-no-files-found: error
           retention-days: 1
