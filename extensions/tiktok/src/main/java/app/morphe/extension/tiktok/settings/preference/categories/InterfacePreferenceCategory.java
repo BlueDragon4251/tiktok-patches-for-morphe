@@ -13,7 +13,6 @@ import app.morphe.extension.tiktok.settings.preference.NumberInputPreference;
 import app.morphe.extension.tiktok.settings.preference.ThemeColorPreference;
 import app.morphe.extension.tiktok.settings.preference.ThemePresetPreference;
 import app.morphe.extension.tiktok.settings.preference.TogglePreference;
-import app.morphe.extension.tiktok.theme.ThemeEngine;
 import app.morphe.extension.tiktok.theme.ThemeSettings;
 
 @SuppressWarnings("deprecation")
@@ -25,7 +24,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public boolean getSettingsStatus() {
-        return ThemeEngine.isInstalled()
+        return SettingsStatus.themeEngineEnabled
                 || SettingsStatus.captchaPopupSuppressionEnabled
                 || SettingsStatus.promotionalBannersEnabled
                 || SettingsStatus.alwaysShowPublishDateEnabled
@@ -34,7 +33,7 @@ public final class InterfacePreferenceCategory extends ConditionalPreferenceCate
 
     @Override
     public void addPreferences(Context context) {
-        if (ThemeEngine.isInstalled()) {
+        if (SettingsStatus.themeEngineEnabled) {
             addPreference(new ThemePresetPreference(context));
             addPreference(new ThemeColorPreference(
                     context,
