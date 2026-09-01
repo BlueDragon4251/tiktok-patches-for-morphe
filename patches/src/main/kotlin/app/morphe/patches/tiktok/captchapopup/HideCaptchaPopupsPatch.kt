@@ -13,6 +13,7 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 
 private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
+private const val CAPTCHA_CALLBACK_DESCRIPTOR = "LX/17qC;"
 
 private object CaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
@@ -21,7 +22,7 @@ private object CaptchaPopupFingerprint : Fingerprint(
     parameters = listOf(
         "Landroid/app/Activity;",
         "Ljava/lang/String;",
-        "LX/0yiJ;",
+        CAPTCHA_CALLBACK_DESCRIPTOR,
         "Landroidx/fragment/app/Fragment;",
     ),
     strings = listOf("popCaptchaV2 - riskInfo ="),
@@ -31,7 +32,7 @@ private object LegacyCaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
     name = "popCaptcha",
     returnType = "V",
-    parameters = listOf("Landroid/app/Activity;", "I", "LX/0yiJ;"),
+    parameters = listOf("Landroid/app/Activity;", "I", CAPTCHA_CALLBACK_DESCRIPTOR),
     strings = listOf("popCaptcha - errorcode = "),
 )
 
@@ -76,7 +77,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_captcha_popup
                 if-eqz p3, :morphe_hide_captcha_popup_return
-                invoke-virtual {p3}, LX/0yiJ;->LIZJ()V
+                invoke-virtual {p3}, $CAPTCHA_CALLBACK_DESCRIPTOR->LIZJ()V
                 :morphe_hide_captcha_popup_return
                 return-void
                 :morphe_show_captcha_popup
@@ -91,7 +92,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
                 move-result v0
                 if-eqz v0, :morphe_show_legacy_captcha_popup
                 if-eqz p3, :morphe_hide_legacy_captcha_popup_return
-                invoke-virtual {p3}, LX/0yiJ;->LIZJ()V
+                invoke-virtual {p3}, $CAPTCHA_CALLBACK_DESCRIPTOR->LIZJ()V
                 :morphe_hide_legacy_captcha_popup_return
                 return-void
                 :morphe_show_legacy_captcha_popup
