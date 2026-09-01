@@ -87,9 +87,9 @@ public final class ThemeEngine {
             View decor = window.getDecorView();
             updateSystemBarIconContrast(decor, palette);
             applyTargetedSurfaces(decor, palette, "liquid_glass".equals(preset));
-        } catch (Throwable throwable) {
+        } catch (Exception exception) {
             // Theme failures must never stop TikTok from opening.
-            Logger.printDebug(() -> "BlueIT Theme Engine apply failed", throwable);
+            Logger.printDebug(() -> "BlueIT Theme Engine apply failed", exception);
         }
     }
 
