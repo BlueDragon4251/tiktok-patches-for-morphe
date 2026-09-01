@@ -17,7 +17,7 @@ internal object QuickCommentReactionGateLegacyFingerprint : Fingerprint(
 
 /** Exact TikTok 46.7.3 personalized/exposed emoji experiment gate. */
 internal object QuickCommentReactionGateBooleanFingerprint : Fingerprint(
-    definingClass = "Lcom/ss/android/ugc/aweme/experiment/PersonalizedEmojiExperiment;",
+    definingClass = "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
     name = "LIZ",
     returnType = "Z",
     parameters = emptyList(),
