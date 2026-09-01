@@ -25,29 +25,34 @@ import app.morphe.extension.shared.Logger;
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeEngine {
     private static final int DEFAULT_TIKTOK_ACCENT = Color.rgb(254, 44, 85);
+    private static final int PATCH_DEFAULT_SCHEMA = 2;
     private static volatile boolean installed;
     private static WeakReference<Activity> activityRef = new WeakReference<>(null);
 
     private ThemeEngine() {}
 
     /**
-     * Applies the patch-time preset exactly once for a fresh BlueIT settings data set.
+     * Applies the patch-time preset once for a fresh BlueIT settings data set.
      *
-     * The patch option is only an initial preference. If a user already selected a non-default
-     * theme (for example when updating a previously patched APK), that choice wins. After this
-     * one-shot initialization, all future changes are controlled solely from BlueIT settings.
+     * Schema 2 intentionally retries the one-time seed used by 1.2.0-dev.1: that build could mark
+     * the seed as consumed before a usable extension context existed. Existing non-default runtime
+     * choices still always win, and once schema 2 has run a later repatch cannot overwrite them.
      */
     public static void initializePatchDefault(String preset) {
         try {
-            if (ThemeSettings.PATCH_DEFAULT_APPLIED.get() != 0) return;
+            int appliedSchema = ThemeSettings.PATCH_DEFAULT_APPLIED.get();
+            if (appliedSchema >= PATCH_DEFAULT_SCHEMA) return;
 
             String currentPreset = normalizedPreset();
             String patchPreset = normalizePresetValue(preset);
             if ("default".equals(currentPreset) && !"default".equals(patchPreset)) {
                 ThemeSettings.PRESET.save(patchPreset);
+                currentPreset = patchPreset;
             }
 
-            ThemeSettings.PATCH_DEFAULT_APPLIED.save(1);
+            ThemeSettings.PATCH_DEFAULT_APPLIED.save(PATCH_DEFAULT_SCHEMA);
+            final String effectivePreset = currentPreset;
+            Logger.printInfo(() -> "[BlueIT Theme Engine] initialized patch default: " + effectivePreset);
         } catch (Exception exception) {
             Logger.printDebug(() -> "BlueIT Theme Engine patch default initialization failed", exception);
         }
@@ -58,6 +63,7 @@ public final class ThemeEngine {
         if (activity == null) return;
         installed = true;
         activityRef = new WeakReference<>(activity);
+        Logger.printInfo(() -> "[BlueIT Theme Engine] runtime installed, preset=" + normalizedPreset());
 
         // TikTok inflates important surfaces asynchronously. Apply once immediately after onCreate
         // and twice more after short delays. No permanent global-layout listener is installed.
