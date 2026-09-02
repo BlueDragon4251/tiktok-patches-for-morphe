@@ -105,6 +105,29 @@ jobs:
           echo '=== MANIFEST / RESOURCE THEME NAMES ===' >> theme-evidence.txt
           unzip -l tiktok-46.7.3.apk | grep -Ei 'color|theme|style|compose|tux' | head -n 8000 >> theme-evidence.txt || true
 
+      - name: Dump central TUX color resolver
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
+          : > theme-core-evidence.txt
+
+          for dex in /tmp/dex/*.dex; do
+            strings_file="/tmp/$(basename "$dex").strings"
+            test -f "$strings_file" || strings "$dex" > "$strings_file"
+            if ! grep -Eq 'LX/0547;|LX/0tK8;|setThemeMode|switchDarkLightThemeMode|setNavBarBackground\$tux_theme_release' "$strings_file"; then
+              continue
+            fi
+
+            dump="/tmp/dumps/core-$(basename "$dex").txt"
+            timeout 80s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
+            test -s "$dump" || continue
+
+            echo "=== CORE DEX $(basename "$dex") ===" >> theme-core-evidence.txt
+            grep -Ein -B 120 -A 260 "Class descriptor.*LX/0547;|Class descriptor.*LX/0tK8;|name          : 'setThemeMode'|name          : 'switchDarkLightThemeMode'|name          : 'setNavBarBackground\\\$tux_theme_release'" \
+              "$dump" | head -n 90000 >> theme-core-evidence.txt || true
+          done
+
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
@@ -112,5 +135,6 @@ jobs:
           path: |
             remaining-evidence.txt
             theme-evidence.txt
+            theme-core-evidence.txt
           if-no-files-found: error
           retention-days: 1
