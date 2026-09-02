@@ -134,7 +134,7 @@ val themeEnginePatch = bytecodePatch(
                 0,
                 """
                     const-string v0, "$patchDefaultPreset"
-                    invoke-static {p0, p1, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolve(ILandroid/content/Context;Ljava/lang/String;)Ljava/lang/Integer;
+                    invoke-static {p0, p1, p2, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolveGeneric(ILandroid/content/Context;Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
                     move-result-object v0
                     if-eqz v0, :blueit_tux_generic_original
                     return-object v0
