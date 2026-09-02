@@ -7,13 +7,17 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayDeque;
 import java.util.Locale;
+import java.util.WeakHashMap;
 
 /**
  * Applies BlueIT theme palettes to concrete TikTok 46.7.3 UI surfaces.
@@ -27,6 +31,11 @@ import java.util.Locale;
 final class ThemeSurfaceStyler {
     private static final int MAX_SCAN_NODES = 1800;
     private static final int MAX_STYLE_NODES = 2200;
+    private static final int MAX_DYNAMIC_HINT_NODES = 420;
+    private static final long DYNAMIC_SCROLL_DEBOUNCE_MS = 90L;
+    private static final long DYNAMIC_REAPPLY_MIN_INTERVAL_MS = 140L;
+    private static final WeakHashMap<View, DynamicListScrollWatcher> DYNAMIC_LIST_WATCHERS =
+            new WeakHashMap<>();
 
     private ThemeSurfaceStyler() {}
 
@@ -53,6 +62,7 @@ final class ThemeSurfaceStyler {
             int rootWidth = decor.getWidth();
             int rootHeight = decor.getHeight();
             ScreenHints hints = scanScreenHints(decor, rootHeight);
+            updateDynamicListWatcher(activity, decor, hints);
 
             ArrayDeque<Node> queue = new ArrayDeque<>();
             queue.add(new Node(decor, false, false, false, false, false));
@@ -102,6 +112,21 @@ final class ThemeSurfaceStyler {
                 // Only one screen root is painted. Nested full-size containers inherit the state
                 // instead of repeatedly walking/repainting the entire subtree.
                 if (settingsRoot || inboxRoot) {
+                    try {
+                        group.setBackgroundColor(opaque(background));
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                // Activity/follower recommendation screens in 46.7.3 can compose a dark header and
+                // a separately inflated stock-light list container. Paint large nested list sections
+                // as page background as well so a later fragment/list bind cannot leave white-on-
+                // white content below an otherwise themed screen.
+                boolean inboxSection = nowInsideInbox
+                        && !inboxRoot
+                        && !bottomNavigation
+                        && isLargeListSection(group, rootWidth, rootHeight);
+                if (inboxSection) {
                     try {
                         group.setBackgroundColor(opaque(background));
                     } catch (Throwable ignored) {
@@ -196,7 +221,8 @@ final class ThemeSurfaceStyler {
 
             if (containsAny(combined,
                     "inbox", "message_list", "session_list", "chat_list",
-                    "notification_list", "notice_list", "im_session", "inbox_list")) {
+                    "notification_list", "notice_list", "im_session", "inbox_list",
+                    "activity_list", "activity_page", "notification_page", "follower_list")) {
                 hints.inboxLike = true;
             }
 
@@ -219,6 +245,17 @@ final class ThemeSurfaceStyler {
                             || "Messages".equalsIgnoreCase(raw)
                             || "Nachrichten".equalsIgnoreCase(raw))) {
                         hints.inboxLike = true;
+                    }
+
+                    if (isTopScreenTitle(view, rootHeight)
+                            && (lower.equals("aktivität")
+                            || lower.equals("activity")
+                            || lower.equals("all activity")
+                            || lower.equals("alle aktivitäten")
+                            || lower.equals("notifications")
+                            || lower.equals("benachrichtigungen"))) {
+                        hints.inboxLike = true;
+                        hints.activityLike = true;
                     }
 
                     if (isTopScreenTitle(view, rootHeight)
@@ -250,6 +287,75 @@ final class ThemeSurfaceStyler {
         // Direct conversations often contain generic message/session-list names internally.
         if (hints.chatLike) hints.inboxLike = false;
         return hints;
+    }
+
+    private static void updateDynamicListWatcher(Activity activity, View decor, ScreenHints hints) {
+        try {
+            boolean dynamic = hints.inboxLike || hints.activityLike;
+            synchronized (DYNAMIC_LIST_WATCHERS) {
+                DynamicListScrollWatcher watcher = DYNAMIC_LIST_WATCHERS.get(decor);
+                if (!dynamic) {
+                    if (watcher != null) {
+                        watcher.detach();
+                        DYNAMIC_LIST_WATCHERS.remove(decor);
+                    }
+                    return;
+                }
+
+                if (watcher == null) {
+                    watcher = new DynamicListScrollWatcher(activity, decor);
+                    DYNAMIC_LIST_WATCHERS.put(decor, watcher);
+                    watcher.attach();
+                } else {
+                    watcher.activityRef = new WeakReference<>(activity);
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static boolean hasDynamicListScreenHint(View root) {
+        try {
+            if (root == null || root.getHeight() <= 0) return false;
+            int rootHeight = root.getHeight();
+            ArrayDeque<ScanNode> queue = new ArrayDeque<>();
+            queue.add(new ScanNode(root, 0));
+
+            int visited = 0;
+            while (!queue.isEmpty() && visited++ < MAX_DYNAMIC_HINT_NODES) {
+                ScanNode node = queue.removeFirst();
+                View view = node.view;
+                if (view == null || view.getVisibility() != View.VISIBLE) continue;
+
+                if (view instanceof TextView && isTopScreenTitle(view, rootHeight)) {
+                    CharSequence value = ((TextView) view).getText();
+                    if (value != null) {
+                        String lower = value.toString().trim().toLowerCase(Locale.ROOT);
+                        if (lower.equals("inbox")
+                                || lower.equals("posteingang")
+                                || lower.equals("messages")
+                                || lower.equals("nachrichten")
+                                || lower.equals("aktivität")
+                                || lower.equals("activity")
+                                || lower.equals("all activity")
+                                || lower.equals("alle aktivitäten")
+                                || lower.equals("notifications")
+                                || lower.equals("benachrichtigungen")) {
+                            return true;
+                        }
+                    }
+                }
+
+                if (view instanceof ViewGroup && node.depth < 24) {
+                    ViewGroup group = (ViewGroup) view;
+                    for (int i = 0; i < group.getChildCount(); i++) {
+                        queue.addLast(new ScanNode(group.getChildAt(i), node.depth + 1));
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 
     private static boolean isTopScreenTitle(View view, int rootHeight) {
@@ -430,6 +536,18 @@ final class ThemeSurfaceStyler {
         return location != null && location[0] <= rootWidth * 0.08f;
     }
 
+    private static boolean isLargeListSection(ViewGroup group, int rootWidth, int rootHeight) {
+        int width = group.getWidth();
+        int height = group.getHeight();
+        if (width < rootWidth * 0.86f) return false;
+        if (height < rootHeight * 0.26f || height > rootHeight * 0.92f) return false;
+
+        int[] location = location(group);
+        if (location == null || location[0] > rootWidth * 0.10f) return false;
+
+        return countTextViews(group, 3, 12) >= 1 || countImageViews(group, 3, 12) >= 2;
+    }
+
     private static boolean isCardContainer(ViewGroup group, int rootWidth, int rootHeight) {
         int width = group.getWidth();
         int height = group.getHeight();
@@ -452,12 +570,12 @@ final class ThemeSurfaceStyler {
         if (width < rootWidth * 0.74f) return false;
 
         int minHeight = Math.round(dp(group.getContext(), 54));
-        int maxHeight = Math.round(dp(group.getContext(), 118));
+        int maxHeight = Math.round(dp(group.getContext(), 128));
         if (height < minHeight || height > maxHeight) return false;
 
         int[] location = location(group);
         if (location == null) return false;
-        if (location[1] + height > rootHeight - Math.round(dp(group.getContext(), 110))) {
+        if (location[1] + height > rootHeight - Math.round(dp(group.getContext(), 96))) {
             return false;
         }
 
@@ -632,9 +750,74 @@ final class ThemeSurfaceStyler {
         return value * context.getResources().getDisplayMetrics().density;
     }
 
+    private static final class DynamicListScrollWatcher
+            implements ViewTreeObserver.OnScrollChangedListener {
+        WeakReference<Activity> activityRef;
+        final View root;
+        boolean pending;
+        long lastReapplyMs;
+
+        DynamicListScrollWatcher(Activity activity, View root) {
+            this.activityRef = new WeakReference<>(activity);
+            this.root = root;
+        }
+
+        void attach() {
+            try {
+                if (root.getViewTreeObserver().isAlive()) {
+                    root.getViewTreeObserver().addOnScrollChangedListener(this);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        void detach() {
+            try {
+                if (root.getViewTreeObserver().isAlive()) {
+                    root.getViewTreeObserver().removeOnScrollChangedListener(this);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        @Override
+        public void onScrollChanged() {
+            try {
+                if (pending || !root.isAttachedToWindow()) return;
+                pending = true;
+                root.postDelayed(() -> {
+                    pending = false;
+                    try {
+                        if (!root.isAttachedToWindow() || !hasDynamicListScreenHint(root)) {
+                            synchronized (DYNAMIC_LIST_WATCHERS) {
+                                DynamicListScrollWatcher current = DYNAMIC_LIST_WATCHERS.get(root);
+                                if (current == this) {
+                                    detach();
+                                    DYNAMIC_LIST_WATCHERS.remove(root);
+                                }
+                            }
+                            return;
+                        }
+
+                        long now = SystemClock.uptimeMillis();
+                        if (now - lastReapplyMs < DYNAMIC_REAPPLY_MIN_INTERVAL_MS) return;
+                        lastReapplyMs = now;
+
+                        Activity activity = activityRef.get();
+                        if (activity == null || activity.isFinishing()) return;
+                        ThemeEngine.requestReapply();
+                    } catch (Throwable ignored) {
+                    }
+                }, DYNAMIC_SCROLL_DEBOUNCE_MS);
+            } catch (Throwable ignored) {
+            }
+        }
+    }
+
     private static final class ScreenHints {
         boolean settingsLike;
         boolean inboxLike;
+        boolean activityLike;
         boolean chatLike;
     }
 
