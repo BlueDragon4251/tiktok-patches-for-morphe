@@ -24,6 +24,8 @@ private const val MAIN_PAGE_ASSEM =
     "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;"
 private const val SETTINGS_COMPOSE_FRAGMENT =
     "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;"
+private const val PROFILE_SIDEBAR_FRAGMENT =
+    "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;"
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
@@ -89,10 +91,10 @@ private object MainBottomNavigationVisibilityFingerprint : Fingerprint(
     },
 )
 
-/** Profile three-line/sidebar page root creation. */
+/** Actual profile three-line/sidebar page root in TikTok 46.7.3. */
 private object ProfileSidebarCreateViewFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+        classDef.endsWith(PROFILE_SIDEBAR_FRAGMENT) &&
             method.name == "onCreateView" &&
             method.parameterTypes == listOf(
                 "Landroid/view/LayoutInflater;",
@@ -103,10 +105,10 @@ private object ProfileSidebarCreateViewFingerprint : Fingerprint(
     },
 )
 
-/** Profile sidebar becomes visible; keep the profile underlay stationary. */
+/** Actual profile sidebar becomes visible; keep the profile underlay stationary. */
 private object ProfileSidebarNodeShowFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+        classDef.endsWith(PROFILE_SIDEBAR_FRAGMENT) &&
             method.name == "onNodeShow" &&
             method.parameterTypes == listOf("Landroid/os/Bundle;") &&
             method.returnType == "V"
@@ -268,6 +270,8 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
+        // Exact 46.7.3 discovery: ProfileSidebarPageFragment.onCreateView has 7 registers / 4 ins
+        // and returns the created FrameLayout in v2 on both normal and caught paths.
         ProfileSidebarCreateViewFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
