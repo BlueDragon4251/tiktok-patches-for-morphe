@@ -1,3 +1,18 @@
+# [1.2.0-dev.10](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish themed settings and verifier-safe clear display ([5e7b7b9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/5e7b7b9b3476765fc5e5b0aa10070984a4fa9fa1))
+* **theme,clear-display:** finish settings hooks and verifier-safe auto clear ([a44d39f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a44d39f1ef1e82351c9851b70bafb197437c81dc))
+* **theme:** hook bottom navigation and profile sidebar ([c59a1a6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c59a1a614cfd930553b0d9531b4d4a51045a3015))
+
+
+
+
+
+## 1.2.0-dev.10
+
 # [1.2.0-dev.9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.8...v1.2.0-dev.9) (2026-09-02)
 
 
