@@ -12,18 +12,21 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayDeque;
 import java.util.Locale;
 
 /**
- * Applies BlueIT theme palettes to concrete TikTok UI surfaces.
+ * Applies BlueIT theme palettes to concrete TikTok 46.7.3 UI surfaces.
  *
- * TikTok 46.7.3 mixes classic Views, dynamically inflated containers and obfuscated ids/classes.
- * The classifier combines stable resource/class-name hints with conservative geometry and keeps
- * full-screen video rendering as well as direct-message bubbles out of broad recoloring.
+ * This implementation is deliberately conservative and fail-open. TikTok mixes classic Views,
+ * Compose hosts and heavily obfuscated containers, so broad geometry-only recoloring can easily
+ * mistake feed overlays or a DM composer for a settings/list surface. The styler therefore uses a
+ * bounded iterative walk, strong screen hints and only narrow geometry fallbacks.
  */
 @SuppressWarnings({"deprecation", "unused"})
 final class ThemeSurfaceStyler {
-    private static final int MAX_SCAN_NODES = 2600;
+    private static final int MAX_SCAN_NODES = 1800;
+    private static final int MAX_STYLE_NODES = 2200;
 
     private ThemeSurfaceStyler() {}
 
@@ -38,219 +41,220 @@ final class ThemeSurfaceStyler {
             int divider,
             int cornerRadiusDp
     ) {
-        if (activity == null || activity.isFinishing()) return;
+        // Theme Engine must never be capable of taking TikTok down. In particular this catches
+        // LinkageError/VerifyError/StackOverflowError/OOM-adjacent view failures that an
+        // Exception-only guard would miss.
+        try {
+            if (activity == null || activity.isFinishing() || activity.getWindow() == null) return;
 
-        View decor = activity.getWindow().getDecorView();
-        if (decor == null || decor.getWidth() <= 0 || decor.getHeight() <= 0) return;
+            View decor = activity.getWindow().getDecorView();
+            if (decor == null || decor.getWidth() <= 0 || decor.getHeight() <= 0) return;
 
-        int rootWidth = decor.getWidth();
-        int rootHeight = decor.getHeight();
-        ScreenHints hints = scanScreenHints(decor);
+            int rootWidth = decor.getWidth();
+            int rootHeight = decor.getHeight();
+            ScreenHints hints = scanScreenHints(decor, rootHeight);
 
-        styleTree(
-                decor,
-                preset,
-                background,
-                surface,
-                accent,
-                text,
-                secondaryText,
-                divider,
-                cornerRadiusDp,
-                rootWidth,
-                rootHeight,
-                hints,
-                false,
-                false,
-                false,
-                false
-        );
+            ArrayDeque<Node> queue = new ArrayDeque<>();
+            queue.add(new Node(decor, false, false, false, false, false));
+
+            int styledNodes = 0;
+            while (!queue.isEmpty() && styledNodes++ < MAX_STYLE_NODES) {
+                Node node = queue.removeFirst();
+                View view = node.view;
+                if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) {
+                    continue;
+                }
+
+                if (!(view instanceof ViewGroup)) {
+                    if (node.textContext) {
+                        styleLeaf(view, accent, text, secondaryText, divider);
+                    }
+                    continue;
+                }
+
+                ViewGroup group = (ViewGroup) view;
+                String combined = resourceEntryName(group) + " " + className(group);
+
+                // Custom/native DM bubbles and the composer own their complete subtrees. This also
+                // prevents a third-party TikTok bubble style from being resized/recolored by BlueIT.
+                if (hints.chatLike
+                        && (isExplicitChatBubble(combined) || isChatComposer(combined))) {
+                    continue;
+                }
+
+                boolean drawer = !hints.chatLike
+                        && isLikelyDrawer(group, combined, rootWidth, rootHeight);
+                boolean settingsRoot = !node.insideSettings
+                        && hints.settingsLike
+                        && isLargeScreenContainer(group, rootWidth, rootHeight);
+                boolean inboxRoot = !hints.chatLike
+                        && !node.insideInbox
+                        && hints.inboxLike
+                        && isLargeScreenContainer(group, rootWidth, rootHeight);
+                boolean bottomNavigation = !hints.chatLike
+                        && isBottomNavigation(group, combined, rootWidth, rootHeight);
+                boolean sheet = isExplicitSheet(combined);
+
+                boolean nowInsideDrawer = node.insideDrawer || drawer;
+                boolean nowInsideSettings = node.insideSettings || settingsRoot;
+                boolean nowInsideInbox = node.insideInbox || inboxRoot;
+
+                // Only one screen root is painted. Nested full-size containers inherit the state
+                // instead of repeatedly walking/repainting the entire subtree.
+                if (settingsRoot || inboxRoot) {
+                    try {
+                        group.setBackgroundColor(opaque(background));
+                    } catch (Throwable ignored) {
+                    }
+                }
+
+                boolean settingsCard = nowInsideSettings
+                        && !settingsRoot
+                        && !node.parentCardStyled
+                        && isCardContainer(group, rootWidth, rootHeight);
+                boolean inboxRow = nowInsideInbox
+                        && !inboxRoot
+                        && !node.parentCardStyled
+                        && isListRow(group, rootWidth, rootHeight);
+                boolean drawerSection = nowInsideDrawer
+                        && !drawer
+                        && !node.parentCardStyled
+                        && isDrawerSection(group, rootWidth, rootHeight);
+
+                boolean themedSurface = drawer
+                        || bottomNavigation
+                        || sheet
+                        || settingsCard
+                        || inboxRow
+                        || drawerSection;
+
+                if (themedSurface) {
+                    int radius = cornerRadiusDp;
+                    if (inboxRow) radius = Math.min(22, Math.max(12, cornerRadiusDp));
+                    if (settingsCard) radius = Math.min(26, Math.max(12, cornerRadiusDp));
+                    if (drawer) radius = 0;
+                    applySurface(group, preset, surface, divider, radius);
+                }
+
+                boolean textContext = node.textContext
+                        || themedSurface
+                        || nowInsideSettings
+                        || nowInsideInbox
+                        || nowInsideDrawer;
+
+                // Style the group itself if it happens to be a specialized TextView-like subclass,
+                // then let each child get exactly one visit through the bounded queue.
+                if (textContext) {
+                    styleLeaf(group, accent, text, secondaryText, divider);
+                }
+
+                boolean childParentCardStyled = node.parentCardStyled
+                        || settingsCard
+                        || inboxRow
+                        || drawerSection;
+
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    View child = group.getChildAt(i);
+                    queue.addLast(new Node(
+                            child,
+                            nowInsideDrawer,
+                            nowInsideSettings,
+                            nowInsideInbox,
+                            childParentCardStyled,
+                            textContext
+                    ));
+                }
+            }
+        } catch (Throwable ignored) {
+            // Fail open. A partially applied visual theme is always preferable to a TikTok crash.
+        }
     }
 
-    private static ScreenHints scanScreenHints(View root) {
+    private static ScreenHints scanScreenHints(View root, int rootHeight) {
         ScreenHints hints = new ScreenHints();
-        int[] remaining = {MAX_SCAN_NODES};
-        scanHintsRecursive(root, hints, remaining);
+        ArrayDeque<ScanNode> queue = new ArrayDeque<>();
+        queue.add(new ScanNode(root, 0));
 
-        // A direct conversation often contains generic message-list/session names as descendants.
-        // Once the composer/detail screen proves this is an active chat, it must not inherit Inbox
-        // row styling; otherwise custom TikTok/chat-bubble themes get overwritten.
+        int visited = 0;
+        while (!queue.isEmpty() && visited++ < MAX_SCAN_NODES) {
+            ScanNode node = queue.removeFirst();
+            View view = node.view;
+            if (view == null || view.getVisibility() != View.VISIBLE) continue;
+
+            String resource = resourceEntryName(view);
+            String className = className(view);
+            String combined = resource + " " + className;
+
+            if (containsAny(combined,
+                    "chat_detail", "chatdetail", "chat_room", "chatroom",
+                    "conversation_detail", "conversationdetail", "message_detail", "messagedetail",
+                    "im_chat", "chat_fragment", "conversation_fragment",
+                    "message_input", "chat_input", "input_panel",
+                    "message_composer", "chat_composer", "message_edit", "chat_edit")) {
+                hints.chatLike = true;
+            }
+
+            if (containsAny(combined,
+                    "inbox", "message_list", "session_list", "chat_list",
+                    "notification_list", "notice_list", "im_session", "inbox_list")) {
+                hints.inboxLike = true;
+            }
+
+            if (containsAny(combined,
+                    "setting", "preference", "privacy_setting", "settings_page", "settings_root")) {
+                hints.settingsLike = true;
+            }
+
+            if (view instanceof TextView) {
+                CharSequence value = ((TextView) view).getText();
+                if (value != null) {
+                    String raw = value.toString().trim();
+                    String lower = raw.toLowerCase(Locale.ROOT);
+
+                    if ("BlueIT Service".equals(raw)) hints.settingsLike = true;
+
+                    if (isTopScreenTitle(view, rootHeight)
+                            && ("Inbox".equalsIgnoreCase(raw)
+                            || "Posteingang".equalsIgnoreCase(raw)
+                            || "Messages".equalsIgnoreCase(raw)
+                            || "Nachrichten".equalsIgnoreCase(raw))) {
+                        hints.inboxLike = true;
+                    }
+
+                    if (isTopScreenTitle(view, rootHeight)
+                            && (lower.equals("einstellungen und datenschutz")
+                            || lower.equals("settings and privacy"))) {
+                        hints.settingsLike = true;
+                    }
+
+                    // Strong composer hints for an active direct-message screen.
+                    if (lower.equals("schreib etwas")
+                            || lower.equals("schreibe etwas")
+                            || lower.equals("write a message")
+                            || lower.equals("send a message")
+                            || lower.equals("type a message")
+                            || lower.equals("write something")) {
+                        hints.chatLike = true;
+                    }
+                }
+            }
+
+            if (view instanceof ViewGroup && node.depth < 40) {
+                ViewGroup group = (ViewGroup) view;
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    queue.addLast(new ScanNode(group.getChildAt(i), node.depth + 1));
+                }
+            }
+        }
+
+        // Direct conversations often contain generic message/session-list names internally.
         if (hints.chatLike) hints.inboxLike = false;
         return hints;
     }
 
-    private static void scanHintsRecursive(View view, ScreenHints hints, int[] remaining) {
-        if (view == null || remaining[0]-- <= 0 || view.getVisibility() != View.VISIBLE) return;
-
-        String resource = resourceEntryName(view);
-        String className = className(view);
-        String combined = resource + " " + className;
-
-        if (containsAny(combined,
-                "chat_detail", "chatdetail", "chat_room", "chatroom",
-                "conversation_detail", "conversationdetail", "message_detail", "messagedetail",
-                "im_chat", "chat_fragment", "conversation_fragment",
-                "message_input", "chat_input", "input_panel",
-                "message_composer", "chat_composer", "message_edit", "chat_edit")) {
-            hints.chatLike = true;
-        }
-
-        if (containsAny(combined,
-                "inbox", "message_list", "session_list", "chat_list",
-                "notification_list", "notice_list", "im_session", "inbox_list")) {
-            hints.inboxLike = true;
-        }
-
-        if (containsAny(combined,
-                "setting", "preference", "privacy_setting", "settings_page", "settings_root")) {
-            hints.settingsLike = true;
-        }
-
-        if (view instanceof TextView) {
-            CharSequence value = ((TextView) view).getText();
-            if (value != null) {
-                String raw = value.toString().trim();
-                String lower = raw.toLowerCase(Locale.ROOT);
-
-                if ("BlueIT Service".equals(raw)) hints.settingsLike = true;
-
-                if ("Inbox".equalsIgnoreCase(raw)
-                        || "Posteingang".equalsIgnoreCase(raw)
-                        || "Messages".equalsIgnoreCase(raw)
-                        || "Nachrichten".equalsIgnoreCase(raw)) {
-                    hints.inboxLike = true;
-                }
-
-                // Strong composer hints for the active DM screen. Keep this intentionally narrow;
-                // ordinary Inbox rows may contain words such as "message" themselves.
-                if (lower.equals("schreib etwas")
-                        || lower.equals("schreibe etwas")
-                        || lower.equals("write a message")
-                        || lower.equals("send a message")
-                        || lower.equals("type a message")
-                        || lower.equals("write something")) {
-                    hints.chatLike = true;
-                }
-            }
-        }
-
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                scanHintsRecursive(group.getChildAt(i), hints, remaining);
-                if (remaining[0] <= 0) return;
-            }
-        }
-    }
-
-    private static void styleTree(
-            View view,
-            String preset,
-            int background,
-            int surface,
-            int accent,
-            int text,
-            int secondaryText,
-            int divider,
-            int cornerRadiusDp,
-            int rootWidth,
-            int rootHeight,
-            ScreenHints hints,
-            boolean insideDrawer,
-            boolean insideSettings,
-            boolean insideInbox,
-            boolean parentCardStyled
-    ) {
-        if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) return;
-
-        // Leaf colors are applied only from a positively matched themed surface below. This keeps
-        // feed captions and unrelated video-overlay text untouched.
-        if (!(view instanceof ViewGroup)) return;
-
-        ViewGroup group = (ViewGroup) view;
-        String resource = resourceEntryName(group);
-        String className = className(group);
-        String combined = resource + " " + className;
-
-        // A user's TikTok/custom DM bubble theme owns these subtrees completely: do not replace
-        // their background, corner radius, text colors, icon tint or measured geometry.
-        if (hints.chatLike && isExplicitChatBubble(combined)) return;
-
-        boolean drawer = !hints.chatLike && isLikelyDrawer(group, rootWidth, rootHeight);
-        boolean settingsRoot = hints.settingsLike && isLargeScreenContainer(group, rootWidth, rootHeight);
-        boolean inboxRoot = !hints.chatLike
-                && hints.inboxLike
-                && isLargeScreenContainer(group, rootWidth, rootHeight);
-
-        // A direct-message composer is visually similar to a bottom navigation strip. Geometry-only
-        // classification is therefore forbidden on active chats. Likewise, generic panel geometry
-        // must not wrap the composer in a giant Liquid-Glass frame.
-        boolean bottomNavigation = !hints.chatLike
-                && isBottomNavigation(group, combined, rootWidth, rootHeight);
-        boolean sheet = isSheet(group, combined, rootWidth, rootHeight, !hints.chatLike);
-
-        boolean nowInsideDrawer = insideDrawer || drawer;
-        boolean nowInsideSettings = insideSettings || settingsRoot;
-        boolean nowInsideInbox = insideInbox || inboxRoot;
-
-        if (settingsRoot || inboxRoot) {
-            group.setBackgroundColor(opaque(background));
-        }
-
-        boolean settingsCard = nowInsideSettings
-                && !settingsRoot
-                && !parentCardStyled
-                && isCardContainer(group, rootWidth, rootHeight);
-        boolean inboxRow = nowInsideInbox
-                && !inboxRoot
-                && !parentCardStyled
-                && isListRow(group, rootWidth, rootHeight);
-        boolean drawerSection = nowInsideDrawer
-                && !drawer
-                && !parentCardStyled
-                && isDrawerSection(group, rootWidth, rootHeight);
-
-        boolean themedSurface = drawer
-                || bottomNavigation
-                || sheet
-                || settingsCard
-                || inboxRow
-                || drawerSection;
-
-        if (themedSurface) {
-            int radius = cornerRadiusDp;
-            if (inboxRow) radius = Math.min(22, Math.max(12, cornerRadiusDp));
-            if (settingsCard) radius = Math.min(26, Math.max(12, cornerRadiusDp));
-            if (drawer) radius = 0;
-
-            applySurface(group, preset, surface, divider, radius);
-            styleTextAndIcons(group, accent, text, secondaryText, divider, hints.chatLike);
-        } else if (settingsRoot || inboxRoot) {
-            styleTextAndIcons(group, accent, text, secondaryText, divider, false);
-        }
-
-        boolean childParentCardStyled = parentCardStyled || settingsCard || inboxRow || drawerSection;
-
-        for (int index = 0; index < group.getChildCount(); index++) {
-            styleTree(
-                    group.getChildAt(index),
-                    preset,
-                    background,
-                    surface,
-                    accent,
-                    text,
-                    secondaryText,
-                    divider,
-                    cornerRadiusDp,
-                    rootWidth,
-                    rootHeight,
-                    hints,
-                    nowInsideDrawer,
-                    nowInsideSettings,
-                    nowInsideInbox,
-                    childParentCardStyled
-            );
-        }
+    private static boolean isTopScreenTitle(View view, int rootHeight) {
+        int[] location = location(view);
+        return location != null && location[1] >= 0 && location[1] < rootHeight * 0.28f;
     }
 
     private static void applySurface(
@@ -260,80 +264,61 @@ final class ThemeSurfaceStyler {
             int divider,
             int radiusDp
     ) {
-        Context context = group.getContext();
-        GradientDrawable drawable = new GradientDrawable();
-        drawable.setShape(GradientDrawable.RECTANGLE);
-        drawable.setColor(surface);
-        drawable.setCornerRadius(dp(context, Math.max(0, radiusDp)));
+        try {
+            Context context = group.getContext();
+            GradientDrawable drawable = new GradientDrawable();
+            drawable.setShape(GradientDrawable.RECTANGLE);
+            drawable.setColor(surface);
+            drawable.setCornerRadius(dp(context, Math.max(0, radiusDp)));
 
-        boolean translucent = Color.alpha(surface) < 250;
-        boolean glassLike = translucent
-                || "liquid_glass".equals(preset)
-                || "frosted_graphite".equals(preset);
+            boolean translucent = Color.alpha(surface) < 250;
+            boolean glassLike = translucent
+                    || "liquid_glass".equals(preset)
+                    || "frosted_graphite".equals(preset);
 
-        if (glassLike || radiusDp > 0) {
-            drawable.setStroke(Math.max(1, Math.round(dp(context, 1))), divider);
-        }
-
-        group.setBackground(drawable);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            group.setBackgroundTintList(null);
-            if (radiusDp > 0) group.setClipToOutline(true);
-            group.setElevation(dp(context, glassLike ? 6 : 2));
-        }
-    }
-
-    private static void styleTextAndIcons(
-            View root,
-            int accent,
-            int primary,
-            int secondary,
-            int divider,
-            boolean directChat
-    ) {
-        if (root == null || root.getVisibility() != View.VISIBLE) return;
-
-        if (directChat && root instanceof ViewGroup) {
-            String combined = resourceEntryName(root) + " " + className(root);
-            if (isExplicitChatBubble(combined) || isChatComposer(combined)) return;
-        }
-
-        styleLeaf(root, accent, primary, secondary, divider);
-
-        if (root instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) root;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                styleTextAndIcons(group.getChildAt(i), accent, primary, secondary, divider, directChat);
+            if (glassLike || radiusDp > 0) {
+                drawable.setStroke(Math.max(1, Math.round(dp(context, 1))), divider);
             }
+
+            group.setBackground(drawable);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                group.setBackgroundTintList(null);
+                if (radiusDp > 0) group.setClipToOutline(true);
+                group.setElevation(dp(context, glassLike ? 5 : 2));
+            }
+        } catch (Throwable ignored) {
         }
     }
 
     private static void styleLeaf(View view, int accent, int primary, int secondary, int divider) {
-        String resource = resourceEntryName(view);
+        try {
+            String resource = resourceEntryName(view);
 
-        if (view instanceof TextView) {
-            TextView textView = (TextView) view;
-            boolean secondaryText = containsAny(resource,
-                    "summary", "subtitle", "secondary", "description", "desc", "hint", "time")
-                    || textSizeSp(textView) < 14.5f;
+            if (view instanceof TextView) {
+                TextView textView = (TextView) view;
+                boolean secondaryText = containsAny(resource,
+                        "summary", "subtitle", "secondary", "description", "desc", "hint", "time")
+                        || textSizeSp(textView) < 14.5f;
 
-            int color = (textView.isSelected() || textView.isActivated())
-                    ? accent
-                    : (secondaryText ? secondary : primary);
+                int color = (textView.isSelected() || textView.isActivated())
+                        ? accent
+                        : (secondaryText ? secondary : primary);
 
-            textView.setTextColor(color);
-            textView.setHintTextColor(secondary);
-            textView.setLinkTextColor(accent);
-            tintCompoundDrawables(textView, color);
-            return;
+                textView.setTextColor(color);
+                textView.setHintTextColor(secondary);
+                textView.setLinkTextColor(accent);
+                tintCompoundDrawables(textView, color);
+                return;
+            }
+
+            if (view instanceof ImageView) {
+                tintImageIfIcon((ImageView) view, resource, primary);
+                return;
+            }
+
+            if (isDivider(view)) view.setBackgroundColor(divider);
+        } catch (Throwable ignored) {
         }
-
-        if (view instanceof ImageView) {
-            tintImageIfIcon((ImageView) view, resource, primary);
-            return;
-        }
-
-        if (isDivider(view)) view.setBackgroundColor(divider);
     }
 
     private static boolean isExplicitChatBubble(String combined) {
@@ -347,6 +332,15 @@ final class ThemeSurfaceStyler {
         return containsAny(combined,
                 "message_input", "chat_input", "input_panel", "message_composer", "chat_composer",
                 "message_edit", "chat_edit", "input_bar", "composer_bar", "send_panel");
+    }
+
+    private static boolean isExplicitSheet(String combined) {
+        // No generic geometry fallback here. Feed captions and DM composers can have the same
+        // dimensions as a sheet, which caused the dev.4 giant-glass overlays and startup churn.
+        return containsAny(combined,
+                "bottom_sheet", "bottomsheet", "comments_panel", "comment_panel",
+                "share_panel", "action_sheet", "dialog_sheet", "emoji_panel", "sticker_panel",
+                "half_screen", "sheet_container", "modal_panel");
     }
 
     private static boolean isBottomNavigation(
@@ -400,7 +394,18 @@ final class ThemeSurfaceStyler {
         return shortTexts >= 3 || images >= 3;
     }
 
-    private static boolean isLikelyDrawer(ViewGroup group, int rootWidth, int rootHeight) {
+    private static boolean isLikelyDrawer(
+            ViewGroup group,
+            String combined,
+            int rootWidth,
+            int rootHeight
+    ) {
+        if (containsAny(combined,
+                "drawer", "side_menu", "sidemenu", "profile_menu", "profilemenu",
+                "navigation_drawer", "side_panel")) {
+            return true;
+        }
+
         int width = group.getWidth();
         int height = group.getHeight();
         if (width < rootWidth * 0.58f || width > rootWidth * 0.96f) return false;
@@ -414,42 +419,7 @@ final class ThemeSurfaceStyler {
         boolean touchesRight = right >= rootWidth - Math.round(dp(group.getContext(), 8));
         if (!touchesLeft && !touchesRight) return false;
 
-        return countTextViews(group, 1, 5) >= 3;
-    }
-
-    private static boolean isSheet(
-            ViewGroup group,
-            String combined,
-            int rootWidth,
-            int rootHeight,
-            boolean allowGeometryFallback
-    ) {
-        // These are unambiguous modal surfaces and remain themeable even from a direct chat.
-        if (containsAny(combined,
-                "bottom_sheet", "comments_panel", "comment_panel", "share_panel",
-                "action_sheet", "dialog_sheet", "emoji_panel", "sticker_panel")) {
-            return true;
-        }
-
-        // Generic panel/container names and geometry are unsafe on the DM screen because TikTok's
-        // message composer uses the same shape. Preserve the native/custom chat layout there.
-        if (!allowGeometryFallback) return false;
-
-        if (containsAny(combined, "panel_container", "half_screen")) return true;
-
-        int width = group.getWidth();
-        int height = group.getHeight();
-        if (width < rootWidth * 0.78f) return false;
-        if (height < rootHeight * 0.18f || height > rootHeight * 0.78f) return false;
-
-        int[] location = location(group);
-        if (location == null) return false;
-        int bottom = location[1] + height;
-        if (bottom < rootHeight - Math.round(dp(group.getContext(), 18))) return false;
-
-        return countTextViews(group, 2, 4) >= 3
-                && group.getChildCount() >= 2
-                && group.getChildCount() <= 12;
+        return countTextViews(group, 2, 8) >= 3;
     }
 
     private static boolean isLargeScreenContainer(ViewGroup group, int rootWidth, int rootHeight) {
@@ -473,7 +443,7 @@ final class ThemeSurfaceStyler {
         if (height < minHeight || height > maxHeight) return false;
         if (group.getChildCount() < 1 || group.getChildCount() > 18) return false;
 
-        return countTextViews(group, 2, 5) >= 1;
+        return countTextViews(group, 2, 6) >= 1;
     }
 
     private static boolean isListRow(ViewGroup group, int rootWidth, int rootHeight) {
@@ -530,9 +500,9 @@ final class ThemeSurfaceStyler {
 
         int count = 0;
         if (root instanceof TextView) {
-            CharSequence text = ((TextView) root).getText();
-            if (text != null) {
-                int length = text.toString().trim().length();
+            CharSequence value = ((TextView) root).getText();
+            if (value != null) {
+                int length = value.toString().trim().length();
                 if (length > 0 && length <= 24) count = 1;
             }
         }
@@ -637,8 +607,12 @@ final class ThemeSurfaceStyler {
     }
 
     private static String className(View view) {
-        String simple = view.getClass().getSimpleName();
-        return simple == null ? "" : simple.toLowerCase(Locale.ROOT);
+        try {
+            String simple = view.getClass().getSimpleName();
+            return simple == null ? "" : simple.toLowerCase(Locale.ROOT);
+        } catch (Throwable ignored) {
+            return "";
+        }
     }
 
     private static boolean containsAny(String value, String... tokens) {
@@ -662,5 +636,40 @@ final class ThemeSurfaceStyler {
         boolean settingsLike;
         boolean inboxLike;
         boolean chatLike;
+    }
+
+    private static final class ScanNode {
+        final View view;
+        final int depth;
+
+        ScanNode(View view, int depth) {
+            this.view = view;
+            this.depth = depth;
+        }
+    }
+
+    private static final class Node {
+        final View view;
+        final boolean insideDrawer;
+        final boolean insideSettings;
+        final boolean insideInbox;
+        final boolean parentCardStyled;
+        final boolean textContext;
+
+        Node(
+                View view,
+                boolean insideDrawer,
+                boolean insideSettings,
+                boolean insideInbox,
+                boolean parentCardStyled,
+                boolean textContext
+        ) {
+            this.view = view;
+            this.insideDrawer = insideDrawer;
+            this.insideSettings = insideSettings;
+            this.insideInbox = insideInbox;
+            this.parentCardStyled = parentCardStyled;
+            this.textContext = textContext;
+        }
     }
 }
