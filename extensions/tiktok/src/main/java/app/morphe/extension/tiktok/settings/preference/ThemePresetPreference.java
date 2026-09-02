@@ -55,6 +55,10 @@ public final class ThemePresetPreference extends ListPreference {
         setValue(preset);
         updateSummary(preset);
 
+        // The BlueIT preference screens live in fragments inside one Activity. Install a back-stack
+        // refresh so returning from Interface cannot reveal rows that were bound using an old theme.
+        ThemeUiRefresh.install(context);
+
         setOnPreferenceChangeListener((preference, newValue) -> {
             String value = String.valueOf(newValue);
             ThemeStateStore.saveUserPreset(getContext(), value);
@@ -63,6 +67,7 @@ public final class ThemePresetPreference extends ListPreference {
             updateSummary(value);
             ThemeEngine.requestReapply();
             notifyChanged();
+            ThemeUiRefresh.install(getContext());
 
             // We already updated the non-persistent ListPreference above. Returning false prevents
             // the framework from trying to persist the same key through PreferenceManager.
@@ -74,14 +79,20 @@ public final class ThemePresetPreference extends ListPreference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
+        view.setBackground(SettingsUi.roundedSurface(
+                getContext(),
+                ThemeStateStore.isLiquidGlass(getContext()) ? 19 : 14,
+                false
+        ));
+
         TextView title = view.findViewById(android.R.id.title);
         if (title != null) {
-            title.setTextColor(ThemeEngine.textColor(getContext()));
+            title.setTextColor(SettingsUi.textPrimary());
         }
 
         TextView summary = view.findViewById(android.R.id.summary);
         if (summary != null) {
-            summary.setTextColor(ThemeEngine.secondaryTextColor(getContext()));
+            summary.setTextColor(SettingsUi.textSecondary());
         }
     }
 
