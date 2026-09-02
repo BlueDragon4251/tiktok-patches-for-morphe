@@ -1,3 +1,21 @@
+# [1.2.0-dev.16](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.15...v1.2.0-dev.16) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish activity and drawer corrections ([6fbb6d5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6fbb6d5869d25ef23f950211d9a565edcdf8adb2))
+* **theme:** apply dynamic surfaces before draw ([edd6501](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/edd650108bb036be93b1c5e56bc9811c85b59c16))
+* **theme:** install activity surface guard ([530ee67](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/530ee673daa719a17fdaf4b15424e9f2bc096d93))
+* **theme:** install realtime UI guard ([4f8a1da](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4f8a1da3099385e4559c371a84d67cd25531cf4b))
+* **theme:** stop generic sidebar root push ([2fb44ef](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2fb44ef776850a2253a22f1c8bc60c9f8bd51b7d))
+* **theme:** style activity recommendations before draw ([11bbb59](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/11bbb59a11885273a3886e863b31049dfc069d5f))
+
+
+
+
+
+## 1.2.0-dev.16
+
 # [1.2.0-dev.15](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.14...v1.2.0-dev.15) (2026-09-02)
 
 
