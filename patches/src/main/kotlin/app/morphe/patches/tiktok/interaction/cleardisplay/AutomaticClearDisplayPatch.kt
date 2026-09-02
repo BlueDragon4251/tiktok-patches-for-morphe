@@ -12,8 +12,8 @@ private const val CONTROLLER =
 @Suppress("unused")
 val automaticClearDisplayPatch = bytecodePatch(
     name = "Automatic clear display",
-    description = "Automatically enters TikTok clear-display mode after a configurable delay for each newly played video.",
-    default = true,
+    description = "Experimental recovery opt-in: automatically enters TikTok clear-display mode after a configurable delay for each newly played video.",
+    default = false,
 ) {
     dependsOn(
         sharedExtensionPatch,
@@ -28,9 +28,8 @@ val automaticClearDisplayPatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutomaticClearDisplay()V",
         )
 
-        // Capture TikTok's real ClearModePanelComponent and current item context. The 46.7.3
-        // controller first attempts TikTok's native request route and falls back to the current
-        // per-video clear-display event when the old PINCH_ZOOM enum is obfuscated/removed.
+        // Keep the real panel/context hook available for explicit testing, but do not include this
+        // patch in the recovery default set until the real-device 46.7.3 runtime path is proven.
         ClearModePanelResetFingerprint.method.addInstruction(
             0,
             "invoke-static/range {p0 .. p1}, $CONTROLLER->updatePanelContext(Ljava/lang/Object;Ljava/lang/Object;)V",

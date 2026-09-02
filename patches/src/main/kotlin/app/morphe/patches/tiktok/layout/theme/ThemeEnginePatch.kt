@@ -16,18 +16,15 @@ private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
 /**
  * BlueIT TikTok Theme Engine.
  *
- * The patch option only chooses the initial preset for a fresh BlueIT settings data set. It does
- * not bake the selected theme into TikTok: users can always change the preset later from BlueIT
- * settings, and an existing runtime selection is never overwritten by a repatch/update.
- *
- * Runtime startup is routed through ThemeEngineBootstrap so Theme Engine linkage/runtime failures
- * can never crash TikTok's MainActivity synchronously.
+ * Temporarily opt-in while the Android/ART startup crash introduced after dev.3 is being isolated.
+ * The implementation remains fully available and this default will be restored once the real-device
+ * verifier/runtime path is proven again.
  */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
     name = "Theme engine",
-    description = "Adds runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
-    default = true,
+    description = "Experimental recovery opt-in: runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
+    default = false,
 ) {
     dependsOn(sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4673())
