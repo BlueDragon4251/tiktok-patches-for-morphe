@@ -1,3 +1,17 @@
+# [1.2.0-dev.9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.8...v1.2.0-dev.9) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish obfuscated TUX color mapping ([a88aab6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a88aab68795c822cd769b082e1f4db04640f5af7))
+* **theme:** classify obfuscated TUX colors by stock value ([83a6001](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/83a6001d908b601b825ed884434280b8cc31979b))
+
+
+
+
+
+## 1.2.0-dev.9
+
 # [1.2.0-dev.8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.7...v1.2.0-dev.8) (2026-09-02)
 
 
