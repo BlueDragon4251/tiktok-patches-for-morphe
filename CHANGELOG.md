@@ -1,3 +1,22 @@
+# [1.2.0-dev.5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.4...v1.2.0-dev.5) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish Theme Engine startup crash guard ([45a9693](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/45a96932dbaabfc1c1fc3ce9ad63589fa67d7f1d))
+* **theme:** add fail-open runtime bootstrap ([bfec347](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/bfec347d8eb84bbd60ef4396b0d014757ec93ce8))
+* **theme:** make bootstrap register-safe ([05f9d56](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/05f9d563a715dfa53b6b0893a40946509df7083f))
+* **theme:** make surface styling bounded and fail-open ([c62a596](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c62a5961e176e5ffb17136deaec81b058016ce35))
+* **theme:** remove startup layout feedback loop ([77b370a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/77b370af8bc0ad4e43b3054ea2ea9e30bb9bd20b))
+* **theme:** route startup through fail-open bootstrap ([dc31b53](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/dc31b53df2c9ec1ea0ff8babc33a4aa270599c65))
+* **theme:** use range-safe bootstrap calls ([927684c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/927684c5aa3429db66693e00c36c7c8c25d0180c))
+
+
+
+
+
+## 1.2.0-dev.5
+
 # [1.2.0-dev.4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.3...v1.2.0-dev.4) (2026-09-02)
 
 
