@@ -18,6 +18,8 @@ private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
 private const val THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeColorResolver;"
+private const val THEME_VIEW_HOOKS_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/theme/ThemeViewHooks;"
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
@@ -63,6 +65,45 @@ private object TuxStyledColorResolverFingerprint : Fingerprint(
             method.name == "LIZLLL" &&
             method.parameterTypes == listOf("I", "Landroid/content/Context;", "[I") &&
             method.returnType == "Ljava/lang/Integer;"
+    },
+)
+
+/**
+ * Main TikTok bottom-tab background. Discovery shows this method resolves one TUX color and writes
+ * it directly into MainPageBusinessAssem.LLJILJILJ with View.setBackgroundColor().
+ */
+private object MainBottomNavigationBackgroundFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(
+            "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+        ) &&
+            method.name == "sh" &&
+            method.parameterTypes.isEmpty() &&
+            method.returnType == "V"
+    },
+)
+
+/** Profile three-line/sidebar page root creation. */
+private object ProfileSidebarCreateViewFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+            method.name == "onCreateView" &&
+            method.parameterTypes == listOf(
+                "Landroid/view/LayoutInflater;",
+                "Landroid/view/ViewGroup;",
+                "Landroid/os/Bundle;",
+            ) &&
+            method.returnType == "Landroid/view/View;"
+    },
+)
+
+/** Profile sidebar becomes visible; use this point to keep the profile underlay stationary. */
+private object ProfileSidebarNodeShowFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+            method.name == "onNodeShow" &&
+            method.parameterTypes == listOf("Landroid/os/Bundle;") &&
+            method.returnType == "V"
     },
 )
 
@@ -169,6 +210,61 @@ val themeEnginePatch = bytecodePatch(
                 """.trimIndent(),
                 ExternalLabel("blueit_tux_styled_original", getInstruction(0)),
             )
+        }
+
+        // The main bottom-tab layer is repainted by TikTok after normal TUX resolution. Reapply the
+        // selected surface to the exact background View after that stock write.
+        MainBottomNavigationBackgroundFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        iget-object v0, p0, Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;->LLJILJILJ:Landroid/view/View;
+                        invoke-static {v0}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleBottomNavigation(Landroid/view/View;)V
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        // SidebarPageFragment constructs a dedicated full-height FrameLayout and then asks TUX for
+        // its background. Style that exact root, then repeat when the node is actually shown so the
+        // short TikTok push animation can be converted into a true overlay without a permanent
+        // layout listener.
+        ProfileSidebarCreateViewFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstruction(
+                    returnIndex,
+                    "invoke-static {v2}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleProfileSidebar(Landroid/view/View;)V",
+                )
+            }
+        }
+
+        ProfileSidebarNodeShowFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        invoke-virtual {p0}, Landroidx/fragment/app/Fragment;->getView()Landroid/view/View;
+                        move-result-object v0
+                        invoke-static {v0}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleProfileSidebar(Landroid/view/View;)V
+                    """.trimIndent(),
+                )
+            }
         }
 
         MainActivityOnCreateFingerprint.method.apply {
