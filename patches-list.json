@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.3",
+  "version": "1.2.0-dev.4",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -984,7 +984,7 @@
     },
     {
       "name": "Theme engine",
-      "description": "Adds Material You, AMOLED, OLED black, Liquid Glass, and custom TikTok themes selectable from BlueIT settings.",
+      "description": "Adds runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
       "use": true,
       "dependencies": [
         "BytecodePatch"
@@ -1022,6 +1022,12 @@
             "Material You AMOLED": "material_you_amoled",
             "OLED black": "oled_black",
             "Liquid Glass": "liquid_glass",
+            "Frosted Graphite": "frosted_graphite",
+            "Midnight Neon": "midnight_neon",
+            "Rose Noir": "rose_noir",
+            "Arctic Blue": "arctic_blue",
+            "Aurora Violet": "aurora_violet",
+            "Sunset Ember": "sunset_ember",
             "Custom": "custom"
           }
         }

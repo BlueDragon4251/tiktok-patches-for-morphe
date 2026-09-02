@@ -1,3 +1,26 @@
+# [1.2.0-dev.4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.3...v1.2.0-dev.4) (2026-09-02)
+
+
+### Bug Fixes
+
+* **clear-display:** fall back safely on TikTok 46.7.3 ([f67a4d6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/f67a4d69ddd986c3457fbb0edfe44efc3fb5f0d7))
+* **clear-display:** keep release commit semantic ([6bc69d9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6bc69d97dff7d23f65f2763817cb139735e18a23))
+* **clear-display:** use pinch source for automatic fallback ([fb8e46b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/fb8e46b4a786575aca5e9e85c6980c7e9d6634b7))
+* **theme:** confine surface colors to themed TikTok UI ([392a60a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/392a60aad78af1035b379d58871a039ffd057239))
+* **theme:** preserve direct-message bubble layouts ([be5543c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/be5543c8340d1202166c87c9f1868049df775e55))
+
+
+### Features
+
+* **dev:** publish expanded Theme Engine and clear display fixes ([dc53ba4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/dc53ba4b78d770ebcc4f45f2bd80c05041ee015b))
+* **theme:** expand BlueIT theming and local settings persistence ([7d4c484](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/7d4c484302547021d0052dd54438b4dce92f9f72))
+
+
+
+
+
+## 1.2.0-dev.4
+
 # [1.2.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.2...v1.2.0-dev.3) (2026-09-01)
 
 
