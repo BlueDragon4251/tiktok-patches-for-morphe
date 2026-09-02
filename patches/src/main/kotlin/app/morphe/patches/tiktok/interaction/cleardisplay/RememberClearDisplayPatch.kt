@@ -40,6 +40,10 @@ val rememberClearDisplayPatch = bytecodePatch(
                     "Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->rememberClearDisplayState(Z)V",
             )
 
+            // Keep only the long-proven remembered-state restoration in the render hook.
+            // Automatic Clear Display must not fabricate an additional per-video event here: this
+            // method is loaded by TikTok's player very early, so an incorrect obfuscated event
+            // constructor would become a class-verification/startup failure before Java guards run.
             val clearDisplayEventClass = method.parameters[0].type
             OnRenderFirstFrameFingerprint.method.apply {
                 val returnIndex = findInstructionIndicesReversedOrThrow {
@@ -48,20 +52,6 @@ val rememberClearDisplayPatch = bytecodePatch(
                 addInstructionsWithLabels(
                     returnIndex,
                     """
-                        # Automatic Clear Display keeps a current per-video event as its 46.7.3
-                        # fallback when the old native PINCH_ZOOM enum/panel route is obfuscated.
-                        const/4 v0, 0x1
-                        const/4 v1, 0x0
-                        const-string v2, ""
-                        const-string p1, "pinch"
-                        new-instance p0, $clearDisplayEventClass
-                        invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
-                        invoke-static {p0}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->onNewVideo(Ljava/lang/Object;)V
-
-                        invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->isEnabled()Z
-                        move-result v0
-                        if-nez v0, :blueit_clear_display_return
-
                         invoke-static {}, Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->getClearDisplayState()Z
                         move-result v0
                         if-eqz v0, :blueit_clear_display_return
