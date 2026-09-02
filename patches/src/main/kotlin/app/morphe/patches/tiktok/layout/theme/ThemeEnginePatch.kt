@@ -426,7 +426,7 @@ val themeEnginePatch = bytecodePatch(
             }
 
             paletteReads.asReversed().forEach { (index, destination) ->
-                addInstructions(
+                method.addInstructions(
                     index + 1,
                     """
                         invoke-static/range {v$destination .. v${destination + 1}}, $THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR->mapColor(J)J
