@@ -74,10 +74,43 @@ jobs:
             fi
           done
 
+      - name: Discover TikTok theme and color providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
+          test -x "$DEXDUMP"
+          : > theme-evidence.txt
+
+          THEME_REGEX='SettingsComposeRvmpFragment|AndroidComposeView|ComposeView|MaterialTheme|ColorScheme|LocalContentColor|LocalColors|TUX|Tux|ThemeMode|theme_mode|ColorMode|color_mode|DarkMode|dark_mode|LightMode|light_mode|semantic.?color|color.?token|palette|surface.?color|background.?color|ColorStateList|getColorStateList|getColor\(|setBackgroundColor|setStatusBarColor|setNavigationBarColor'
+
+          for dex in /tmp/dex/*.dex; do
+            strings_file="/tmp/$(basename "$dex").strings"
+            test -f "$strings_file" || strings "$dex" > "$strings_file"
+            if ! grep -Eiq "$THEME_REGEX" "$strings_file"; then
+              continue
+            fi
+
+            echo "=== THEME STRINGS $(basename "$dex") ===" >> theme-evidence.txt
+            grep -Ei "$THEME_REGEX" "$strings_file" | sort -u | head -n 3500 >> theme-evidence.txt || true
+
+            dump="/tmp/dumps/theme-$(basename "$dex").txt"
+            timeout 75s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
+            if test -s "$dump"; then
+              echo "=== THEME DEX CONTEXT $(basename "$dex") ===" >> theme-evidence.txt
+              grep -Ein -B 80 -A 100 "$THEME_REGEX" "$dump" | head -n 50000 >> theme-evidence.txt || true
+            fi
+          done
+
+          echo '=== MANIFEST / RESOURCE THEME NAMES ===' >> theme-evidence.txt
+          unzip -l tiktok-46.7.3.apk | grep -Ei 'color|theme|style|compose|tux' | head -n 8000 >> theme-evidence.txt || true
+
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-46.7.3-fingerprint-discovery
-          path: remaining-evidence.txt
+          path: |
+            remaining-evidence.txt
+            theme-evidence.txt
           if-no-files-found: error
           retention-days: 1
