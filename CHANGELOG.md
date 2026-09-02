@@ -1,3 +1,29 @@
+# [1.2.0-dev.8](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.7...v1.2.0-dev.8) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish Theme Engine persistence and TUX coverage ([6329899](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/632989934bad08ba76ce88966821b79587bb3c5e))
+* **theme:** broaden TUX semantic color resolution ([2f7c402](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2f7c40273614e095ca3b105d60948e013c0f4f5c))
+* **theme:** drive BlueIT settings from active palette ([41e9a92](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/41e9a9256e83c5b62d99ce9079d09eecb7faedfa))
+* **theme:** hook complete TUX color resolver path ([b8735bb](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b8735bbb69f82bb3e86dba75c5c054418e95fac3))
+* **theme:** keep BlueIT theme across navigation ([1389e27](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/1389e27f97b54ca7711c83553e5d3771717ff190))
+* **theme:** make preset selection single-source ([34a46f7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/34a46f7c564e2e1897f8fbd878ed9b2b641b1fdb))
+* **theme:** persist runtime preset independently ([c7f3971](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c7f3971a2183f5846a2efbbcc130fe145338302d))
+* **theme:** preserve patch seed until bootstrap ([a836209](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a8362094ba5cb03d4401bc89d9c256eb458dd535))
+* **theme:** preserve TUX generic converter types ([2554ccb](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2554ccbc5f177ae7f91f24aa1706d7e3b886c6fa))
+* **theme:** refresh BlueIT UI when preset changes ([9c9f68e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9c9f68e09608999b7c5fce976cfecc23d44150ff))
+* **theme:** route generic TUX colors through converter ([d5d83c3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d5d83c32bbba97fb4eac15b869a94c7ece8c814e))
+* **theme:** stop patch default from overriding runtime choice ([890378d](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/890378dc52747853d64df140d18dd3448d1ad022))
+* **theme:** theme BlueIT menu cards and icons ([7db0927](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/7db09277a69fbcd5ac959955faf979c49ed511b6))
+* **theme:** theme BlueIT settings header accent ([ec92338](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/ec923380ef5f81e6450fcfd397dadc33c1701313))
+
+
+
+
+
+## 1.2.0-dev.8
+
 # [1.2.0-dev.7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.6...v1.2.0-dev.7) (2026-09-02)
 
 
