@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-02T15:09:47",
-  "description": "# [1.2.0-dev.10](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-09-02)\n\n\n### Bug Fixes\n\n* **dev:** publish themed settings and verifier-safe clear display ([5e7b7b9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/5e7b7b9b3476765fc5e5b0aa10070984a4fa9fa1))\n* **theme,clear-display:** finish settings hooks and verifier-safe auto clear ([a44d39f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a44d39f1ef1e82351c9851b70bafb197437c81dc))\n* **theme:** hook bottom navigation and profile sidebar ([c59a1a6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c59a1a614cfd930553b0d9531b4d4a51045a3015))\n\n\n\n\n\n## 1.2.0-dev.10",
-  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.2.0-dev.10/patches-1.2.0-dev.10.mpp",
+  "created_at": "2026-09-02T16:00:54",
+  "description": "# [1.2.0-dev.11](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.10...v1.2.0-dev.11) (2026-09-02)\n\n\n### Bug Fixes\n\n* **clear-display:** activate controller on first frame ([cc17bb3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cc17bb33f99573feb3fe7084a75330bbe9eb8f9a))\n* **clear-display:** restore automatic event semantics ([bbe805f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/bbe805f51cb4a052d884475993107fd2e9152d86))\n* **dev:** publish clear display trigger and sidebar overlay guard ([0aeec66](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0aeec66c3b1973dfed70b8f1839ac47ea2603d4f))\n* **theme:** keep profile drawer as overlay ([027402a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/027402a6c4a7514505bf9e280bd699f7e8a33c2c))\n\n\n\n\n\n## 1.2.0-dev.11",
+  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.2.0-dev.11/patches-1.2.0-dev.11.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.10"
+  "version": "1.2.0-dev.11"
 }

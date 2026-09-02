@@ -1,3 +1,19 @@
+# [1.2.0-dev.11](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.10...v1.2.0-dev.11) (2026-09-02)
+
+
+### Bug Fixes
+
+* **clear-display:** activate controller on first frame ([cc17bb3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cc17bb33f99573feb3fe7084a75330bbe9eb8f9a))
+* **clear-display:** restore automatic event semantics ([bbe805f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/bbe805f51cb4a052d884475993107fd2e9152d86))
+* **dev:** publish clear display trigger and sidebar overlay guard ([0aeec66](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0aeec66c3b1973dfed70b8f1839ac47ea2603d4f))
+* **theme:** keep profile drawer as overlay ([027402a](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/027402a6c4a7514505bf9e280bd699f7e8a33c2c))
+
+
+
+
+
+## 1.2.0-dev.11
+
 # [1.2.0-dev.10](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.9...v1.2.0-dev.10) (2026-09-02)
 
 
