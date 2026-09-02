@@ -19,6 +19,8 @@ import app.morphe.extension.shared.Utils;
 @SuppressWarnings("unused")
 public final class ThemeEngineBootstrap {
     private static final String ENGINE_CLASS = "app.morphe.extension.tiktok.theme.ThemeEngine";
+    private static final String REALTIME_GUARD_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeRealtimeUiGuard";
     private static volatile boolean runtimeFailed;
     private static volatile String patchDefaultPreset = "default";
 
@@ -78,6 +80,24 @@ public final class ThemeEngineBootstrap {
                 cause = ((InvocationTargetException) throwable).getCause();
             }
             safeLog("BlueIT Theme Engine disabled after runtime bootstrap failure", cause);
+            return;
+        }
+
+        // Recycler-backed Inbox/Activity surfaces can be rebound after the bounded engine passes.
+        // Install the frame-synchronous guard separately so a failure here never disables the core
+        // theme runtime that already started successfully above.
+        try {
+            Class<?> guard = Class.forName(REALTIME_GUARD_CLASS, true, activity.getClassLoader());
+            Method install = guard.getDeclaredMethod("install", Activity.class);
+            install.setAccessible(true);
+            install.invoke(null, activity);
+        } catch (Throwable throwable) {
+            Throwable cause = throwable;
+            if (throwable instanceof InvocationTargetException
+                    && ((InvocationTargetException) throwable).getCause() != null) {
+                cause = ((InvocationTargetException) throwable).getCause();
+            }
+            safeLog("BlueIT realtime theme guard unavailable", cause);
         }
     }
 
