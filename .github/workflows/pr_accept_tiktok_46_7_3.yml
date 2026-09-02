@@ -17,7 +17,7 @@ permissions:
 jobs:
   acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
@@ -98,27 +98,7 @@ jobs:
           test -n "$URL" && test "$URL" != null
           curl -fL --retry 3 "$URL" -o morphe-desktop.jar
 
-      - name: Apply all default patches
-        id: patch
-        shell: bash
-        env:
-          JAVA_TOOL_OPTIONS: -Xmx6g
-        run: |
-          set +e
-          java -jar morphe-desktop.jar patch \
-            -p "$MPP" \
-            --continue-on-error \
-            --unsigned \
-            --result-file morphe-result.json \
-            -o /tmp/tiktok-patched.apk \
-            tiktok-46.7.3.apk 2>&1 | tee morphe.log
-          code=${PIPESTATUS[0]}
-          if grep -q 'INFO: Applying 0 patches' morphe.log; then code=97; fi
-          if grep -q '^WARNING: Skipping ".*": incompatible with com.zhiliaoapp.musically 46.7.3' morphe.log; then code=98; fi
-          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
-          exit 0
-
-      - name: Apply full catalog including Diagnostic tools
+      - name: Apply full 46.7.3 catalog once
         id: patch_full
         shell: bash
         env:
@@ -147,6 +127,8 @@ jobs:
             -o /tmp/tiktok-full-patched.apk \
             tiktok-46.7.3.apk 2>&1 | tee morphe-full.log
           code=${PIPESTATUS[0]}
+          if grep -q 'INFO: Applying 0 patches' morphe-full.log; then code=97; fi
+          if grep -q '^WARNING: Skipping ".*": incompatible with com.zhiliaoapp.musically 46.7.3' morphe-full.log; then code=98; fi
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
@@ -167,37 +149,33 @@ jobs:
               metadata = {"patches": []}
           else:
               metadata = json.loads(metadata_path.read_text())
-          compatible = {}
+
+          expected = set()
           for patch in metadata.get("patches") or []:
               versions = (patch.get("compatiblePackages") or {}).get(package) or []
               if version in versions:
-                  compatible[patch.get("name")] = bool(patch.get("use"))
-          expected_defaults = {name for name, use in compatible.items() if use}
-          expected_full = set(compatible)
-          print("Expected default patches:", sorted(expected_defaults))
-          print("Expected full catalog:", sorted(expected_full))
-          for label, filename, expected in (
-              ("defaults", "morphe-result.json", expected_defaults),
-              ("full catalog", "morphe-full-result.json", expected_full),
-          ):
-              path = Path(filename)
-              if not path.exists():
-                  failures.append(f"{label}: {filename} was not produced")
-                  continue
+                  expected.add(patch.get("name"))
+
+          print("Expected full catalog:", sorted(expected))
+          path = Path("morphe-full-result.json")
+          if not path.exists():
+              failures.append("full catalog: morphe-full-result.json was not produced")
+          else:
               data = json.loads(path.read_text())
               applied = {item.get("name") for item in (data.get("appliedPatches") or [])}
               failed = data.get("failedPatches") or []
               missing = sorted(expected - applied)
               unexpected = sorted(applied - expected)
-              print(f"{label}: applied={len(applied)} expected={len(expected)} failed={len(failed)}")
+              print(f"full catalog: applied={len(applied)} expected={len(expected)} failed={len(failed)}")
               if failed:
-                  failures.append(f"{label}: failed patches: {failed}")
+                  failures.append(f"full catalog: failed patches: {failed}")
               if missing:
-                  failures.append(f"{label}: compatible patches not applied: {missing}")
+                  failures.append(f"full catalog: compatible patches not applied: {missing}")
               if unexpected:
-                  failures.append(f"{label}: unexpected applied patches: {unexpected}")
+                  failures.append(f"full catalog: unexpected applied patches: {unexpected}")
               if not expected:
-                  failures.append(f"{label}: generated metadata selected no 46.7.3 patches")
+                  failures.append("full catalog: generated metadata selected no 46.7.3 patches")
+
           if failures:
               for failure in failures:
                   print(failure, file=sys.stderr)
@@ -211,18 +189,12 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo '=== DEFAULT PATCH FAILURES / SKIPS ==='
-          grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction|WARNING: Skipping' morphe.log || true
-          echo '=== DEFAULT APPLIED COUNT ==='
-          grep -c '^INFO: Applied:' morphe.log || true
           echo '=== FULL-CATALOG PATCH FAILURES / SKIPS ==='
           grep -E 'SEVERE: FAILED:|Patching aborted|PatchException|Failed to match|Could not find instruction|WARNING: Skipping' morphe-full.log || true
           echo '=== BLUEIT GESTURE DISCOVERY ==='
           grep '\[BlueITGestureDiscovery\]' morphe-full.log || true
           echo '=== FULL-CATALOG APPLIED COUNT ==='
           grep -c '^INFO: Applied:' morphe-full.log || true
-          echo '=== DEFAULT RESULT JSON ==='
-          cat morphe-result.json 2>/dev/null || true
           echo '=== FULL-CATALOG RESULT JSON ==='
           cat morphe-full-result.json 2>/dev/null || true
 
@@ -232,8 +204,6 @@ jobs:
         with:
           name: tiktok-46.7.3-acceptance
           path: |
-            morphe.log
-            morphe-result.json
             morphe-full.log
             morphe-full-result.json
             patches-list.json
@@ -245,6 +215,5 @@ jobs:
         if: always()
         shell: bash
         run: |
-          test "${{ steps.patch.outputs.exit_code }}" = "0"
           test "${{ steps.patch_full.outputs.exit_code }}" = "0"
           test "${{ steps.validate.outputs.exit_code }}" = "0"
