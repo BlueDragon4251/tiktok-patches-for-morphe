@@ -13,17 +13,31 @@ import app.morphe.patches.tiktok.misc.extension.MainActivityOnCreateFingerprint
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
 private const val THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeColorResolver;"
+private const val THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/theme/ThemeComposeColorResolver;"
 private const val THEME_VIEW_HOOKS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeViewHooks;"
 private const val MAIN_PAGE_ASSEM =
     "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;"
 private const val SETTINGS_COMPOSE_FRAGMENT =
     "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;"
+private const val PROFILE_SIDEBAR_FRAGMENT =
+    "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;"
+private const val PROFILE_SIDEBAR_CONTAINER =
+    "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarContainerAssem;"
+private const val SIDEBAR_ROOT_ABILITY =
+    "Lcom/ss/android/ugc/aweme/sidebar/components/ISideBarRootAbility;"
+private const val SETTINGS_COMPOSE_RENDERER = "LX/0VGt;"
+private const val COMPOSE_PALETTE = "LX/05Pc;"
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
@@ -89,10 +103,10 @@ private object MainBottomNavigationVisibilityFingerprint : Fingerprint(
     },
 )
 
-/** Profile three-line/sidebar page root creation. */
+/** Actual profile three-line/sidebar page root in TikTok 46.7.3. */
 private object ProfileSidebarCreateViewFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+        classDef.endsWith(PROFILE_SIDEBAR_FRAGMENT) &&
             method.name == "onCreateView" &&
             method.parameterTypes == listOf(
                 "Landroid/view/LayoutInflater;",
@@ -103,10 +117,24 @@ private object ProfileSidebarCreateViewFingerprint : Fingerprint(
     },
 )
 
-/** Profile sidebar becomes visible; keep the profile underlay stationary. */
+/** Actual profile sidebar becomes visible; keep the sidebar root themed. */
 private object ProfileSidebarNodeShowFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
+        classDef.endsWith(PROFILE_SIDEBAR_FRAGMENT) &&
+            method.name == "onNodeShow" &&
+            method.parameterTypes == listOf("Landroid/os/Bundle;") &&
+            method.returnType == "V"
+    },
+)
+
+/**
+ * Profile-specific container that calls ISideBarRootAbility.FX2(true) when opening. Exact 46.7.3
+ * discovery shows this is the root push/resize notification; the matching FX2(false) close path is
+ * in onNodeHide and deliberately remains untouched.
+ */
+private object ProfileSidebarContainerNodeShowFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(PROFILE_SIDEBAR_CONTAINER) &&
             method.name == "onNodeShow" &&
             method.parameterTypes == listOf("Landroid/os/Bundle;") &&
             method.returnType == "V"
@@ -133,6 +161,36 @@ private object SettingsComposeViewCreatedFingerprint : Fingerprint(
         classDef.endsWith(SETTINGS_COMPOSE_FRAGMENT) &&
             method.name == "onViewCreated" &&
             method.parameterTypes == listOf("Landroid/view/View;", "Landroid/os/Bundle;") &&
+            method.returnType == "V"
+    },
+)
+
+/** Inner group/list renderer used by SettingsComposeRvmpFragment. */
+private object SettingsComposeGroupRendererFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(SETTINGS_COMPOSE_RENDERER) &&
+            method.name == "LIZ" &&
+            method.parameterTypes == listOf(
+                "LX/0VSj;",
+                "Ljava/util/List;",
+                "LX/008m;",
+                "I",
+            ) &&
+            method.returnType == "V"
+    },
+)
+
+/** Outer Settings & privacy Compose renderer. */
+private object SettingsComposeScreenRendererFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(SETTINGS_COMPOSE_RENDERER) &&
+            method.name == "LIZIZ" &&
+            method.parameterTypes == listOf(
+                "LX/0VSj;",
+                "Ljava/util/List;",
+                "LX/008m;",
+                "I",
+            ) &&
             method.returnType == "V"
     },
 )
@@ -268,6 +326,8 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
+        // Exact 46.7.3 discovery: ProfileSidebarPageFragment.onCreateView has 7 registers / 4 ins
+        // and returns the created FrameLayout in v2 on both normal and caught paths.
         ProfileSidebarCreateViewFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -300,8 +360,27 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
+        // Exact 46.7.3 path at code offset 0x00bd:
+        // ISideBarRootAbility.FX2(true) is invoked only on profile-sidebar open. Skip that single
+        // root push/resize notification, while leaving the onNodeHide FX2(false) cleanup untouched.
+        ProfileSidebarContainerNodeShowFingerprint.method.apply {
+            val pushIndex = implementation!!.instructions.withIndex().first { (_, instruction) ->
+                val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+                reference?.definingClass == SIDEBAR_ROOT_ABILITY &&
+                    reference.name == "FX2" &&
+                    reference.returnType == "V"
+            }.index
+
+            addInstructionsWithLabels(
+                pushIndex,
+                "goto :blueit_profile_sidebar_overlay",
+                ExternalLabel("blueit_profile_sidebar_overlay", getInstruction(pushIndex + 1)),
+            )
+        }
+
         // Exact discovery: onCreateView has 10 registers / 4 ins and returns its ComposeView in v5
-        // on both normal and caught paths. No guessed obfuscated register or class is used here.
+        // on both normal and caught paths. The root style is kept for window/backdrop treatment;
+        // actual Compose colors are mapped separately below at LX/0VGt palette reads.
         SettingsComposeCreateViewFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -326,6 +405,33 @@ val themeEnginePatch = bytecodePatch(
                 addInstruction(
                     returnIndex,
                     "invoke-static/range {p1 .. p1}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleSettingsCompose(Landroid/view/View;)V",
+                )
+            }
+        }
+
+        // SettingsComposeRvmpFragment's real surfaces are not Android View backgrounds. LX/0VGt
+        // reads packed Compose Color longs from LX/05Pc and paints the page/cards afterwards. Map
+        // each of those exact palette reads in-place; extended-color-space values fail open.
+        listOf(
+            SettingsComposeGroupRendererFingerprint.method,
+            SettingsComposeScreenRendererFingerprint.method,
+        ).forEach { method ->
+            val paletteReads = method.implementation!!.instructions.withIndex().mapNotNull { (index, instruction) ->
+                if (instruction.opcode != Opcode.IGET_WIDE) return@mapNotNull null
+                val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference
+                    ?: return@mapNotNull null
+                if (field.definingClass != COMPOSE_PALETTE || field.type != "J") return@mapNotNull null
+                val destination = (instruction as TwoRegisterInstruction).registerA
+                index to destination
+            }
+
+            paletteReads.asReversed().forEach { (index, destination) ->
+                method.addInstructions(
+                    index + 1,
+                    """
+                        invoke-static/range {v$destination .. v${destination + 1}}, $THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR->mapColor(J)J
+                        move-result-wide v$destination
+                    """.trimIndent(),
                 )
             }
         }
