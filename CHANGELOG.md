@@ -1,3 +1,22 @@
+# [1.2.0-dev.7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.6...v1.2.0-dev.7) (2026-09-02)
+
+
+### Bug Fixes
+
+* **clear-display:** remove verifier-risky automatic render fallback ([7b34ac0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/7b34ac08473504855f6339e96e224e0c7ee805f6))
+* **dev:** publish TikTok TUX Theme Engine coverage ([09236d4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/09236d4b6a5f015b7dcf9da74cc845a3a9c90a08))
+* **recovery:** make automatic clear display opt-in ([6384c7b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6384c7b4a62238519451432306af752769d6f48e))
+* **recovery:** make Theme Engine opt-in temporarily ([f424f01](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/f424f01cd0a237b9164970816aaf4873130c526e))
+* **settings:** restore proven app-private preference backend ([c45a7be](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c45a7be140066074c00128f9f1ae8f982341eaf9))
+* **theme:** hook TikTok 46.7.3 TUX colors ([0a198ab](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0a198abb7a12c76908becc70fd05c05df1759bbc))
+* **theme:** match TUX resolver class descriptor ([ecac8f2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/ecac8f28b8ea809dc7d4efbda49f9026ba925b47))
+
+
+
+
+
+## 1.2.0-dev.7
+
 # [1.2.0-dev.6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.5...v1.2.0-dev.6) (2026-09-02)
 
 

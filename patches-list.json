@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.6",
+  "version": "1.2.0-dev.7",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -984,7 +984,7 @@
     },
     {
       "name": "Theme engine",
-      "description": "Experimental recovery opt-in: runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
+      "description": "Experimental recovery opt-in: runtime-selectable BlueIT themes applied to TikTok TUX/Compose colors and classic surfaces.",
       "use": false,
       "dependencies": [
         "BytecodePatch"
