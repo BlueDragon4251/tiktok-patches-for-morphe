@@ -1,6 +1,7 @@
 package app.morphe.extension.tiktok.theme;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,6 +20,7 @@ import app.morphe.extension.shared.Utils;
 @SuppressWarnings("unused")
 public final class ThemeComposeColorResolver {
     private static final int TIKTOK_ACCENT = Color.rgb(254, 44, 85);
+    private static final int TIKTOK_LIGHT_TEXT = Color.rgb(22, 24, 35);
     private static final AtomicInteger LOG_BUDGET = new AtomicInteger(18);
 
     private ThemeComposeColorResolver() {}
@@ -83,26 +85,38 @@ public final class ThemeComposeColorResolver {
 
         double y = lightness(opaque);
         int alpha = Color.alpha(stock);
-        boolean stockDark = y < 0.50;
+        boolean dark = stockDarkMode(context);
 
-        // Settings & privacy on the user's 46.7.3 dark UI uses #000000 for the page and roughly
-        // #1E1E1E/#252525/#2C2C2C for grouped cards. These boundaries intentionally mirror the TUX
-        // stock-color inference but work directly on Compose's packed palette values.
-        if (stockDark) {
+        // Settings & privacy on 46.7.3 uses #000000 for the dark page and roughly
+        // #1E1E1E/#252525/#2C2C2C for grouped cards. These boundaries mirror the proven TUX
+        // stock-color inference while operating directly on Compose packed palette values.
+        if (dark) {
             if (y <= 0.045) return ThemeEngine.backgroundColor(context);
             if (y <= 0.22) return ThemeEngine.surfaceColor(context);
-            if (alpha < 100) return ThemeEngine.dividerColor(context);
             if (y >= 0.82) return ThemeEngine.textColor(context);
+            if (alpha < 100) return ThemeEngine.dividerColor(context);
             if (y >= 0.34) return ThemeEngine.secondaryTextColor(context);
             return ThemeEngine.dividerColor(context);
         }
 
+        if (distance(opaque, TIKTOK_LIGHT_TEXT) <= 48.0 || y <= 0.12) {
+            return ThemeEngine.textColor(context);
+        }
         if (y >= 0.965) return ThemeEngine.backgroundColor(context);
         if (y >= 0.80) return ThemeEngine.surfaceColor(context);
         if (alpha < 100) return ThemeEngine.dividerColor(context);
-        if (y <= 0.12) return ThemeEngine.textColor(context);
         if (y <= 0.64) return ThemeEngine.secondaryTextColor(context);
         return ThemeEngine.dividerColor(context);
+    }
+
+    private static boolean stockDarkMode(Context context) {
+        try {
+            int mode = context.getResources().getConfiguration().uiMode
+                    & Configuration.UI_MODE_NIGHT_MASK;
+            return mode == Configuration.UI_MODE_NIGHT_YES;
+        } catch (Throwable ignored) {
+            return true;
+        }
     }
 
     private static double lightness(int color) {
