@@ -1,3 +1,23 @@
+# [1.2.0-dev.12](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.11...v1.2.0-dev.12) (2026-09-02)
+
+
+### Bug Fixes
+
+* **clear-display:** hook exact 46.7.3 reset lifecycle ([5811977](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/581197743fbf673e122b6607e5b7e5d6a72081e4))
+* **clear-display:** trigger from native panel reset ([2d4c95d](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2d4c95d3b0dc20757b796c4a64809cfe4c2538db))
+* **dev:** publish native clear display and Compose theme fixes ([cf4d9e2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cf4d9e2d81b8f95a97ae26f97424276b0cb02e55))
+* **theme:** bind Compose injection to renderer method ([9cd375b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9cd375b65c1544a50f5ec0cd68d7c78b9caacbe8))
+* **theme:** classify Compose colors by app mode ([4e85cd9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4e85cd90c3b9163c1b3c93ec09e2be392b46f5e7))
+* **theme:** hook actual profile sidebar fragment ([cac23c0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/cac23c0087869e5d18031a5dc8a690cf8c7cc634))
+* **theme:** map native settings Compose colors ([3142096](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/314209685bb20bf2f58b248f05df086c887a5ea3))
+* **theme:** theme settings Compose and stop profile push ([4ccb797](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4ccb79750eaf80245f176554c04c86fc73e9da6f))
+
+
+
+
+
+## 1.2.0-dev.12
+
 # [1.2.0-dev.11](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.10...v1.2.0-dev.11) (2026-09-02)
 
 
