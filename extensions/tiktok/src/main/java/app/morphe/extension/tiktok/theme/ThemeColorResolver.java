@@ -1,7 +1,9 @@
 package app.morphe.extension.tiktok.theme;
 
 import android.content.Context;
+import android.util.TypedValue;
 
+import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,8 +15,8 @@ import app.morphe.extension.shared.Utils;
  * Maps TikTok/TUX semantic color tokens to the active BlueIT palette.
  *
  * TikTok 46.7.3 renders much of its normal UI through TUX/Compose, so changing the classic
- * Android View tree alone cannot theme the app. The bytecode patch hooks TUX's central attribute
- * and styled-attribute color resolvers and calls this class before the stock resolver.
+ * Android View tree alone cannot theme the app. The bytecode patch hooks TUX's central attribute,
+ * generic TypedValue and styled-attribute resolvers and calls this class before the stock resolver.
  *
  * Only well-known semantic color tokens are overridden. Unknown, media, warning, success and other
  * functional colors deliberately fall through to TikTok by returning null.
@@ -31,7 +33,9 @@ public final class ThemeColorResolver {
 
     /** Resource ids are stable for the lifetime of one process; cache only their semantic role. */
     private static final ConcurrentHashMap<Integer, Integer> ROLE_CACHE = new ConcurrentHashMap<>();
-    private static final AtomicInteger TOKEN_LOG_BUDGET = new AtomicInteger(24);
+    private static final ConcurrentHashMap<Class<?>, Method> CONVERTER_METHOD_CACHE =
+            new ConcurrentHashMap<>();
+    private static final AtomicInteger TOKEN_LOG_BUDGET = new AtomicInteger(36);
 
     private static volatile boolean contextPrimed;
 
@@ -50,40 +54,42 @@ public final class ThemeColorResolver {
             String preset = ThemeStateStore.initialize(context, patchDefaultPreset);
             if ("default".equals(preset)) return null;
 
-            Integer cachedRole = ROLE_CACHE.get(tokenId);
-            int role;
-            String name = null;
-            if (cachedRole != null) {
-                role = cachedRole;
-            } else {
-                name = resourceName(tokenId, context);
-                role = classifyName(name);
-                ROLE_CACHE.put(tokenId, role);
-            }
-
-            if (name != null && !name.isEmpty()) {
-                logTokenSample(name, role);
-            }
-
-            switch (role) {
-                case ROLE_BACKGROUND:
-                    return ThemeEngine.backgroundColor(context);
-                case ROLE_SURFACE:
-                    return ThemeEngine.surfaceColor(context);
-                case ROLE_TEXT:
-                    return ThemeEngine.textColor(context);
-                case ROLE_SECONDARY_TEXT:
-                    return ThemeEngine.secondaryTextColor(context);
-                case ROLE_ACCENT:
-                    return ThemeEngine.accentColor(context);
-                case ROLE_DIVIDER:
-                    return ThemeEngine.dividerColor(context);
-                case ROLE_NONE:
-                default:
-                    return null;
-            }
+            return resolveMappedColor(tokenId, context);
         } catch (Throwable ignored) {
             // A visual override must always fail open to TikTok's stock resolver.
+            return null;
+        }
+    }
+
+    /**
+     * TUX 46.7.3's generic resolver accepts a Function1 that converts a resolved TypedValue to the
+     * caller's requested type. Returning an Integer directly here would be verifier-safe but could
+     * later ClassCastException when the caller requested a Drawable or Float. Instead create a real
+     * color TypedValue and let TikTok's own converter produce exactly the expected return type.
+     *
+     * The converter is intentionally typed as Object so the Java extension does not need a compile
+     * dependency on Kotlin's Function1 interface.
+     */
+    public static Object resolveGeneric(
+            int tokenId,
+            Context context,
+            Object converter,
+            String patchDefaultPreset
+    ) {
+        try {
+            if (converter == null) return null;
+            Integer color = resolve(tokenId, context, patchDefaultPreset);
+            if (color == null) return null;
+
+            Method invoke = converterMethod(converter);
+            if (invoke == null) return null;
+
+            TypedValue value = new TypedValue();
+            value.type = TypedValue.TYPE_INT_COLOR_ARGB8;
+            value.data = color;
+            value.resourceId = 0;
+            return invoke.invoke(converter, value);
+        } catch (Throwable ignored) {
             return null;
         }
     }
@@ -104,6 +110,67 @@ public final class ThemeColorResolver {
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private static Integer resolveMappedColor(int tokenId, Context context) {
+        Integer cachedRole = ROLE_CACHE.get(tokenId);
+        int role;
+        String name = null;
+        if (cachedRole != null) {
+            role = cachedRole;
+        } else {
+            name = resourceName(tokenId, context);
+            role = classifyName(name);
+            ROLE_CACHE.put(tokenId, role);
+        }
+
+        if (name != null && !name.isEmpty()) {
+            logTokenSample(name, role);
+        }
+
+        switch (role) {
+            case ROLE_BACKGROUND:
+                return ThemeEngine.backgroundColor(context);
+            case ROLE_SURFACE:
+                return ThemeEngine.surfaceColor(context);
+            case ROLE_TEXT:
+                return ThemeEngine.textColor(context);
+            case ROLE_SECONDARY_TEXT:
+                return ThemeEngine.secondaryTextColor(context);
+            case ROLE_ACCENT:
+                return ThemeEngine.accentColor(context);
+            case ROLE_DIVIDER:
+                return ThemeEngine.dividerColor(context);
+            case ROLE_NONE:
+            default:
+                return null;
+        }
+    }
+
+    private static Method converterMethod(Object converter) {
+        Class<?> type = converter.getClass();
+        Method cached = CONVERTER_METHOD_CACHE.get(type);
+        if (cached != null) return cached;
+
+        try {
+            Method method = type.getMethod("invoke", Object.class);
+            method.setAccessible(true);
+            CONVERTER_METHOD_CACHE.put(type, method);
+            return method;
+        } catch (Throwable ignored) {
+        }
+
+        try {
+            for (Method method : type.getMethods()) {
+                if ("invoke".equals(method.getName()) && method.getParameterTypes().length == 1) {
+                    method.setAccessible(true);
+                    CONVERTER_METHOD_CACHE.put(type, method);
+                    return method;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
     }
 
     private static void primeContext(Context context) {
