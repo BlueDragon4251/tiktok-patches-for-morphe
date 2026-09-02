@@ -1,9 +1,13 @@
 package app.morphe.patches.tiktok.layout.theme
 
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.stringOption
+import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.MainActivityOnCreateFingerprint
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -12,18 +16,41 @@ import com.android.tools.smali.dexlib2.Opcode
 
 private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
+private const val THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/theme/ThemeColorResolver;"
+
+/** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
+private object TuxDirectColorResolverFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("LX/0547;") &&
+            method.name == "LIZ" &&
+            method.parameterTypes == listOf("I", "Landroid/content/Context;") &&
+            method.returnType == "Ljava/lang/Integer;"
+    },
+)
+
+/** TikTok 46.7.3 TUX semantic color-resource resolver used by Tux views and Compose hosts. */
+private object TuxSemanticColorResolverFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("LX/0547;") &&
+            method.name == "LIZJ" &&
+            method.parameterTypes == listOf("I", "Landroid/content/Context;") &&
+            method.returnType == "Ljava/lang/Integer;"
+    },
+)
 
 /**
  * BlueIT TikTok Theme Engine.
  *
- * Temporarily opt-in while the Android/ART startup crash introduced after dev.3 is being isolated.
- * The implementation remains fully available and this default will be restored once the real-device
- * verifier/runtime path is proven again.
+ * Temporarily opt-in while Automatic Clear Display remains isolated from the recovery build.
+ * TikTok 46.7.3 renders most stock UI through TUX/Compose, so the patch hooks TUX's central color
+ * resolvers in addition to the classic View-surface styler. The runtime choice remains fully
+ * selectable from BlueIT; the patch option is only the initial preset.
  */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
     name = "Theme engine",
-    description = "Experimental recovery opt-in: runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
+    description = "Experimental recovery opt-in: runtime-selectable BlueIT themes applied to TikTok TUX/Compose colors and classic surfaces.",
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -58,6 +85,36 @@ val themeEnginePatch = bytecodePatch(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableThemeEngine()V",
         )
+
+        // Exact 46.7.3 discovery proved both methods return Integer and have a real v0 local.
+        // Returning null from ThemeColorResolver means "continue with TikTok's original resolver".
+        TuxDirectColorResolverFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    const-string v0, "$patchDefaultPreset"
+                    invoke-static {p0, p1, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolve(ILandroid/content/Context;Ljava/lang/String;)Ljava/lang/Integer;
+                    move-result-object v0
+                    if-eqz v0, :blueit_tux_direct_original
+                    return-object v0
+                """.trimIndent(),
+                ExternalLabel("blueit_tux_direct_original", getInstruction(0)),
+            )
+        }
+
+        TuxSemanticColorResolverFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    const-string v0, "$patchDefaultPreset"
+                    invoke-static {p0, p1, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolve(ILandroid/content/Context;Ljava/lang/String;)Ljava/lang/Integer;
+                    move-result-object v0
+                    if-eqz v0, :blueit_tux_semantic_original
+                    return-object v0
+                """.trimIndent(),
+                ExternalLabel("blueit_tux_semantic_original", getInstruction(0)),
+            )
+        }
 
         MainActivityOnCreateFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
