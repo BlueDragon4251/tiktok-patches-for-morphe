@@ -6,6 +6,10 @@ on:
       - dev
       - main
 
+concurrency:
+  group: tiktok-46-7-3-discovery-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
