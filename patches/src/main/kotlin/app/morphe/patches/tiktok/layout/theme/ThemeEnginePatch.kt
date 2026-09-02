@@ -37,6 +37,7 @@ private const val PROFILE_SIDEBAR_CONTAINER =
 private const val SIDEBAR_ROOT_ABILITY =
     "Lcom/ss/android/ugc/aweme/sidebar/components/ISideBarRootAbility;"
 private const val SETTINGS_COMPOSE_RENDERER = "LX/0VGt;"
+private const val COMPOSE_PALETTE_PROVIDER = "LX/0VTU;"
 private const val COMPOSE_PALETTE = "LX/05Pc;"
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
@@ -162,6 +163,16 @@ private object SettingsComposeViewCreatedFingerprint : Fingerprint(
             method.name == "onViewCreated" &&
             method.parameterTypes == listOf("Landroid/view/View;", "Landroid/os/Bundle;") &&
             method.returnType == "V"
+    },
+)
+
+/** Native Compose palette provider used by Settings and other 46.7.3 Compose surfaces. */
+private object ComposePaletteProviderFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(COMPOSE_PALETTE_PROVIDER) &&
+            method.name == "LIZIZ" &&
+            method.parameterTypes == listOf("LX/008m;") &&
+            method.returnType == COMPOSE_PALETTE
     },
 )
 
@@ -380,7 +391,7 @@ val themeEnginePatch = bytecodePatch(
 
         // Exact discovery: onCreateView has 10 registers / 4 ins and returns its ComposeView in v5
         // on both normal and caught paths. The root style is kept for window/backdrop treatment;
-        // actual Compose colors are mapped separately below at LX/0VGt palette reads.
+        // actual Compose colors are mapped separately below.
         SettingsComposeCreateViewFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -409,9 +420,28 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
-        // SettingsComposeRvmpFragment's real surfaces are not Android View backgrounds. LX/0VGt
-        // reads packed Compose Color longs from LX/05Pc and paints the page/cards afterwards. Map
-        // each of those exact palette reads in-place; extended-color-space values fail open.
+        // LX/0VTU.LIZIZ is the native Compose palette provider. The returned LX/05Pc object contains
+        // the packed color longs used by Settings page/card/row composables. Remap the palette once
+        // per object/preset; the extension snapshots native values and can restore TikTok default.
+        ComposePaletteProviderFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        invoke-static {v0}, $THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR->mapPalette(Ljava/lang/Object;)Ljava/lang/Object;
+                        move-result-object v0
+                        check-cast v0, $COMPOSE_PALETTE
+                    """.trimIndent(),
+                )
+            }
+        }
+
+        // Narrow renderer-level fallback for any palette value that bypasses the provider snapshot.
         listOf(
             SettingsComposeGroupRendererFingerprint.method,
             SettingsComposeScreenRendererFingerprint.method,
