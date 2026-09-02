@@ -61,12 +61,12 @@ public final class ThemeEngineBootstrap {
         if (runtimeFailed || activity == null || activity.isFinishing()) return;
 
         try {
+            // ThemeStateStore owns patch-default seeding now. Unlike a normal Setting it persists an
+            // explicit "default" selection too, so a patch-time Liquid Glass seed can never return
+            // after the user has chosen another preset.
+            ThemeStateStore.initialize(activity, preset);
+
             Class<?> engine = Class.forName(ENGINE_CLASS, true, activity.getClassLoader());
-
-            Method initialize = engine.getDeclaredMethod("initializePatchDefault", String.class);
-            initialize.setAccessible(true);
-            initialize.invoke(null, preset == null ? "default" : preset);
-
             Method onCreated = engine.getDeclaredMethod("onMainActivityCreated", Activity.class);
             onCreated.setAccessible(true);
             onCreated.invoke(null, activity);
