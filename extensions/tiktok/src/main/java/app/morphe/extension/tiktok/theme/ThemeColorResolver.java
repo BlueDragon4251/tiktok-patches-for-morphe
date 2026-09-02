@@ -1,6 +1,9 @@
 package app.morphe.extension.tiktok.theme;
 
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.Color;
+import android.os.Build;
 import android.util.TypedValue;
 
 import java.lang.reflect.Method;
@@ -12,16 +15,14 @@ import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.Utils;
 
 /**
- * Maps TikTok/TUX semantic color tokens to the active BlueIT palette.
+ * Maps TikTok/TUX theme colors to the active BlueIT palette.
  *
- * TikTok 46.7.3 renders much of its normal UI through TUX/Compose, so changing the classic
- * Android View tree alone cannot theme the app. The bytecode patch hooks TUX's central attribute,
- * generic TypedValue and styled-attribute resolvers and calls this class before the stock resolver.
- *
- * Only well-known semantic color tokens are overridden. Unknown, media, warning, success and other
- * functional colors deliberately fall through to TikTok by returning null.
+ * TikTok 46.7.3 obfuscates resource entry names (for example "j3", "a0p", "zt"), so semantic
+ * classification cannot rely on names alone. We still use readable names when available, but fall
+ * back to the stock color resolved from TikTok's own Theme and infer only neutral UI roles from it.
+ * Colorful/functional colors deliberately remain native unless they are the TikTok brand accent.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "deprecation"})
 public final class ThemeColorResolver {
     private static final int ROLE_NONE = 0;
     private static final int ROLE_BACKGROUND = 1;
@@ -31,11 +32,14 @@ public final class ThemeColorResolver {
     private static final int ROLE_ACCENT = 5;
     private static final int ROLE_DIVIDER = 6;
 
-    /** Resource ids are stable for the lifetime of one process; cache only their semantic role. */
+    private static final int TIKTOK_ACCENT = Color.rgb(254, 44, 85);
+    private static final int TIKTOK_LIGHT_TEXT = Color.rgb(22, 24, 35);
+
+    /** Resource ids are stable for the process; semantic role stays stable across palette changes. */
     private static final ConcurrentHashMap<Integer, Integer> ROLE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, Method> CONVERTER_METHOD_CACHE =
             new ConcurrentHashMap<>();
-    private static final AtomicInteger TOKEN_LOG_BUDGET = new AtomicInteger(36);
+    private static final AtomicInteger TOKEN_LOG_BUDGET = new AtomicInteger(64);
 
     private static volatile boolean contextPrimed;
 
@@ -48,8 +52,6 @@ public final class ThemeColorResolver {
         try {
             if (context == null || tokenId == 0) return null;
 
-            // TUX can ask for colors before MainActivity.onCreate returns. Prime Morphe's context
-            // from the real TUX Context first so settings are safe to read even on the first frame.
             primeContext(context);
             String preset = ThemeStateStore.initialize(context, patchDefaultPreset);
             if ("default".equals(preset)) return null;
@@ -63,12 +65,8 @@ public final class ThemeColorResolver {
 
     /**
      * TUX 46.7.3's generic resolver accepts a Function1 that converts a resolved TypedValue to the
-     * caller's requested type. Returning an Integer directly here would be verifier-safe but could
-     * later ClassCastException when the caller requested a Drawable or Float. Instead create a real
-     * color TypedValue and let TikTok's own converter produce exactly the expected return type.
-     *
-     * The converter is intentionally typed as Object so the Java extension does not need a compile
-     * dependency on Kotlin's Function1 interface.
+     * caller's requested type. Build a real color TypedValue and let TikTok's converter produce the
+     * expected result type instead of returning an Integer blindly.
      */
     public static Object resolveGeneric(
             int tokenId,
@@ -94,10 +92,7 @@ public final class ThemeColorResolver {
         }
     }
 
-    /**
-     * TUX's styled-attribute helper receives an index plus the attribute array. Resolve the actual
-     * attribute id before applying the same semantic mapping.
-     */
+    /** Resolves a styled-attribute index through the same semantic mapping. */
     public static Integer resolveFromAttributeArray(
             int index,
             Context context,
@@ -116,18 +111,47 @@ public final class ThemeColorResolver {
         Integer cachedRole = ROLE_CACHE.get(tokenId);
         int role;
         String name = null;
+        Integer stockColor = null;
+
         if (cachedRole != null) {
             role = cachedRole;
         } else {
             name = resourceName(tokenId, context);
             role = classifyName(name);
+
+            // dev.8 proved that 46.7.3 normally exposes only obfuscated names. In that case use the
+            // actual color TikTok resolves for the attribute. This keeps the hook independent of R
+            // entry names while still leaving colorful status/media colors untouched.
+            if (role == ROLE_NONE) {
+                stockColor = resolveStockColor(tokenId, context);
+                role = classifyStockColor(stockColor, context);
+            }
             ROLE_CACHE.put(tokenId, role);
+            logTokenSample(name, stockColor, role);
         }
 
-        if (name != null && !name.isEmpty()) {
-            logTokenSample(name, role);
-        }
+        Integer mapped = colorForRole(role, context);
+        if (mapped == null) return null;
 
+        // Preserve stronger transparency from TikTok tokens. Theme surfaces may intentionally have
+        // their own alpha (Liquid Glass), so use the smaller alpha rather than forcing opacity.
+        if (stockColor == null) stockColor = resolveStockColor(tokenId, context);
+        if (stockColor != null) {
+            int stockAlpha = Color.alpha(stockColor);
+            int mappedAlpha = Color.alpha(mapped);
+            if (stockAlpha < mappedAlpha) {
+                mapped = Color.argb(
+                        stockAlpha,
+                        Color.red(mapped),
+                        Color.green(mapped),
+                        Color.blue(mapped)
+                );
+            }
+        }
+        return mapped;
+    }
+
+    private static Integer colorForRole(int role, Context context) {
         switch (role) {
             case ROLE_BACKGROUND:
                 return ThemeEngine.backgroundColor(context);
@@ -145,6 +169,115 @@ public final class ThemeColorResolver {
             default:
                 return null;
         }
+    }
+
+    /** Resolve the stock color without calling the patched TUX helper again. */
+    private static Integer resolveStockColor(int tokenId, Context context) {
+        try {
+            TypedValue value = new TypedValue();
+            if (context.getTheme() != null && context.getTheme().resolveAttribute(tokenId, value, true)) {
+                if (value.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                        && value.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                    return value.data;
+                }
+                if (value.resourceId != 0) {
+                    Integer color = readColorResource(context, value.resourceId);
+                    if (color != null) return color;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+
+        // Some callers pass a color resource id rather than an attr id.
+        return readColorResource(context, tokenId);
+    }
+
+    private static Integer readColorResource(Context context, int resourceId) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return context.getResources().getColor(resourceId, context.getTheme());
+            }
+            return context.getResources().getColor(resourceId);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    /**
+     * Infer only roles that are safe to infer from color appearance.
+     *
+     * TikTok's page/surface/text/divider tokens are neutral or nearly neutral in both stock modes.
+     * Success/error/warning/media colors are chromatic, so they intentionally fall through. The
+     * brand pink is matched narrowly and mapped to the active accent.
+     */
+    private static int classifyStockColor(Integer stockColor, Context context) {
+        if (stockColor == null) return ROLE_NONE;
+
+        int color = stockColor;
+        int alpha = Color.alpha(color);
+        if (alpha == 0) return ROLE_NONE;
+
+        int opaque = Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
+
+        // Narrow brand-accent match; do not swallow generic red/error colors.
+        if (rgbDistance(opaque, TIKTOK_ACCENT) <= 34.0) {
+            return ROLE_ACCENT;
+        }
+
+        int r = Color.red(opaque);
+        int g = Color.green(opaque);
+        int b = Color.blue(opaque);
+        int spread = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b));
+
+        // TikTok's neutral palette can have a slight blue tint (#161823 etc), but highly colorful
+        // values are functional/media colors and must remain native.
+        if (spread > 34) return ROLE_NONE;
+
+        boolean dark = stockDarkMode(context);
+        double y = perceivedLightness(opaque);
+
+        if (dark) {
+            if (y <= 0.045) return ROLE_BACKGROUND;
+            if (y <= 0.18) return ROLE_SURFACE;
+            if (y >= 0.82) return ROLE_TEXT;
+            if (alpha < 100) return ROLE_DIVIDER;
+            if (y >= 0.34) return ROLE_SECONDARY_TEXT;
+            return ROLE_DIVIDER;
+        }
+
+        // Light TikTok uses #161823-ish primary text instead of mathematical black.
+        if (rgbDistance(opaque, TIKTOK_LIGHT_TEXT) <= 48.0 || y <= 0.12) {
+            return ROLE_TEXT;
+        }
+        if (y >= 0.965) return ROLE_BACKGROUND;
+        if (y >= 0.80) return ROLE_SURFACE;
+        if (alpha < 100) return ROLE_DIVIDER;
+        if (y <= 0.64) return ROLE_SECONDARY_TEXT;
+        return ROLE_DIVIDER;
+    }
+
+    private static boolean stockDarkMode(Context context) {
+        try {
+            int mode = context.getResources().getConfiguration().uiMode
+                    & Configuration.UI_MODE_NIGHT_MASK;
+            return mode == Configuration.UI_MODE_NIGHT_YES;
+        } catch (Throwable ignored) {
+            return true;
+        }
+    }
+
+    private static double perceivedLightness(int color) {
+        double r = Color.red(color) / 255.0;
+        double g = Color.green(color) / 255.0;
+        double b = Color.blue(color) / 255.0;
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    private static double rgbDistance(int first, int second) {
+        int dr = Color.red(first) - Color.red(second);
+        int dg = Color.green(first) - Color.green(second);
+        int db = Color.blue(first) - Color.blue(second);
+        return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
     private static Method converterMethod(Object converter) {
@@ -195,20 +328,24 @@ public final class ThemeColorResolver {
             token = token.substring(tuxColorStart + "tuxcolor".length());
         }
 
-        // Keep media overlays and semantic state colors (success/warning/info/error) native.
+        // Obfuscated names such as j3/a0p must not be mistaken for semantic names.
+        if (!containsAny(token,
+                "bg", "ui", "text", "shape", "page", "sheet", "divider", "separator",
+                "border", "stroke", "accent", "placeholder")) {
+            return ROLE_NONE;
+        }
+
         if (containsAny(token,
                 "imageoverlay", "brandtiktok", "success", "warning", "danger", "error", "info")) {
             return ROLE_NONE;
         }
 
-        // Primary app/page backgrounds.
         if (token.equals("bgprimary")
                 || token.equals("uipageflat1")
                 || token.equals("uipagegrouped1")) {
             return ROLE_BACKGROUND;
         }
 
-        // Raised pages, sheets, cards and neutral shapes all use the BlueIT surface color.
         if (token.equals("bgsecondary")
                 || token.startsWith("uipageflat")
                 || token.startsWith("uipagegrouped")
@@ -260,36 +397,37 @@ public final class ThemeColorResolver {
         }
     }
 
-    private static void logTokenSample(String name, int role) {
+    private static void logTokenSample(String name, Integer stockColor, int role) {
         try {
             if (TOKEN_LOG_BUDGET.getAndDecrement() <= 0) return;
-            String roleName;
-            switch (role) {
-                case ROLE_BACKGROUND:
-                    roleName = "background";
-                    break;
-                case ROLE_SURFACE:
-                    roleName = "surface";
-                    break;
-                case ROLE_TEXT:
-                    roleName = "text";
-                    break;
-                case ROLE_SECONDARY_TEXT:
-                    roleName = "secondary-text";
-                    break;
-                case ROLE_ACCENT:
-                    roleName = "accent";
-                    break;
-                case ROLE_DIVIDER:
-                    roleName = "divider";
-                    break;
-                default:
-                    roleName = "native";
-                    break;
-            }
-            final String message = "[BlueIT Theme TUX] token=" + name + " role=" + roleName;
+            final String token = (name == null || name.isEmpty()) ? "?" : name;
+            final String stock = stockColor == null
+                    ? "unresolved"
+                    : String.format(Locale.ROOT, "#%08X", stockColor);
+            final String message = "[BlueIT Theme TUX] token=" + token
+                    + " stock=" + stock
+                    + " role=" + roleName(role);
             Logger.printInfo(() -> message);
         } catch (Throwable ignored) {
+        }
+    }
+
+    private static String roleName(int role) {
+        switch (role) {
+            case ROLE_BACKGROUND:
+                return "background";
+            case ROLE_SURFACE:
+                return "surface";
+            case ROLE_TEXT:
+                return "text";
+            case ROLE_SECONDARY_TEXT:
+                return "secondary-text";
+            case ROLE_ACCENT:
+                return "accent";
+            case ROLE_DIVIDER:
+                return "divider";
+            default:
+                return "native";
         }
     }
 
