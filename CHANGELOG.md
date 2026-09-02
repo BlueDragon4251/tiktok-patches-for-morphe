@@ -1,3 +1,18 @@
+# [1.2.0-dev.13](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish final Compose theme coverage ([b696452](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b696452379560bc0cd58da8dfed4693edf0a415a))
+* **theme:** hook native Compose palette provider ([47f3e12](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/47f3e126997ec7460a2e808556fde9660e35f1d6))
+* **theme:** remap native Compose palette ([be78bb5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/be78bb596b46762524b083942a6602919de723b7))
+
+
+
+
+
+## 1.2.0-dev.13
+
 # [1.2.0-dev.12](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.11...v1.2.0-dev.12) (2026-09-02)
 
 
