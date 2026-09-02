@@ -20,6 +20,10 @@ private const val THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeColorResolver;"
 private const val THEME_VIEW_HOOKS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeViewHooks;"
+private const val MAIN_PAGE_ASSEM =
+    "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;"
+private const val SETTINGS_COMPOSE_FRAGMENT =
+    "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;"
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
@@ -31,10 +35,7 @@ private object TuxDirectColorResolverFingerprint : Fingerprint(
     },
 )
 
-/**
- * TikTok 46.7.3 TUX generic theme-attribute resolver. Compose/TUX call this method directly with
- * different TypedValue converters, so hooking only the Integer wrapper misses many stock screens.
- */
+/** Complete generic TUX/Compose theme-attribute resolver. */
 private object TuxGenericAttributeResolverFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith("LX/0547;") &&
@@ -48,7 +49,7 @@ private object TuxGenericAttributeResolverFingerprint : Fingerprint(
     },
 )
 
-/** TikTok 46.7.3 TUX semantic color-resource resolver used by Tux views and Compose hosts. */
+/** TikTok 46.7.3 TUX semantic color-resource resolver. */
 private object TuxSemanticColorResolverFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith("LX/0547;") &&
@@ -68,17 +69,22 @@ private object TuxStyledColorResolverFingerprint : Fingerprint(
     },
 )
 
-/**
- * Main TikTok bottom-tab background. Discovery shows this method resolves one TUX color and writes
- * it directly into MainPageBusinessAssem.LLJILJILJ with View.setBackgroundColor().
- */
+/** Main TikTok bottom-tab background writer. */
 private object MainBottomNavigationBackgroundFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef.endsWith(
-            "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
-        ) &&
+        classDef.endsWith(MAIN_PAGE_ASSEM) &&
             method.name == "sh" &&
             method.parameterTypes.isEmpty() &&
+            method.returnType == "V"
+    },
+)
+
+/** Main bottom-tab visibility animator; it can repaint/animate the visible bar after sh(). */
+private object MainBottomNavigationVisibilityFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(MAIN_PAGE_ASSEM) &&
+            method.name == "showBottomTab" &&
+            method.parameterTypes == listOf("Z") &&
             method.returnType == "V"
     },
 )
@@ -97,7 +103,7 @@ private object ProfileSidebarCreateViewFingerprint : Fingerprint(
     },
 )
 
-/** Profile sidebar becomes visible; use this point to keep the profile underlay stationary. */
+/** Profile sidebar becomes visible; keep the profile underlay stationary. */
 private object ProfileSidebarNodeShowFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith("Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;") &&
@@ -107,14 +113,31 @@ private object ProfileSidebarNodeShowFingerprint : Fingerprint(
     },
 )
 
-/**
- * BlueIT TikTok Theme Engine.
- *
- * Temporarily opt-in while Automatic Clear Display remains isolated from the recovery build.
- * TikTok 46.7.3 renders most stock UI through TUX/Compose, so the patch hooks TUX's complete
- * semantic color path in addition to the classic View-surface styler. The runtime choice remains
- * fully selectable from BlueIT; the patch option is only the initial preset.
- */
+/** Exact normal TikTok Settings & privacy Compose root. */
+private object SettingsComposeCreateViewFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(SETTINGS_COMPOSE_FRAGMENT) &&
+            method.name == "onCreateView" &&
+            method.parameterTypes == listOf(
+                "Landroid/view/LayoutInflater;",
+                "Landroid/view/ViewGroup;",
+                "Landroid/os/Bundle;",
+            ) &&
+            method.returnType == "Landroid/view/View;"
+    },
+)
+
+/** Reapply after SettingsComposeRvmpFragment has completed its own view initialization. */
+private object SettingsComposeViewCreatedFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(SETTINGS_COMPOSE_FRAGMENT) &&
+            method.name == "onViewCreated" &&
+            method.parameterTypes == listOf("Landroid/view/View;", "Landroid/os/Bundle;") &&
+            method.returnType == "V"
+    },
+)
+
+/** BlueIT TikTok Theme Engine. */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
     name = "Theme engine",
@@ -154,8 +177,6 @@ val themeEnginePatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableThemeEngine()V",
         )
 
-        // Exact 46.7.3 discovery proved all four methods have real local registers. Returning null
-        // from ThemeColorResolver means "continue with TikTok's original resolver".
         TuxDirectColorResolverFingerprint.method.apply {
             addInstructionsWithLabels(
                 0,
@@ -212,8 +233,6 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
-        // The main bottom-tab layer is repainted by TikTok after normal TUX resolution. Reapply the
-        // selected surface to the exact background View after that stock write.
         MainBottomNavigationBackgroundFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
@@ -224,17 +243,31 @@ val themeEnginePatch = bytecodePatch(
                 addInstructions(
                     returnIndex,
                     """
-                        iget-object v0, p0, Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;->LLJILJILJ:Landroid/view/View;
+                        iget-object v0, p0, $MAIN_PAGE_ASSEM->LLJILJILJ:Landroid/view/View;
                         invoke-static {v0}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleBottomNavigation(Landroid/view/View;)V
                     """.trimIndent(),
                 )
             }
         }
 
-        // SidebarPageFragment constructs a dedicated full-height FrameLayout and then asks TUX for
-        // its background. Style that exact root, then repeat when the node is actually shown so the
-        // short TikTok push animation can be converted into a true overlay without a permanent
-        // layout listener.
+        MainBottomNavigationVisibilityFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        invoke-virtual {p0}, $MAIN_PAGE_ASSEM->Vq()Landroid/view/View;
+                        move-result-object v0
+                        invoke-static {v0}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleBottomNavigation(Landroid/view/View;)V
+                    """.trimIndent(),
+                )
+            }
+        }
+
         ProfileSidebarCreateViewFingerprint.method.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -263,6 +296,36 @@ val themeEnginePatch = bytecodePatch(
                         move-result-object v0
                         invoke-static {v0}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleProfileSidebar(Landroid/view/View;)V
                     """.trimIndent(),
+                )
+            }
+        }
+
+        // Exact discovery: onCreateView has 10 registers / 4 ins and returns its ComposeView in v5
+        // on both normal and caught paths. No guessed obfuscated register or class is used here.
+        SettingsComposeCreateViewFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstruction(
+                    returnIndex,
+                    "invoke-static {v5}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleSettingsCompose(Landroid/view/View;)V",
+                )
+            }
+        }
+
+        SettingsComposeViewCreatedFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstruction(
+                    returnIndex,
+                    "invoke-static/range {p1 .. p1}, $THEME_VIEW_HOOKS_CLASS_DESCRIPTOR->styleSettingsCompose(Landroid/view/View;)V",
                 )
             }
         }
