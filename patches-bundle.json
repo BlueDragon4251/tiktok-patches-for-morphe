@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-02T19:21:47",
-  "description": "# [1.2.0-dev.14](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-09-02)\n\n\n### Bug Fixes\n\n* **dev:** trigger confirmed theme release ([76e922c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/76e922c8a79fa7ab5aa1c541fa60140b2c58eba2))\n* **theme:** keep dynamic inbox and activity surfaces themed ([b2f6346](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b2f634635ad58b11feeff680bc7aa157655564f6))\n* **theme:** keep profile underlay stationary ([e7b1d54](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/e7b1d54c378b2e933b44b8cf31c63198bda734d5))\n* **theme:** publish confirmed inbox activity and drawer fixes ([fac197e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/fac197eb0788cb7ea92a1af70b0caca26cccc55b))\n\n\n\n\n\n## 1.2.0-dev.14",
-  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.2.0-dev.14/patches-1.2.0-dev.14.mpp",
+  "created_at": "2026-09-02T20:05:56",
+  "description": "# [1.2.0-dev.15](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.14...v1.2.0-dev.15) (2026-09-02)\n\n\n### Bug Fixes\n\n* **dev:** publish realtime theme guard ([c1bb5ff](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c1bb5ffd4723199bcea7611bc98b1dee99639f1b))\n\n\n\n\n\n## 1.2.0-dev.15",
+  "download_url": "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/releases/download/v1.2.0-dev.15/patches-1.2.0-dev.15.mpp",
   "signature_download_url": "",
-  "version": "1.2.0-dev.14"
+  "version": "1.2.0-dev.15"
 }

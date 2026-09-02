@@ -1,3 +1,16 @@
+# [1.2.0-dev.15](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.14...v1.2.0-dev.15) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish realtime theme guard ([c1bb5ff](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c1bb5ffd4723199bcea7611bc98b1dee99639f1b))
+
+
+
+
+
+## 1.2.0-dev.15
+
 # [1.2.0-dev.14](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-09-02)
 
 
