@@ -22,7 +22,7 @@ private const val THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR =
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef == "LX/0547;" &&
+        classDef.endsWith("LX/0547;") &&
             method.name == "LIZ" &&
             method.parameterTypes == listOf("I", "Landroid/content/Context;") &&
             method.returnType == "Ljava/lang/Integer;"
@@ -32,7 +32,7 @@ private object TuxDirectColorResolverFingerprint : Fingerprint(
 /** TikTok 46.7.3 TUX semantic color-resource resolver used by Tux views and Compose hosts. */
 private object TuxSemanticColorResolverFingerprint : Fingerprint(
     custom = { method, classDef ->
-        classDef == "LX/0547;" &&
+        classDef.endsWith("LX/0547;") &&
             method.name == "LIZJ" &&
             method.parameterTypes == listOf("I", "Landroid/content/Context;") &&
             method.returnType == "Ljava/lang/Integer;"
