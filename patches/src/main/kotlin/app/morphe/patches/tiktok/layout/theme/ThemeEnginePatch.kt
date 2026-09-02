@@ -72,9 +72,10 @@ val themeEnginePatch = bytecodePatch(
                 addInstructions(
                     returnIndex,
                     """
-                        const-string v0, "$patchDefaultPreset"
                         invoke-static/range {p0 .. p0}, Lapp/morphe/extension/shared/Utils;->setContext(Landroid/content/Context;)V
-                        invoke-static {p0, v0}, $THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR->start(Landroid/app/Activity;Ljava/lang/String;)V
+                        const-string v0, "$patchDefaultPreset"
+                        invoke-static {v0}, $THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR->setPatchDefaultPreset(Ljava/lang/String;)V
+                        invoke-static/range {p0 .. p0}, $THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR->start(Landroid/app/Activity;)V
                     """.trimIndent(),
                 )
             }
