@@ -11,6 +11,7 @@ import android.preference.PreferenceFragment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.Map;
 import java.util.Objects;
 
 import app.morphe.extension.shared.Logger;
@@ -27,6 +28,9 @@ import app.morphe.extension.shared.Utils;
  */
 public class SharedPrefCategory {
     private static final String USER_SETTINGS_CATEGORY = "morphe_prefs";
+    private static final String BLUEIT_TIKTOK_SETTINGS_CATEGORY = "blueit_prefs";
+    private static final String BLUEIT_TIKTOK_PACKAGE = "com.zhiliaoapp.musically";
+    private static final String BLUEIT_MIGRATION_MARKER = "__blueit_local_settings_migrated_v1";
 
     @NonNull
     public final String name;
@@ -39,20 +43,91 @@ public class SharedPrefCategory {
      * extension can be initialized outside the main activity process. A stale secondary-process
      * snapshot can therefore overwrite unrelated newer user settings when it later saves one key.
      *
-     * Only the main app process may persist the shared Morphe/BlueIT user settings category.
-     * Other categories retain their existing behavior, and secondary processes may still read
-     * settings and update their local Setting values without rewriting the shared settings file.
+     * TikTok now stores Morphe/BlueIT user settings in its own dedicated app-private preference
+     * file (blueit_prefs) instead of sharing morphe_prefs. Existing values are migrated once.
+     * Only the main app process may persist either user-settings category.
      */
     private final boolean persistentWritesAllowed;
+    private final boolean blueItTikTokStorage;
 
     public SharedPrefCategory(@NonNull String name) {
         this.name = Objects.requireNonNull(name);
         Context context = Objects.requireNonNull(Utils.getContext());
-        preferences = context.getSharedPreferences(name, Context.MODE_PRIVATE);
-        persistentWritesAllowed = !USER_SETTINGS_CATEGORY.equals(name) || isMainAppProcess(context);
 
-        if (!persistentWritesAllowed) {
+        blueItTikTokStorage = USER_SETTINGS_CATEGORY.equals(name)
+                && BLUEIT_TIKTOK_PACKAGE.equals(context.getPackageName());
+        String actualPreferenceName = blueItTikTokStorage
+                ? BLUEIT_TIKTOK_SETTINGS_CATEGORY
+                : name;
+
+        preferences = context.getSharedPreferences(actualPreferenceName, Context.MODE_PRIVATE);
+        persistentWritesAllowed = !isUserSettingsCategory(name) || isMainAppProcess(context);
+
+        if (blueItTikTokStorage && persistentWritesAllowed) {
+            migrateLegacyTikTokUserSettings(context);
+            Logger.printInfo(() -> "Using TikTok-local BlueIT settings storage: "
+                    + BLUEIT_TIKTOK_SETTINGS_CATEGORY);
+        } else if (!persistentWritesAllowed) {
             Logger.printInfo(() -> "Preventing secondary-process writes to shared user settings");
+        }
+    }
+
+    private static boolean isUserSettingsCategory(@NonNull String name) {
+        return USER_SETTINGS_CATEGORY.equals(name)
+                || BLUEIT_TIKTOK_SETTINGS_CATEGORY.equals(name);
+    }
+
+    /**
+     * One-time migration from the old Morphe user-settings preference file.
+     *
+     * The old file is intentionally left in place for downgrade safety. The marker is stored only
+     * in blueit_prefs, so once migration has completed a stale legacy file can never overwrite a
+     * newer BlueIT value on a later launch.
+     */
+    private void migrateLegacyTikTokUserSettings(@NonNull Context context) {
+        if (preferences.getBoolean(BLUEIT_MIGRATION_MARKER, false)) {
+            return;
+        }
+
+        try {
+            SharedPreferences legacy =
+                    context.getSharedPreferences(USER_SETTINGS_CATEGORY, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            int migrated = 0;
+
+            for (Map.Entry<String, ?> entry : legacy.getAll().entrySet()) {
+                String key = entry.getKey();
+                if (BLUEIT_MIGRATION_MARKER.equals(key) || preferences.contains(key)) {
+                    continue;
+                }
+
+                Object value = entry.getValue();
+                if (value instanceof String) {
+                    editor.putString(key, (String) value);
+                } else if (value instanceof Boolean) {
+                    editor.putBoolean(key, (Boolean) value);
+                } else if (value instanceof Integer) {
+                    editor.putInt(key, (Integer) value);
+                } else if (value instanceof Long) {
+                    editor.putLong(key, (Long) value);
+                } else if (value instanceof Float) {
+                    editor.putFloat(key, (Float) value);
+                } else {
+                    continue;
+                }
+                migrated++;
+            }
+
+            editor.putBoolean(BLUEIT_MIGRATION_MARKER, true);
+            if (editor.commit()) {
+                final int migratedCount = migrated;
+                Logger.printInfo(() -> "Migrated " + migratedCount
+                        + " settings into TikTok-local BlueIT storage");
+            } else {
+                Logger.printException(() -> "Failed to commit TikTok-local BlueIT settings migration");
+            }
+        } catch (Exception exception) {
+            Logger.printException(() -> "Failed to migrate TikTok-local BlueIT settings", exception);
         }
     }
 
@@ -108,7 +183,12 @@ public class SharedPrefCategory {
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void clear() {
         if (!canPersist()) return;
-        preferences.edit().clear().commit();
+        SharedPreferences.Editor editor = preferences.edit().clear();
+        // Do not let a deliberate reset re-import stale values from the legacy file on restart.
+        if (blueItTikTokStorage) {
+            editor.putBoolean(BLUEIT_MIGRATION_MARKER, true);
+        }
+        editor.commit();
     }
 
     /**

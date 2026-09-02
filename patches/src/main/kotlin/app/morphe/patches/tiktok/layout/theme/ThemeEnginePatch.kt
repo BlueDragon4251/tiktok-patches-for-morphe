@@ -16,17 +16,14 @@ private const val THEME_ENGINE_CLASS_DESCRIPTOR =
 /**
  * BlueIT TikTok Theme Engine.
  *
- * The runtime hook is deliberately anchored to the stable MainActivity.onCreate method instead of
- * broad view constructors. ThemeEngine itself applies only targeted/fail-open surface styling.
- *
- * The patch option below only chooses the initial preset for a fresh BlueIT settings data set.
- * It does not bake the selected theme into TikTok: users can always change the preset later from
- * BlueIT settings, and an existing runtime selection is never overwritten by a repatch/update.
+ * The patch option only chooses the initial preset for a fresh BlueIT settings data set. It does
+ * not bake the selected theme into TikTok: users can always change the preset later from BlueIT
+ * settings, and an existing runtime selection is never overwritten by a repatch/update.
  */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
     name = "Theme engine",
-    description = "Adds Material You, AMOLED, OLED black, Liquid Glass, and custom TikTok themes selectable from BlueIT settings.",
+    description = "Adds runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
@@ -41,6 +38,12 @@ val themeEnginePatch = bytecodePatch(
             "Material You AMOLED" to "material_you_amoled",
             "OLED black" to "oled_black",
             "Liquid Glass" to "liquid_glass",
+            "Frosted Graphite" to "frosted_graphite",
+            "Midnight Neon" to "midnight_neon",
+            "Rose Noir" to "rose_noir",
+            "Arctic Blue" to "arctic_blue",
+            "Aurora Violet" to "aurora_violet",
+            "Sunset Ember" to "sunset_ember",
             "Custom" to "custom",
         ),
         title = "Initial theme preset",

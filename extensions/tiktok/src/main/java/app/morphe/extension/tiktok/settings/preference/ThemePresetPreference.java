@@ -1,10 +1,12 @@
 package app.morphe.extension.tiktok.settings.preference;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.os.Bundle;
 import android.preference.ListPreference;
 import android.view.View;
+import android.widget.TextView;
 
-import app.morphe.extension.tiktok.Utils;
 import app.morphe.extension.tiktok.theme.ThemeEngine;
 import app.morphe.extension.tiktok.theme.ThemeSettings;
 
@@ -19,6 +21,12 @@ public final class ThemePresetPreference extends ListPreference {
                 "Material You AMOLED",
                 "OLED black",
                 "Liquid Glass",
+                "Frosted Graphite",
+                "Midnight Neon",
+                "Rose Noir",
+                "Arctic Blue",
+                "Aurora Violet",
+                "Sunset Ember",
                 "Custom"
         });
         setEntryValues(new CharSequence[]{
@@ -27,16 +35,25 @@ public final class ThemePresetPreference extends ListPreference {
                 "material_you_amoled",
                 "oled_black",
                 "liquid_glass",
+                "frosted_graphite",
+                "midnight_neon",
+                "rose_noir",
+                "arctic_blue",
+                "aurora_violet",
+                "sunset_ember",
                 "custom"
         });
+
         setKey(ThemeSettings.PRESET.key);
         setValue(ThemeSettings.PRESET.get());
         updateSummary(ThemeSettings.PRESET.get());
+
         setOnPreferenceChangeListener((preference, newValue) -> {
             String value = String.valueOf(newValue);
             ThemeSettings.PRESET.save(value);
             updateSummary(value);
             ThemeEngine.requestReapply();
+            notifyChanged();
             return true;
         });
     }
@@ -44,33 +61,72 @@ public final class ThemePresetPreference extends ListPreference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-        Utils.setTitleAndSummaryColor(view);
+
+        TextView title = view.findViewById(android.R.id.title);
+        if (title != null) {
+            title.setTextColor(ThemeEngine.textColor(getContext()));
+        }
+
+        TextView summary = view.findViewById(android.R.id.summary);
+        if (summary != null) {
+            summary.setTextColor(ThemeEngine.secondaryTextColor(getContext()));
+        }
+    }
+
+    @Override
+    protected void showDialog(Bundle state) {
+        super.showDialog(state);
+        if (getDialog() instanceof AlertDialog) {
+            SettingsUi.styleStandardAlertDialog((AlertDialog) getDialog());
+        }
     }
 
     private void updateSummary(String value) {
         int index = findIndexOfValue(value);
-        String selected = index >= 0 ? String.valueOf(getEntries()[index]) : "TikTok default";
+        String selected = index >= 0
+                ? String.valueOf(getEntries()[index])
+                : "TikTok default";
+
         String extra;
         switch (value) {
             case "material_you":
-                extra = "Uses Android 12+ wallpaper/system colors with a safe fallback on older Android versions.";
+                extra = "Android 12+ wallpaper/system colors with safe fallbacks.";
                 break;
             case "material_you_amoled":
-                extra = "Material You accents with a true black base for OLED displays.";
+                extra = "Material You accents on a true-black OLED base.";
                 break;
             case "oled_black":
-                extra = "True black surfaces with the classic TikTok accent.";
+                extra = "Maximum-black surfaces with the classic TikTok accent.";
                 break;
             case "liquid_glass":
-                extra = "Translucent rounded glass-like navigation and sheet surfaces. Blur-heavy video rendering is intentionally avoided.";
+                extra = "Translucent rounded glass surfaces across navigation, Inbox rows, drawers, settings and sheets.";
+                break;
+            case "frosted_graphite":
+                extra = "Smoky graphite cards with soft silver accents and restrained translucency.";
+                break;
+            case "midnight_neon":
+                extra = "Deep midnight surfaces with bright cyan neon accents.";
+                break;
+            case "rose_noir":
+                extra = "Near-black wine surfaces with vivid rose accents.";
+                break;
+            case "arctic_blue":
+                extra = "Cold navy surfaces with crisp ice-blue accents.";
+                break;
+            case "aurora_violet":
+                extra = "Dark violet glass with a soft aurora-purple accent.";
+                break;
+            case "sunset_ember":
+                extra = "Warm charcoal-brown surfaces with ember-orange accents.";
                 break;
             case "custom":
-                extra = "Uses the custom background, surface, accent, and text colors below.";
+                extra = "Uses the custom background, surface, accent and text colors below.";
                 break;
             default:
                 extra = "Leaves TikTok's own colors and surfaces unchanged.";
                 break;
         }
+
         setSummary(selected + ". " + extra);
     }
 }

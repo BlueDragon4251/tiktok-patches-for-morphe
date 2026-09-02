@@ -23,7 +23,7 @@ val rememberClearDisplayPatch = bytecodePatch(
     description = "Remembers TikTok's clear-display state between videos.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktok4673())
 
     execute {
         ClearModeLogCoreFingerprint.methodOrNull?.returnEarly()
@@ -48,10 +48,12 @@ val rememberClearDisplayPatch = bytecodePatch(
                 addInstructionsWithLabels(
                     returnIndex,
                     """
+                        # Automatic Clear Display keeps a current per-video event as its 46.7.3
+                        # fallback when the old native PINCH_ZOOM enum/panel route is obfuscated.
                         const/4 v0, 0x1
                         const/4 v1, 0x0
                         const-string v2, ""
-                        const-string p1, "long_press"
+                        const-string p1, "pinch"
                         new-instance p0, $clearDisplayEventClass
                         invoke-direct {p0, v0, v1, v2, p1}, $clearDisplayEventClass-><init>(ZILjava/lang/String;Ljava/lang/String;)V
                         invoke-static {p0}, Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;->onNewVideo(Ljava/lang/Object;)V
