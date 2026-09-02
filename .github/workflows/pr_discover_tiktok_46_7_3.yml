@@ -157,35 +157,6 @@ jobs:
             grep -Ein -B 180 -A 720 "$SURFACE_DUMP_REGEX" "$dump" | head -n 140000 >> ui-surface-evidence.txt || true
           done
 
-      - name: Deep-dump clear display, profile sidebar and settings Compose
-        shell: bash
-        run: |
-          set -euo pipefail
-          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
-          test -x "$DEXDUMP"
-          : > deep-evidence.txt
-
-          DEEP_STRINGS='ClearModePanelComponent|resetClearMode|ProfileSidebarPageFragment|SettingsComposeRvmpFragment'
-          DEEP_CLASSES='Class descriptor.*ClearModePanelComponent;|Class descriptor.*ProfileSidebarPageFragment;|Class descriptor.*SettingsComposeRvmpFragment;'
-
-          for dex in /tmp/dex/*.dex; do
-            strings_file="/tmp/$(basename "$dex").strings"
-            test -f "$strings_file" || strings "$dex" > "$strings_file"
-            if ! grep -Eiq "$DEEP_STRINGS" "$strings_file"; then
-              continue
-            fi
-
-            dump="/tmp/dumps/deep-$(basename "$dex").txt"
-            timeout 110s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
-            test -s "$dump" || continue
-
-            echo "=== DEEP DEX $(basename "$dex") ===" >> deep-evidence.txt
-            grep -Ein -B 100 -A 5200 "$DEEP_CLASSES" "$dump" | head -n 180000 >> deep-evidence.txt || true
-            echo "=== DEEP MARKERS $(basename "$dex") ===" >> deep-evidence.txt
-            grep -Ein -B 100 -A 420 'resetClearMode|onClearModeEvent|ProfileSidebarPageFragment|setTranslationX|SettingsComposeRvmpFragment|ComposeView|setContent' "$dump" \
-              | head -n 120000 >> deep-evidence.txt || true
-          done
-
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
@@ -195,6 +166,5 @@ jobs:
             theme-evidence.txt
             theme-core-evidence.txt
             ui-surface-evidence.txt
-            deep-evidence.txt
           if-no-files-found: error
           retention-days: 1
