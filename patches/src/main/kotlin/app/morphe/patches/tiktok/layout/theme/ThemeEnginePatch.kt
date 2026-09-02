@@ -10,8 +10,8 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.Opcode
 
-private const val THEME_ENGINE_CLASS_DESCRIPTOR =
-    "Lapp/morphe/extension/tiktok/theme/ThemeEngine;"
+private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
 
 /**
  * BlueIT TikTok Theme Engine.
@@ -19,6 +19,9 @@ private const val THEME_ENGINE_CLASS_DESCRIPTOR =
  * The patch option only chooses the initial preset for a fresh BlueIT settings data set. It does
  * not bake the selected theme into TikTok: users can always change the preset later from BlueIT
  * settings, and an existing runtime selection is never overwritten by a repatch/update.
+ *
+ * Runtime startup is routed through ThemeEngineBootstrap so Theme Engine linkage/runtime failures
+ * can never crash TikTok's MainActivity synchronously.
  */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
@@ -69,10 +72,9 @@ val themeEnginePatch = bytecodePatch(
                 addInstructions(
                     returnIndex,
                     """
-                        invoke-static/range {p0 .. p0}, Lapp/morphe/extension/shared/Utils;->setContext(Landroid/content/Context;)V
                         const-string v0, "$patchDefaultPreset"
-                        invoke-static {v0}, $THEME_ENGINE_CLASS_DESCRIPTOR->initializePatchDefault(Ljava/lang/String;)V
-                        invoke-static/range {p0 .. p0}, $THEME_ENGINE_CLASS_DESCRIPTOR->onMainActivityCreated(Landroid/app/Activity;)V
+                        invoke-static/range {p0 .. p0}, Lapp/morphe/extension/shared/Utils;->setContext(Landroid/content/Context;)V
+                        invoke-static {p0, v0}, $THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR->start(Landroid/app/Activity;Ljava/lang/String;)V
                     """.trimIndent(),
                 )
             }
