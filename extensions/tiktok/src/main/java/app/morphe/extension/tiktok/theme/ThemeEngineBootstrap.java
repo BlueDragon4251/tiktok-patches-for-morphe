@@ -21,6 +21,8 @@ public final class ThemeEngineBootstrap {
     private static final String ENGINE_CLASS = "app.morphe.extension.tiktok.theme.ThemeEngine";
     private static final String REALTIME_GUARD_CLASS =
             "app.morphe.extension.tiktok.theme.ThemeRealtimeUiGuard";
+    private static final String ACTIVITY_SURFACE_GUARD_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeActivitySurfaceGuard";
     private static volatile boolean runtimeFailed;
     private static volatile String patchDefaultPreset = "default";
 
@@ -74,31 +76,41 @@ public final class ThemeEngineBootstrap {
             onCreated.invoke(null, activity);
         } catch (Throwable throwable) {
             runtimeFailed = true;
-            Throwable cause = throwable;
-            if (throwable instanceof InvocationTargetException
-                    && ((InvocationTargetException) throwable).getCause() != null) {
-                cause = ((InvocationTargetException) throwable).getCause();
-            }
+            Throwable cause = unwrap(throwable);
             safeLog("BlueIT Theme Engine disabled after runtime bootstrap failure", cause);
             return;
         }
 
-        // Recycler-backed Inbox/Activity surfaces can be rebound after the bounded engine passes.
-        // Install the frame-synchronous guard separately so a failure here never disables the core
-        // theme runtime that already started successfully above.
+        // Recycler-backed surfaces are rebuilt after the bounded engine passes. Install the guards
+        // independently so a failure in one narrow visual fix cannot disable the core theme runtime.
+        installGuard(activity, REALTIME_GUARD_CLASS, "BlueIT realtime theme guard unavailable");
+        installGuard(
+                activity,
+                ACTIVITY_SURFACE_GUARD_CLASS,
+                "BlueIT activity surface guard unavailable"
+        );
+    }
+
+    private static void installGuard(Activity activity, String className, String failureMessage) {
         try {
-            Class<?> guard = Class.forName(REALTIME_GUARD_CLASS, true, activity.getClassLoader());
+            Class<?> guard = Class.forName(className, true, activity.getClassLoader());
             Method install = guard.getDeclaredMethod("install", Activity.class);
             install.setAccessible(true);
             install.invoke(null, activity);
         } catch (Throwable throwable) {
-            Throwable cause = throwable;
+            safeLog(failureMessage, unwrap(throwable));
+        }
+    }
+
+    private static Throwable unwrap(Throwable throwable) {
+        try {
             if (throwable instanceof InvocationTargetException
                     && ((InvocationTargetException) throwable).getCause() != null) {
-                cause = ((InvocationTargetException) throwable).getCause();
+                return ((InvocationTargetException) throwable).getCause();
             }
-            safeLog("BlueIT realtime theme guard unavailable", cause);
+        } catch (Throwable ignored) {
         }
+        return throwable;
     }
 
     private static void safeLog(String message, Throwable throwable) {
