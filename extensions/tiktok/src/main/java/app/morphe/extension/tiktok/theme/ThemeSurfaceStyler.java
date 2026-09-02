@@ -18,8 +18,8 @@ import java.util.Locale;
  * Applies BlueIT theme palettes to concrete TikTok UI surfaces.
  *
  * TikTok 46.7.3 mixes classic Views, dynamically inflated containers and obfuscated ids/classes.
- * The classifier therefore combines stable resource/class-name hints with conservative geometry.
- * It deliberately avoids broad recoloring of full-screen video renderer containers.
+ * The classifier combines stable resource/class-name hints with conservative geometry and keeps
+ * full-screen video rendering as well as direct-message bubbles out of broad recoloring.
  */
 @SuppressWarnings({"deprecation", "unused"})
 final class ThemeSurfaceStyler {
@@ -71,6 +71,11 @@ final class ThemeSurfaceStyler {
         ScreenHints hints = new ScreenHints();
         int[] remaining = {MAX_SCAN_NODES};
         scanHintsRecursive(root, hints, remaining);
+
+        // A direct conversation often contains generic message-list/session names as descendants.
+        // Once the composer/detail screen proves this is an active chat, it must not inherit Inbox
+        // row styling; otherwise custom TikTok/chat-bubble themes get overwritten.
+        if (hints.chatLike) hints.inboxLike = false;
         return hints;
     }
 
@@ -82,8 +87,17 @@ final class ThemeSurfaceStyler {
         String combined = resource + " " + className;
 
         if (containsAny(combined,
-                "inbox", "conversation", "message_list", "session_list", "chat_list",
-                "notification_list", "notice_list", "im_session")) {
+                "chat_detail", "chatdetail", "chat_room", "chatroom",
+                "conversation_detail", "conversationdetail", "message_detail", "messagedetail",
+                "im_chat", "chat_fragment", "conversation_fragment",
+                "message_input", "chat_input", "input_panel",
+                "message_composer", "chat_composer", "message_edit", "chat_edit")) {
+            hints.chatLike = true;
+        }
+
+        if (containsAny(combined,
+                "inbox", "message_list", "session_list", "chat_list",
+                "notification_list", "notice_list", "im_session", "inbox_list")) {
             hints.inboxLike = true;
         }
 
@@ -95,16 +109,27 @@ final class ThemeSurfaceStyler {
         if (view instanceof TextView) {
             CharSequence value = ((TextView) view).getText();
             if (value != null) {
-                String text = value.toString().trim();
-                if ("BlueIT Service".equals(text)) {
-                    hints.settingsLike = true;
+                String raw = value.toString().trim();
+                String lower = raw.toLowerCase(Locale.ROOT);
+
+                if ("BlueIT Service".equals(raw)) hints.settingsLike = true;
+
+                if ("Inbox".equalsIgnoreCase(raw)
+                        || "Posteingang".equalsIgnoreCase(raw)
+                        || "Messages".equalsIgnoreCase(raw)
+                        || "Nachrichten".equalsIgnoreCase(raw)) {
+                    hints.inboxLike = true;
                 }
 
-                if ("Inbox".equalsIgnoreCase(text)
-                        || "Posteingang".equalsIgnoreCase(text)
-                        || "Messages".equalsIgnoreCase(text)
-                        || "Nachrichten".equalsIgnoreCase(text)) {
-                    hints.inboxLike = true;
+                // Strong composer hints for the active DM screen. Keep this intentionally narrow;
+                // ordinary Inbox rows may contain words such as "message" themselves.
+                if (lower.equals("schreib etwas")
+                        || lower.equals("schreibe etwas")
+                        || lower.equals("write a message")
+                        || lower.equals("send a message")
+                        || lower.equals("type a message")
+                        || lower.equals("write something")) {
+                    hints.chatLike = true;
                 }
             }
         }
@@ -147,11 +172,22 @@ final class ThemeSurfaceStyler {
         String className = className(group);
         String combined = resource + " " + className;
 
-        boolean drawer = isLikelyDrawer(group, rootWidth, rootHeight);
+        // A user's TikTok/custom DM bubble theme owns these subtrees completely: do not replace
+        // their background, corner radius, text colors, icon tint or measured geometry.
+        if (hints.chatLike && isExplicitChatBubble(combined)) return;
+
+        boolean drawer = !hints.chatLike && isLikelyDrawer(group, rootWidth, rootHeight);
         boolean settingsRoot = hints.settingsLike && isLargeScreenContainer(group, rootWidth, rootHeight);
-        boolean inboxRoot = hints.inboxLike && isLargeScreenContainer(group, rootWidth, rootHeight);
-        boolean bottomNavigation = isBottomNavigation(group, combined, rootWidth, rootHeight);
-        boolean sheet = isSheet(group, combined, rootWidth, rootHeight);
+        boolean inboxRoot = !hints.chatLike
+                && hints.inboxLike
+                && isLargeScreenContainer(group, rootWidth, rootHeight);
+
+        // A direct-message composer is visually similar to a bottom navigation strip. Geometry-only
+        // classification is therefore forbidden on active chats. Likewise, generic panel geometry
+        // must not wrap the composer in a giant Liquid-Glass frame.
+        boolean bottomNavigation = !hints.chatLike
+                && isBottomNavigation(group, combined, rootWidth, rootHeight);
+        boolean sheet = isSheet(group, combined, rootWidth, rootHeight, !hints.chatLike);
 
         boolean nowInsideDrawer = insideDrawer || drawer;
         boolean nowInsideSettings = insideSettings || settingsRoot;
@@ -188,9 +224,9 @@ final class ThemeSurfaceStyler {
             if (drawer) radius = 0;
 
             applySurface(group, preset, surface, divider, radius);
-            styleTextAndIcons(group, accent, text, secondaryText, divider);
+            styleTextAndIcons(group, accent, text, secondaryText, divider, hints.chatLike);
         } else if (settingsRoot || inboxRoot) {
-            styleTextAndIcons(group, accent, text, secondaryText, divider);
+            styleTextAndIcons(group, accent, text, secondaryText, divider, false);
         }
 
         boolean childParentCardStyled = parentCardStyled || settingsCard || inboxRow || drawerSection;
@@ -252,16 +288,22 @@ final class ThemeSurfaceStyler {
             int accent,
             int primary,
             int secondary,
-            int divider
+            int divider,
+            boolean directChat
     ) {
         if (root == null || root.getVisibility() != View.VISIBLE) return;
+
+        if (directChat && root instanceof ViewGroup) {
+            String combined = resourceEntryName(root) + " " + className(root);
+            if (isExplicitChatBubble(combined) || isChatComposer(combined)) return;
+        }
 
         styleLeaf(root, accent, primary, secondary, divider);
 
         if (root instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) root;
             for (int i = 0; i < group.getChildCount(); i++) {
-                styleTextAndIcons(group.getChildAt(i), accent, primary, secondary, divider);
+                styleTextAndIcons(group.getChildAt(i), accent, primary, secondary, divider, directChat);
             }
         }
     }
@@ -292,6 +334,19 @@ final class ThemeSurfaceStyler {
         }
 
         if (isDivider(view)) view.setBackgroundColor(divider);
+    }
+
+    private static boolean isExplicitChatBubble(String combined) {
+        return containsAny(combined,
+                "message_bubble", "messagebubble", "chat_bubble", "chatbubble", "msg_bubble",
+                "bubble_layout", "bubblelayout", "message_content", "chat_message",
+                "message_item", "im_message_cell", "message_cell", "messagecard");
+    }
+
+    private static boolean isChatComposer(String combined) {
+        return containsAny(combined,
+                "message_input", "chat_input", "input_panel", "message_composer", "chat_composer",
+                "message_edit", "chat_edit", "input_bar", "composer_bar", "send_panel");
     }
 
     private static boolean isBottomNavigation(
@@ -366,13 +421,21 @@ final class ThemeSurfaceStyler {
             ViewGroup group,
             String combined,
             int rootWidth,
-            int rootHeight
+            int rootHeight,
+            boolean allowGeometryFallback
     ) {
+        // These are unambiguous modal surfaces and remain themeable even from a direct chat.
         if (containsAny(combined,
                 "bottom_sheet", "comments_panel", "comment_panel", "share_panel",
-                "panel_container", "action_sheet", "dialog_sheet", "half_screen")) {
+                "action_sheet", "dialog_sheet", "emoji_panel", "sticker_panel")) {
             return true;
         }
+
+        // Generic panel/container names and geometry are unsafe on the DM screen because TikTok's
+        // message composer uses the same shape. Preserve the native/custom chat layout there.
+        if (!allowGeometryFallback) return false;
+
+        if (containsAny(combined, "panel_container", "half_screen")) return true;
 
         int width = group.getWidth();
         int height = group.getHeight();
@@ -598,5 +661,6 @@ final class ThemeSurfaceStyler {
     private static final class ScreenHints {
         boolean settingsLike;
         boolean inboxLike;
+        boolean chatLike;
     }
 }
