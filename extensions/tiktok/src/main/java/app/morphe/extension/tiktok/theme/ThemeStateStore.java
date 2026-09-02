@@ -30,14 +30,18 @@ public final class ThemeStateStore {
 
     private ThemeStateStore() {}
 
-    /**
-     * Resolves the effective preset and, in the main process, seeds the dedicated store once.
-     */
+    /** Resolves the effective preset and, in the main process, seeds the dedicated store once. */
     public static String initialize(Context context, String patchDefaultPreset) {
         return resolve(context, patchDefaultPreset, true);
     }
 
-    /** Returns the persisted runtime preset without introducing a non-default patch seed. */
+    /**
+     * Returns the runtime preset without consuming a future non-default patch seed.
+     *
+     * This distinction matters while Android is inflating BlueIT settings: SettingsUi may ask for
+     * colors before ThemeEngineBootstrap.initialize() has had a chance to supply the patch option.
+     * In that case we temporarily report TikTok default but do not cache or persist it.
+     */
     public static String currentPreset(Context context) {
         return resolve(context, "default", false);
     }
@@ -121,8 +125,15 @@ public final class ThemeStateStore {
                 }
             }
 
+            // A read-only palette lookup must not turn "no value yet" into a persisted default.
+            // Leave initialization pending so the later bootstrap/TUX call can still apply the
+            // patcher's requested initial preset exactly once.
+            if (effective == null && !allowPatchSeed) {
+                return "default";
+            }
+
             if (effective == null) {
-                effective = allowPatchSeed ? normalize(patchDefaultPreset) : "default";
+                effective = normalize(patchDefaultPreset);
             }
 
             cachedPreset = effective;
