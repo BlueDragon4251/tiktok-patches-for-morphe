@@ -30,7 +30,7 @@ val automaticClearDisplayPatch = bytecodePatch(
 
         // Capture TikTok's real ClearModePanelComponent and current item context. The 46.7.3
         // controller first attempts TikTok's native request route and falls back to the current
-        // per-video event when the old PINCH_ZOOM enum is obfuscated/removed.
+        // per-video clear-display event when the old PINCH_ZOOM enum is obfuscated/removed.
         ClearModePanelResetFingerprint.method.addInstruction(
             0,
             "invoke-static/range {p0 .. p1}, $CONTROLLER->updatePanelContext(Ljava/lang/Object;Ljava/lang/Object;)V",
