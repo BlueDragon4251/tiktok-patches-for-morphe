@@ -6,6 +6,7 @@ import android.os.Looper;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.settings.BaseSettings;
@@ -30,6 +31,7 @@ public final class AutomaticClearDisplayController {
             new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Method> EVENT_POST_METHODS =
             new ConcurrentHashMap<>();
+    private static final AtomicBoolean FIRST_TRIGGER_LOGGED = new AtomicBoolean(false);
 
     private static Runnable pending;
     private static String latestEventClassName = "";
@@ -67,6 +69,11 @@ public final class AutomaticClearDisplayController {
 
         String normalized = normalizeClassName(eventClassName);
         if (normalized.isEmpty()) return;
+
+        if (BaseSettings.DEBUG.get() && FIRST_TRIGGER_LOGGED.compareAndSet(false, true)) {
+            Logger.printInfo(() -> "[BlueIT ClearDisplay] first-frame automatic trigger active class="
+                    + normalized + " delayMs=" + delayMs());
+        }
 
         synchronized (LOCK) {
             latestEventClassName = normalized;
@@ -160,17 +167,23 @@ public final class AutomaticClearDisplayController {
     }
 
     /**
-     * Creates the same four-argument ClearDisplay event used by remembered-state restoration:
-     * enabled=true, type=0, empty metadata and source="long_press". The exact event class is not
-     * referenced in bytecode; all class/constructor/post lookups happen here and fail open.
+     * Creates the same four-argument ClearDisplay event used by the proven remembered-state route.
+     * Automatic entry uses source="pinch" (TikTok's native automatic/gesture semantics), while
+     * remembered-state restoration keeps source="long_press". The exact event class is never
+     * referenced in injected bytecode; all class/constructor/post lookups happen here and fail open.
      */
     private static boolean postEvent(String eventClassName, boolean automatic) {
         try {
             Constructor<?> constructor = eventConstructor(eventClassName);
             Method post = eventPostMethod(eventClassName, constructor.getDeclaringClass());
-            if (constructor == null || post == null) return false;
+            if (post == null) return false;
 
-            Object event = constructor.newInstance(true, 0, "", "long_press");
+            Object event = constructor.newInstance(
+                    true,
+                    0,
+                    "",
+                    automatic ? "pinch" : "long_press"
+            );
             if (automatic) lastAutomaticPostAtMs = System.currentTimeMillis();
             post.invoke(event);
 

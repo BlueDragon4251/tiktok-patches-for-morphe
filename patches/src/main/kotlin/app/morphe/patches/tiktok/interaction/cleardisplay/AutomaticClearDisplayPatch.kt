@@ -1,10 +1,12 @@
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 
 private const val CONTROLLER =
     "Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;"
@@ -23,16 +25,22 @@ val automaticClearDisplayPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4673())
 
     execute {
-        // Mark both the settings surface and the runtime controller as installed. The actual
-        // per-video trigger lives in RememberClearDisplayPatch's proven first-frame hook and passes
-        // only an event class name String into extension code. No ClearModePanel/Rv0 bytecode hook
-        // remains in this patch.
+        // Keep the settings surface aware that this optional patch is installed.
         SettingsStatusLoadFingerprint.method.addInstructions(
             0,
             """
                 invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutomaticClearDisplay()V
                 invoke-static {}, $CONTROLLER->enablePatch()V
             """.trimIndent(),
+        )
+
+        // Runtime activation must not depend on the user opening BlueIT settings first. The proven
+        // first-frame path always runs before RememberClearDisplayPatch calls onRenderFirstFrame at
+        // the method return, so enabling the controller here makes cold-start/feed behavior reliable
+        // while still keeping stale preferences inert when this optional patch is not included.
+        OnRenderFirstFrameFingerprint.method.addInstruction(
+            0,
+            "invoke-static {}, $CONTROLLER->enablePatch()V",
         )
     }
 }

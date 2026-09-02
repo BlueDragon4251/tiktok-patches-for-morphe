@@ -4,11 +4,14 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.SystemClock;
+import android.view.Choreographer;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
 import java.util.ArrayDeque;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,10 +27,12 @@ import app.morphe.extension.shared.Logger;
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeViewHooks {
     private static final int MAX_OVERLAY_SCAN_NODES = 1800;
+    private static final long SIDEBAR_OVERLAY_GUARD_MS = 1100L;
     private static final AtomicBoolean BOTTOM_NAV_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean SIDEBAR_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean SETTINGS_COMPOSE_LOGGED = new AtomicBoolean(false);
     private static final AtomicInteger SIDEBAR_RESET_LOG_BUDGET = new AtomicInteger(8);
+    private static final WeakHashMap<View, Integer> SIDEBAR_GUARD_GENERATIONS = new WeakHashMap<>();
 
     private ThemeViewHooks() {}
 
@@ -150,8 +155,8 @@ public final class ThemeViewHooks {
 
     /**
      * Called from SidebarPageFragment creation/show. Besides styling the sidebar itself, this turns
-     * TikTok's current push-aside presentation into an overlay by cancelling only the large
-     * translated underlay while the verified sidebar is visible.
+     * TikTok's current push-aside presentation into an overlay by cancelling only the translated
+     * profile underlay while the verified sidebar is visible.
      */
     public static void styleProfileSidebar(View sidebarRoot) {
         try {
@@ -179,17 +184,63 @@ public final class ThemeViewHooks {
             }
             sidebarRoot.bringToFront();
 
+            // TikTok keeps writing the profile push-aside translation during the drawer animation.
+            // A few postDelayed calls can race the animator's final frame, so keep a bounded
+            // Choreographer guard active only for the opening animation. This is deliberately not a
+            // permanent layout listener and therefore cannot create the old feedback loop.
+            startSidebarOverlayGuard(sidebarRoot);
             sidebarRoot.post(() -> restoreSidebarUnderlay(sidebarRoot));
-            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 32L);
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 96L);
-            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 180L);
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 320L);
+            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 640L);
+            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 1050L);
 
             if (SIDEBAR_LOGGED.compareAndSet(false, true)) {
                 final String message = "[BlueIT Theme View] profile sidebar styled alpha="
                         + Color.alpha(surface);
                 Logger.printInfo(() -> message);
             }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void startSidebarOverlayGuard(View sidebarRoot) {
+        try {
+            final int generation;
+            synchronized (SIDEBAR_GUARD_GENERATIONS) {
+                Integer previous = SIDEBAR_GUARD_GENERATIONS.get(sidebarRoot);
+                generation = previous == null ? 1 : previous + 1;
+                SIDEBAR_GUARD_GENERATIONS.put(sidebarRoot, generation);
+            }
+
+            final long deadline = SystemClock.uptimeMillis() + SIDEBAR_OVERLAY_GUARD_MS;
+            Choreographer.getInstance().postFrameCallback(new Choreographer.FrameCallback() {
+                @Override
+                public void doFrame(long frameTimeNanos) {
+                    try {
+                        synchronized (SIDEBAR_GUARD_GENERATIONS) {
+                            Integer current = SIDEBAR_GUARD_GENERATIONS.get(sidebarRoot);
+                            if (current == null || current != generation) return;
+                        }
+
+                        if (!sidebarRoot.isAttachedToWindow()
+                                || sidebarRoot.getVisibility() != View.VISIBLE
+                                || SystemClock.uptimeMillis() > deadline) {
+                            synchronized (SIDEBAR_GUARD_GENERATIONS) {
+                                Integer current = SIDEBAR_GUARD_GENERATIONS.get(sidebarRoot);
+                                if (current != null && current == generation) {
+                                    SIDEBAR_GUARD_GENERATIONS.remove(sidebarRoot);
+                                }
+                            }
+                            return;
+                        }
+
+                        restoreSidebarUnderlay(sidebarRoot);
+                        Choreographer.getInstance().postFrameCallback(this);
+                    } catch (Throwable ignored) {
+                    }
+                }
+            });
         } catch (Throwable ignored) {
         }
     }
@@ -203,7 +254,10 @@ public final class ThemeViewHooks {
             int rootHeight = root.getHeight();
             if (rootWidth <= 0 || rootHeight <= 0) return;
 
-            float minTranslation = rootWidth * 0.08f;
+            // The previous 8%-of-screen threshold missed TikTok's smaller profile push offset.
+            // Scope this aggressively to large visible views outside the sidebar subtree and only
+            // cancel leftward motion, so unrelated small/positive animations remain untouched.
+            float minTranslation = Math.max(dp(sidebarRoot.getContext(), 4), rootWidth * 0.012f);
             int reset = 0;
             int visited = 0;
 
@@ -223,9 +277,9 @@ public final class ThemeViewHooks {
                     continue;
                 }
 
-                if (view.getWidth() >= rootWidth * 0.82f
-                        && view.getHeight() >= rootHeight * 0.62f
-                        && Math.abs(view.getTranslationX()) >= minTranslation) {
+                if (view.getWidth() >= rootWidth * 0.55f
+                        && view.getHeight() >= rootHeight * 0.40f
+                        && view.getTranslationX() <= -minTranslation) {
                     view.setTranslationX(0f);
                     reset++;
                 }
