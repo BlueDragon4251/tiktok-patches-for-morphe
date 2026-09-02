@@ -29,6 +29,23 @@ private object TuxDirectColorResolverFingerprint : Fingerprint(
     },
 )
 
+/**
+ * TikTok 46.7.3 TUX generic theme-attribute resolver. Compose/TUX call this method directly with
+ * different TypedValue converters, so hooking only the Integer wrapper misses many stock screens.
+ */
+private object TuxGenericAttributeResolverFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("LX/0547;") &&
+            method.name == "LIZIZ" &&
+            method.parameterTypes == listOf(
+                "I",
+                "Landroid/content/Context;",
+                "Lkotlin/jvm/functions/Function1;",
+            ) &&
+            method.returnType == "Ljava/lang/Object;"
+    },
+)
+
 /** TikTok 46.7.3 TUX semantic color-resource resolver used by Tux views and Compose hosts. */
 private object TuxSemanticColorResolverFingerprint : Fingerprint(
     custom = { method, classDef ->
@@ -39,13 +56,23 @@ private object TuxSemanticColorResolverFingerprint : Fingerprint(
     },
 )
 
+/** TikTok 46.7.3 styled-attribute color resolver used by several TUX widgets. */
+private object TuxStyledColorResolverFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith("LX/0547;") &&
+            method.name == "LIZLLL" &&
+            method.parameterTypes == listOf("I", "Landroid/content/Context;", "[I") &&
+            method.returnType == "Ljava/lang/Integer;"
+    },
+)
+
 /**
  * BlueIT TikTok Theme Engine.
  *
  * Temporarily opt-in while Automatic Clear Display remains isolated from the recovery build.
- * TikTok 46.7.3 renders most stock UI through TUX/Compose, so the patch hooks TUX's central color
- * resolvers in addition to the classic View-surface styler. The runtime choice remains fully
- * selectable from BlueIT; the patch option is only the initial preset.
+ * TikTok 46.7.3 renders most stock UI through TUX/Compose, so the patch hooks TUX's complete
+ * semantic color path in addition to the classic View-surface styler. The runtime choice remains
+ * fully selectable from BlueIT; the patch option is only the initial preset.
  */
 @Suppress("unused")
 val themeEnginePatch = bytecodePatch(
@@ -86,8 +113,8 @@ val themeEnginePatch = bytecodePatch(
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableThemeEngine()V",
         )
 
-        // Exact 46.7.3 discovery proved both methods return Integer and have a real v0 local.
-        // Returning null from ThemeColorResolver means "continue with TikTok's original resolver".
+        // Exact 46.7.3 discovery proved all four methods have real local registers. Returning null
+        // from ThemeColorResolver means "continue with TikTok's original resolver".
         TuxDirectColorResolverFingerprint.method.apply {
             addInstructionsWithLabels(
                 0,
@@ -102,6 +129,20 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
+        TuxGenericAttributeResolverFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    const-string v0, "$patchDefaultPreset"
+                    invoke-static {p0, p1, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolve(ILandroid/content/Context;Ljava/lang/String;)Ljava/lang/Integer;
+                    move-result-object v0
+                    if-eqz v0, :blueit_tux_generic_original
+                    return-object v0
+                """.trimIndent(),
+                ExternalLabel("blueit_tux_generic_original", getInstruction(0)),
+            )
+        }
+
         TuxSemanticColorResolverFingerprint.method.apply {
             addInstructionsWithLabels(
                 0,
@@ -113,6 +154,20 @@ val themeEnginePatch = bytecodePatch(
                     return-object v0
                 """.trimIndent(),
                 ExternalLabel("blueit_tux_semantic_original", getInstruction(0)),
+            )
+        }
+
+        TuxStyledColorResolverFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    const-string v0, "$patchDefaultPreset"
+                    invoke-static {p0, p1, p2, v0}, $THEME_COLOR_RESOLVER_CLASS_DESCRIPTOR->resolveFromAttributeArray(ILandroid/content/Context;[ILjava/lang/String;)Ljava/lang/Integer;
+                    move-result-object v0
+                    if-eqz v0, :blueit_tux_styled_original
+                    return-object v0
+                """.trimIndent(),
+                ExternalLabel("blueit_tux_styled_original", getInstruction(0)),
             )
         }
 
