@@ -1,3 +1,19 @@
+# [1.2.0-dev.14](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.13...v1.2.0-dev.14) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** trigger confirmed theme release ([76e922c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/76e922c8a79fa7ab5aa1c541fa60140b2c58eba2))
+* **theme:** keep dynamic inbox and activity surfaces themed ([b2f6346](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/b2f634635ad58b11feeff680bc7aa157655564f6))
+* **theme:** keep profile underlay stationary ([e7b1d54](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/e7b1d54c378b2e933b44b8cf31c63198bda734d5))
+* **theme:** publish confirmed inbox activity and drawer fixes ([fac197e](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/fac197eb0788cb7ea92a1af70b0caca26cccc55b))
+
+
+
+
+
+## 1.2.0-dev.14
+
 # [1.2.0-dev.13](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.12...v1.2.0-dev.13) (2026-09-02)
 
 
