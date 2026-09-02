@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import app.morphe.extension.tiktok.theme.ThemeEngine;
 import app.morphe.extension.tiktok.theme.ThemeSettings;
+import app.morphe.extension.tiktok.theme.ThemeStateStore;
 
 @SuppressWarnings("deprecation")
 public final class ThemePresetPreference extends ListPreference {
@@ -45,16 +46,27 @@ public final class ThemePresetPreference extends ListPreference {
         });
 
         setKey(ThemeSettings.PRESET.key);
-        setValue(ThemeSettings.PRESET.get());
-        updateSummary(ThemeSettings.PRESET.get());
+
+        // Do not let android.preference.ListPreference persist this key into a second preference
+        // file. ThemeStateStore is the single source of truth and remembers even an explicit
+        // "TikTok default" choice so a patch-time seed cannot come back after a restart.
+        setPersistent(false);
+        String preset = ThemeStateStore.currentPreset(context);
+        setValue(preset);
+        updateSummary(preset);
 
         setOnPreferenceChangeListener((preference, newValue) -> {
             String value = String.valueOf(newValue);
+            ThemeStateStore.saveUserPreset(getContext(), value);
             ThemeSettings.PRESET.save(value);
+            setValue(value);
             updateSummary(value);
             ThemeEngine.requestReapply();
             notifyChanged();
-            return true;
+
+            // We already updated the non-persistent ListPreference above. Returning false prevents
+            // the framework from trying to persist the same key through PreferenceManager.
+            return false;
         });
     }
 
