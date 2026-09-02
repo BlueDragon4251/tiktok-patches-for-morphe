@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.view.View;
 import android.view.Window;
 
@@ -15,7 +14,13 @@ import java.lang.ref.WeakReference;
 
 import app.morphe.extension.shared.Logger;
 
-/** Runtime theme engine for TikTok. */
+/**
+ * Runtime theme engine for TikTok.
+ *
+ * The engine is intentionally fail-open. TikTok's UI is highly dynamic; a visual patch must never
+ * be able to prevent the app from starting. Runtime styling is therefore bounded to a small number
+ * of activity lifecycle passes instead of a permanent layout-listener feedback loop.
+ */
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeEngine {
     private static final int DEFAULT_TIKTOK_ACCENT = Color.rgb(254, 44, 85);
@@ -24,19 +29,13 @@ public final class ThemeEngine {
     private static volatile boolean installed;
     private static volatile boolean applying;
     private static volatile boolean lifecycleCallbacksRegistered;
-    private static volatile long lastLayoutApplyRequest;
 
     private static WeakReference<Activity> activityRef = new WeakReference<>(null);
-    private static WeakReference<View> decorRef = new WeakReference<>(null);
-    private static View.OnLayoutChangeListener layoutListener;
     private static Application.ActivityLifecycleCallbacks lifecycleCallbacks;
 
     private ThemeEngine() {}
 
-    /**
-     * Applies the patch-time preset exactly once to a fresh BlueIT settings data set.
-     * Runtime selections always win after initialization.
-     */
+    /** Applies the optional patch-time preset once to a fresh BlueIT settings data set. */
     public static void initializePatchDefault(String preset) {
         try {
             int appliedSchema = ThemeSettings.PATCH_DEFAULT_APPLIED.get();
@@ -51,132 +50,112 @@ public final class ThemeEngine {
 
             ThemeSettings.PATCH_DEFAULT_APPLIED.save(PATCH_DEFAULT_SCHEMA);
             final String effectivePreset = currentPreset;
-            Logger.printInfo(() -> "[BlueIT Theme Engine] initialized patch default: " + effectivePreset);
-        } catch (Exception exception) {
-            Logger.printDebug(() -> "BlueIT Theme Engine patch default initialization failed", exception);
+            safeInfo("[BlueIT Theme Engine] initialized patch default: " + effectivePreset);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine patch default initialization failed", throwable);
         }
     }
 
-    /** Called from the bytecode patch after TikTok MainActivity.onCreate completes. */
+    /** Called by ThemeEngineBootstrap after TikTok MainActivity has completed its critical startup. */
     public static void onMainActivityCreated(Activity activity) {
-        if (activity == null) return;
+        try {
+            if (activity == null || activity.isFinishing()) return;
 
-        installed = true;
-        registerActivityLifecycleCallbacks(activity.getApplication());
-        attachActivity(activity);
+            installed = true;
+            activityRef = new WeakReference<>(activity);
+            registerActivityLifecycleCallbacks(activity.getApplication());
+            scheduleApply(activity);
 
-        Logger.printInfo(() -> "[BlueIT Theme Engine] runtime installed, preset=" + normalizedPreset());
+            safeInfo("[BlueIT Theme Engine] runtime installed, preset=" + normalizedPreset());
+        } catch (Throwable throwable) {
+            installed = false;
+            safeDebug("BlueIT Theme Engine runtime initialization failed", throwable);
+        }
     }
 
     private static synchronized void registerActivityLifecycleCallbacks(Application application) {
         if (application == null || lifecycleCallbacksRegistered) return;
 
-        lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
-            @Override
-            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                scheduleApply(activity);
-            }
-
-            @Override
-            public void onActivityStarted(Activity activity) {
-                scheduleApply(activity);
-            }
-
-            @Override
-            public void onActivityResumed(Activity activity) {
-                attachActivity(activity);
-            }
-
-            @Override
-            public void onActivityPaused(Activity activity) {
-            }
-
-            @Override
-            public void onActivityStopped(Activity activity) {
-            }
-
-            @Override
-            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-            }
-
-            @Override
-            public void onActivityDestroyed(Activity activity) {
-                Activity current = activityRef.get();
-                if (current == activity) {
-                    activityRef = new WeakReference<>(null);
+        try {
+            lifecycleCallbacks = new Application.ActivityLifecycleCallbacks() {
+                @Override
+                public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                    safeAttachAndSchedule(activity);
                 }
 
-                View currentDecor = decorRef.get();
-                if (currentDecor != null && activity.getWindow() != null
-                        && currentDecor == activity.getWindow().getDecorView()) {
-                    detachLayoutListener();
+                @Override
+                public void onActivityStarted(Activity activity) {
+                    safeAttachAndSchedule(activity);
                 }
-            }
-        };
 
-        application.registerActivityLifecycleCallbacks(lifecycleCallbacks);
-        lifecycleCallbacksRegistered = true;
-    }
+                @Override
+                public void onActivityResumed(Activity activity) {
+                    safeAttachAndSchedule(activity);
+                }
 
-    private static void attachActivity(Activity activity) {
-        if (activity == null || activity.isFinishing()) return;
+                @Override
+                public void onActivityPaused(Activity activity) {
+                }
 
-        activityRef = new WeakReference<>(activity);
+                @Override
+                public void onActivityStopped(Activity activity) {
+                }
 
-        Window window = activity.getWindow();
-        if (window == null) return;
-        View decor = window.getDecorView();
-        if (decor == null) return;
+                @Override
+                public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+                }
 
-        View previousDecor = decorRef.get();
-        if (previousDecor != decor) {
-            detachLayoutListener();
-            decorRef = new WeakReference<>(decor);
-
-            if (layoutListener == null) {
-                layoutListener = (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                    if ("default".equals(normalizedPreset())) return;
-
-                    long now = SystemClock.uptimeMillis();
-                    if (now - lastLayoutApplyRequest < 120L) return;
-                    lastLayoutApplyRequest = now;
-
-                    Activity current = activityRef.get();
-                    if (current != null && !current.isFinishing()) {
-                        v.postDelayed(() -> applyActivity(current), 55L);
+                @Override
+                public void onActivityDestroyed(Activity activity) {
+                    try {
+                        Activity current = activityRef.get();
+                        if (current == activity) activityRef = new WeakReference<>(null);
+                    } catch (Throwable ignored) {
                     }
-                };
-            }
+                }
+            };
 
-            decor.addOnLayoutChangeListener(layoutListener);
+            application.registerActivityLifecycleCallbacks(lifecycleCallbacks);
+            lifecycleCallbacksRegistered = true;
+        } catch (Throwable throwable) {
+            lifecycleCallbacks = null;
+            lifecycleCallbacksRegistered = false;
+            safeDebug("BlueIT Theme Engine lifecycle registration failed", throwable);
         }
-
-        scheduleApply(activity);
     }
 
-    private static void detachLayoutListener() {
-        View previousDecor = decorRef.get();
-        if (previousDecor != null && layoutListener != null) {
-            try {
-                previousDecor.removeOnLayoutChangeListener(layoutListener);
-            } catch (Throwable ignored) {
-            }
+    private static void safeAttachAndSchedule(Activity activity) {
+        try {
+            if (activity == null || activity.isFinishing()) return;
+            activityRef = new WeakReference<>(activity);
+            scheduleApply(activity);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine activity attach failed", throwable);
         }
-        decorRef = new WeakReference<>(null);
     }
 
+    /**
+     * Bounded reapplication for asynchronously inflated TikTok screens.
+     *
+     * dev.4 used a permanent layout listener; TikTok's feed constantly rebuilds layout nodes, so
+     * that could create an endless style/layout feedback loop. Fixed passes provide enough time for
+     * most screens to inflate without keeping a hot listener attached forever.
+     */
     private static void scheduleApply(Activity activity) {
-        if (activity == null || activity.isFinishing()) return;
-        Window window = activity.getWindow();
-        if (window == null) return;
-        View decor = window.getDecorView();
-        if (decor == null) return;
+        try {
+            if (activity == null || activity.isFinishing()) return;
+            Window window = activity.getWindow();
+            if (window == null) return;
+            View decor = window.getDecorView();
+            if (decor == null) return;
 
-        decor.post(() -> applyActivity(activity));
-        decor.postDelayed(() -> applyActivity(activity), 250L);
-        decor.postDelayed(() -> applyActivity(activity), 750L);
-        decor.postDelayed(() -> applyActivity(activity), 1600L);
-        decor.postDelayed(() -> applyActivity(activity), 3200L);
+            decor.post(() -> safeApplyActivity(activity));
+            decor.postDelayed(() -> safeApplyActivity(activity), 300L);
+            decor.postDelayed(() -> safeApplyActivity(activity), 900L);
+            decor.postDelayed(() -> safeApplyActivity(activity), 1800L);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine scheduling failed", throwable);
+        }
     }
 
     public static boolean isInstalled() {
@@ -189,41 +168,58 @@ public final class ThemeEngine {
 
     /** Live preview for BlueIT setting changes. */
     public static void requestReapply() {
-        Activity activity = activityRef.get();
-        if (activity == null || activity.isFinishing()) return;
+        try {
+            Activity activity = activityRef.get();
+            if (activity == null || activity.isFinishing() || activity.getWindow() == null) return;
 
-        View decor = activity.getWindow().getDecorView();
-        decor.post(() -> applyActivity(activity));
-        decor.postDelayed(() -> applyActivity(activity), 180L);
-        decor.postDelayed(() -> applyActivity(activity), 650L);
+            View decor = activity.getWindow().getDecorView();
+            if (decor == null) return;
+            decor.post(() -> safeApplyActivity(activity));
+            decor.postDelayed(() -> safeApplyActivity(activity), 220L);
+            decor.postDelayed(() -> safeApplyActivity(activity), 700L);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine live reapply failed", throwable);
+        }
     }
 
     public static int accentColor(Context context) {
-        return resolvePalette(context).accent;
+        return safePalette(context).accent;
     }
 
     public static int surfaceColor(Context context) {
-        return resolvePalette(context).surface;
+        return safePalette(context).surface;
     }
 
     public static int backgroundColor(Context context) {
-        return resolvePalette(context).background;
+        return safePalette(context).background;
     }
 
     public static int textColor(Context context) {
-        return resolvePalette(context).text;
+        return safePalette(context).text;
     }
 
     public static int secondaryTextColor(Context context) {
-        return resolvePalette(context).secondaryText;
+        return safePalette(context).secondaryText;
     }
 
     public static int dividerColor(Context context) {
-        return resolvePalette(context).divider;
+        return safePalette(context).divider;
     }
 
     public static boolean isDarkUi(Context context) {
-        return luminance(opaque(resolvePalette(context).background)) < 0.48;
+        try {
+            return luminance(opaque(safePalette(context).background)) < 0.48;
+        } catch (Throwable ignored) {
+            return true;
+        }
+    }
+
+    private static void safeApplyActivity(Activity activity) {
+        try {
+            applyActivity(activity);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine apply failed", throwable);
+        }
     }
 
     private static void applyActivity(Activity activity) {
@@ -241,11 +237,16 @@ public final class ThemeEngine {
             int opaqueBackground = opaque(palette.background);
             int opaqueSurface = compositeOver(palette.surface, opaqueBackground);
 
-            window.setStatusBarColor(opaqueBackground);
-            window.setNavigationBarColor(opaqueSurface);
+            try {
+                window.setStatusBarColor(opaqueBackground);
+                window.setNavigationBarColor(opaqueSurface);
+            } catch (Throwable ignored) {
+            }
 
             View decor = window.getDecorView();
-            updateSystemBarIconContrast(decor, opaqueBackground, opaqueSurface);
+            if (decor != null) {
+                updateSystemBarIconContrast(decor, opaqueBackground, opaqueSurface);
+            }
 
             ThemeSurfaceStyler.apply(
                     activity,
@@ -258,37 +259,51 @@ public final class ThemeEngine {
                     palette.divider,
                     palette.cornerRadiusDp
             );
-        } catch (Exception exception) {
-            Logger.printDebug(() -> "BlueIT Theme Engine apply failed", exception);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine apply pass failed", throwable);
         } finally {
             applying = false;
         }
     }
 
-    private static void updateSystemBarIconContrast(
-            View decor,
-            int background,
-            int navigationSurface
-    ) {
-        int visibility = decor.getSystemUiVisibility();
+    private static void updateSystemBarIconContrast(View decor, int background, int navigationSurface) {
+        try {
+            int visibility = decor.getSystemUiVisibility();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (luminance(background) > 0.58) {
-                visibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            } else {
-                visibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (luminance(background) > 0.58) {
+                    visibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                } else {
+                    visibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                }
             }
-        }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (luminance(navigationSurface) > 0.58) {
-                visibility |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            } else {
-                visibility &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (luminance(navigationSurface) > 0.58) {
+                    visibility |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                } else {
+                    visibility &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+                }
             }
-        }
 
-        decor.setSystemUiVisibility(visibility);
+            decor.setSystemUiVisibility(visibility);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static Palette safePalette(Context context) {
+        try {
+            return resolvePalette(context);
+        } catch (Throwable throwable) {
+            safeDebug("BlueIT Theme Engine palette resolution failed", throwable);
+            return readablePalette(
+                    Color.BLACK,
+                    Color.rgb(22, 22, 24),
+                    DEFAULT_TIKTOK_ACCENT,
+                    Color.WHITE,
+                    0
+            );
+        }
     }
 
     private static Palette resolvePalette(Context context) {
@@ -368,58 +383,22 @@ public final class ThemeEngine {
             }
 
             case "frosted_graphite":
-                return readablePalette(
-                        0xFF090A0C,
-                        0xD9292B31,
-                        0xFFB8C0CF,
-                        0xFFF7F8FA,
-                        22
-                );
+                return readablePalette(0xFF090A0C, 0xD9292B31, 0xFFB8C0CF, 0xFFF7F8FA, 22);
 
             case "midnight_neon":
-                return readablePalette(
-                        0xFF03050B,
-                        0xD90A1020,
-                        0xFF00E5FF,
-                        0xFFF4FBFF,
-                        20
-                );
+                return readablePalette(0xFF03050B, 0xD90A1020, 0xFF00E5FF, 0xFFF4FBFF, 20);
 
             case "rose_noir":
-                return readablePalette(
-                        0xFF090407,
-                        0xD9230C18,
-                        0xFFFF4F91,
-                        0xFFFFF5FA,
-                        22
-                );
+                return readablePalette(0xFF090407, 0xD9230C18, 0xFFFF4F91, 0xFFFFF5FA, 22);
 
             case "arctic_blue":
-                return readablePalette(
-                        0xFF06121A,
-                        0xD90D2636,
-                        0xFF6EDBFF,
-                        0xFFF2FBFF,
-                        20
-                );
+                return readablePalette(0xFF06121A, 0xD90D2636, 0xFF6EDBFF, 0xFFF2FBFF, 20);
 
             case "aurora_violet":
-                return readablePalette(
-                        0xFF090714,
-                        0xD91B1433,
-                        0xFFA78BFA,
-                        0xFFF9F7FF,
-                        24
-                );
+                return readablePalette(0xFF090714, 0xD91B1433, 0xFFA78BFA, 0xFFF9F7FF, 24);
 
             case "sunset_ember":
-                return readablePalette(
-                        0xFF120806,
-                        0xD9321710,
-                        0xFFFF7849,
-                        0xFFFFF7F2,
-                        22
-                );
+                return readablePalette(0xFF120806, 0xD9321710, 0xFFFF7849, 0xFFFFF7F2, 22);
 
             case "custom":
                 return readablePalette(
@@ -469,7 +448,11 @@ public final class ThemeEngine {
     }
 
     private static String normalizedPreset() {
-        return normalizePresetValue(ThemeSettings.PRESET.get());
+        try {
+            return normalizePresetValue(ThemeSettings.PRESET.get());
+        } catch (Throwable ignored) {
+            return "default";
+        }
     }
 
     private static String normalizePresetValue(String preset) {
@@ -495,9 +478,11 @@ public final class ThemeEngine {
 
     private static boolean appDark(Context context) {
         try {
-            int night = context.getResources().getConfiguration().uiMode
-                    & Configuration.UI_MODE_NIGHT_MASK;
-            if (night == Configuration.UI_MODE_NIGHT_YES) return true;
+            if (context != null) {
+                int night = context.getResources().getConfiguration().uiMode
+                        & Configuration.UI_MODE_NIGHT_MASK;
+                if (night == Configuration.UI_MODE_NIGHT_YES) return true;
+            }
         } catch (Throwable ignored) {
         }
 
@@ -597,6 +582,24 @@ public final class ThemeEngine {
         return 0.2126 * (Color.red(color) / 255.0)
                 + 0.7152 * (Color.green(color) / 255.0)
                 + 0.0722 * (Color.blue(color) / 255.0);
+    }
+
+    private static void safeInfo(String message) {
+        try {
+            Logger.printInfo(() -> message);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void safeDebug(String message, Throwable throwable) {
+        try {
+            if (throwable instanceof Exception) {
+                Logger.printDebug(() -> message, (Exception) throwable);
+            } else {
+                Logger.printInfo(() -> message + ": " + throwable.getClass().getSimpleName());
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     private static final class Palette {
