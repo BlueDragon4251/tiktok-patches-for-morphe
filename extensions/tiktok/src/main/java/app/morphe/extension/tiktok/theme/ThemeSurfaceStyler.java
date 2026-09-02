@@ -97,7 +97,6 @@ final class ThemeSurfaceStyler {
             if (value != null) {
                 String text = value.toString().trim();
                 if ("BlueIT Service".equals(text)) {
-                    // This row only exists on TikTok's Settings & privacy screen.
                     hints.settingsLike = true;
                 }
 
@@ -139,10 +138,9 @@ final class ThemeSurfaceStyler {
     ) {
         if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) return;
 
-        if (!(view instanceof ViewGroup)) {
-            styleLeaf(view, accent, text, secondaryText, divider);
-            return;
-        }
+        // Leaf colors are applied only from a positively matched themed surface below. This keeps
+        // feed captions and unrelated video-overlay text untouched.
+        if (!(view instanceof ViewGroup)) return;
 
         ViewGroup group = (ViewGroup) view;
         String resource = resourceEntryName(group);
@@ -160,8 +158,6 @@ final class ThemeSurfaceStyler {
         boolean nowInsideInbox = insideInbox || inboxRoot;
 
         if (settingsRoot || inboxRoot) {
-            // Do not blindly theme every full-screen root. These flags are only set after finding
-            // a visible Settings/Inbox anchor in the current hierarchy.
             group.setBackgroundColor(opaque(background));
         }
 
@@ -194,7 +190,6 @@ final class ThemeSurfaceStyler {
             applySurface(group, preset, surface, divider, radius);
             styleTextAndIcons(group, accent, text, secondaryText, divider);
         } else if (settingsRoot || inboxRoot) {
-            // Screen roots often contain title/toolbar text outside a dedicated card surface.
             styleTextAndIcons(group, accent, text, secondaryText, divider);
         }
 
@@ -247,9 +242,7 @@ final class ThemeSurfaceStyler {
         group.setBackground(drawable);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             group.setBackgroundTintList(null);
-            if (radiusDp > 0) {
-                group.setClipToOutline(true);
-            }
+            if (radiusDp > 0) group.setClipToOutline(true);
             group.setElevation(dp(context, glassLike ? 6 : 2));
         }
     }
@@ -273,13 +266,7 @@ final class ThemeSurfaceStyler {
         }
     }
 
-    private static void styleLeaf(
-            View view,
-            int accent,
-            int primary,
-            int secondary,
-            int divider
-    ) {
+    private static void styleLeaf(View view, int accent, int primary, int secondary, int divider) {
         String resource = resourceEntryName(view);
 
         if (view instanceof TextView) {
@@ -304,9 +291,7 @@ final class ThemeSurfaceStyler {
             return;
         }
 
-        if (isDivider(view)) {
-            view.setBackgroundColor(divider);
-        }
+        if (isDivider(view)) view.setBackgroundColor(divider);
     }
 
     private static boolean isBottomNavigation(
@@ -346,9 +331,7 @@ final class ThemeSurfaceStyler {
             View child = group.getChildAt(i);
             if (child.getVisibility() != View.VISIBLE || child.getWidth() <= 0) continue;
             visibleChildren++;
-            if (child.getWidth() <= rootWidth * 0.34f) {
-                compactChildren++;
-            }
+            if (child.getWidth() <= rootWidth * 0.34f) compactChildren++;
             int center = child.getLeft() + child.getWidth() / 2;
             firstCenter = Math.min(firstCenter, center);
             lastCenter = Math.max(lastCenter, center);
@@ -401,7 +384,6 @@ final class ThemeSurfaceStyler {
         int bottom = location[1] + height;
         if (bottom < rootHeight - Math.round(dp(group.getContext(), 18))) return false;
 
-        // Geometry-only fallback is intentionally strict so the feed/video renderer is untouched.
         return countTextViews(group, 2, 4) >= 3
                 && group.getChildCount() >= 2
                 && group.getChildCount() <= 12;
@@ -412,8 +394,7 @@ final class ThemeSurfaceStyler {
         if (group.getHeight() < rootHeight * 0.68f) return false;
 
         int[] location = location(group);
-        if (location == null) return false;
-        return location[0] <= rootWidth * 0.08f;
+        return location != null && location[0] <= rootWidth * 0.08f;
     }
 
     private static boolean isCardContainer(ViewGroup group, int rootWidth, int rootHeight) {
@@ -429,8 +410,7 @@ final class ThemeSurfaceStyler {
         if (height < minHeight || height > maxHeight) return false;
         if (group.getChildCount() < 1 || group.getChildCount() > 18) return false;
 
-        int texts = countTextViews(group, 2, 5);
-        return texts >= 1;
+        return countTextViews(group, 2, 5) >= 1;
     }
 
     private static boolean isListRow(ViewGroup group, int rootWidth, int rootHeight) {
@@ -444,19 +424,17 @@ final class ThemeSurfaceStyler {
 
         int[] location = location(group);
         if (location == null) return false;
-
-        // Keep the dedicated bottom nav classifier responsible for the final screen strip.
         if (location[1] + height > rootHeight - Math.round(dp(group.getContext(), 110))) {
             return false;
         }
 
-        int texts = countTextViews(group, 3, 6);
-        int images = countImageViews(group, 3, 6);
+        int texts = countTextViews(group, 4, 8);
+        int images = countImageViews(group, 4, 8);
         return texts >= 1
-                && texts <= 5
+                && texts <= 7
                 && images >= 1
-                && group.getChildCount() >= 2
-                && group.getChildCount() <= 10;
+                && group.getChildCount() >= 1
+                && group.getChildCount() <= 12;
     }
 
     private static boolean isDrawerSection(ViewGroup group, int rootWidth, int rootHeight) {
@@ -552,9 +530,7 @@ final class ThemeSurfaceStyler {
         try {
             Drawable[] drawables = textView.getCompoundDrawablesRelative();
             for (Drawable drawable : drawables) {
-                if (drawable != null) {
-                    drawable.mutate().setTint(color);
-                }
+                if (drawable != null) drawable.mutate().setTint(color);
             }
         } catch (Throwable ignored) {
         }
