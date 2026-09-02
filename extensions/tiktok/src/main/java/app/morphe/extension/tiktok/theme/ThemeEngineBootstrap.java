@@ -20,10 +20,19 @@ import app.morphe.extension.shared.Utils;
 public final class ThemeEngineBootstrap {
     private static final String ENGINE_CLASS = "app.morphe.extension.tiktok.theme.ThemeEngine";
     private static volatile boolean runtimeFailed;
+    private static volatile String patchDefaultPreset = "default";
 
     private ThemeEngineBootstrap() {}
 
-    public static void start(Activity activity, String patchDefaultPreset) {
+    public static void setPatchDefaultPreset(String preset) {
+        try {
+            patchDefaultPreset = preset == null || preset.isEmpty() ? "default" : preset;
+        } catch (Throwable ignored) {
+            patchDefaultPreset = "default";
+        }
+    }
+
+    public static void start(Activity activity) {
         if (activity == null || runtimeFailed) return;
 
         try {
@@ -48,7 +57,7 @@ public final class ThemeEngineBootstrap {
         }
     }
 
-    private static void startEngine(Activity activity, String patchDefaultPreset) {
+    private static void startEngine(Activity activity, String preset) {
         if (runtimeFailed || activity == null || activity.isFinishing()) return;
 
         try {
@@ -56,7 +65,7 @@ public final class ThemeEngineBootstrap {
 
             Method initialize = engine.getDeclaredMethod("initializePatchDefault", String.class);
             initialize.setAccessible(true);
-            initialize.invoke(null, patchDefaultPreset == null ? "default" : patchDefaultPreset);
+            initialize.invoke(null, preset == null ? "default" : preset);
 
             Method onCreated = engine.getDeclaredMethod("onMainActivityCreated", Activity.class);
             onCreated.setAccessible(true);
