@@ -128,6 +128,35 @@ jobs:
               "$dump" | head -n 90000 >> theme-core-evidence.txt || true
           done
 
+      - name: Dump exact navigation sidebar and settings surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEXDUMP="$(find "$ANDROID_HOME/build-tools" -type f -name dexdump 2>/dev/null | sort -V | tail -n 1)"
+          test -x "$DEXDUMP"
+          : > ui-surface-evidence.txt
+
+          SURFACE_STRINGS='SettingsComposeRvmpFragment|SidebarPageFragment|MainPageBusinessAssem|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab'
+          SURFACE_DUMP_REGEX='Class descriptor.*SettingsComposeRvmpFragment;|Class descriptor.*SidebarPageFragment;|Class descriptor.*MainPageBusinessAssem;|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab|setBackgroundColor'
+
+          for dex in /tmp/dex/*.dex; do
+            strings_file="/tmp/$(basename "$dex").strings"
+            test -f "$strings_file" || strings "$dex" > "$strings_file"
+            if ! grep -Eiq "$SURFACE_STRINGS" "$strings_file"; then
+              continue
+            fi
+
+            echo "=== SURFACE STRINGS $(basename "$dex") ===" >> ui-surface-evidence.txt
+            grep -Ei "$SURFACE_STRINGS" "$strings_file" | sort -u | head -n 2500 >> ui-surface-evidence.txt || true
+
+            dump="/tmp/dumps/surface-$(basename "$dex").txt"
+            timeout 90s "$DEXDUMP" -d "$dex" > "$dump" 2>&1 || true
+            test -s "$dump" || continue
+
+            echo "=== SURFACE DEX $(basename "$dex") ===" >> ui-surface-evidence.txt
+            grep -Ein -B 180 -A 720 "$SURFACE_DUMP_REGEX" "$dump" | head -n 140000 >> ui-surface-evidence.txt || true
+          done
+
       - name: Upload discovery evidence
         uses: actions/upload-artifact@v4
         with:
@@ -136,5 +165,6 @@ jobs:
             remaining-evidence.txt
             theme-evidence.txt
             theme-core-evidence.txt
+            ui-surface-evidence.txt
           if-no-files-found: error
           retention-days: 1

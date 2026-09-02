@@ -1,6 +1,6 @@
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -23,16 +23,16 @@ val automaticClearDisplayPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4673())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        // Mark both the settings surface and the runtime controller as installed. The actual
+        // per-video trigger lives in RememberClearDisplayPatch's proven first-frame hook and passes
+        // only an event class name String into extension code. No ClearModePanel/Rv0 bytecode hook
+        // remains in this patch.
+        SettingsStatusLoadFingerprint.method.addInstructions(
             0,
-            "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutomaticClearDisplay()V",
-        )
-
-        // Keep the real panel/context hook available for explicit testing, but do not include this
-        // patch in the recovery default set until the real-device 46.7.3 runtime path is proven.
-        ClearModePanelResetFingerprint.method.addInstruction(
-            0,
-            "invoke-static/range {p0 .. p1}, $CONTROLLER->updatePanelContext(Ljava/lang/Object;Ljava/lang/Object;)V",
+            """
+                invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutomaticClearDisplay()V
+                invoke-static {}, $CONTROLLER->enablePatch()V
+            """.trimIndent(),
         )
     }
 }
