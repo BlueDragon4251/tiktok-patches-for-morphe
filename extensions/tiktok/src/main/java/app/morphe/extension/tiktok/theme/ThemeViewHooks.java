@@ -27,11 +27,11 @@ import app.morphe.extension.shared.Logger;
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeViewHooks {
     private static final int MAX_OVERLAY_SCAN_NODES = 1800;
-    private static final long SIDEBAR_OVERLAY_GUARD_MS = 1100L;
+    private static final long SIDEBAR_OVERLAY_GUARD_MS = 2200L;
     private static final AtomicBoolean BOTTOM_NAV_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean SIDEBAR_LOGGED = new AtomicBoolean(false);
     private static final AtomicBoolean SETTINGS_COMPOSE_LOGGED = new AtomicBoolean(false);
-    private static final AtomicInteger SIDEBAR_RESET_LOG_BUDGET = new AtomicInteger(8);
+    private static final AtomicInteger SIDEBAR_RESET_LOG_BUDGET = new AtomicInteger(12);
     private static final WeakHashMap<View, Integer> SIDEBAR_GUARD_GENERATIONS = new WeakHashMap<>();
 
     private ThemeViewHooks() {}
@@ -184,16 +184,18 @@ public final class ThemeViewHooks {
             }
             sidebarRoot.bringToFront();
 
-            // TikTok keeps writing the profile push-aside translation during the drawer animation.
-            // A few postDelayed calls can race the animator's final frame, so keep a bounded
-            // Choreographer guard active only for the opening animation. This is deliberately not a
-            // permanent layout listener and therefore cannot create the old feedback loop.
+            // TikTok can write the profile push-aside translation from more than the verified FX2
+            // notification. Keep a bounded Choreographer guard alive through the complete opening
+            // animation and its settling frames. Unlike the old layout-listener workaround this is
+            // active only while the verified sidebar is visible and stops automatically.
             startSidebarOverlayGuard(sidebarRoot);
             sidebarRoot.post(() -> restoreSidebarUnderlay(sidebarRoot));
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 96L);
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 320L);
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 640L);
             sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 1050L);
+            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 1500L);
+            sidebarRoot.postDelayed(() -> restoreSidebarUnderlay(sidebarRoot), 2100L);
 
             if (SIDEBAR_LOGGED.compareAndSet(false, true)) {
                 final String message = "[BlueIT Theme View] profile sidebar styled alpha="
@@ -254,10 +256,13 @@ public final class ThemeViewHooks {
             int rootHeight = root.getHeight();
             if (rootWidth <= 0 || rootHeight <= 0) return;
 
-            // The previous 8%-of-screen threshold missed TikTok's smaller profile push offset.
-            // Scope this aggressively to large visible views outside the sidebar subtree and only
-            // cancel leftward motion, so unrelated small/positive animations remain untouched.
-            float minTranslation = Math.max(dp(sidebarRoot.getContext(), 4), rootWidth * 0.012f);
+            // TikTok 46.7.3 can translate either the profile page itself or a shared ancestor that
+            // contains both the profile underlay and the sidebar host. The previous implementation
+            // skipped every ancestor of sidebarRoot, which meant that exact shared-container case
+            // could never be corrected. Only the sidebar root and its descendants are excluded now;
+            // large translated ancestors are safe to neutralize because the sidebar has its own
+            // animation/root and is explicitly brought to front above.
+            float minTranslation = Math.max(dp(sidebarRoot.getContext(), 2), rootWidth * 0.006f);
             int reset = 0;
             int visited = 0;
 
@@ -267,7 +272,7 @@ public final class ThemeViewHooks {
                 View view = queue.removeFirst();
                 if (view == null || view.getVisibility() != View.VISIBLE) continue;
 
-                if (view == sidebarRoot || isAncestor(view, sidebarRoot) || isAncestor(sidebarRoot, view)) {
+                if (view == sidebarRoot || isAncestor(sidebarRoot, view)) {
                     if (view instanceof ViewGroup) {
                         ViewGroup group = (ViewGroup) view;
                         for (int i = 0; i < group.getChildCount(); i++) {
@@ -277,8 +282,8 @@ public final class ThemeViewHooks {
                     continue;
                 }
 
-                if (view.getWidth() >= rootWidth * 0.55f
-                        && view.getHeight() >= rootHeight * 0.40f
+                if (view.getWidth() >= rootWidth * 0.45f
+                        && view.getHeight() >= rootHeight * 0.32f
                         && view.getTranslationX() <= -minTranslation) {
                     view.setTranslationX(0f);
                     reset++;
