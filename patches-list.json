@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.5",
+  "version": "1.2.0-dev.6",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -62,8 +62,8 @@
     },
     {
       "name": "Automatic clear display",
-      "description": "Automatically enters TikTok clear-display mode after a configurable delay for each newly played video.",
-      "use": true,
+      "description": "Experimental recovery opt-in: automatically enters TikTok clear-display mode after a configurable delay for each newly played video.",
+      "use": false,
       "dependencies": [
         "BytecodePatch",
         "BytecodePatch"
@@ -984,8 +984,8 @@
     },
     {
       "name": "Theme engine",
-      "description": "Adds runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
-      "use": true,
+      "description": "Experimental recovery opt-in: runtime-selectable Material You, AMOLED, Liquid Glass, Graphite, Neon, Rose, Arctic, Aurora, Ember, and custom TikTok themes.",
+      "use": false,
       "dependencies": [
         "BytecodePatch"
       ],

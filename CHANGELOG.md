@@ -1,3 +1,16 @@
+# [1.2.0-dev.6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.5...v1.2.0-dev.6) (2026-09-02)
+
+
+### Bug Fixes
+
+* **dev:** publish startup recovery defaults ([6a1b709](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/6a1b7091d443ce63ddeb01310794edaad69e55c6))
+
+
+
+
+
+## 1.2.0-dev.6
+
 # [1.2.0-dev.5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.4...v1.2.0-dev.5) (2026-09-02)
 
 
