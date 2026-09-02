@@ -34,6 +34,8 @@ private const val PROFILE_SIDEBAR_FRAGMENT =
     "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;"
 private const val PROFILE_SIDEBAR_CONTAINER =
     "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarContainerAssem;"
+private const val SIDEBAR_CONTAINER =
+    "Lcom/ss/android/ugc/aweme/sidebar/components/SidebarContainerAssem;"
 private const val SIDEBAR_ROOT_ABILITY =
     "Lcom/ss/android/ugc/aweme/sidebar/components/ISideBarRootAbility;"
 private const val SETTINGS_COMPOSE_RENDERER = "LX/0VGt;"
@@ -129,9 +131,22 @@ private object ProfileSidebarNodeShowFingerprint : Fingerprint(
 )
 
 /**
+ * Generic outer sidebar container. Exact 46.7.3 discovery shows this also calls
+ * ISideBarRootAbility.FX2(true) during open, independently from the profile-specific container.
+ */
+private object SidebarContainerNodeShowFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(SIDEBAR_CONTAINER) &&
+            method.name == "onNodeShow" &&
+            method.parameterTypes == listOf("Landroid/os/Bundle;") &&
+            method.returnType == "V"
+    },
+)
+
+/**
  * Profile-specific container that calls ISideBarRootAbility.FX2(true) when opening. Exact 46.7.3
- * discovery shows this is the root push/resize notification; the matching FX2(false) close path is
- * in onNodeHide and deliberately remains untouched.
+ * discovery shows this is another root push/resize notification; matching FX2(false) close paths
+ * deliberately remain untouched.
  */
 private object ProfileSidebarContainerNodeShowFingerprint : Fingerprint(
     custom = { method, classDef ->
@@ -371,9 +386,27 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
-        // Exact 46.7.3 path at code offset 0x00bd:
-        // ISideBarRootAbility.FX2(true) is invoked only on profile-sidebar open. Skip that single
-        // root push/resize notification, while leaving the onNodeHide FX2(false) cleanup untouched.
+        // Exact 46.7.3 generic outer-container path at code offset 0x0030:
+        // SidebarContainerAssem independently calls ISideBarRootAbility.FX2(true). This was the
+        // remaining push-aside source on-device after the profile-specific FX2(true) was skipped.
+        // Keep the matching onNodeHide FX2(false) cleanup untouched.
+        SidebarContainerNodeShowFingerprint.method.apply {
+            val pushIndex = implementation!!.instructions.withIndex().first { (_, instruction) ->
+                val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+                reference?.definingClass == SIDEBAR_ROOT_ABILITY &&
+                    reference.name == "FX2" &&
+                    reference.returnType == "V"
+            }.index
+
+            addInstructionsWithLabels(
+                pushIndex,
+                "goto :blueit_generic_sidebar_overlay",
+                ExternalLabel("blueit_generic_sidebar_overlay", getInstruction(pushIndex + 1)),
+            )
+        }
+
+        // Exact 46.7.3 profile-specific path at code offset 0x00bd. This is a second independent
+        // FX2(true) open notification. Skip it as well, while leaving onNodeHide cleanup untouched.
         ProfileSidebarContainerNodeShowFingerprint.method.apply {
             val pushIndex = implementation!!.instructions.withIndex().first { (_, instruction) ->
                 val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
