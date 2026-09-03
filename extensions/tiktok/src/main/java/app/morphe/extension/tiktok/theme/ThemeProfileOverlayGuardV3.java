@@ -20,21 +20,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Third-generation profile drawer underlay guard for TikTok 46.7.3.
+ * Profile drawer underlay guard for TikTok 46.7.3.
  *
- * The previous guards first tried to identify the drawer and only then searched for a shifted
- * sibling. Device logs showed that the drawer heuristics never matched. V3 inverts that logic: while
- * the actual profile page is active, any large visible profile underlay whose real screen X becomes
- * substantially negative is compensated directly. This works whether TikTok moved it by layout,
- * ViewPager/scroll, translation or an ancestor transform and does not require identifying the drawer.
+ * The initial V3 profile detector used exact English/German labels. On the real 46.7.3 profile UI
+ * those labels are decorated (for example "+ Bio. hinzufügen" and "Follower*innen"), so the guard
+ * never armed and no compensation could run. This revision uses normalized substring signals from
+ * the actual profile UI and keeps the fail-open screen-X compensation from V3.
  */
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeProfileOverlayGuardV3 {
-    private static final int MAX_NODES = 1800;
-    private static final long PROFILE_GRACE_MS = 6000L;
+    private static final int MAX_NODES = 1900;
+    private static final long PROFILE_GRACE_MS = 7000L;
     private static final WeakHashMap<View, Guard> GUARDS = new WeakHashMap<>();
     private static final WeakHashMap<View, Float> ORIGINAL_TRANSLATIONS = new WeakHashMap<>();
-    private static final AtomicInteger LOG_BUDGET = new AtomicInteger(30);
+    private static final AtomicInteger LOG_BUDGET = new AtomicInteger(40);
 
     private ThemeProfileOverlayGuardV3() {}
 
@@ -52,6 +51,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 Guard guard = new Guard(activity, root);
                 GUARDS.put(root, guard);
                 guard.attach();
+                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] installed");
             }
         } catch (Throwable ignored) {
         }
@@ -73,41 +73,48 @@ public final class ThemeProfileOverlayGuardV3 {
             ArrayDeque<Node> queue = new ArrayDeque<>();
             queue.addLast(new Node(root, 0));
             int visited = 0;
-            while (!queue.isEmpty() && visited++ < 1100) {
+            while (!queue.isEmpty() && visited++ < 1500) {
                 Node node = queue.removeFirst();
                 View view = node.view;
                 if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) continue;
                 if (view instanceof TextView) {
                     CharSequence text = ((TextView) view).getText();
                     if (text != null) {
-                        String value = text.toString().trim().toLowerCase(Locale.ROOT);
-                        if (value.equals("profil bearbeiten") || value.equals("edit profile")
-                                || value.equals("profil teilen") || value.equals("share profile")
-                                || value.equals("bio hinzufügen") || value.equals("add bio")) {
+                        String value = normalize(text.toString());
+                        if (containsAny(value,
+                                "profil bearbeiten", "edit profile",
+                                "profil teilen", "share profile",
+                                "bio hinzufügen", "bio hinzufugen", "add bio",
+                                "tiktok studio")) {
                             strong++;
                         }
-                        if (value.equals("follower") || value.equals("followers")
-                                || value.equals("folge ich") || value.equals("following")
-                                || value.equals("likes") || value.equals("gefällt mir")) {
+                        if (containsAny(value,
+                                "follower", "following", "folge ich", "gefolgt",
+                                "likes", "gefällt mir", "gefallt mir")) {
                             weak++;
                         }
                     }
                 }
                 String marker = className(view) + " " + resourceName(view);
-                if (containsAny(marker, "profile_fragment", "profilepage", "profile_page",
-                        "user_profile", "mine_profile")) strong++;
+                if (containsAny(marker,
+                        "profile_fragment", "profilepage", "profile_page",
+                        "user_profile", "mine_profile", "profile_header", "profile_tab")) {
+                    strong++;
+                }
 
+                // Own-profile layouts reliably expose at least one strong action plus a profile stat.
+                // Some locales hide the edit/share action, so two independent stats are also enough.
                 if (strong >= 1 && weak >= 1) return true;
-                if (strong >= 2) return true;
+                if (strong >= 2 || weak >= 2) return true;
 
-                if (view instanceof ViewGroup && node.depth < 32) {
+                if (view instanceof ViewGroup && node.depth < 36) {
                     ViewGroup group = (ViewGroup) view;
                     for (int i = 0; i < group.getChildCount(); i++) {
                         queue.addLast(new Node(group.getChildAt(i), node.depth + 1));
                     }
                 }
             }
-            return strong >= 1 && weak >= 1;
+            return strong >= 1 && weak >= 1 || strong >= 2 || weak >= 2;
         } catch (Throwable ignored) {
             return false;
         }
@@ -116,7 +123,7 @@ public final class ThemeProfileOverlayGuardV3 {
     private static View findShiftedUnderlay(ViewGroup root, int rootWidth, int rootHeight) {
         View best = null;
         int bestScore = Integer.MIN_VALUE;
-        int threshold = Math.max(dp(root.getContext(), 10), Math.round(rootWidth * 0.045f));
+        int threshold = Math.max(dp(root.getContext(), 8), Math.round(rootWidth * 0.025f));
 
         ArrayDeque<Node> queue = new ArrayDeque<>();
         queue.addLast(new Node(root, 0));
@@ -134,18 +141,18 @@ public final class ThemeProfileOverlayGuardV3 {
                 int height = view.getHeight();
                 int right = xy[0] + width;
                 if (xy[0] <= -threshold
-                        && xy[0] > -rootWidth * 0.96f
-                        && width >= rootWidth * 0.70f
-                        && height >= rootHeight * 0.42f
-                        && right > rootWidth * 0.10f) {
-                    int texts = countTextViews(view, 5, 20);
+                        && xy[0] > -rootWidth * 1.12f
+                        && width >= rootWidth * 0.62f
+                        && height >= rootHeight * 0.36f
+                        && right > rootWidth * 0.06f) {
+                    int texts = countTextViews(view, 6, 24);
                     String marker = className(view) + " " + resourceName(view);
                     int score = 0;
-                    score += Math.max(0, 22 - node.depth);
-                    score += Math.min(12, texts);
-                    if (width >= rootWidth * 0.90f) score += 8;
-                    if (height >= rootHeight * 0.70f) score += 8;
-                    if (containsAny(marker, "profile", "mine", "user_page", "main_page")) score += 12;
+                    score += Math.max(0, 26 - node.depth);
+                    score += Math.min(16, texts);
+                    if (width >= rootWidth * 0.88f) score += 10;
+                    if (height >= rootHeight * 0.68f) score += 10;
+                    if (containsAny(marker, "profile", "mine", "user_page", "main_page")) score += 16;
                     if (score > bestScore) {
                         best = view;
                         bestScore = score;
@@ -153,7 +160,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 }
             }
 
-            if (view instanceof ViewGroup && node.depth < 34) {
+            if (view instanceof ViewGroup && node.depth < 38) {
                 ViewGroup group = (ViewGroup) view;
                 for (int i = 0; i < group.getChildCount(); i++) {
                     queue.addLast(new Node(group.getChildAt(i), node.depth + 1));
@@ -187,7 +194,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 final String cls = target.getClass().getName();
                 final int width = target.getWidth();
                 final int height = target.getHeight();
-                Logger.printInfo(() -> "[BlueIT Profile Overlay V3] corrected screenX=" + x
+                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] corrected screenX=" + x
                         + " delta=" + delta + " size=" + width + "x" + height + " view=" + cls);
             }
             return true;
@@ -255,6 +262,14 @@ public final class ThemeProfileOverlayGuardV3 {
         }
     }
 
+    private static String normalize(String value) {
+        if (value == null) return "";
+        String lower = value.trim().toLowerCase(Locale.ROOT);
+        lower = lower.replace('ä', 'a').replace('ö', 'o').replace('ü', 'u').replace('ß', 's');
+        lower = lower.replace('*', ' ').replace('+', ' ').replace('.', ' ');
+        return lower.replaceAll("\\s+", " ").trim();
+    }
+
     private static boolean containsAny(String value, String... tokens) {
         if (value == null || value.isEmpty()) return false;
         String lower = value.toLowerCase(Locale.ROOT);
@@ -278,7 +293,7 @@ public final class ThemeProfileOverlayGuardV3 {
         final View root;
         long lastProfileSeenMs;
         boolean profileLogged;
-        int noCandidateBudget = 6;
+        int noCandidateBudget = 12;
 
         Guard(Activity activity, View root) {
             this.activityRef = new WeakReference<>(activity);
@@ -314,7 +329,6 @@ public final class ThemeProfileOverlayGuardV3 {
                 }
 
                 // Reset our previous frame's correction before measuring TikTok's real layout again.
-                // This makes the correction idempotent and avoids accumulating translationX.
                 restoreTracked();
                 if (!themeActive(root)) return true;
 
@@ -323,14 +337,14 @@ public final class ThemeProfileOverlayGuardV3 {
                     lastProfileSeenMs = now;
                     if (!profileLogged) {
                         profileLogged = true;
-                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3] profile screen armed");
+                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] profile screen armed");
                     }
                 }
 
                 if (lastProfileSeenMs != 0L && now - lastProfileSeenMs <= PROFILE_GRACE_MS) {
                     boolean corrected = compensate(root);
                     if (!corrected && noCandidateBudget-- > 0) {
-                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3] profile active; no shifted underlay this frame");
+                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] profile active; no shifted underlay this frame");
                     }
                 }
             } catch (Throwable ignored) {
