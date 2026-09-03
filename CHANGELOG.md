@@ -1,3 +1,16 @@
+# [1.2.0-dev.17](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-09-03)
+
+
+### Bug Fixes
+
+* **dev:** publish activity and drawer V2 plus pinned 46.7.3 CI ([956f728](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/956f728360b31b59f42926e65cc28e24327544bb))
+
+
+
+
+
+## 1.2.0-dev.17
+
 # [1.2.0-dev.16](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.15...v1.2.0-dev.16) (2026-09-02)
 
 
