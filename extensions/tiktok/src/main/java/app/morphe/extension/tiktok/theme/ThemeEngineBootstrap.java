@@ -23,6 +23,10 @@ public final class ThemeEngineBootstrap {
             "app.morphe.extension.tiktok.theme.ThemeRealtimeUiGuard";
     private static final String ACTIVITY_SURFACE_GUARD_CLASS =
             "app.morphe.extension.tiktok.theme.ThemeActivitySurfaceGuard";
+    private static final String ACTIVITY_SURFACE_GUARD_V2_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeActivitySurfaceGuardV2";
+    private static final String PROFILE_OVERLAY_GUARD_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeProfileOverlayGuard";
     private static volatile boolean runtimeFailed;
     private static volatile String patchDefaultPreset = "default";
 
@@ -81,13 +85,24 @@ public final class ThemeEngineBootstrap {
             return;
         }
 
-        // Recycler-backed surfaces are rebuilt after the bounded engine passes. Install the guards
-        // independently so a failure in one narrow visual fix cannot disable the core theme runtime.
+        // Recycler-backed and sidebar surfaces are rebuilt/moved after the bounded engine passes.
+        // Install each narrow guard independently so one failed visual fallback can never disable
+        // the core theme runtime.
         installGuard(activity, REALTIME_GUARD_CLASS, "BlueIT realtime theme guard unavailable");
         installGuard(
                 activity,
                 ACTIVITY_SURFACE_GUARD_CLASS,
                 "BlueIT activity surface guard unavailable"
+        );
+        installGuard(
+                activity,
+                ACTIVITY_SURFACE_GUARD_V2_CLASS,
+                "BlueIT activity surface guard V2 unavailable"
+        );
+        installGuard(
+                activity,
+                PROFILE_OVERLAY_GUARD_CLASS,
+                "BlueIT profile overlay guard unavailable"
         );
     }
 

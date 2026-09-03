@@ -25,7 +25,7 @@ jobs:
           EXPECTED="b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e"
           curl -fL --retry 4 --retry-delay 3 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/140 Safari/537.36' \
-            'https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest' \
+            'https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024607030' \
             -o tiktok-46.7.3.apk
           ACTUAL="$(sha256sum tiktok-46.7.3.apk | awk '{print $1}')"
           echo "SHA-256: $ACTUAL"
