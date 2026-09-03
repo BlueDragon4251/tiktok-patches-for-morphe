@@ -1,3 +1,16 @@
+# [1.2.0-dev.18](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.17...v1.2.0-dev.18) (2026-09-03)
+
+
+### Bug Fixes
+
+* **dev:** publish dynamic list and profile overlay V3 ([db61518](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/db615181171dd6610ba1e357481e3fb2c47f752e))
+
+
+
+
+
+## 1.2.0-dev.18
+
 # [1.2.0-dev.17](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.16...v1.2.0-dev.17) (2026-09-03)
 
 
