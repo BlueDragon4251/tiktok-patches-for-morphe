@@ -21,12 +21,10 @@ public final class ThemeEngineBootstrap {
     private static final String ENGINE_CLASS = "app.morphe.extension.tiktok.theme.ThemeEngine";
     private static final String REALTIME_GUARD_CLASS =
             "app.morphe.extension.tiktok.theme.ThemeRealtimeUiGuard";
-    private static final String ACTIVITY_SURFACE_GUARD_CLASS =
-            "app.morphe.extension.tiktok.theme.ThemeActivitySurfaceGuard";
-    private static final String ACTIVITY_SURFACE_GUARD_V2_CLASS =
-            "app.morphe.extension.tiktok.theme.ThemeActivitySurfaceGuardV2";
-    private static final String PROFILE_OVERLAY_GUARD_CLASS =
-            "app.morphe.extension.tiktok.theme.ThemeProfileOverlayGuard";
+    private static final String DYNAMIC_LIST_GUARD_V3_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeDynamicListGuardV3";
+    private static final String PROFILE_OVERLAY_GUARD_V3_CLASS =
+            "app.morphe.extension.tiktok.theme.ThemeProfileOverlayGuardV3";
     private static volatile boolean runtimeFailed;
     private static volatile String patchDefaultPreset = "default";
 
@@ -85,24 +83,20 @@ public final class ThemeEngineBootstrap {
             return;
         }
 
-        // Recycler-backed and sidebar surfaces are rebuilt/moved after the bounded engine passes.
-        // Install each narrow guard independently so one failed visual fallback can never disable
-        // the core theme runtime.
+        // Keep the generic frame-synchronous reapply for Inbox/other rebuilt surfaces. dev.17 proved
+        // that the old Activity V1/V2 and drawer-first guards matched the wrong hierarchy, so they
+        // are deliberately no longer installed. V3 derives Activity sections from live recycler rows
+        // and compensates profile movement without requiring drawer detection.
         installGuard(activity, REALTIME_GUARD_CLASS, "BlueIT realtime theme guard unavailable");
         installGuard(
                 activity,
-                ACTIVITY_SURFACE_GUARD_CLASS,
-                "BlueIT activity surface guard unavailable"
+                DYNAMIC_LIST_GUARD_V3_CLASS,
+                "BlueIT dynamic list guard V3 unavailable"
         );
         installGuard(
                 activity,
-                ACTIVITY_SURFACE_GUARD_V2_CLASS,
-                "BlueIT activity surface guard V2 unavailable"
-        );
-        installGuard(
-                activity,
-                PROFILE_OVERLAY_GUARD_CLASS,
-                "BlueIT profile overlay guard unavailable"
+                PROFILE_OVERLAY_GUARD_V3_CLASS,
+                "BlueIT profile overlay guard V3 unavailable"
         );
     }
 
