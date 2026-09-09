@@ -1,3 +1,17 @@
+# [1.2.0-dev.20](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.19...v1.2.0-dev.20) (2026-09-09)
+
+
+### Bug Fixes
+
+* **dev:** publish verified search, inbox and profile theme corrections ([2ee1cff](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2ee1cffa1204954870ea29dd758864945405f8fb))
+* **theme:** correct search backgrounds and live inbox drawer hooks ([d64bf1f](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d64bf1f712f99cfa8dc1ca700a0f3596d7fc36e5))
+
+
+
+
+
+## 1.2.0-dev.20
+
 # [1.2.0-dev.19](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.18...v1.2.0-dev.19) (2026-09-03)
 
 
