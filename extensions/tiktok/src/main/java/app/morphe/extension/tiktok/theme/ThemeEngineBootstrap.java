@@ -83,6 +83,11 @@ public final class ThemeEngineBootstrap {
             return;
         }
 
+        installActivityGuards(activity);
+    }
+
+    /** Each Activity owns a different DecorView and ViewTreeObserver. Installation is idempotent. */
+    static void installActivityGuards(Activity activity) {
         // Keep the generic frame-synchronous reapply for Inbox/other rebuilt surfaces. dev.17 proved
         // that the old Activity V1/V2 and drawer-first guards matched the wrong hierarchy, so they
         // are deliberately no longer installed. V3 derives Activity sections from live recycler rows

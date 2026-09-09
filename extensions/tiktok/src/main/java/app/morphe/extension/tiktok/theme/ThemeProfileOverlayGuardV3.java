@@ -32,7 +32,6 @@ public final class ThemeProfileOverlayGuardV3 {
     private static final int MAX_NODES = 1900;
     private static final long PROFILE_GRACE_MS = 7000L;
     private static final WeakHashMap<View, Guard> GUARDS = new WeakHashMap<>();
-    private static final WeakHashMap<View, Float> ORIGINAL_TRANSLATIONS = new WeakHashMap<>();
     private static final AtomicInteger LOG_BUDGET = new AtomicInteger(40);
 
     private ThemeProfileOverlayGuardV3() {}
@@ -51,7 +50,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 Guard guard = new Guard(activity, root);
                 GUARDS.put(root, guard);
                 guard.attach();
-                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] installed");
+                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.2] installed");
             }
         } catch (Throwable ignored) {
         }
@@ -123,7 +122,7 @@ public final class ThemeProfileOverlayGuardV3 {
     private static View findShiftedUnderlay(ViewGroup root, int rootWidth, int rootHeight) {
         View best = null;
         int bestScore = Integer.MIN_VALUE;
-        int threshold = Math.max(dp(root.getContext(), 8), Math.round(rootWidth * 0.025f));
+        int threshold = Math.max(1, dp(root.getContext(), 1));
 
         ArrayDeque<Node> queue = new ArrayDeque<>();
         queue.addLast(new Node(root, 0));
@@ -131,18 +130,20 @@ public final class ThemeProfileOverlayGuardV3 {
         while (!queue.isEmpty() && visited++ < MAX_NODES) {
             Node node = queue.removeFirst();
             View view = node.view;
-            if (view == null || view == root || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) {
+            if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) {
                 continue;
             }
 
             int[] xy = location(view);
-            if (xy != null) {
+            // Exclude the decor as a candidate, never as a traversal root.
+            if (view != root && xy != null) {
                 int width = view.getWidth();
                 int height = view.getHeight();
                 int right = xy[0] + width;
                 if (xy[0] <= -threshold
                         && xy[0] > -rootWidth * 1.12f
                         && width >= rootWidth * 0.62f
+                        && width <= rootWidth * 1.06f
                         && height >= rootHeight * 0.36f
                         && right > rootWidth * 0.06f) {
                     int texts = countTextViews(view, 6, 24);
@@ -170,7 +171,7 @@ public final class ThemeProfileOverlayGuardV3 {
         return best;
     }
 
-    private static boolean compensate(View root) {
+    private static boolean compensate(View root, Map<View, TranslationCorrection> corrections) {
         try {
             if (!(root instanceof ViewGroup) || root.getWidth() <= 0 || root.getHeight() <= 0) return false;
             int rootWidth = root.getWidth();
@@ -180,13 +181,16 @@ public final class ThemeProfileOverlayGuardV3 {
 
             int[] xy = location(target);
             if (xy == null || xy[0] >= 0) return false;
-            synchronized (ORIGINAL_TRANSLATIONS) {
-                if (!ORIGINAL_TRANSLATIONS.containsKey(target)) {
-                    ORIGINAL_TRANSLATIONS.put(target, target.getTranslationX());
-                }
-            }
+            float original = target.getTranslationX();
             float correction = -xy[0];
-            target.setTranslationX(target.getTranslationX() + correction);
+            float applied = original + correction;
+            // A direct native translation is neutralized at zero. Do not restore that obsolete
+            // negative position next frame: the closing animator can also legitimately write zero.
+            // Nonzero compensation is for a scrolled/offset ancestor and must be undone to measure it.
+            if (applied != 0f) {
+                corrections.put(target, new TranslationCorrection(original, applied));
+            }
+            target.setTranslationX(applied);
 
             if (LOG_BUDGET.getAndDecrement() > 0) {
                 final int x = xy[0];
@@ -194,7 +198,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 final String cls = target.getClass().getName();
                 final int width = target.getWidth();
                 final int height = target.getHeight();
-                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] corrected screenX=" + x
+                Logger.printInfo(() -> "[BlueIT Profile Overlay V3.2] corrected screenX=" + x
                         + " delta=" + delta + " size=" + width + "x" + height + " view=" + cls);
             }
             return true;
@@ -203,19 +207,19 @@ public final class ThemeProfileOverlayGuardV3 {
         }
     }
 
-    private static void restoreTracked() {
-        synchronized (ORIGINAL_TRANSLATIONS) {
-            for (Map.Entry<View, Float> entry : new ArrayList<>(ORIGINAL_TRANSLATIONS.entrySet())) {
-                View view = entry.getKey();
-                Float value = entry.getValue();
-                if (view == null || value == null) continue;
-                try {
-                    view.setTranslationX(value);
-                } catch (Throwable ignored) {
-                }
+    private static void restoreTracked(Map<View, TranslationCorrection> corrections) {
+        for (Map.Entry<View, TranslationCorrection> entry : new ArrayList<>(corrections.entrySet())) {
+            View view = entry.getKey();
+            TranslationCorrection value = entry.getValue();
+            if (view == null || value == null) continue;
+            try {
+                // A native animator may have written the next opening/closing position since our
+                // previous frame. Undo only our own still-present correction, never that new value.
+                if (view.getTranslationX() == value.applied) view.setTranslationX(value.original);
+            } catch (Throwable ignored) {
             }
-            ORIGINAL_TRANSLATIONS.clear();
         }
+        corrections.clear();
     }
 
     private static int countTextViews(View root, int depth, int max) {
@@ -291,6 +295,7 @@ public final class ThemeProfileOverlayGuardV3 {
             View.OnAttachStateChangeListener {
         WeakReference<Activity> activityRef;
         final View root;
+        final Map<View, TranslationCorrection> corrections = new WeakHashMap<>();
         long lastProfileSeenMs;
         boolean profileLogged;
         int noCandidateBudget = 12;
@@ -316,7 +321,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 root.removeOnAttachStateChangeListener(this);
             } catch (Throwable ignored) {
             }
-            restoreTracked();
+            restoreTracked(corrections);
         }
 
         @Override
@@ -329,7 +334,7 @@ public final class ThemeProfileOverlayGuardV3 {
                 }
 
                 // Reset our previous frame's correction before measuring TikTok's real layout again.
-                restoreTracked();
+                restoreTracked(corrections);
                 if (!themeActive(root)) return true;
 
                 long now = SystemClock.uptimeMillis();
@@ -337,14 +342,14 @@ public final class ThemeProfileOverlayGuardV3 {
                     lastProfileSeenMs = now;
                     if (!profileLogged) {
                         profileLogged = true;
-                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] profile screen armed");
+                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.2] profile screen armed");
                     }
                 }
 
                 if (lastProfileSeenMs != 0L && now - lastProfileSeenMs <= PROFILE_GRACE_MS) {
-                    boolean corrected = compensate(root);
+                    boolean corrected = compensate(root, corrections);
                     if (!corrected && noCandidateBudget-- > 0) {
-                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.1] profile active; no shifted underlay this frame");
+                        Logger.printInfo(() -> "[BlueIT Profile Overlay V3.2] profile active; no shifted underlay this frame");
                     }
                 }
             } catch (Throwable ignored) {
@@ -370,6 +375,16 @@ public final class ThemeProfileOverlayGuardV3 {
         Node(View view, int depth) {
             this.view = view;
             this.depth = depth;
+        }
+    }
+
+    private static final class TranslationCorrection {
+        final float original;
+        final float applied;
+
+        TranslationCorrection(float original, float applied) {
+            this.original = original;
+            this.applied = applied;
         }
     }
 }
