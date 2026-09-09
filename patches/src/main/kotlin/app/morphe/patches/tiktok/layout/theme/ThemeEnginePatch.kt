@@ -26,6 +26,10 @@ private const val THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeComposeColorResolver;"
 private const val THEME_VIEW_HOOKS_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeViewHooks;"
+private const val THEME_DYNAMIC_LIST_GUARD_CLASS_DESCRIPTOR =
+    "Lapp/morphe/extension/tiktok/theme/ThemeDynamicListGuardV3;"
+private const val INBOX_SESSION_HOLDER =
+    "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;"
 private const val MAIN_PAGE_ASSEM =
     "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;"
 private const val SETTINGS_COMPOSE_FRAGMENT =
@@ -41,6 +45,16 @@ private const val SIDEBAR_ROOT_ABILITY =
 private const val SETTINGS_COMPOSE_RENDERER = "LX/0VGt;"
 private const val COMPOSE_PALETTE_PROVIDER = "LX/0VTU;"
 private const val COMPOSE_PALETTE = "LX/05Pc;"
+
+/** Common full/partial inbox bind dispatcher; runs after each holder's native w6 implementation. */
+private object InboxSessionBindFingerprint : Fingerprint(
+    custom = { method, classDef ->
+        classDef.endsWith(INBOX_SESSION_HOLDER) &&
+            method.name == "Z5" &&
+            method.parameterTypes == listOf("LX/0CcN;", "I") &&
+            method.returnType == "V"
+    },
+)
 
 /** TikTok 46.7.3 TUX direct theme-attribute color resolver. */
 private object TuxDirectColorResolverFingerprint : Fingerprint(
@@ -315,6 +329,23 @@ val themeEnginePatch = bytecodePatch(
                 """.trimIndent(),
                 ExternalLabel("blueit_tux_styled_original", getInstruction(0)),
             )
+        }
+
+        InboxSessionBindFingerprint.method.apply {
+            val returnIndices = implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_VOID }
+                .map { it.index }
+                .toList()
+            returnIndices.asReversed().forEach { returnIndex ->
+                addInstructions(
+                    returnIndex,
+                    """
+                        move-object/from16 v0, p0
+                        iget-object v0, v0, Landroidx/recyclerview/widget/RecyclerView${'$'}ViewHolder;->itemView:Landroid/view/View;
+                        invoke-static {v0}, $THEME_DYNAMIC_LIST_GUARD_CLASS_DESCRIPTOR->onInboxRowBound(Landroid/view/View;)V
+                    """.trimIndent(),
+                )
+            }
         }
 
         MainBottomNavigationBackgroundFingerprint.method.apply {

@@ -42,6 +42,11 @@ jobs:
           echo "Using runtime bundle: $MPP"
           echo "MPP=$MPP" >> "$GITHUB_ENV"
 
+      - name: Verify theme runtime regressions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :extensions:tiktok:testDebugUnitTest --no-daemon
+
       - name: Download exact TikTok 46.7.3 APK
         shell: bash
         run: |

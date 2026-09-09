@@ -41,10 +41,42 @@ public final class ThemeDynamicListGuardV3 {
     private static final int SCREEN_ACTIVITY = 2;
     private static final int MAX_NODES = 1900;
     private static final WeakHashMap<View, Guard> GUARDS = new WeakHashMap<>();
+    private static final WeakHashMap<View, Boolean> BOUND_INBOX_ROWS = new WeakHashMap<>();
     private static final AtomicInteger INBOX_LOG_BUDGET = new AtomicInteger(10);
     private static final AtomicInteger ACTIVITY_LOG_BUDGET = new AtomicInteger(10);
 
     private ThemeDynamicListGuardV3() {}
+
+    /** Exact SessionListBaseVH.Z5 bind hook; works before measurement and without title heuristics. */
+    public static void onInboxRowBound(View row) {
+        try {
+            if (!(row instanceof ViewGroup) || !themeActive(row)) return;
+            synchronized (BOUND_INBOX_ROWS) {
+                BOUND_INBOX_ROWS.put(row, Boolean.TRUE);
+            }
+            styleBoundInboxRow((ViewGroup) row);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static void styleBoundInboxRow(ViewGroup row) {
+        Context context = row.getContext();
+        applyRowSurface(row, ThemeEngine.surfaceColor(context), ThemeEngine.dividerColor(context), 16);
+        // The verified holder's itemView owns the card. Nested full-cell fillers must reveal it,
+        // including after an async child bind; keep avatars and compact controls untouched.
+        paintRowFillers(row, Color.TRANSPARENT, row.getWidth(), row.getHeight(), 8);
+    }
+
+    private static void styleBoundInboxRows(View root) {
+        synchronized (BOUND_INBOX_ROWS) {
+            for (View row : new ArrayList<>(BOUND_INBOX_ROWS.keySet())) {
+                if (row instanceof ViewGroup && row.isAttachedToWindow()
+                        && row.getRootView() == root && row.getVisibility() == View.VISIBLE) {
+                    styleBoundInboxRow((ViewGroup) row);
+                }
+            }
+        }
+    }
 
     public static void install(Activity activity) {
         try {
@@ -60,7 +92,7 @@ public final class ThemeDynamicListGuardV3 {
                 Guard guard = new Guard(activity, root);
                 GUARDS.put(root, guard);
                 guard.attach();
-                Logger.printInfo(() -> "[BlueIT Dynamic List V3.1] installed");
+                Logger.printInfo(() -> "[BlueIT Dynamic List V3.2] installed");
             }
         } catch (Throwable ignored) {
         }
@@ -78,6 +110,7 @@ public final class ThemeDynamicListGuardV3 {
     private static ScreenInfo detectScreen(View root) {
         int kind = SCREEN_NONE;
         int titleBottom = 0;
+        int titleTop = Integer.MAX_VALUE;
         try {
             int rootHeight = root.getHeight();
             if (rootHeight <= 0) return new ScreenInfo(kind, titleBottom);
@@ -100,13 +133,16 @@ public final class ThemeDynamicListGuardV3 {
                             directChat = true;
                         }
                         int[] xy = location(tv);
-                        if (xy != null && xy[1] >= 0 && xy[1] < rootHeight * 0.33f) {
+                        if (xy != null && xy[1] >= 0 && xy[1] < rootHeight * 0.33f
+                                && xy[1] < titleTop) {
                             if (isInboxTitle(lower)) {
                                 kind = SCREEN_INBOX;
-                                titleBottom = Math.max(titleBottom, xy[1] + tv.getHeight());
+                                titleTop = xy[1];
+                                titleBottom = xy[1] + tv.getHeight();
                             } else if (isActivityTitle(lower)) {
                                 kind = SCREEN_ACTIVITY;
-                                titleBottom = Math.max(titleBottom, xy[1] + tv.getHeight());
+                                titleTop = xy[1];
+                                titleBottom = xy[1] + tv.getHeight();
                             }
                         }
                     }
@@ -282,7 +318,7 @@ public final class ThemeDynamicListGuardV3 {
                 final int k = screen.kind;
                 final int r = rowCount;
                 final int s = sectionCount;
-                Logger.printInfo(() -> "[BlueIT Dynamic List V3.1] kind=" + k
+                Logger.printInfo(() -> "[BlueIT Dynamic List V3.2] kind=" + k
                         + " visualRows=" + r + " sections=" + s);
             }
         } catch (Throwable ignored) {
@@ -312,7 +348,7 @@ public final class ThemeDynamicListGuardV3 {
             int rowHeight,
             int depth
     ) {
-        if (row == null || depth <= 0) return;
+        if (row == null || depth <= 0 || rootWidth <= 0 || rowHeight <= 0) return;
         try {
             for (int i = 0; i < row.getChildCount(); i++) {
                 View child = row.getChildAt(i);
@@ -324,6 +360,9 @@ public final class ThemeDynamicListGuardV3 {
                         && height >= rowHeight * 0.72f
                         && height <= rowHeight * 1.12f) {
                     group.setBackgroundColor(surface);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        group.setBackgroundTintList(null);
+                    }
                 }
                 paintRowFillers(group, surface, rootWidth, rowHeight, depth - 1);
             }
@@ -492,6 +531,8 @@ public final class ThemeDynamicListGuardV3 {
                 if (!themeActive(root)) return true;
                 ScreenInfo screen = detectScreen(root);
                 if (screen.kind != SCREEN_NONE) style(root, screen);
+                // Exact holders win after the geometry fallback, including clipped/returning rows.
+                styleBoundInboxRows(root);
             } catch (Throwable ignored) {
             }
             return true;

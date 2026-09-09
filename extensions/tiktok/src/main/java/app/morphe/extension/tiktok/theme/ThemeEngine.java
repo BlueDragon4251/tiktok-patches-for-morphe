@@ -128,6 +128,9 @@ public final class ThemeEngine {
         try {
             if (activity == null || activity.isFinishing()) return;
             activityRef = new WeakReference<>(activity);
+            // Activity/search pages can have their own window; the MainActivity observer never
+            // sees their recycler binds. Attach before their first draw, through the fail-open bridge.
+            ThemeEngineBootstrap.installActivityGuards(activity);
             scheduleApply(activity);
         } catch (Throwable throwable) {
             safeDebug("BlueIT Theme Engine activity attach failed", throwable);

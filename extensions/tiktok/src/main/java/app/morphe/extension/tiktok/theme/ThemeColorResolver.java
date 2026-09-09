@@ -35,6 +35,12 @@ public final class ThemeColorResolver {
     private static final int TIKTOK_ACCENT = Color.rgb(254, 44, 85);
     private static final int TIKTOK_LIGHT_TEXT = Color.rgb(22, 24, 35);
 
+    // Exact 46.7.3 resources. bx is the legacy page background used by search/inbox/navigation
+    // (res/b/x.xml, d4l.xml, a6y.xml). Some wrappers keep it white even in Android night mode.
+    // Its role must not be inferred as text from that white value; a04 is the modern page token.
+    private static final int TIKTOK_PAGE_BACKGROUND = 0x7f06001c;
+    private static final int TIKTOK_PAGE_FLAT_BACKGROUND = 0x7f06039b;
+
     /** Resource ids are stable for the process; semantic role stays stable across palette changes. */
     private static final ConcurrentHashMap<Integer, Integer> ROLE_CACHE = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, Method> CONVERTER_METHOD_CACHE =
@@ -117,7 +123,8 @@ public final class ThemeColorResolver {
             role = cachedRole;
         } else {
             name = resourceName(tokenId, context);
-            role = classifyName(name);
+            role = tokenId == TIKTOK_PAGE_BACKGROUND || tokenId == TIKTOK_PAGE_FLAT_BACKGROUND
+                    ? ROLE_BACKGROUND : classifyName(name);
 
             // dev.8 proved that 46.7.3 normally exposes only obfuscated names. In that case use the
             // actual color TikTok resolves for the attribute. This keeps the hook independent of R
