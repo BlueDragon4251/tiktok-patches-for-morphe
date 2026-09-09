@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 
 /** Regressions reported on dev.19; exercises actual Android Views, not source-text matching. */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE, sdk = 28, qualifiers = "w400dp-h800dp-mdpi-night")
+@Config(manifest = Config.NONE, sdk = 28, qualifiers = "w400dp-h800dp-night-mdpi")
 @LooperMode(LooperMode.Mode.PAUSED)
 public class ThemeRuntimeRegressionTest {
     private ActivityController<Activity> controller;
