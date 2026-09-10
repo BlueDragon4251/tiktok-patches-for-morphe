@@ -46,6 +46,19 @@ private const val PROFILE_SIDEBAR_FRAGMENT =
 private const val SETTINGS_COMPOSE_RENDERER = "LX/0VGt;"
 private var composePaletteType = ""
 
+private class NativeRootFingerprint(owner: String) : Fingerprint(
+    definingClass = owner, name = "onCreateView", returnType = "Landroid/view/View;",
+    parameters = listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;"),
+)
+
+private val nativeRoots = mapOf(
+    "Lcom/ss/android/ugc/aweme/main/MainPageFragment;" to "mainPage",
+    PROFILE_SIDEBAR_FRAGMENT to "sidebar",
+    "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
+    "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
+    "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;" to "chat",
+).map { (owner, hook) -> NativeRootFingerprint(owner) to hook }
+
 /** Common full/partial inbox bind dispatcher; runs after each holder's native w6 implementation. */
 private object InboxSessionBindFingerprint : Fingerprint(
     custom = { method, classDef ->
@@ -200,9 +213,11 @@ val themeEnginePatch = bytecodePatch(
         val palettes = mutableListOf<ClassDef>()
         classDefForEach { owner ->
             val fields = owner.fields.toList()
-            if (fields.size >= 200 && fields.all { it.type == "J" }) palettes += owner
+            val colors = fields.count { it.type == "J" }
+            val state = fields.filter { it.type != "J" }
+            if (colors >= 200 && state.size <= 4 && state.all { it.type.startsWith("L") }) palettes += owner
         }
-        if (palettes.size != 1) throw PatchException("Compose color table: expected one all-long palette, got ${palettes.map { it.type }}")
+        if (palettes.size != 1) throw PatchException("Compose color table: expected one color-table palette, got ${palettes.map { it.type }}")
         composePaletteType = palettes.single().type
 
 
@@ -293,20 +308,8 @@ val themeEnginePatch = bytecodePatch(
         }
 
         // Resolve actual native roots by lifecycle contracts, and use each return's real register.
-        val roots = mapOf(
-            "Lcom/ss/android/ugc/aweme/main/MainPageFragment;" to "mainPage",
-            PROFILE_SIDEBAR_FRAGMENT to "sidebar",
-            "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
-            "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
-            "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;" to "chat",
-        )
-        roots.forEach { (owner, hook) ->
-            val candidates = classDefBy(owner).methods.filter {
-                it.name == "onCreateView" && it.returnType == "Landroid/view/View;" &&
-                    it.parameterTypes == listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;")
-            }
-            if (candidates.size != 1) throw PatchException("Native root $hook: expected one lifecycle method, got ${candidates.size}")
-            val method = mutableClassDefBy(owner).findMutableMethodOf(candidates.single())
+        nativeRoots.forEach { (fingerprint, hook) ->
+            val method = fingerprint.matchAll(1..1).single().method
             method.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index to (it.value as OneRegisterInstruction).registerA }.toList()
                 .asReversed().forEach { (index, register) ->
@@ -322,6 +325,20 @@ val themeEnginePatch = bytecodePatch(
                 field.definingClass == MAIN_PAGE_ASSEM && field.type == "Landroid/view/View;"
             }
         }.distinctBy { it.name }.single()
+        val visibilityMethod = navigationClass.methods.single {
+            it.name == "showBottomTab" && it.parameterTypes == listOf("Z") && it.returnType == "V"
+        }
+        val getter = visibilityMethod.implementation!!.instructions.mapNotNull {
+            ((it as? ReferenceInstruction)?.reference as? MethodReference)?.takeIf { ref ->
+                ref.definingClass == MAIN_PAGE_ASSEM && ref.parameterTypes.isEmpty() && ref.returnType == "Landroid/view/View;"
+            }
+        }.distinctBy { it.name }.single()
+        val getterMethod = navigationClass.methods.single { it.name == getter.name && it.parameterTypes.isEmpty() }
+        val containerField = getterMethod.implementation!!.instructions.mapNotNull {
+            ((it as? ReferenceInstruction)?.reference as? FieldReference)?.takeIf { ref ->
+                ref.definingClass == MAIN_PAGE_ASSEM && ref.type == "Landroid/view/View;"
+            }
+        }.distinctBy { it.name }.single()
         var writers = 0
         navigationClass.methods.forEach { original ->
             val instructions = original.implementation?.instructions?.toList() ?: return@forEach
@@ -330,17 +347,18 @@ val themeEnginePatch = bytecodePatch(
                 when {
                     reference is MethodReference && reference.name == "setBackgroundColor" &&
                         reference.parameterTypes == listOf("I") && instruction is FiveRegisterInstruction ->
-                        index to instruction.registerC
+                        Triple(index, instruction.registerC, "navigation")
                     instruction.opcode == Opcode.IPUT_OBJECT && reference is FieldReference &&
-                        reference.name == backgroundField.name && reference.definingClass == MAIN_PAGE_ASSEM ->
-                        index to (instruction as TwoRegisterInstruction).registerA
+                        reference.name in setOf(backgroundField.name, containerField.name) && reference.definingClass == MAIN_PAGE_ASSEM ->
+                        Triple(index, (instruction as TwoRegisterInstruction).registerA,
+                            if (reference.name == containerField.name) "navigationContainer" else "navigation")
                     else -> null
                 }
             }
             if (sites.isNotEmpty()) {
                 val method = mutableClassDefBy(navigationClass).findMutableMethodOf(original)
-                sites.asReversed().forEach { (index, register) ->
-                    method.addInstruction(index + 1, "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->navigation(Landroid/view/View;)V")
+                sites.asReversed().forEach { (index, register, hook) ->
+                    method.addInstruction(index + 1, "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->$hook(Landroid/view/View;)V")
                     writers++
                 }
             }

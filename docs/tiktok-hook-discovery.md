@@ -21,7 +21,7 @@ The theme patch additionally discovers these hooks during patching:
 
 * TUX direct, generic, semantic and styled resolvers from framework APIs and the resolver
   family, with exactly-one-match checks. It distinguishes TypedValue.data from resourceId.
-* The Compose color table and its composition-local provider from their structural
+* The Compose color table (including its object-valued state slots) and its composition-local provider from their structural
   contracts. The existing palette mapper is unchanged.
 * The common Inbox bind dispatcher from its signature and native dispatch behavior.
 * Bottom-bar initialization and all native background writers in MainPageBusinessAssem,
@@ -39,6 +39,10 @@ python3 -m pip install -r scripts/tiktok/requirements.txt
 python3 scripts/tiktok/rediscover_hooks.py tiktok-hook-report.json newer-tiktok.apk \
   --output newer-hook-migration.json
 ```
+
+The `TikTok candidate hook discovery` manual workflow accepts the candidate HTTPS URL,
+exact SHA-256 and a successful acceptance run ID. It fetches that run's inventory and
+publishes the comparison without modifying the APK, branches or version allowlist.
 
 Review `relocated` candidates and concentrate manual inspection on `ambiguous` and
 `missing-or-changed`. Never select the first ambiguous candidate. Then verify injection

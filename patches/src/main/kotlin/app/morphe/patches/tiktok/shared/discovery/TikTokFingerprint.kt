@@ -53,7 +53,7 @@ open class TikTokFingerprint(
                 val evidence = method?.takeIf { it.implementation != null &&
                     !it.definingClass.startsWith("Lapp/morphe/") }?.let(::tokens)
                 linkedMapOf<String, Any?>(
-                    "hook" to fingerprint.javaClass.name,
+                    "hook" to (fingerprint.javaClass.name + ":" + (fingerprint.definingClass ?: "") + ":" + (fingerprint.name ?: "")),
                     "status" to if (method == null) "unresolved-or-optional" else "resolved",
                     "owner" to method?.definingClass, "name" to method?.name,
                     "parameters" to method?.parameterTypes, "returns" to method?.returnType,

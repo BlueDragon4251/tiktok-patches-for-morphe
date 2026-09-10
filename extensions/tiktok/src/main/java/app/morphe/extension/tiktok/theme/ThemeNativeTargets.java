@@ -14,7 +14,7 @@ import app.morphe.extension.shared.Logger;
 
 /** Roots supplied by verified native lifecycle hooks. No labels, dimensions or class-name guesses. */
 public final class ThemeNativeTargets {
-    private static final int MAIN = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5;
+    private static final int MAIN = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_CONTAINER = 6;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private ThemeNativeTargets() {}
 
@@ -23,6 +23,7 @@ public final class ThemeNativeTargets {
     public static void search(View view) { register(view, SEARCH); }
     public static void chat(View view) { register(view, CHAT); }
     public static void navigation(View view) { register(view, NAV); }
+    public static void navigationContainer(View view) { register(view, NAV_CONTAINER); }
 
     private static void register(View view, int kind) {
         if (view == null) return;
@@ -61,8 +62,11 @@ public final class ThemeNativeTargets {
     private static void color(View view, int value, Target target) {
         Drawable current = view.getBackground();
         Fill fill = target.fills.get(view);
-        if (fill == null || current != fill.applied || view.getBackgroundTintList() != null) {
-            fill = new Fill(current, view.getBackgroundTintList());
+        boolean changedInPlace = fill != null && current == fill.applied && current instanceof ColorDrawable
+                && ((ColorDrawable) current).getColor() != fill.appliedColor;
+        if (fill == null || current != fill.applied || changedInPlace || view.getBackgroundTintList() != null) {
+            Drawable nativeValue = changedInPlace ? new ColorDrawable(((ColorDrawable) current).getColor()) : current;
+            fill = new Fill(nativeValue, view.getBackgroundTintList());
             target.fills.put(view, fill);
         }
         if (!(current instanceof ColorDrawable) || ((ColorDrawable) current).getColor() != value) {
@@ -71,12 +75,14 @@ public final class ThemeNativeTargets {
         }
         if (view.getBackgroundTintList() != null) view.setBackgroundTintList(null);
         fill.applied = view.getBackground();
+        fill.appliedColor = value;
     }
 
     private static final class Fill {
         final Drawable original;
         final ColorStateList tint;
         Drawable applied;
+        int appliedColor;
         Fill(Drawable original, ColorStateList tint) { this.original = original; this.tint = tint; }
     }
 
@@ -170,6 +176,7 @@ public final class ThemeNativeTargets {
             } else if (enabled && kind == SIDEBAR) page(view, true, this);
             else if (enabled && kind == SEARCH) page(view, false, this);
             else if (enabled && kind == NAV) color(view, ThemeEngine.surfaceColor(view.getContext()), this);
+            else if (enabled && kind == NAV_CONTAINER) color(view, Color.TRANSPARENT, this);
             if (!enabled && !fills.isEmpty()) {
                 for (Map.Entry<View, Fill> entry : fills.entrySet()) {
                     View target = entry.getKey();

@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 
 OBFUSCATED = re.compile(r'L(?:X|Y)/[^;]+;|Lkotlin/jvm/internal/(?:A[^;]+);?')
-MEMBER = re.compile(r'^(L[^;]+;)->([^(: ]+)(.*)$')
+MEMBER = re.compile(r'^(\[*L[^;]+;|\[+[ZBCSIJFD])->([^(: ]+)(.*)$')
 
 
 def normalized_type(value):

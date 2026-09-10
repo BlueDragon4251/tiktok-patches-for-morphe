@@ -173,6 +173,22 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void navigationContainerDoesNotAddASecondOpaqueLayer() {
+        FrameLayout background = new FrameLayout(activity);
+        drawer.addView(background);
+        drawer.setBackgroundColor(Color.BLACK);
+        ThemeNativeTargets.navigationContainer(drawer);
+        ThemeNativeTargets.navigation(background);
+        assertEquals(Color.TRANSPARENT, ((ColorDrawable) drawer.getBackground()).getColor());
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) background.getBackground()).getColor());
+        background.setBackgroundColor(Color.YELLOW); // Android reuses the same ColorDrawable.
+        ThemeNativeTargets.navigation(background);
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.navigation(background);
+        assertEquals(Color.YELLOW, ((ColorDrawable) background.getBackground()).getColor());
+    }
+
+    @Test
     public void inboxBindStylesBeforeMeasurementAndRebindDoesNotNeedVisibleTitle() throws Exception {
         FrameLayout row = new FrameLayout(activity);
         FrameLayout filler = new FrameLayout(activity);
