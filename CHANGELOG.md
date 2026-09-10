@@ -1,3 +1,21 @@
+# [1.2.0-dev.21](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.20...v1.2.0-dev.21) (2026-09-10)
+
+
+### Bug Fixes
+
+* **dev:** publish verified native theme targets and reusable hook discovery ([37fb9b0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/37fb9b0dbb58be078915cd71cebbe0462602a285))
+* **discovery:** handle DEX Unicode and smali field opcodes ([0fd9af5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/0fd9af543dc4e3b30ad1600b7c6bc8bf954cf023))
+* **discovery:** preserve original APK methods before patch mutations ([f588f03](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/f588f03157be6cf6875ef2c5b4f29c155ec9530a))
+* **theme:** bind native surface roots and add reusable hook discovery ([e51abe2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/e51abe2cf1d69f7c01fdf47ccdd395e7e039259d))
+* **theme:** complete navigation transparency and validated hook discovery ([71492a7](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/71492a7990477b6f0dc21cb32077850363c8497a))
+* **theme:** distinguish inbox dispatcher from base row binding ([9fb58ff](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9fb58ff7a689a98e55ba81e35edea59c0ebdbef2))
+
+
+
+
+
+## 1.2.0-dev.21
+
 # [1.2.0-dev.20](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.19...v1.2.0-dev.20) (2026-09-09)
 
 
