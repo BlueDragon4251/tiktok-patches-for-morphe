@@ -14,16 +14,16 @@ import app.morphe.extension.shared.Logger;
 
 /** Roots supplied by verified native lifecycle hooks. No labels, dimensions or class-name guesses. */
 public final class ThemeNativeTargets {
-    private static final int MAIN = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_CONTAINER = 6;
+    private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private ThemeNativeTargets() {}
 
-    public static void mainPage(View view) { register(view, MAIN); }
+    public static void profilePage(View view) { register(view, PROFILE); }
     public static void sidebar(View view) { register(view, SIDEBAR); }
     public static void search(View view) { register(view, SEARCH); }
     public static void chat(View view) { register(view, CHAT); }
     public static void navigation(View view) { register(view, NAV); }
-    public static void navigationContainer(View view) { register(view, NAV_CONTAINER); }
+    public static void navigationDivider(View view) { register(view, NAV_DIVIDER); }
 
     private static void register(View view, int kind) {
         if (view == null) return;
@@ -35,7 +35,7 @@ public final class ThemeNativeTargets {
                 view.addOnAttachStateChangeListener(target);
                 target.attach();
                 final int role = kind;
-                Logger.printInfo(() -> "[BlueIT Native Target] role=" + role + " view=" + view.getClass().getName());
+                Logger.printInfo(() -> "[BlueIT Native Target v2] role=" + role + " view=" + view.getClass().getName());
             }
             target.apply();
         } catch (Throwable ignored) { }
@@ -43,7 +43,7 @@ public final class ThemeNativeTargets {
 
     static boolean isOwned(View view) {
         Target target = TARGETS.get(view);
-        return target != null && target.kind != MAIN;
+        return target != null;
     }
 
     static boolean hasChat(View root) {
@@ -114,7 +114,7 @@ public final class ThemeNativeTargets {
         }
     }
 
-    private static boolean sidebarVisible(View main) {
+    private static View visibleSidebar(View main) {
         int width = main.getRootView().getWidth();
         int[] origin = new int[2];
         main.getRootView().getLocationOnScreen(origin);
@@ -124,7 +124,14 @@ public final class ThemeNativeTargets {
                     || sidebar.getRootView() != main.getRootView() || !sidebar.isShown()) continue;
             int[] location = new int[2];
             sidebar.getLocationOnScreen(location);
-            if (location[0] < origin[0] + width && location[0] + sidebar.getWidth() > origin[0]) return true;
+            if (location[0] < origin[0] + width && location[0] + sidebar.getWidth() > origin[0]) return sidebar;
+        }
+        return null;
+    }
+
+    private static boolean contains(ViewGroup parent, View child) {
+        for (android.view.ViewParent p = child.getParent(); p != null; p = p.getParent()) {
+            if (p == parent) return true;
         }
         return false;
     }
@@ -138,6 +145,7 @@ public final class ThemeNativeTargets {
         float correction;
         float lastApplied;
         final Map<View, Fill> fills = new WeakHashMap<>();
+        final Map<ViewGroup, boolean[]> clips = new WeakHashMap<>();
         Target(View view, int kind) { reference = new java.lang.ref.WeakReference<>(view); this.kind = kind; }
         void attach() {
             View view = reference.get();
@@ -145,7 +153,7 @@ public final class ThemeNativeTargets {
             detach();
             observer = view.getViewTreeObserver();
             observer.addOnPreDrawListener(this);
-            if (kind == MAIN) observer.addOnScrollChangedListener(this);
+            if (kind == PROFILE) observer.addOnScrollChangedListener(this);
         }
         void detach() {
             if (observer != null && observer.isAlive()) {
@@ -153,12 +161,36 @@ public final class ThemeNativeTargets {
                 observer.removeOnScrollChangedListener(this);
             }
             observer = null;
+            restoreClips();
+        }
+        void restoreClips() {
+            for (Map.Entry<ViewGroup, boolean[]> entry : clips.entrySet()) {
+                entry.getKey().setClipChildren(entry.getValue()[0]);
+                entry.getKey().setClipToPadding(entry.getValue()[1]);
+            }
+            clips.clear();
+        }
+        void allowProfileUnderDrawer(View profile, View sidebar) {
+            // Only the ancestry between the two native lifecycle roots. The shifted page's
+            // clipping would otherwise cut off the corrected profile underneath the overlay.
+            for (android.view.ViewParent p = profile.getParent(); p instanceof ViewGroup; p = p.getParent()) {
+                ViewGroup group = (ViewGroup) p;
+                if (!clips.containsKey(group)) {
+                    clips.put(group, new boolean[]{group.getClipChildren(), group.getClipToPadding()});
+                }
+                if (group.getClipChildren()) group.setClipChildren(false);
+                if (group.getClipToPadding()) group.setClipToPadding(false);
+                if (contains(group, sidebar)) break;
+            }
         }
         void apply() {
             View view = reference.get();
             if (view == null) return;
             boolean enabled = active(view);
-            if (kind == MAIN) {
+            if (kind == PROFILE) {
+                View sidebar = enabled ? visibleSidebar(view) : null;
+                if (sidebar != null) allowProfileUnderDrawer(view, sidebar);
+                else restoreClips();
                 // Undo mathematically, never write a displaced intermediate frame to the View.
                 int[] position = new int[2], origin = new int[2];
                 view.getLocationOnScreen(position);
@@ -167,7 +199,7 @@ public final class ThemeNativeTargets {
                 float ownCorrection = current == lastApplied ? correction : 0;
                 float nativeTranslation = current - ownCorrection;
                 float baseX = position[0] - origin[0] - ownCorrection;
-                float next = enabled && sidebarVisible(view) ? Math.max(0, -baseX) : 0;
+                float next = sidebar != null ? Math.max(0, -baseX) : 0;
                 float applied = nativeTranslation + next;
                 if (current != applied) view.setTranslationX(applied);
                 // A native direct translation neutralized at zero needs no ancestor undo later.
@@ -175,8 +207,8 @@ public final class ThemeNativeTargets {
                 lastApplied = applied;
             } else if (enabled && kind == SIDEBAR) page(view, true, this);
             else if (enabled && kind == SEARCH) page(view, false, this);
-            else if (enabled && kind == NAV) color(view, ThemeEngine.surfaceColor(view.getContext()), this);
-            else if (enabled && kind == NAV_CONTAINER) color(view, Color.TRANSPARENT, this);
+            else if (enabled && kind == NAV) page(view, true, this);
+            else if (enabled && kind == NAV_DIVIDER) color(view, ThemeEngine.dividerColor(view.getContext()), this);
             if (!enabled && !fills.isEmpty()) {
                 for (Map.Entry<View, Fill> entry : fills.entrySet()) {
                     View target = entry.getKey();
