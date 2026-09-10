@@ -52,7 +52,7 @@ private class NativeRootFingerprint(owner: String) : Fingerprint(
 )
 
 private val nativeRoots = mapOf(
-    "Lcom/ss/android/ugc/aweme/main/MainPageFragment;" to "mainPage",
+    "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
     PROFILE_SIDEBAR_FRAGMENT to "sidebar",
     "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
     "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
@@ -107,8 +107,8 @@ private object TuxStyledColorResolverFingerprint : Fingerprint(
     custom = { method, owner -> isTuxFamily(owner) && method.calls("Landroid/content/res/TypedArray;", "getColor") },
 )
 
-/** Main TikTok bottom-tab background writer. */
-private object MainBottomNavigationBackgroundFingerprint : Fingerprint(
+/** Native half-dp separator writer; the bar itself comes from showBottomTab(). */
+private object MainBottomNavigationDividerFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith(MAIN_PAGE_ASSEM) &&
             method.calls("Landroid/view/View;", "setBackgroundColor") &&
@@ -229,7 +229,7 @@ val themeEnginePatch = bytecodePatch(
 
         listOf(TuxDirectColorResolverFingerprint, TuxGenericAttributeResolverFingerprint,
             TuxSemanticColorResolverFingerprint, TuxStyledColorResolverFingerprint,
-            InboxSessionBindFingerprint, MainBottomNavigationBackgroundFingerprint,
+            InboxSessionBindFingerprint, MainBottomNavigationDividerFingerprint,
             ComposePaletteProviderFingerprint).forEach { fingerprint ->
             val matches = fingerprint.matchAll(1..1)
             println("[BlueIT Hook Contract] ${fingerprint.javaClass.simpleName}: ${matches.single().originalMethod}")
@@ -323,10 +323,10 @@ val themeEnginePatch = bytecodePatch(
                 }
         }
 
-        // All native bar background writes, including rc(boolean), not just one named setter.
+        // sh()/rc() write the 0.5dp separator; showBottomTab() resolves the actual tab bar.
         val navigationClass = classDefBy(MAIN_PAGE_ASSEM)
-        val backgroundMethod = MainBottomNavigationBackgroundFingerprint.originalMethod
-        val backgroundField = backgroundMethod.implementation!!.instructions.mapNotNull {
+        val dividerMethod = MainBottomNavigationDividerFingerprint.originalMethod
+        val dividerField = dividerMethod.implementation!!.instructions.mapNotNull {
             ((it as? ReferenceInstruction)?.reference as? FieldReference)?.takeIf { field ->
                 field.definingClass == MAIN_PAGE_ASSEM && field.type == "Landroid/view/View;"
             }
@@ -353,11 +353,11 @@ val themeEnginePatch = bytecodePatch(
                 when {
                     reference is MethodReference && reference.name == "setBackgroundColor" &&
                         reference.parameterTypes == listOf("I") && instruction is FiveRegisterInstruction ->
-                        Triple(index, instruction.registerC, "navigation")
+                        Triple(index, instruction.registerC, "navigationDivider")
                     instruction.opcode == Opcode.IPUT_OBJECT && reference is FieldReference &&
-                        reference.name in setOf(backgroundField.name, containerField.name) && reference.definingClass == MAIN_PAGE_ASSEM ->
+                        reference.name in setOf(dividerField.name, containerField.name) && reference.definingClass == MAIN_PAGE_ASSEM ->
                         Triple(index, (instruction as TwoRegisterInstruction).registerA,
-                            if (reference.name == containerField.name) "navigationContainer" else "navigation")
+                            if (reference.name == containerField.name) "navigation" else "navigationDivider")
                     else -> null
                 }
             }

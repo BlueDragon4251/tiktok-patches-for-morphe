@@ -79,20 +79,20 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
-    public void nativeMainPageFollowsDrawerScrollWithoutMovingAnUnrelatedView() {
+    public void nativeProfileFollowsDrawerScrollWithoutMovingAnUnrelatedView() {
         FrameLayout unrelated = new FrameLayout(activity);
         host.addView(unrelated);
         unrelated.layout(0, 0, 400, 700);
-        ThemeNativeTargets.mainPage(profile);
+        ThemeNativeTargets.profilePage(profile);
         ThemeNativeTargets.sidebar(drawer);
         for (int scroll : new int[]{1, 23, 220, 280, 140, 0}) {
             host.scrollTo(scroll, 0);
-            ThemeNativeTargets.mainPage(profile);
+            ThemeNativeTargets.profilePage(profile);
             assertEquals(0, screenX(profile));
             assertEquals(400 - scroll, screenX(drawer));
             assertEquals(0, unrelated.getTranslationX(), 0f);
             // A second observer pass must not briefly reset or accumulate translation.
-            ThemeNativeTargets.mainPage(profile);
+            ThemeNativeTargets.profilePage(profile);
             assertEquals(0, screenX(profile));
         }
     }
@@ -103,12 +103,44 @@ public class ThemeRuntimeRegressionTest {
         ThemeNativeTargets.sidebar(drawer);
         for (int translation : new int[]{-160, -80, 0}) {
             profile.setTranslationX(translation);
-            ThemeNativeTargets.mainPage(profile);
+            ThemeNativeTargets.profilePage(profile);
             assertEquals(0, screenX(profile));
         }
         drawer.setVisibility(View.GONE);
-        ThemeNativeTargets.mainPage(profile);
+        ThemeNativeTargets.profilePage(profile);
         assertEquals(0, screenX(profile));
+    }
+
+    @Test
+    public void nestedProfilePageStaysVisibleWithoutMovingItsHostOrDrawer() {
+        host.removeView(profile);
+        FrameLayout page = new FrameLayout(activity);
+        host.addView(page, 0, new FrameLayout.LayoutParams(400, 700));
+        page.addView(profile, new FrameLayout.LayoutParams(400, 700));
+        page.layout(0, 0, 400, 700);
+        profile.layout(0, 0, 400, 700);
+        profile.setPadding(7, 11, 13, 17);
+        Drawable original = new ColorDrawable(Color.MAGENTA);
+        profile.setBackground(original);
+        drawer.layout(80, 0, 400, 700);
+        ThemeNativeTargets.sidebar(drawer);
+        page.setTranslationX(-160);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(0, screenX(profile));
+        assertEquals(-160f, page.getTranslationX(), 0f);
+        assertEquals(80, screenX(drawer));
+        assertFalse(page.getClipChildren());
+        assertFalse(page.getClipToPadding());
+        assertTrue(ThemeNativeTargets.isOwned(profile));
+        assertSame(original, profile.getBackground());
+        assertEquals(7, profile.getPaddingLeft());
+        assertEquals(11, profile.getPaddingTop());
+        drawer.setVisibility(View.GONE);
+        page.setTranslationX(0);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(0, screenX(profile));
+        assertTrue(page.getClipChildren());
+        assertTrue(page.getClipToPadding());
     }
 
     @Test
@@ -173,19 +205,29 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
-    public void navigationContainerDoesNotAddASecondOpaqueLayer() {
-        FrameLayout background = new FrameLayout(activity);
-        drawer.addView(background);
+    public void actualNavigationBarHasThemeFillAndSeparatorKeepsItsOwnRole() {
+        View separator = new View(activity);
+        separator.setBackgroundColor(Color.WHITE);
+        host.addView(separator, new FrameLayout.LayoutParams(400, 1));
         drawer.setBackgroundColor(Color.BLACK);
-        ThemeNativeTargets.navigationContainer(drawer);
-        ThemeNativeTargets.navigation(background);
-        assertEquals(Color.TRANSPARENT, ((ColorDrawable) drawer.getBackground()).getColor());
-        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) background.getBackground()).getColor());
-        background.setBackgroundColor(Color.YELLOW); // Android reuses the same ColorDrawable.
-        ThemeNativeTargets.navigation(background);
+        FrameLayout tabBackground = new FrameLayout(activity);
+        tabBackground.setBackgroundColor(Color.BLACK);
+        drawer.addView(tabBackground);
+        ThemeNativeTargets.navigation(drawer);
+        ThemeNativeTargets.navigationDivider(separator);
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) drawer.getBackground()).getColor());
+        assertTrue(Color.alpha(((ColorDrawable) drawer.getBackground()).getColor()) < 255);
+        assertEquals(Color.TRANSPARENT, ((ColorDrawable) tabBackground.getBackground()).getColor());
+        assertEquals(ThemeEngine.dividerColor(activity), ((ColorDrawable) separator.getBackground()).getColor());
+        drawer.setBackgroundColor(Color.BLACK); // TikTok repaints when switching back to FYP.
+        ThemeNativeTargets.navigation(drawer);
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) drawer.getBackground()).getColor());
         ThemeStateStore.saveUserPreset(activity, "default");
-        ThemeNativeTargets.navigation(background);
-        assertEquals(Color.YELLOW, ((ColorDrawable) background.getBackground()).getColor());
+        ThemeNativeTargets.navigation(drawer);
+        ThemeNativeTargets.navigationDivider(separator);
+        assertEquals(Color.BLACK, ((ColorDrawable) drawer.getBackground()).getColor());
+        assertEquals(Color.BLACK, ((ColorDrawable) tabBackground.getBackground()).getColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) separator.getBackground()).getColor());
     }
 
     @Test
