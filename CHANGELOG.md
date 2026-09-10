@@ -1,3 +1,17 @@
+# [1.2.0-dev.22](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.21...v1.2.0-dev.22) (2026-09-10)
+
+
+### Bug Fixes
+
+* **dev:** publish verified profile drawer and native tab bar corrections ([94786d4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/94786d44dac176410eb7ea1fa06eafd119266ea5))
+* **theme:** target actual tab bar and preserve profile behind drawer ([d925835](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d925835a58d6d71bb95ebb4b565f45e2847914cb))
+
+
+
+
+
+## 1.2.0-dev.22
+
 # [1.2.0-dev.21](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.20...v1.2.0-dev.21) (2026-09-10)
 
 
