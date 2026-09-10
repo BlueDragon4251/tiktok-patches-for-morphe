@@ -64,6 +64,9 @@ private val baseExtensionPatch = sharedExtensionPatch(
 
 val sharedExtensionPatch = app.morphe.patcher.patch.bytecodePatch {
     dependsOn(baseExtensionPatch)
+    execute {
+        app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint.captureOriginalClasses()
+    }
     finalize {
         app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint.writeReport()
     }
