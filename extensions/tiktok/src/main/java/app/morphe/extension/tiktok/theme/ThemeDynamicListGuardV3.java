@@ -528,7 +528,7 @@ public final class ThemeDynamicListGuardV3 {
                     detachAndForget();
                     return true;
                 }
-                if (!themeActive(root)) return true;
+                if (!themeActive(root) || ThemeNativeTargets.hasChat(root)) return true;
                 ScreenInfo screen = detectScreen(root);
                 if (screen.kind != SCREEN_NONE) style(root, screen);
                 // Exact holders win after the geometry fallback, including clipped/returning rows.

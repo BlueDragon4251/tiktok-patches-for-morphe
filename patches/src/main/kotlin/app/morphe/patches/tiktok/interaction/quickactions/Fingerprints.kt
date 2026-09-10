@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.tiktok.interaction.quickactions
 
-import app.morphe.patcher.Fingerprint
+import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 
 /** Legacy quick-comment experiment gate retained as a fail-soft fallback. */
 internal object QuickCommentReactionGateLegacyFingerprint : Fingerprint(
@@ -42,7 +42,6 @@ internal object LongPressQuickShareGateBooleanFingerprint : Fingerprint(
 
 /** Exact TikTok 46.7.3 provider for `im_long_press_share_button_to_quick_share`. */
 internal object LongPressQuickShareProviderFingerprint : Fingerprint(
-    definingClass = "LX/09Y7;",
     name = "invoke",
     returnType = "Ljava/lang/Object;",
     parameters = emptyList(),

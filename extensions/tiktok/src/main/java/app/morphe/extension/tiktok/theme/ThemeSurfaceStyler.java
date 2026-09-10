@@ -61,6 +61,7 @@ final class ThemeSurfaceStyler {
 
             int rootWidth = decor.getWidth();
             int rootHeight = decor.getHeight();
+            if (ThemeNativeTargets.hasChat(decor)) return;
             ScreenHints hints = scanScreenHints(decor, rootHeight);
             updateDynamicListWatcher(activity, decor, hints);
 
@@ -71,6 +72,7 @@ final class ThemeSurfaceStyler {
             while (!queue.isEmpty() && styledNodes++ < MAX_STYLE_NODES) {
                 Node node = queue.removeFirst();
                 View view = node.view;
+                if (ThemeNativeTargets.isOwned(view)) continue;
                 if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) {
                     continue;
                 }
@@ -325,6 +327,7 @@ final class ThemeSurfaceStyler {
             while (!queue.isEmpty() && visited++ < MAX_DYNAMIC_HINT_NODES) {
                 ScanNode node = queue.removeFirst();
                 View view = node.view;
+                if (ThemeNativeTargets.isOwned(view)) continue;
                 if (view == null || view.getVisibility() != View.VISIBLE) continue;
 
                 if (view instanceof TextView && isTopScreenTitle(view, rootHeight)) {

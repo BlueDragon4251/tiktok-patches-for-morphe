@@ -562,7 +562,7 @@ public final class ThemeRealtimeUiGuard {
                     return true;
                 }
 
-                if (!themeActive(root)) {
+                if (!themeActive(root) || ThemeNativeTargets.hasChat(root)) {
                     clearSidebarCompensation();
                     dirty = false;
                     return true;
@@ -584,7 +584,7 @@ public final class ThemeRealtimeUiGuard {
                 }
 
                 if (dirty || sidebarActive) {
-                    sidebarActive = compensateSidebarScroll(root);
+                    sidebarActive = false; // Native-owned main-page compensation owns this path.
                 }
                 dirty = false;
             } catch (Throwable ignored) {

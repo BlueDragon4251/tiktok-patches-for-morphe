@@ -1,6 +1,6 @@
 package app.morphe.patches.tiktok.interaction.gesture
 
-import app.morphe.patcher.Fingerprint
+import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 
 /**
  * TikTok 46.7.3 portrait feed gesture listener.

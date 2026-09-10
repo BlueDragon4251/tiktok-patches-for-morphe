@@ -29,7 +29,7 @@ import app.morphe.extension.shared.Utils;
 
 import static org.junit.Assert.*;
 
-/** Regressions reported on dev.19; exercises actual Android Views, not source-text matching. */
+/** Regressions reported on dev.19 and dev.20; exercises actual Android Views, not source-text matching. */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 28, qualifiers = "w400dp-h800dp-night-mdpi")
 @LooperMode(LooperMode.Mode.PAUSED)
@@ -79,45 +79,113 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
-    public void scrolledProfileIsFoundBelowDecorAndDrawerKeepsItsPosition() throws Exception {
-        host.scrollTo(220, 0);
-        assertEquals(-220, screenX(profile));
-        int drawerX = screenX(drawer);
-        Map<View, Object> corrections = new HashMap<>();
-        assertTrue(compensate(corrections));
-        assertEquals(0, screenX(profile));
-        assertEquals(drawerX, screenX(drawer));
-
-        // Continued opening and closing must follow the current host scroll, without drift.
-        for (int scroll : new int[]{280, 140, 0}) {
+    public void nativeMainPageFollowsDrawerScrollWithoutMovingAnUnrelatedView() {
+        FrameLayout unrelated = new FrameLayout(activity);
+        host.addView(unrelated);
+        unrelated.layout(0, 0, 400, 700);
+        ThemeNativeTargets.mainPage(profile);
+        ThemeNativeTargets.sidebar(drawer);
+        for (int scroll : new int[]{1, 23, 220, 280, 140, 0}) {
             host.scrollTo(scroll, 0);
-            restore(corrections);
-            compensate(corrections);
+            ThemeNativeTargets.mainPage(profile);
             assertEquals(0, screenX(profile));
             assertEquals(400 - scroll, screenX(drawer));
-        }
-    }
-
-    @Test
-    public void directClosingAnimationDoesNotResurrectPreviousNegativeTranslation() throws Exception {
-        Map<View, Object> corrections = new HashMap<>();
-        for (int translation : new int[]{-160, -80, 0}) {
-            profile.setTranslationX(translation);
-            restore(corrections);
-            assertEquals(translation, profile.getTranslationX(), 0f);
-            compensate(corrections);
+            assertEquals(0, unrelated.getTranslationX(), 0f);
+            // A second observer pass must not briefly reset or accumulate translation.
+            ThemeNativeTargets.mainPage(profile);
             assertEquals(0, screenX(profile));
         }
     }
 
     @Test
-    public void nativeTranslationChangeSurvivesUndoOfAncestorCompensation() throws Exception {
-        host.scrollTo(200, 0);
-        Map<View, Object> corrections = new HashMap<>();
-        assertTrue(compensate(corrections));
-        profile.setTranslationX(17f);
-        restore(corrections);
-        assertEquals(17f, profile.getTranslationX(), 0f);
+    public void nativeDirectClosingTranslationDoesNotResurrectAnOldOffset() {
+        drawer.layout(80, 0, 400, 700);
+        ThemeNativeTargets.sidebar(drawer);
+        for (int translation : new int[]{-160, -80, 0}) {
+            profile.setTranslationX(translation);
+            ThemeNativeTargets.mainPage(profile);
+            assertEquals(0, screenX(profile));
+        }
+        drawer.setVisibility(View.GONE);
+        ThemeNativeTargets.mainPage(profile);
+        assertEquals(0, screenX(profile));
+    }
+
+    @Test
+    public void sidebarHasOneTranslucentFillAndDefaultRestoresNativeDrawables() {
+        FrameLayout filler = new FrameLayout(activity);
+        drawer.addView(filler);
+        Drawable nativeRoot = new ColorDrawable(Color.BLACK);
+        Drawable nativeChild = new ColorDrawable(0xff121212);
+        drawer.setBackground(nativeRoot);
+        filler.setBackground(nativeChild);
+        ThemeNativeTargets.sidebar(drawer);
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) drawer.getBackground()).getColor());
+        assertTrue(Color.alpha(((ColorDrawable) drawer.getBackground()).getColor()) < 255);
+        assertEquals(Color.TRANSPARENT, ((ColorDrawable) filler.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.sidebar(drawer);
+        assertSame(nativeRoot, drawer.getBackground());
+        assertSame(nativeChild, filler.getBackground());
+    }
+
+    @Test
+    public void nativeChatRootExcludesAllMessageRowsFromCardHeuristics() throws Exception {
+        android.widget.TextView title = new android.widget.TextView(activity);
+        title.setText("Einstellungen und Datenschutz");
+        profile.addView(title);
+        FrameLayout message = new FrameLayout(activity);
+        profile.addView(message);
+        message.layout(0, 100, 400, 190);
+        Drawable nativeBubble = new ColorDrawable(Color.MAGENTA);
+        message.setBackground(nativeBubble);
+        ThemeNativeTargets.chat(profile);
+        invoke(ThemeEngine.class, "applyActivity", new Class<?>[]{Activity.class}, activity);
+        assertTrue(ThemeNativeTargets.hasChat(decor));
+        assertSame(nativeBubble, message.getBackground());
+    }
+
+    @Test
+    public void searchLateSuggestionFillMapsWhileMediaStaysUntouched() {
+        ThemeNativeTargets.search(profile);
+        FrameLayout suggestions = new FrameLayout(activity);
+        suggestions.setBackgroundColor(0xff121212);
+        profile.addView(suggestions);
+        android.widget.ImageView media = new android.widget.ImageView(activity);
+        Drawable image = new ColorDrawable(Color.BLACK);
+        media.setBackground(image);
+        suggestions.addView(media);
+        ThemeNativeTargets.search(profile);
+        assertEquals(ThemeEngine.backgroundColor(activity), ((ColorDrawable) suggestions.getBackground()).getColor());
+        assertSame(image, media.getBackground());
+    }
+
+    @Test
+    public void navigationNativeRepaintGetsThemeAlphaAndPreservesLatestDefault() {
+        ThemeNativeTargets.navigation(drawer);
+        Drawable repaint = new ColorDrawable(Color.BLACK);
+        drawer.setBackground(repaint);
+        ThemeNativeTargets.navigation(drawer);
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) drawer.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.navigation(drawer);
+        assertSame(repaint, drawer.getBackground());
+    }
+
+    @Test
+    public void navigationContainerDoesNotAddASecondOpaqueLayer() {
+        FrameLayout background = new FrameLayout(activity);
+        drawer.addView(background);
+        drawer.setBackgroundColor(Color.BLACK);
+        ThemeNativeTargets.navigationContainer(drawer);
+        ThemeNativeTargets.navigation(background);
+        assertEquals(Color.TRANSPARENT, ((ColorDrawable) drawer.getBackground()).getColor());
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) background.getBackground()).getColor());
+        background.setBackgroundColor(Color.YELLOW); // Android reuses the same ColorDrawable.
+        ThemeNativeTargets.navigation(background);
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.navigation(background);
+        assertEquals(Color.YELLOW, ((ColorDrawable) background.getBackground()).getColor());
     }
 
     @Test
@@ -155,7 +223,7 @@ public class ThemeRuntimeRegressionTest {
         try {
             View secondaryDecor = secondary.get().getWindow().getDecorView();
             for (Class<?> type : new Class<?>[]{ThemeRealtimeUiGuard.class,
-                    ThemeDynamicListGuardV3.class, ThemeProfileOverlayGuardV3.class}) {
+                    ThemeDynamicListGuardV3.class}) {
                 Field field = type.getDeclaredField("GUARDS");
                 field.setAccessible(true);
                 assertTrue(type.getSimpleName(), ((Map<?, ?>) field.get(null)).containsKey(secondaryDecor));
@@ -189,15 +257,6 @@ public class ThemeRuntimeRegressionTest {
         public long text = 0xffffffff00000000L;
         public long background = 0xff00000000000000L;
         public long media = 0xff00ff0000000000L;
-    }
-
-    private boolean compensate(Map<View, Object> corrections) throws Exception {
-        return (Boolean) invoke(ThemeProfileOverlayGuardV3.class, "compensate",
-                new Class<?>[]{View.class, Map.class}, decor, corrections);
-    }
-
-    private void restore(Map<View, Object> corrections) throws Exception {
-        invoke(ThemeProfileOverlayGuardV3.class, "restoreTracked", new Class<?>[]{Map.class}, corrections);
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

@@ -23,8 +23,6 @@ public final class ThemeEngineBootstrap {
             "app.morphe.extension.tiktok.theme.ThemeRealtimeUiGuard";
     private static final String DYNAMIC_LIST_GUARD_V3_CLASS =
             "app.morphe.extension.tiktok.theme.ThemeDynamicListGuardV3";
-    private static final String PROFILE_OVERLAY_GUARD_V3_CLASS =
-            "app.morphe.extension.tiktok.theme.ThemeProfileOverlayGuardV3";
     private static volatile boolean runtimeFailed;
     private static volatile String patchDefaultPreset = "default";
 
@@ -88,21 +86,14 @@ public final class ThemeEngineBootstrap {
 
     /** Each Activity owns a different DecorView and ViewTreeObserver. Installation is idempotent. */
     static void installActivityGuards(Activity activity) {
-        // Keep the generic frame-synchronous reapply for Inbox/other rebuilt surfaces. dev.17 proved
-        // that the old Activity V1/V2 and drawer-first guards matched the wrong hierarchy, so they
-        // are deliberately no longer installed. V3 derives Activity sections from live recycler rows
-        // and compensates profile movement without requiring drawer detection.
+        // Retain the working Inbox/Activity paths. Native roots now own sidebar motion.
         installGuard(activity, REALTIME_GUARD_CLASS, "BlueIT realtime theme guard unavailable");
         installGuard(
                 activity,
                 DYNAMIC_LIST_GUARD_V3_CLASS,
                 "BlueIT dynamic list guard V3 unavailable"
         );
-        installGuard(
-                activity,
-                PROFILE_OVERLAY_GUARD_V3_CLASS,
-                "BlueIT profile overlay guard V3 unavailable"
-        );
+        // Drawer motion is handled by exact native roots, not a screen-wide candidate search.
     }
 
     private static void installGuard(Activity activity, String className, String failureMessage) {
