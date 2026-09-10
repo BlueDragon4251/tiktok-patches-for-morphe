@@ -190,6 +190,12 @@ jobs:
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: Verify reusable hook discovery against the acceptance APK
+        if: steps.patch_full.outputs.exit_code == '0'
+        run: |
+          python3 -m pip install -r scripts/tiktok/requirements.txt
+          python3 scripts/tiktok/rediscover_hooks.py tiktok-hook-report.json tiktok-46.7.3.apk --verify-baseline
+
       - name: Summarize failures
         if: always()
         shell: bash
@@ -213,8 +219,10 @@ jobs:
             morphe-full-result.json
             patches-list.json
             target-evidence.txt
+            tiktok-hook-report.json
+            tiktok-hook-migration.json
           if-no-files-found: warn
-          retention-days: 1
+          retention-days: 30
 
       - name: Fail if acceptance reported failures
         if: always()

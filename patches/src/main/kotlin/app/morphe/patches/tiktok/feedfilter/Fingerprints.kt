@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.tiktok.feedfilter
 
-import app.morphe.patcher.Fingerprint
+import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
@@ -57,7 +57,7 @@ internal object ForYouFinalCommitFingerprint : Fingerprint(
     returnType = "V",
     parameters = emptyList(),
     strings = listOf(
-        "Feed0VVManager@569f.commit\$1L",
+        "Feed0VVManager@",
         "full_feed_commit_process_data",
         "homepage_hot",
         "filter_show_ad",
