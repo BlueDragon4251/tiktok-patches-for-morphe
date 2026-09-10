@@ -54,7 +54,10 @@ def method_tokens(method):
 
 
 def digest(tokens):
-    return hashlib.sha256('\n'.join(tokens).encode()).hexdigest()
+    # DEX uses UTF-16 strings. Join valid surrogate pairs and match the JVM's
+    # UTF-8 replacement byte ('?') for isolated surrogates in obfuscated strings.
+    value = '\n'.join(tokens).encode('utf-16-le', 'surrogatepass').decode('utf-16-le', 'surrogatepass')
+    return hashlib.sha256(value.encode('utf-8', 'replace')).hexdigest()
 
 
 def classify(hook, candidates):

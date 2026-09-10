@@ -16,5 +16,5 @@ internal fun Method.calls(owner: String? = null, name: String? = null,
 internal fun Method.readsField(owner: String, name: String): Boolean =
     implementation?.instructions?.any { instruction ->
         val ref = (instruction as? ReferenceInstruction)?.reference as? FieldReference
-        ref?.definingClass == owner && ref.name == name && instruction.opcode.name.startsWith("IGET")
+        ref?.definingClass == owner && ref.name == name && instruction.opcode.name.lowercase().startsWith("iget")
     } == true
