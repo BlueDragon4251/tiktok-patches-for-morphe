@@ -64,7 +64,13 @@ private object InboxSessionBindFingerprint : Fingerprint(
     custom = { method, classDef ->
         classDef.endsWith(INBOX_SESSION_HOLDER) &&
             method.parameterTypes.size == 2 && method.parameterTypes[0].startsWith("L") &&
-            method.parameterTypes[1] == "I" && method.calls(owner = INBOX_SESSION_HOLDER, returns = "V") &&
+            method.parameterTypes[1] == "I" &&
+            method.implementation?.instructions?.any { instruction ->
+                val call = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+                call?.definingClass == INBOX_SESSION_HOLDER && call.returnType == "V" &&
+                    call.parameterTypes.size == 2 && call.parameterTypes[0].startsWith("L") &&
+                    call.parameterTypes[1] == "I"
+            } == true &&
             method.returnType == "V"
     },
 )
