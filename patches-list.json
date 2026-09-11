@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0-dev.22",
+  "version": "1.2.0-dev.23",
   "appNames": {
     "com.zhiliaoapp.musically": "TikTok"
   },
@@ -1009,6 +1009,15 @@
         }
       ],
       "options": [
+        {
+          "key": "classicProfileLayout",
+          "title": "Classic centered profile",
+          "description": "Use TikTok's native centered profile header instead of the left-aligned experiment. Applies independently of the selected color preset.",
+          "required": true,
+          "type": "kotlin.Boolean",
+          "default": true,
+          "values": null
+        },
         {
           "key": "initialThemePreset",
           "title": "Initial theme preset",

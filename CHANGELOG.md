@@ -1,3 +1,17 @@
+# [1.2.0-dev.23](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.22...v1.2.0-dev.23) (2026-09-11)
+
+
+### Bug Fixes
+
+* **dev:** publish verified classic profile and drawer hook corrections ([3018e64](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3018e64e608473d98b6886d0eac67977ae960a9e))
+* **theme:** restore classic profile and protect drawer hook entry paths ([a47b9d0](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a47b9d0040ce96d8e8ba745fa44d142193382fa6))
+
+
+
+
+
+## 1.2.0-dev.23
+
 # [1.2.0-dev.22](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.21...v1.2.0-dev.22) (2026-09-10)
 
 
