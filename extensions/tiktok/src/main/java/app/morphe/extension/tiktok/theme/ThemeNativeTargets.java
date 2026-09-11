@@ -25,6 +25,20 @@ public final class ThemeNativeTargets {
     public static void navigation(View view) { register(view, NAV); }
     public static void navigationDivider(View view) { register(view, NAV_DIVIDER); }
 
+    /** Native pager entry after computeScroll, before any child is drawn in this frame. */
+    public static void beforePagerDraw(ViewGroup pager) {
+        if (pager == null) return;
+        try {
+            for (Map.Entry<View, Target> entry : TARGETS.entrySet()) {
+                View profile = entry.getKey();
+                if (entry.getValue().kind == PROFILE && profile != null
+                        && profile.isAttachedToWindow() && contains(pager, profile)) {
+                    entry.getValue().apply();
+                }
+            }
+        } catch (Throwable ignored) { }
+    }
+
     private static void register(View view, int kind) {
         if (view == null) return;
         try {
