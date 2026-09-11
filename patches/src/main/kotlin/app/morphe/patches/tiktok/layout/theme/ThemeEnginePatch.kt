@@ -12,7 +12,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
@@ -24,6 +26,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
@@ -58,6 +61,21 @@ private val nativeRoots = mapOf(
     "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
     "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;" to "chat",
 ).map { (owner, hook) -> NativeRootFingerprint(owner) to hook }
+
+/** Native master switch for the left-aligned header, merged avatar/info and avatar-at-right variants. */
+private object ProfileLeftAlignFingerprint : Fingerprint(
+    name = "<clinit>", returnType = "V", parameters = emptyList(),
+    strings = listOf("profile_left_align"),
+    custom = { method, owner ->
+        method.implementation?.instructions?.any {
+            ((it as? ReferenceInstruction)?.reference as? StringReference)?.string == "profile_left_align"
+        } == true && owner.fields.count { it.type == "Z" } == 1 &&
+            method.implementation?.instructions?.count { instruction ->
+                val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference
+                instruction.opcode == Opcode.SPUT_BOOLEAN && field?.definingClass == owner.type
+            } == 1 && method.calls(parameters = listOf("I", "I", "Ljava/lang/String;", "Z"), returns = "I")
+    },
+)
 
 /** Common full/partial inbox bind dispatcher; runs after each holder's native w6 implementation. */
 private object InboxSessionBindFingerprint : Fingerprint(
@@ -192,6 +210,14 @@ val themeEnginePatch = bytecodePatch(
     dependsOn(sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4673())
 
+    val classicProfileLayout by booleanOption(
+        key = "classicProfileLayout",
+        default = true,
+        title = "Classic centered profile",
+        description = "Use TikTok's native centered profile header instead of the left-aligned experiment. Applies independently of the selected color preset.",
+        required = true,
+    )
+
     val initialPreset by stringOption(
         key = "initialThemePreset",
         default = "default",
@@ -316,11 +342,21 @@ val themeEnginePatch = bytecodePatch(
         // Resolve actual native roots by lifecycle contracts, and use each return's real register.
         nativeRoots.forEach { (fingerprint, hook) ->
             val method = fingerprint.matchAll(1..1).single().method
-            method.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
-                .map { it.index to (it.value as OneRegisterInstruction).registerA }.toList()
-                .asReversed().forEach { (index, register) ->
-                    method.addInstruction(index, "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->$hook(Landroid/view/View;)V")
-                }
+            method.hookNativeReturns(hook)
+        }
+
+        if (classicProfileLayout == true) {
+            val method = ProfileLeftAlignFingerprint.matchAll(1..1).single().method
+            val (index, instruction) = method.implementation!!.instructions.withIndex().single {
+                it.value.opcode == Opcode.SPUT_BOOLEAN
+            }
+            val field = (instruction as ReferenceInstruction).reference as FieldReference
+            val register = (instruction as OneRegisterInstruction).registerA
+            // Rewrite the native decision before its cached dependents initialize. Keep labels
+            // on the zero assignment so both branches select the same complete classic layout.
+            method.replaceInstruction(index, "const/16 v$register, 0x0")
+            method.addInstruction(index + 1, "sput-boolean v$register, ${field.definingClass}->${field.name}:Z")
+            println("[BlueIT Profile Layout Contract] profile_left_align disabled at ${field.definingClass}->${field.name}")
         }
 
         // sh()/rc() write the 0.5dp separator; showBottomTab() resolves the actual tab bar.
