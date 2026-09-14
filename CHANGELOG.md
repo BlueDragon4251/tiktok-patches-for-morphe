@@ -1,3 +1,17 @@
+# [1.2.0-dev.24](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.23...v1.2.0-dev.24) (2026-09-14)
+
+
+### Bug Fixes
+
+* **dev:** publish native profile menu and pager draw corrections ([a792458](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/a792458261d7d2facd113ef938c631e489d3ea99)), closes [#6](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/issues/6)
+* **theme:** cover native profile menu and late pager scrolling ([232bf9c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/232bf9c28134db0b9bf2f9e8cf4a3f8021681667))
+
+
+
+
+
+## 1.2.0-dev.24
+
 # [1.2.0-dev.23](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0-dev.22...v1.2.0-dev.23) (2026-09-11)
 
 
