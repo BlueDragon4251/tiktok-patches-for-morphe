@@ -136,8 +136,8 @@ jobs:
           test -x "$DEXDUMP"
           : > ui-surface-evidence.txt
 
-          SURFACE_STRINGS='SettingsComposeRvmpFragment|SidebarPageFragment|MainPageBusinessAssem|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab'
-          SURFACE_DUMP_REGEX='Class descriptor.*SettingsComposeRvmpFragment;|Class descriptor.*SidebarPageFragment;|Class descriptor.*MainPageBusinessAssem;|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab|setBackgroundColor'
+          SURFACE_STRINGS='SettingsComposeRvmpFragment|SidebarPageFragment|ProfilePageMenuFragment|HomepageViewPagerAssem|MainPageBusinessAssem|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab'
+          SURFACE_DUMP_REGEX='Class descriptor.*SettingsComposeRvmpFragment;|Class descriptor.*SidebarPageFragment;|Class descriptor.*ProfilePageMenuFragment;|Class descriptor.*HomepageViewPagerAssem;|Class descriptor.*MainPageBusinessAssem;|HomeTabAbility|ProfileSidebar|ISidebarAbility|setTranslationX|showBottomTab|setBackgroundColor'
 
           for dex in /tmp/dex/*.dex; do
             strings_file="/tmp/$(basename "$dex").strings"

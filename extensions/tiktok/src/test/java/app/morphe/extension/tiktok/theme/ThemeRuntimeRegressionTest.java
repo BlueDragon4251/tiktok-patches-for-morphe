@@ -98,6 +98,42 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void pagerDrawCorrectsScrollAdvancedAfterPreDrawIncludingClosingFrame() {
+        FrameLayout unrelatedPager = new FrameLayout(activity);
+        host.addView(unrelatedPager);
+        unrelatedPager.layout(0, 0, 400, 700);
+        ThemeNativeTargets.profilePage(profile);
+        ThemeNativeTargets.sidebar(drawer);
+        int previousScroll = 0;
+        for (int scroll : new int[]{1, 23, 220, 280, 140, 0}) {
+            decor.getViewTreeObserver().dispatchOnPreDraw();
+            host.scrollTo(scroll, 0); // Native computeScroll runs after the observer pass.
+            assertEquals(previousScroll - scroll, screenX(profile));
+            ThemeNativeTargets.beforePagerDraw(unrelatedPager);
+            assertEquals(previousScroll - scroll, screenX(profile));
+            ThemeNativeTargets.beforePagerDraw(host);
+            assertEquals(0, screenX(profile));
+            assertEquals(400 - scroll, screenX(drawer));
+            assertEquals(0f, unrelatedPager.getTranslationX(), 0f);
+            ThemeNativeTargets.beforePagerDraw(host);
+            assertEquals(0, screenX(profile));
+            previousScroll = scroll;
+        }
+        assertTrue(host.getClipChildren());
+        assertTrue(host.getClipToPadding());
+
+        host.scrollTo(180, 0);
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(0, screenX(profile));
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(-180, screenX(profile));
+        assertEquals(0f, profile.getTranslationX(), 0f);
+        assertTrue(host.getClipChildren());
+        assertTrue(host.getClipToPadding());
+    }
+
+    @Test
     public void nativeDirectClosingTranslationDoesNotResurrectAnOldOffset() {
         drawer.layout(80, 0, 400, 700);
         ThemeNativeTargets.sidebar(drawer);

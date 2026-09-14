@@ -27,6 +27,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val THEME_ENGINE_BOOTSTRAP_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/theme/ThemeEngineBootstrap;"
@@ -58,9 +59,28 @@ private val nativeRoots = mapOf(
     "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
     PROFILE_SIDEBAR_FRAGMENT to "sidebar",
     "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
+    "Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;" to "sidebar",
     "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
     "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;" to "chat",
 ).map { (owner, hook) -> NativeRootFingerprint(owner) to hook }
+
+private object HomePagerViewCreatedFingerprint : Fingerprint(
+    definingClass = "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;",
+    name = "onViewCreated", parameters = listOf("Landroid/view/View;"), returnType = "V",
+)
+
+private var nativePagerDrawOwner = ""
+private object NativePagerDrawFingerprint : Fingerprint(
+    name = "dispatchDraw", parameters = listOf("Landroid/graphics/Canvas;"), returnType = "V",
+    custom = { method, owner ->
+        owner.type == nativePagerDrawOwner && owner.superclass == "Landroid/view/ViewGroup;" &&
+            method.calls("Landroid/view/ViewGroup;", "dispatchDraw") && owner.methods.any {
+                it.name == "computeScroll" && it.parameterTypes.isEmpty() && it.returnType == "V" &&
+                    it.calls("Landroid/widget/Scroller;", "computeScrollOffset") &&
+                    it.calls("Landroid/view/View;", "scrollTo")
+            }
+    },
+)
 
 /** Native master switch for the left-aligned header, merged avatar/info and avatar-at-right variants. */
 private object ProfileLeftAlignFingerprint : Fingerprint(
@@ -344,6 +364,32 @@ val themeEnginePatch = bytecodePatch(
             val method = fingerprint.matchAll(1..1).single().method
             method.hookNativeReturns(hook)
         }
+
+        // Resolve the real home pager from the native View argument's cast, then its draw owner.
+        // computeScroll can advance the pager after pre-draw, so correct before it draws children.
+        val pagerInit = HomePagerViewCreatedFingerprint.matchAll(1..1).single().originalMethod
+        val pagerInput = pagerInit.implementation!!.registerCount - 1
+        val pagerType = pagerInit.implementation!!.instructions.mapNotNull { instruction ->
+            if (instruction.opcode == Opcode.CHECK_CAST &&
+                (instruction as OneRegisterInstruction).registerA == pagerInput) {
+                ((instruction as ReferenceInstruction).reference as TypeReference).type
+            } else null
+        }.distinct().singleOrNull() ?: throw PatchException("Native home pager: expected one View argument cast")
+        var pagerClass = classDefBy(pagerType)
+        val pagerAncestors = mutableSetOf<String>()
+        while (pagerClass.methods.none { it.name == "dispatchDraw" &&
+                it.parameterTypes == listOf("Landroid/graphics/Canvas;") && it.returnType == "V" }) {
+            val parent = pagerClass.superclass
+            if (!pagerAncestors.add(pagerClass.type) || parent == null || parent.startsWith("Landroid/")) {
+                throw PatchException("Native home pager: no app-owned dispatchDraw in $pagerType ancestry")
+            }
+            pagerClass = classDefBy(parent)
+        }
+        nativePagerDrawOwner = pagerClass.type
+        val pagerDraw = NativePagerDrawFingerprint.matchAll(1..1).single().method
+        pagerDraw.addInstruction(0,
+            "invoke-static/range {p0 .. p0}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->beforePagerDraw(Landroid/view/ViewGroup;)V")
+        println("[BlueIT Pager Draw Contract] $pagerType -> ${pagerClass.type}->dispatchDraw")
 
         if (classicProfileLayout == true) {
             val method = ProfileLeftAlignFingerprint.matchAll(1..1).single().method
