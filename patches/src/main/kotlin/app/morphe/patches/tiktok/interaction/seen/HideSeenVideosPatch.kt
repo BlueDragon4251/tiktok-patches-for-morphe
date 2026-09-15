@@ -29,7 +29,7 @@ val hideSeenVideosPatch = bytecodePatch(
 ) {
     dependsOn(feedFilterPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(

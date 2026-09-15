@@ -45,7 +45,7 @@ val gestureRemapperPatch = bytecodePatch(
         longPressSpeedLockPatch,
         disableLongPressQuickSharePatch,
     )
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(

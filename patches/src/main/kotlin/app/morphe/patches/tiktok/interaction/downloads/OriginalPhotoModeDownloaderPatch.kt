@@ -12,7 +12,7 @@ val originalPhotoModeDownloaderPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(downloadsPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(

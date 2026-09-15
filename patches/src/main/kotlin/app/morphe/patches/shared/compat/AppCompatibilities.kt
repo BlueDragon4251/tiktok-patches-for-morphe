@@ -228,18 +228,13 @@ internal object AppCompatibilities {
     )
 
     /** Target: TikTok 46.7.3 global package. */
-    fun tiktok4673(): Array<Compatibility> = arrayOf(
+    fun tiktokVerified(): Array<Compatibility> = arrayOf(
         Compatibility(
             name = "TikTok",
             packageName = "com.zhiliaoapp.musically",
             appIconColor = TIKTOK_COLOR,
-            targets = listOf(AppTarget("46.7.3")),
+            targets = VerifiedTikTokVersions.targets,
         ),
     )
 
-    /**
-     * Transitional alias while 46.4.3-specific patch files are migrated and revalidated.
-     * Metadata still targets only TikTok 46.7.3.
-     */
-    fun tiktok4643(): Array<Compatibility> = tiktok4673()
 }

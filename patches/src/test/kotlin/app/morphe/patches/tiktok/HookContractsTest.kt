@@ -1,0 +1,88 @@
+package app.morphe.patches.tiktok
+
+import app.morphe.patches.tiktok.shared.discovery.*
+import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.MethodImplementationBuilder
+import com.android.tools.smali.dexlib2.builder.SwitchLabelElement
+import com.android.tools.smali.dexlib2.builder.instruction.*
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import org.junit.Assert.*
+import org.junit.Test
+
+class HookContractsTest {
+    private fun method(b: MethodImplementationBuilder, params: List<String> = emptyList()) = MutableMethod(
+        ImmutableMethod("LX/Fixture;", "renamed", params.map { ImmutableMethodParameter(it, emptySet(), null) }, "I",
+            AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
+
+    @Test fun missingAndAmbiguousCandidatesFail() {
+        assertThrows(PatchException::class.java) { emptyList<String>().singleOrThrow("missing") }
+        assertThrows(PatchException::class.java) { listOf("a", "b").singleOrThrow("ambiguous") }
+        assertEquals("only", listOf("only").singleOrThrow("unique"))
+    }
+
+    @Test fun derivesWideParametersAndChangedResultRegisters() {
+        for (registers in listOf(7, 13, 23)) {
+            val b = MethodImplementationBuilder(registers)
+            b.addInstruction(BuilderInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, ImmutableMethodReference("Ljava/lang/Float;", "value", emptyList(), "F")))
+            b.addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT, registers - 5))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, registers - 5))
+            val m = method(b, listOf("J", "I", "Ljava/lang/Object;"))
+            assertEquals(registers - 2, m.parameterRegister(1, "I"))
+            assertEquals(registers - 5, m.resultRegister(0, "F"))
+            assertThrows(PatchException::class.java) { m.resultRegister(0, "Ljava/lang/Object;") }
+            assertThrows(PatchException::class.java) { m.parameterRegister(1, "J") }
+        }
+    }
+
+    @Test fun protectsBranchesSwitchesAndExceptionEntries() {
+        for (kind in listOf("goto", "if", "packed", "sparse", "catch")) {
+            val b = MethodImplementationBuilder(2)
+            val start = b.addLabel("start"); val target = b.getLabel("return")
+            when (kind) {
+                "goto" -> b.addInstruction(BuilderInstruction10t(Opcode.GOTO, target))
+                "if" -> b.addInstruction(BuilderInstruction21t(Opcode.IF_EQZ, 0, target))
+                "packed" -> b.addInstruction(BuilderInstruction31t(Opcode.PACKED_SWITCH, 0, b.getLabel("payload")))
+                "sparse" -> b.addInstruction(BuilderInstruction31t(Opcode.SPARSE_SWITCH, 0, b.getLabel("payload")))
+                else -> b.addInstruction(BuilderInstruction10x(Opcode.NOP))
+            }
+            val end = b.addLabel("end")
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            b.addLabel("return"); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 1))
+            if (kind == "packed") { b.addLabel("payload"); b.addInstruction(BuilderPackedSwitchPayload(0, listOf(target))) }
+            if (kind == "sparse") { b.addLabel("payload"); b.addInstruction(BuilderSparseSwitchPayload(listOf(SwitchLabelElement(9, target)))) }
+            if (kind == "catch") b.addCatch("Ljava/lang/Throwable;", start, end, target)
+            val m = method(b); val body = m.implementation!!; val location = body.instructions[2].location
+            m.insertAtTarget(2, "invoke-static {}, Ltest/Hook;->run()V")
+            assertEquals(kind, Opcode.NOP, location.instruction!!.opcode)
+            assertEquals(Opcode.INVOKE_STATIC, body.instructions[location.index + 1].opcode)
+            assertEquals(Opcode.RETURN, body.instructions[location.index + 2].opcode)
+            assertEquals(2, body.instructions.count { it.opcode == Opcode.RETURN })
+        }
+    }
+
+    @Test fun cannotSplitResultOrExceptionProducer() {
+        for (opcode in listOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_OBJECT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_EXCEPTION)) {
+            val b = MethodImplementationBuilder(2)
+            b.addInstruction(BuilderInstruction11x(opcode, 0)); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            assertThrows(PatchException::class.java) { method(b).insertAtTarget(0, "nop") }
+        }
+    }
+
+    @Test fun fixtureContractRejectsChangedRegistersAndLiterals() {
+        fun fixture(count: Int, value: Int): MutableMethod {
+            val b = MethodImplementationBuilder(count)
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, value)); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            return method(b)
+        }
+        val baseline = fixture(2, 1); val hash = FixtureContracts.signature(baseline)
+        FixtureContracts.requireMatch(baseline, hash)
+        assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(fixture(3, 1), hash) }
+        assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(fixture(2, 0), hash) }
+        assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(baseline, null) }
+    }
+}

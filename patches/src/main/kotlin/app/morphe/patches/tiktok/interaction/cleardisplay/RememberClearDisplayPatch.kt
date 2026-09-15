@@ -25,7 +25,7 @@ val rememberClearDisplayPatch = bytecodePatch(
     description = "Remembers TikTok's clear-display state between videos.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         ClearModeLogCoreFingerprint.optionalMethod?.returnEarly()

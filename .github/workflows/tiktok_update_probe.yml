@@ -11,6 +11,11 @@ on:
         description: Exact SHA-256 of that APK
         required: true
         type: string
+      baseline_fixture:
+        description: Fixture id in the successful acceptance run
+        required: true
+        default: global-46.7.3
+        type: string
       baseline_run_id:
         description: Successful acceptance run whose hook inventory should be compared
         required: true
@@ -43,16 +48,32 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BASELINE_RUN_ID: ${{ inputs.baseline_run_id }}
+          BASELINE_FIXTURE: ${{ inputs.baseline_fixture }}
         run: |
-          set -euo pipefail
-          [[ "$BASELINE_RUN_ID" =~ ^[0-9]+$ ]]
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BASELINE_RUN_ID" > baseline-run.json
-          jq -e '.conclusion == "success" and .name == "TikTok 46.7.3 acceptance"' baseline-run.json
-          gh run download "$BASELINE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name tiktok-46.7.3-acceptance --dir baseline
+          python3 - <<'PYCODE'
+          import json, os, re, subprocess
+          run = os.environ['BASELINE_RUN_ID']; fixture = os.environ['BASELINE_FIXTURE']
+          if not run.isdigit() or not re.fullmatch('[a-z0-9.-]+', fixture):
+              raise SystemExit('Invalid run or fixture id')
+          repo = os.environ['GITHUB_REPOSITORY']
+          data = json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/actions/runs/{run}']))
+          if data['conclusion'] != 'success' or data['name'] != 'TikTok acceptance matrix':
+              raise SystemExit('Baseline must be a successful full acceptance matrix')
+          name = f"tiktok-{fixture}-acceptance-{data['head_sha']}"
+          subprocess.run(['gh', 'run', 'download', run, '--repo', repo, '--name', name, '--dir', 'baseline'], check=True)
+          open('baseline-run.json', 'w').write(json.dumps(data, indent=2))
+          PYCODE
       - name: Compare native hook contracts
         run: |
           python -m pip install -r scripts/tiktok/requirements.txt
-          python scripts/tiktok/rediscover_hooks.py baseline/tiktok-hook-report.json candidate.apk
+          python - <<'PYCODE'
+          from pathlib import Path
+          import subprocess
+          reports = list(Path('baseline').rglob('tiktok-hook-report.json'))
+          if len(reports) != 1:
+              raise SystemExit('Expected one baseline hook report')
+          subprocess.run(['python', 'scripts/tiktok/rediscover_hooks.py', str(reports[0]), 'candidate.apk'], check=True)
+          PYCODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -60,4 +81,5 @@ jobs:
           path: |
             baseline-run.json
             tiktok-hook-migration.json
+            tiktok-hook-migration.md
           retention-days: 30

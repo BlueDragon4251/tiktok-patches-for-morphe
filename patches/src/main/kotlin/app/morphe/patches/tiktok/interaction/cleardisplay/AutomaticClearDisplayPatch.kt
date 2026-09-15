@@ -23,7 +23,7 @@ val automaticClearDisplayPatch = bytecodePatch(
         rememberClearDisplayPatch,
     )
 
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         // Keep the settings surface aware that this optional patch is installed.

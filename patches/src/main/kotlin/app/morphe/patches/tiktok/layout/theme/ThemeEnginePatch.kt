@@ -228,7 +228,7 @@ val themeEnginePatch = bytecodePatch(
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     val classicProfileLayout by booleanOption(
         key = "classicProfileLayout",

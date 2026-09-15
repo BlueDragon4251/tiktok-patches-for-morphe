@@ -3,7 +3,7 @@ group = "app.morphe"
 patches {
     about {
         name = "BlueIT TikTok Patches"
-        description = "BlueIT Service patches for TikTok 46.4.3, built for Morphe."
+        description = "BlueIT Service patches for verified TikTok global versions, built for Morphe."
         source = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
         author = "BlueIT"
         contact = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/issues"

@@ -23,7 +23,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
     execute {
         OfflineModeSheetOptionsFingerprint.uniqueMethod.apply {
             val call = uniqueInstructionIndex("Offline sheet options list") { i ->

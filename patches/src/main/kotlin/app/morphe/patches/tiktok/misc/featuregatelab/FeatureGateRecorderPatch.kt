@@ -15,7 +15,7 @@ val featureGateRecorderPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(featureGateLabPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
