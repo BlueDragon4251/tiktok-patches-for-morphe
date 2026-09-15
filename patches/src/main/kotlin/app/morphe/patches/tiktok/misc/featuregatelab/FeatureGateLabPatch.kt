@@ -4,9 +4,9 @@
  */
 package app.morphe.patches.tiktok.misc.featuregatelab
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.absettings.APP_AB_DESCRIPTOR
@@ -81,7 +81,7 @@ val featureGateLabPatch = bytecodePatch(
         // already validated by the non-personalized-search/seekbar patches to
         // resolve the current App-AB class, then match its typed getter family
         // by return/parameter signature instead of 46.2.3 obfuscated names.
-        val appAbDescriptor = AppAbIntBoundaryFingerprint.method.definingClass
+        val appAbDescriptor = AppAbIntBoundaryFingerprint.uniqueMethod.definingClass
 
         boundaries.forEach { boundary ->
             val isAppAbBoundary = boundary.targetDescriptor == APP_AB_DESCRIPTOR

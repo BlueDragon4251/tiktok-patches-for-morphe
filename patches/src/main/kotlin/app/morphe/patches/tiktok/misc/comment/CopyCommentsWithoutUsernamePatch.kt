@@ -1,11 +1,11 @@
 package app.morphe.patches.tiktok.misc.comment
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -50,13 +50,13 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableCopyCommentsWithoutUsername()V",
         )
 
-        val clipboardHelperMatch = clipboardTextHelperFingerprint.match()
+        val clipboardHelperMatch = clipboardTextHelperFingerprint.uniqueMatch()
         val clipboardHelper = MethodSignature(
             clipboardHelperMatch.originalClassDef.type,
             clipboardHelperMatch.originalMethod.name,
@@ -71,7 +71,7 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
         )
 
         var patchedCalls = 0
-        commentCopyFingerprint.matchAll().forEach { match ->
+        commentCopyFingerprint.allMatches().forEach { match ->
             val method = match.method
             val helperCallIndexes = method.findClipboardHelperCallIndexes(clipboardHelper)
 

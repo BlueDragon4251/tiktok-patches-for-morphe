@@ -5,9 +5,9 @@
 package app.morphe.patches.tiktok.interaction.seekbar
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.absettings.hookAppAbIntBoundary
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -26,7 +26,7 @@ val showSeekbarPatch = bytecodePatch(
 
     execute {
         // This target is TikTok's short predicate used by the feed progress UI.
-        ShouldShowProgressBarFingerprint.method.addInstructions(
+        ShouldShowProgressBarFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 if-eqz p0, :show_seekbar_original
@@ -39,7 +39,7 @@ val showSeekbarPatch = bytecodePatch(
             """,
         )
 
-        SetSeekBarShowTypeFingerprint.method.apply {
+        SetSeekBarShowTypeFingerprint.uniqueMethod.apply {
             val typeRegister = implementation!!.registerCount - 1
             addInstructions(
                 0,
@@ -62,7 +62,7 @@ val showSeekbarThumbnailPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableSeekbarThumbnail()V",

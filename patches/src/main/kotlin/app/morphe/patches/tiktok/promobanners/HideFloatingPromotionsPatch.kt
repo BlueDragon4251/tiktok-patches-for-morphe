@@ -5,10 +5,10 @@
 package app.morphe.patches.tiktok.promobanners
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -43,12 +43,12 @@ val hideFloatingPromotionsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enablePromotionalBanners()V",
         )
 
-        TouchPointPendantParserFingerprint.method.let { method ->
+        TouchPointPendantParserFingerprint.uniqueMethod.let { method ->
             val parseIndex = method.indexOfFirstInstructionOrThrow {
                 getReference<MethodReference>()?.let { reference ->
                     reference.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;") &&

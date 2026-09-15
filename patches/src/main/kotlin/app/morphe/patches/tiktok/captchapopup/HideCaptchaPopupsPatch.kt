@@ -5,9 +5,9 @@
 package app.morphe.patches.tiktok.captchapopup
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -66,12 +66,12 @@ val hideCaptchaPopupsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableCaptchaPopupSuppression()V",
         )
 
-        CaptchaPopupFingerprint.method.addInstructions(
+        CaptchaPopupFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p1, p2}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z
@@ -86,7 +86,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
             """,
         )
 
-        LegacyCaptchaPopupFingerprint.method.addInstructions(
+        LegacyCaptchaPopupFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p1}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;)Z
@@ -101,7 +101,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
             """,
         )
 
-        OecCaptchaPopupFingerprint.method.addInstructions(
+        OecCaptchaPopupFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup()Z
@@ -118,7 +118,7 @@ val hideCaptchaPopupsPatch = bytecodePatch(
             """,
         )
 
-        LiveHostCaptchaPopupFingerprint.method.addInstructions(
+        LiveHostCaptchaPopupFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p1, p2}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z

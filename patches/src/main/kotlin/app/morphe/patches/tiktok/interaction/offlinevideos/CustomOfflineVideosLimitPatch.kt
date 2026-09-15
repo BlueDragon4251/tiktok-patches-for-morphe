@@ -1,9 +1,9 @@
 package app.morphe.patches.tiktok.interaction.offlinevideos
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.indexOfFirstInstructionReversedOrThrow
@@ -25,7 +25,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        OfflineModeSheetOptionsFingerprint.method.apply {
+        OfflineModeSheetOptionsFingerprint.uniqueMethod.apply {
             val freezeListIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_STATIC &&
                     getReference<MethodReference>()?.let { reference ->
@@ -47,7 +47,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             )
         }
 
-        OfflineModeOptionConfigFingerprint.method.apply {
+        OfflineModeOptionConfigFingerprint.uniqueMethod.apply {
             val configClass = definingClass
 
             fun postProcessOptionsField(fieldName: String) {
@@ -80,7 +80,7 @@ val customOfflineVideosLimitPatch = bytecodePatch(
             postProcessOptionsField("LJFF")
         }
 
-        OfflineModeOptionEnumFingerprint.method.apply {
+        OfflineModeOptionEnumFingerprint.uniqueMethod.apply {
             val enumClass = definingClass
             val customEnumFieldWriteIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.SPUT_OBJECT &&

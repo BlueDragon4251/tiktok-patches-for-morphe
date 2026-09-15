@@ -1,9 +1,9 @@
 package app.morphe.patches.tiktok.interaction.gesture
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.interaction.cleardisplay.rememberClearDisplayPatch
@@ -35,12 +35,12 @@ val gestureRemapperPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableGestureRemapper()V",
         )
 
-        PortraitSingleTapFingerprint.method.apply {
+        PortraitSingleTapFingerprint.uniqueMethod.apply {
             val original = getInstruction(0)
             addInstructionsWithLabels(
                 0,
@@ -74,7 +74,7 @@ val gestureRemapperPatch = bytecodePatch(
             )
         }
 
-        PortraitDoubleTapFingerprint.method.apply {
+        PortraitDoubleTapFingerprint.uniqueMethod.apply {
             val original = getInstruction(0)
             addInstructionsWithLabels(
                 0,
@@ -128,7 +128,7 @@ val gestureRemapperPatch = bytecodePatch(
             )
         }
 
-        PortraitLongPressFingerprint.method.apply {
+        PortraitLongPressFingerprint.uniqueMethod.apply {
             val original = getInstruction(0)
             addInstructionsWithLabels(
                 0,

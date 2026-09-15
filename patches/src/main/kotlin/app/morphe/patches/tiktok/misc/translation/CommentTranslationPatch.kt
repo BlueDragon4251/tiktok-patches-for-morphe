@@ -1,10 +1,10 @@
 package app.morphe.patches.tiktok.misc.translation
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -27,12 +27,12 @@ val commentTranslationPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableCommentTranslation()V",
         )
 
-        BaseCommentCellBindFingerprint.method.apply {
+        BaseCommentCellBindFingerprint.uniqueMethod.apply {
             val instructions = implementation!!.instructions
             val managerMatch = instructions.withIndex().mapNotNull { (index, instruction) ->
                 val field = instruction.getReference<FieldReference>()
@@ -77,7 +77,7 @@ val commentTranslationPatch = bytecodePatch(
             )
         }
 
-        CommentListLoadedFingerprint.method.apply {
+        CommentListLoadedFingerprint.uniqueMethod.apply {
             val responseReadyIndex = implementation!!.instructions.withIndex()
                 .firstOrNull { (_, instruction) ->
                     instruction.getReference<FieldReference>()?.let { reference ->
@@ -94,14 +94,14 @@ val commentTranslationPatch = bytecodePatch(
             )
         }
 
-        MultiCommentTranslationStartFingerprint.method.addInstructions(
+        MultiCommentTranslationStartFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static/range {v16 .. v18}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchStart(Ljava/lang/Object;Ljava/lang/Object;Z)V
             """,
         )
 
-        MultiCommentTranslationCompleteFingerprint.method.addInstructions(
+        MultiCommentTranslationCompleteFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchComplete(Ljava/lang/Object;)V

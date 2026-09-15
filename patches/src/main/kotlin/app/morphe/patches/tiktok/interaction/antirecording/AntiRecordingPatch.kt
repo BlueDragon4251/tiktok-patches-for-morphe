@@ -1,7 +1,7 @@
 package app.morphe.patches.tiktok.interaction.antirecording
 
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.util.findMutableMethodOf
@@ -33,7 +33,7 @@ val antiRecordingPatch = resourcePatch(
                     antiRecordingAddedFingerprint,
                     antiRecordingRemovedFingerprint,
                 ).forEach { fingerprint ->
-                    fingerprint.methodOrNull?.returnEarly()
+                    fingerprint.optionalMethod?.returnEarly()
                 }
 
                 val callSites = mutableListOf<ScreenCaptureCallSite>()

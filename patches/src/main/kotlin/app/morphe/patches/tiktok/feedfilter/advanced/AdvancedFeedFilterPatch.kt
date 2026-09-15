@@ -3,9 +3,9 @@
  */
 package app.morphe.patches.tiktok.feedfilter.advanced
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.feedfilter.ForYouFeedResponseFingerprint
 import app.morphe.patches.tiktok.feedfilter.FollowFeedFingerprint
@@ -30,12 +30,12 @@ val advancedFeedFilterPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedFeedFilter()V",
         )
 
-        ForYouFeedResponseFingerprint.method.let { method ->
+        ForYouFeedResponseFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -49,7 +49,7 @@ val advancedFeedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedFingerprint.method.let { method ->
+        FollowFeedFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -68,7 +68,7 @@ val advancedFeedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedListGetItemsFingerprint.method.let { method ->
+        FollowFeedListGetItemsFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -81,7 +81,7 @@ val advancedFeedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedPresenterPostProcessFingerprint.method.let { method ->
+        FollowFeedPresenterPostProcessFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }

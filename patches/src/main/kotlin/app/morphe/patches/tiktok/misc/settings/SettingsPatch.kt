@@ -5,12 +5,12 @@
 package app.morphe.patches.tiktok.misc.settings
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -73,7 +73,7 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugTargets(): OpenDebugTargets {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.method
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
             val stateClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
                 if (insn.opcode != Opcode.NEW_INSTANCE) return@firstNotNullOfOrNull null
                 ((insn as? ReferenceInstruction)?.reference as? TypeReference)?.type
@@ -192,7 +192,7 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugFunction2Method(): MutableMethod {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.method
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
             val openDebugVmClass = defaultState.definingClass
             val lambdaClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
                 if (insn.opcode != Opcode.INVOKE_DIRECT) return@firstNotNullOfOrNull null
@@ -253,8 +253,8 @@ val settingsPatch = bytecodePatch(
         }
 
         fun addOpenDebugToVisibleSettingsList(): Boolean {
-            val composeRowsMethod = SettingsComposeRowsFingerprint.methodOrNull ?: return false
-            val openDebugField = SupportGroupDefaultStateFingerprint.method.implementation?.instructions
+            val composeRowsMethod = SettingsComposeRowsFingerprint.optionalMethod ?: return false
+            val openDebugField = SupportGroupDefaultStateFingerprint.uniqueMethod.implementation?.instructions
                 ?.firstNotNullOfOrNull { instruction ->
                     if (instruction.opcode != Opcode.SGET_OBJECT) return@firstNotNullOfOrNull null
                     val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference
@@ -292,7 +292,7 @@ val settingsPatch = bytecodePatch(
         }
 
         if (!addOpenDebugToVisibleSettingsList()) {
-            SupportGroupDefaultStateFingerprint.method.apply {
+            SupportGroupDefaultStateFingerprint.uniqueMethod.apply {
                 val sectionHeaderSgetIndex = indexOfFirstInstructionOrThrow {
                     opcode == Opcode.SGET_OBJECT && getReference<FieldReference>()?.name == "SECTION_HEADER"
                 }
@@ -313,7 +313,7 @@ val settingsPatch = bytecodePatch(
             }
         }
 
-        AdPersonalizationActivityOnCreateFingerprint.method.apply {
+        AdPersonalizationActivityOnCreateFingerprint.uniqueMethod.apply {
             val initializeSettingsIndex = implementation!!.instructions.indexOfFirst { it.opcode == Opcode.INVOKE_SUPER } + 1
             val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
             val usableRegister = implementation!!.registerCount - parameters.size - 2
@@ -330,7 +330,7 @@ val settingsPatch = bytecodePatch(
             )
         }
 
-        AdPersonalizationActivityOnBackPressedFingerprint.method.apply {
+        AdPersonalizationActivityOnBackPressedFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """

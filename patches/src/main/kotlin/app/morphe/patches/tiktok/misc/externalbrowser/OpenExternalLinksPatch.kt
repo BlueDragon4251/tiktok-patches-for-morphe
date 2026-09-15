@@ -6,10 +6,10 @@
  */
 package app.morphe.patches.tiktok.misc.externalbrowser
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -30,13 +30,13 @@ val openExternalLinksPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableExternalBrowser()V",
         )
 
-        SparkThirdRouterOpenFingerprint.method.addInstructionsWithLabels(
+        SparkThirdRouterOpenFingerprint.uniqueMethod.addInstructionsWithLabels(
             0,
             """
                 invoke-static/range {p0 .. p1}, $EXTENSION_CLASS_DESCRIPTOR->openSparkThirdContext(Landroid/content/Context;Ljava/lang/Object;)Z
@@ -46,11 +46,11 @@ val openExternalLinksPatch = bytecodePatch(
             """,
             ExternalLabel(
                 "external_browser_spark_router_original",
-                SparkThirdRouterOpenFingerprint.method.getInstruction(0),
+                SparkThirdRouterOpenFingerprint.uniqueMethod.getInstruction(0),
             ),
         )
 
-        StoryLinkSheetFingerprint.method.addInstructionsWithLabels(
+        StoryLinkSheetFingerprint.uniqueMethod.addInstructionsWithLabels(
             0,
             """
                 invoke-static/range {p0 .. p1}, $EXTENSION_CLASS_DESCRIPTOR->openStoryLink(Ljava/lang/Object;Ljava/lang/Object;)Z
@@ -60,16 +60,16 @@ val openExternalLinksPatch = bytecodePatch(
             """,
             ExternalLabel(
                 "external_browser_story_original",
-                StoryLinkSheetFingerprint.method.getInstruction(0),
+                StoryLinkSheetFingerprint.uniqueMethod.getInstruction(0),
             ),
         )
 
-        val superOnCreateIndex = SparkActivityOnCreateFingerprint.method.implementation!!.instructions
+        val superOnCreateIndex = SparkActivityOnCreateFingerprint.uniqueMethod.implementation!!.instructions
             .indexOfFirst { it.opcode == Opcode.INVOKE_SUPER }
         check(superOnCreateIndex >= 0) {
             "Could not find SparkActivity super.onCreate call"
         }
-        SparkActivityOnCreateFingerprint.method.addInstructionsWithLabels(
+        SparkActivityOnCreateFingerprint.uniqueMethod.addInstructionsWithLabels(
             superOnCreateIndex + 1,
             """
                 invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->openSparkActivity(Landroid/app/Activity;)Z
@@ -79,7 +79,7 @@ val openExternalLinksPatch = bytecodePatch(
             """,
             ExternalLabel(
                 "external_browser_spark_activity_original",
-                SparkActivityOnCreateFingerprint.method.getInstruction(superOnCreateIndex + 1),
+                SparkActivityOnCreateFingerprint.uniqueMethod.getInstruction(superOnCreateIndex + 1),
             ),
         )
     }

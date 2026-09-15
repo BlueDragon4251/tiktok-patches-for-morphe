@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.tiktok.misc.settings
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
@@ -23,12 +23,12 @@ internal fun addLegacySettingsEntryFallback() {
 
         fun String.toClassName(): String = substring(1, length - 1).replace("/", ".")
 
-        val settingsButtonClass = SettingsEntryFingerprint.originalClassDef.type.toClassName()
-        val settingsButtonInfoClass = SettingsEntryInfoFingerprint.originalClassDef.type.toClassName()
+        val settingsButtonClass = SettingsEntryFingerprint.uniqueOriginalClassDef.type.toClassName()
+        val settingsButtonInfoClass = SettingsEntryInfoFingerprint.uniqueOriginalClassDef.type.toClassName()
 
         // If this optional secondary row fingerprint does not match, skip it instead of failing the patch run.
         // If fingerprints don't match, skip instead of failing the whole patch run.
-        AddSettingsEntryFingerprint.methodOrNull?.let { addSettingsMethod ->
+        AddSettingsEntryFingerprint.optionalMethod?.let { addSettingsMethod ->
             val implementation = addSettingsMethod.implementation ?: return@let
             val markIndex = implementation.instructions.indexOfFirst {
                 it.opcode == Opcode.IGET_OBJECT &&
@@ -49,7 +49,7 @@ internal fun addLegacySettingsEntryFallback() {
                     const-string v1, "$settingsButtonInfoClass"
                     invoke-static {v0, v1}, $createSettingsEntryMethodDescriptor
                     move-result-object v0
-                    check-cast v0, ${SettingsEntryFingerprint.originalClassDef.type}
+                    check-cast v0, ${SettingsEntryFingerprint.uniqueOriginalClassDef.type}
                 """,
             )
         }

@@ -5,9 +5,9 @@
 package app.morphe.patches.tiktok.feedfilter
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
@@ -36,14 +36,14 @@ val feedFilterPatch = bytecodePatch(
 
     execute {
         // Enables the feed filter extension after settings were loaded.
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedFilter()V",
         )
 
         // Mark only the canonical For You network response. FeedItemList is shared by
         // profiles, detail and series screens, so global re-filtering is identity-guarded.
-        ForYouFeedResponseFingerprint.method.let { method ->
+        ForYouFeedResponseFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -62,7 +62,7 @@ val feedFilterPatch = bytecodePatch(
         // pass through FeedApi.LIZIZ(...). Its own fetchFeeds routine already removes
         // native ads/LIVE/story entries, so it is an exact feed-only anchor. Re-run the
         // complete BlueIT filter after TikTok finishes mutating that cached list.
-        ForYouCachedFeedFilterFingerprint.method.let { method ->
+        ForYouCachedFeedFilterFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }
@@ -78,7 +78,7 @@ val feedFilterPatch = bytecodePatch(
 
         // `tryUseCache` can also return the cached FYP list directly. Mark/filter every
         // non-null return before it reaches downstream UI. markAndFilter itself is null-safe.
-        ForYouCachedFeedReadFingerprint.method.let { method ->
+        ForYouCachedFeedReadFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -102,7 +102,7 @@ val feedFilterPatch = bytecodePatch(
         // Finally, re-filter the result again immediately before Message.obj receives it;
         // this point is after TikTok's commercial processors and is the last exact handoff
         // before the completed feed is posted to the UI handler.
-        ForYouFinalCommitFingerprint.method.let { method ->
+        ForYouFinalCommitFingerprint.uniqueMethod.let { method ->
             val castIndices = method.implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
                     instruction.opcode == Opcode.CHECK_CAST &&
@@ -155,7 +155,7 @@ val feedFilterPatch = bytecodePatch(
         // TikTok applies further response processors/client-side insertions after network,
         // cache and final commit acquisition. Re-filter whenever an already marked FYP list
         // is read again. Non-feed lists remain untouched by the identity guard.
-        FeedItemListGetItemsFingerprint.method.let { method ->
+        FeedItemListGetItemsFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -169,7 +169,7 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedFingerprint.method.let { method ->
+        FollowFeedFingerprint.uniqueMethod.let { method ->
             val returnIndices =
                 method.implementation!!.instructions.withIndex()
                     .filter { it.value.opcode == Opcode.RETURN_OBJECT }
@@ -191,7 +191,7 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedListGetItemsFingerprint.method.let { method ->
+        FollowFeedListGetItemsFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -204,7 +204,7 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        FollowFeedPresenterPostProcessFingerprint.method.let { method ->
+        FollowFeedPresenterPostProcessFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }
@@ -217,7 +217,7 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        TakoAiFeedButtonSetVisibleFingerprint.method.addInstructions(
+        TakoAiFeedButtonSetVisibleFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->shouldHideFeedButton()Z
@@ -229,7 +229,7 @@ val feedFilterPatch = bytecodePatch(
             """,
         )
 
-        TakoAiFeedButtonBindFingerprint.method.addInstructions(
+        TakoAiFeedButtonBindFingerprint.uniqueMethod.addInstructions(
             2,
             "invoke-static {p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
         )

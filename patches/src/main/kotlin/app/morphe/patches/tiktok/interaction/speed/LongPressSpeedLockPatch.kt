@@ -4,10 +4,10 @@
  */
 package app.morphe.patches.tiktok.interaction.speed
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -30,13 +30,13 @@ val longPressSpeedLockPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableLongPressSpeedLock()V",
         )
 
-        LongPressSpeedUpEnableFingerprint.method.let { method ->
+        LongPressSpeedUpEnableFingerprint.uniqueMethod.let { method ->
             val lookupIndex = method.indexOfFirstInstructionOrThrow {
                 getReference<MethodReference>()?.let { reference ->
                     reference.parameterTypes == listOf("I", "Ljava/lang/String;", "Z", "Z") &&
@@ -53,7 +53,7 @@ val longPressSpeedLockPatch = bytecodePatch(
             )
         }
 
-        LongPressSpeedUpLockFingerprint.method.let { method ->
+        LongPressSpeedUpLockFingerprint.uniqueMethod.let { method ->
             val lookupIndex = method.indexOfFirstInstructionOrThrow {
                 getReference<MethodReference>()?.let { reference ->
                     reference.parameterTypes == listOf("I", "I", "Ljava/lang/String;", "Z") &&

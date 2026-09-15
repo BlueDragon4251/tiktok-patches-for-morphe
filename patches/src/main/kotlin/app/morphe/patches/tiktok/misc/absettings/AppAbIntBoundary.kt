@@ -5,7 +5,7 @@
 package app.morphe.patches.tiktok.misc.absettings
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
@@ -49,7 +49,7 @@ internal fun BytecodePatchContext.hookAppAbIntBoundary(
     extensionDescriptor: String,
     extensionMethod: String,
 ) {
-    AppAbIntBoundaryFingerprint.method.apply {
+    AppAbIntBoundaryFingerprint.uniqueMethod.apply {
         implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
             .map { it.index }

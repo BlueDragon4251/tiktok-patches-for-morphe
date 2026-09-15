@@ -5,10 +5,10 @@
 package app.morphe.patches.tiktok.interaction.speed
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.util.getReference
@@ -27,7 +27,7 @@ val playbackSpeedPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        GetSpeedFingerprint.method.apply {
+        GetSpeedFingerprint.uniqueMethod.apply {
             val injectIndex = indexOfFirstInstructionOrThrow { getReference<MethodReference>()?.returnType == "F" } + 2
             val register = getInstruction<OneRegisterInstruction>(injectIndex - 1).registerA
 
@@ -38,7 +38,7 @@ val playbackSpeedPatch = bytecodePatch(
             )
         }
 
-        OnRenderFirstFrameFingerprint.method.addInstructions(
+        OnRenderFirstFrameFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {}, Lapp/morphe/extension/tiktok/speed/PlaybackSpeedPatch;->getPlaybackSpeed()F

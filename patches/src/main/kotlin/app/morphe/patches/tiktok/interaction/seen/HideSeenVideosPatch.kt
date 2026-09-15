@@ -3,9 +3,9 @@
  */
 package app.morphe.patches.tiktok.interaction.seen
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.feedfilter.ForYouFeedResponseFingerprint
 import app.morphe.patches.tiktok.feedfilter.FollowFeedFingerprint
@@ -32,17 +32,17 @@ val hideSeenVideosPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableSeenVideoFilter()V",
         )
 
-        PlayerProgressFingerprint.method.addInstruction(
+        PlayerProgressFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static/range {p1 .. p5}, $HISTORY_DESCRIPTOR->onPlayProgressChange(Ljava/lang/String;JJ)V",
         )
 
-        ForYouFeedResponseFingerprint.method.let { method ->
+        ForYouFeedResponseFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -57,7 +57,7 @@ val hideSeenVideosPatch = bytecodePatch(
             }
         }
 
-        FollowFeedFingerprint.method.let { method ->
+        FollowFeedFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -77,7 +77,7 @@ val hideSeenVideosPatch = bytecodePatch(
             }
         }
 
-        FollowFeedListGetItemsFingerprint.method.let { method ->
+        FollowFeedListGetItemsFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -91,7 +91,7 @@ val hideSeenVideosPatch = bytecodePatch(
             }
         }
 
-        FollowFeedPresenterPostProcessFingerprint.method.let { method ->
+        FollowFeedPresenterPostProcessFingerprint.uniqueMethod.let { method ->
             val returnIndices = method.implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }

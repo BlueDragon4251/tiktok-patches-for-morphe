@@ -5,12 +5,12 @@
 package app.morphe.patches.tiktok.interaction.downloads
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.findInstructionIndicesReversedOrThrow
@@ -41,15 +41,15 @@ val downloadsPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktok4643())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableDownload()V",
         )
 
-        AclCommonShareFingerprint.method.returnEarly(0)
-        AclCommonShare2Fingerprint.method.returnEarly(2)
+        AclCommonShareFingerprint.uniqueMethod.returnEarly(0)
+        AclCommonShare2Fingerprint.uniqueMethod.returnEarly(2)
 
-        AclCommonShare3Fingerprint.method.addInstructionsWithLabels(
+        AclCommonShare3Fingerprint.uniqueMethod.addInstructionsWithLabels(
             0,
             """
                 invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldRemoveWatermark()Z
@@ -62,7 +62,7 @@ val downloadsPatch = bytecodePatch(
             """,
         )
 
-        AwemeGetVideoFingerprint.method.apply {
+        AwemeGetVideoFingerprint.uniqueMethod.apply {
             val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.first()
             val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
             addInstructions(
@@ -71,7 +71,7 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        CommentImageWatermarkFingerprint.method.apply {
+        CommentImageWatermarkFingerprint.uniqueMethod.apply {
             val drawBitmapIndex = findInstructionIndicesReversedOrThrow {
                 opcode.name == "invoke-virtual" &&
                     this is ReferenceInstruction &&
@@ -98,7 +98,7 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        StickerPreviewBinderFingerprint.method.apply {
+        StickerPreviewBinderFingerprint.uniqueMethod.apply {
             val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.first()
             addInstructions(
                 returnIndex,
@@ -106,8 +106,8 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.method
-        StickerPreviewSourceFingerprint.method.apply {
+        val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.uniqueMethod
+        StickerPreviewSourceFingerprint.uniqueMethod.apply {
             val bindCallIndices = implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
                     instruction.getReference<MethodReference>()?.let { reference ->
@@ -151,7 +151,7 @@ val downloadsPatch = bytecodePatch(
             }
         }
 
-        DownloadSuccessCoroutineFingerprint.method.apply {
+        DownloadSuccessCoroutineFingerprint.uniqueMethod.apply {
             val fieldReferences = implementation!!.instructions.mapNotNull { it.getReference<FieldReference>() }
             val pathField = fieldReferences.first {
                 it.definingClass == definingClass && it.type == "Ljava/lang/String;"
@@ -173,7 +173,7 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        DownloadUriFingerprint.method.apply {
+        DownloadUriFingerprint.uniqueMethod.apply {
             findInstructionIndicesReversedOrThrow {
                 getReference<FieldReference>().let { ref ->
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
