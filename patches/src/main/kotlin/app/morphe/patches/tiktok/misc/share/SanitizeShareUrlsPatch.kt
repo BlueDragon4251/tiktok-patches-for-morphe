@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.tiktok.misc.share
 
+import app.morphe.patches.tiktok.shared.discovery.parameterRegister
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
@@ -23,15 +24,14 @@ val sanitizeShareUrlsPatch = bytecodePatch(
 
     execute {
         ShareUrlTrackerFingerprint.uniqueMethod.apply {
-            val urlRegister = implementation!!.registerCount - parameterTypes.size +
-                if (parameterTypes[0] in arrayOf("J", "D")) 2 else 1
+            val urlRegister = parameterRegister(1, "Ljava/lang/String;")
 
             addInstructions(
                 0,
                 """
-                    invoke-static {v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->stripAllQueryParams(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v0
-                    return-object v0
+                    invoke-static/range {v$urlRegister .. v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->stripAllQueryParams(Ljava/lang/String;)Ljava/lang/String;
+                    move-result-object v$urlRegister
+                    return-object v$urlRegister
                 """,
             )
         }

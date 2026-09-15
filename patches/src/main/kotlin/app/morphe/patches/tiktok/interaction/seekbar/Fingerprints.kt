@@ -5,6 +5,8 @@
 package app.morphe.patches.tiktok.interaction.seekbar
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
+import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -36,10 +38,16 @@ internal object ShouldShowProgressBarFingerprint : Fingerprint(
     returnType = "Z",
     parameters = listOf(AWEME_CLASS),
     custom = { method, classDef ->
-        isTargetClass(classDef) && (method.implementation?.instructions?.count() ?: 0) <= 20
+        run {
+            val calls = method.implementation?.instructions?.mapNotNull { it.getReference<MethodReference>() }.orEmpty()
+            isTargetClass(classDef) && classDef.methods.any { it.returnType == "Lcom/ss/android/ugc/aweme/feed/assem/ability/IFeedPanelPlatformAbility;" } &&
+                calls.size == 2 && calls.all { it.parameterTypes == listOf(AWEME_CLASS) && it.returnType == "Z" } &&
+                calls.any { it.definingClass == "Lcom/ss/android/ugc/aweme/feed/model/AwemeExtKt;" && it.name == "isAdTraffic" }
+        }
     },
 )
 
 internal object SetSeekBarShowTypeFingerprint : Fingerprint(
+    parameters = listOf("I"), returnType = "V",
     strings = listOf("seekbar show type change, change to:"),
 )

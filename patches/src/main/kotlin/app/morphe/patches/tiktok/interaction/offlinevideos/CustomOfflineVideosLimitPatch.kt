@@ -1,20 +1,20 @@
 package app.morphe.patches.tiktok.interaction.offlinevideos
 
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.tiktok.shared.discovery.*
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
+import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patcher.patch.PatchException
 import app.morphe.util.getReference
-import app.morphe.util.indexOfFirstInstructionOrThrow
-import app.morphe.util.indexOfFirstInstructionReversedOrThrow
+import app.morphe.util.findInstructionIndicesReversedOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
-private const val CUSTOM_OFFLINE_VIDEOS_HELPER =
-    "Lapp/morphe/extension/tiktok/offline/CustomOfflineVideosLimitPatch;"
+private const val HELPER = "Lapp/morphe/extension/tiktok/offline/CustomOfflineVideosLimitPatch;"
 
 @Suppress("unused")
 val customOfflineVideosLimitPatch = bytecodePatch(
@@ -22,101 +22,66 @@ val customOfflineVideosLimitPatch = bytecodePatch(
     description = "Adds a custom entry to TikTok's offline videos menu with a configurable limit of up to 500 videos.",
     default = true,
 ) {
+    dependsOn(sharedExtensionPatch)
     compatibleWith(*AppCompatibilities.tiktok4643())
-
     execute {
         OfflineModeSheetOptionsFingerprint.uniqueMethod.apply {
-            val freezeListIndex = indexOfFirstInstructionOrThrow {
-                opcode == Opcode.INVOKE_STATIC &&
-                    getReference<MethodReference>()?.let { reference ->
-                        reference.parameterTypes == listOf("[Ljava/lang/Object;") &&
-                            reference.returnType == "Ljava/util/List;"
-                    } == true
+            val call = uniqueInstructionIndex("Offline sheet options list") { i ->
+                i.opcode == Opcode.INVOKE_STATIC && i.getReference<MethodReference>()?.let {
+                    it.parameterTypes == listOf("[Ljava/lang/Object;") && it.returnType == "Ljava/util/List;"
+                } == true
             }
-            val moveResultIndex = indexOfFirstInstructionOrThrow(freezeListIndex + 1) {
-                opcode == Opcode.MOVE_RESULT_OBJECT
-            }
-            val optionsRegister = getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
-
-            addInstructions(
-                moveResultIndex + 1,
-                """
-                    invoke-static {v$optionsRegister}, $CUSTOM_OFFLINE_VIDEOS_HELPER->getOfflineVideoOptions(Ljava/util/List;)Ljava/util/List;
-                    move-result-object v$optionsRegister
-                """,
-            )
+            val register = resultRegister(call, "Ljava/util/List;")
+            addInstructions(call + 2, """
+                invoke-static/range {v$register .. v$register}, $HELPER->getOfflineVideoOptions(Ljava/util/List;)Ljava/util/List;
+                move-result-object v$register
+            """)
         }
-
-        OfflineModeOptionConfigFingerprint.uniqueMethod.apply {
-            val configClass = definingClass
-
-            fun postProcessOptionsField(fieldName: String) {
-                val fieldWriteIndex = indexOfFirstInstructionOrThrow {
-                    opcode == Opcode.SPUT_OBJECT &&
-                        getReference<FieldReference>()?.let { field ->
-                            field.definingClass == configClass &&
-                                field.name == fieldName &&
-                                field.type == "Ljava/util/List;"
-                        } == true
-                }
-
-                // 46.7.3 no longer materializes every configured list through a nearby
-                // MOVE_RESULT_OBJECT. SPUT_OBJECT itself already tells us the exact
-                // register containing the list, so transform that register immediately
-                // before TikTok stores it. This is independent of how the list was built.
-                val optionsRegister =
-                    getInstruction<OneRegisterInstruction>(fieldWriteIndex).registerA
-
-                addInstructions(
-                    fieldWriteIndex,
-                    """
-                        invoke-static {v$optionsRegister}, $CUSTOM_OFFLINE_VIDEOS_HELPER->getOfflineVideoOptions(Ljava/util/List;)Ljava/util/List;
-                        move-result-object v$optionsRegister
-                    """,
-                )
+        // Follow the actual sheet provider. LJ/LJFF list-field names alone matched
+        // 36 unrelated classes on the accepted APK, including analytics config.
+        val sheet = OfflineModeSheetOptionsFingerprint.uniqueOriginalClassDef
+        val provider = sheet.methods.flatMap { method ->
+            method.implementation?.instructions?.mapNotNull { i ->
+                i.getReference<MethodReference>()?.takeIf { i.opcode == Opcode.INVOKE_STATIC &&
+                    it.parameterTypes.isEmpty() && it.returnType == "Ljava/util/List;" && it.definingClass != sheet.type }
+            }.orEmpty()
+        }.distinctBy { it.toString() }.filter { ref ->
+            classDefByOrNull(ref.definingClass)?.methods?.any { method -> method.name == "<clinit>" &&
+                method.implementation?.instructions?.any { i -> i.opcode == Opcode.SPUT_OBJECT && i.getReference<FieldReference>()?.type == "Ljava/util/List;" } == true
+            } == true
+        }.singleOrThrow("Offline sheet list provider")
+        TikTokFingerprint(definingClass = provider.definingClass, name = provider.name,
+            parameters = emptyList(), returnType = "Ljava/util/List;", id = "offline.native-options-provider").uniqueMethod.apply {
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.forEach { index ->
+                val register = getInstruction<OneRegisterInstruction>(index).registerA
+                addInstructions(index, """
+                    invoke-static/range {v$register .. v$register}, $HELPER->getOfflineVideoOptions(Ljava/util/List;)Ljava/util/List;
+                    move-result-object v$register
+                """)
             }
-
-            postProcessOptionsField("LJ")
-            postProcessOptionsField("LJFF")
         }
-
         OfflineModeOptionEnumFingerprint.uniqueMethod.apply {
-            val enumClass = definingClass
-            val customEnumFieldWriteIndex = indexOfFirstInstructionOrThrow {
-                opcode == Opcode.SPUT_OBJECT &&
-                    getReference<FieldReference>()?.let { field ->
-                        field.definingClass == enumClass &&
-                            field.name == "DOWNLOAD_200_VIDEOS" &&
-                            field.type == enumClass
-                    } == true
+            val fieldIndex = uniqueInstructionIndex("Custom offline enum field") { i ->
+                i.opcode == Opcode.SPUT_OBJECT && i.getReference<FieldReference>()?.let {
+                    it.definingClass == definingClass && it.type == definingClass && it.name == "DOWNLOAD_200_VIDEOS"
+                } == true
             }
-            val customEnumConstructorIndex = indexOfFirstInstructionReversedOrThrow(
-                customEnumFieldWriteIndex - 1,
-            ) {
-                (opcode == Opcode.INVOKE_DIRECT || opcode == Opcode.INVOKE_DIRECT_RANGE) &&
-                    getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == enumClass &&
-                            reference.name == "<init>" &&
-                            reference.returnType == "V" &&
-                            reference.parameterTypes.size == 5
-                    } == true
-            }
-            val constructor = getInstruction<RegisterRangeInstruction>(customEnumConstructorIndex)
-            val limitRegister = constructor.startRegister + 3
-            val minutesRegister = limitRegister + 1
-            val sizeRegister = limitRegister + 2
-
-            addInstructions(
-                customEnumConstructorIndex,
-                """
-                    invoke-static/range {v$limitRegister .. v$limitRegister}, $CUSTOM_OFFLINE_VIDEOS_HELPER->getCustomOfflineVideoLimitOrOriginal(I)I
-                    move-result v$limitRegister
-                    invoke-static/range {v$minutesRegister .. v$minutesRegister}, $CUSTOM_OFFLINE_VIDEOS_HELPER->getCustomOfflineVideoMinutesOrOriginal(I)I
-                    move-result v$minutesRegister
-                    invoke-static/range {v$sizeRegister .. v$sizeRegister}, $CUSTOM_OFFLINE_VIDEOS_HELPER->getCustomOfflineVideoSizeMbOrOriginal(I)I
-                    move-result v$sizeRegister
-                """,
-            )
+            val callIndex = fieldIndex - 1
+            val call = getInstruction(callIndex)
+            val ref = call.getReference<MethodReference>()
+            val args = call.argumentRegisters()
+            val stored = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
+            if (call.opcode !in setOf(Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE) || ref?.definingClass != definingClass || ref.name != "<init>" ||
+                ref.parameterTypes != listOf("Ljava/lang/String;", "I", "I", "I", "I") || args.size != 6 || args[0] != stored) throw PatchException("Offline enum constructor does not feed DOWNLOAD_200_VIDEOS")
+            val limit = args[3]; val minutes = args[4]; val size = args[5]
+            addInstructions(callIndex, """
+                invoke-static/range {v$limit .. v$limit}, $HELPER->getCustomOfflineVideoLimitOrOriginal(I)I
+                move-result v$limit
+                invoke-static/range {v$minutes .. v$minutes}, $HELPER->getCustomOfflineVideoMinutesOrOriginal(I)I
+                move-result v$minutes
+                invoke-static/range {v$size .. v$size}, $HELPER->getCustomOfflineVideoSizeMbOrOriginal(I)I
+                move-result v$size
+            """)
         }
     }
 }

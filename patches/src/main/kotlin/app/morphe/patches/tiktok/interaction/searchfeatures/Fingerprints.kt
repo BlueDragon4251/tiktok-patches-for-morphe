@@ -9,7 +9,7 @@ import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerpri
 internal object NonPersonalizedSearchGateFingerprint : Fingerprint(
     returnType = "Z",
     parameters = emptyList(),
-    strings = listOf("enable_non_personalized_search"),
+    exactStrings = listOf("enable_non_personalized_search"),
 )
 
 internal object NonPersonalizedSearchStateFingerprint : Fingerprint(

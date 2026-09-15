@@ -4,6 +4,7 @@
  */
 package app.morphe.patches.tiktok.interaction.seekbar
 
+import app.morphe.patches.tiktok.shared.discovery.parameterRegister
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
@@ -40,11 +41,11 @@ val showSeekbarPatch = bytecodePatch(
         )
 
         SetSeekBarShowTypeFingerprint.uniqueMethod.apply {
-            val typeRegister = implementation!!.registerCount - 1
+            val typeRegister = parameterRegister(0, "I")
             addInstructions(
                 0,
                 """
-                    invoke-static {v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
+                    invoke-static/range {v$typeRegister .. v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
                     move-result v$typeRegister
                 """,
             )

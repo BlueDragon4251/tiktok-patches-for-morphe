@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.interaction.downloads
 
 import app.morphe.patches.shared.compat.AppCompatibilities
+import app.morphe.patches.tiktok.shared.discovery.*
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
@@ -63,12 +64,13 @@ val downloadsPatch = bytecodePatch(
         )
 
         AwemeGetVideoFingerprint.uniqueMethod.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.first()
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.forEach { returnIndex ->
             val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
             addInstructions(
                 returnIndex,
                 "invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V",
             )
+            }
         }
 
         CommentImageWatermarkFingerprint.uniqueMethod.apply {
@@ -99,11 +101,12 @@ val downloadsPatch = bytecodePatch(
         }
 
         StickerPreviewBinderFingerprint.uniqueMethod.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.first()
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.forEach { returnIndex ->
             addInstructions(
                 returnIndex,
                 "invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V",
             )
+            }
         }
 
         val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.uniqueMethod
@@ -153,12 +156,20 @@ val downloadsPatch = bytecodePatch(
 
         DownloadSuccessCoroutineFingerprint.uniqueMethod.apply {
             val fieldReferences = implementation!!.instructions.mapNotNull { it.getReference<FieldReference>() }
-            val pathField = fieldReferences.first {
-                it.definingClass == definingClass && it.type == "Ljava/lang/String;"
-            }
-            val awemeField = fieldReferences.first {
-                it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
-            }
+            val body = implementation!!.instructions
+            val pathField = body.withIndex().mapNotNull { (index, instruction) ->
+                val ref = instruction.getReference<MethodReference>()
+                if (ref?.name != "<init>" || ref.parameterTypes != listOf("Ljava/lang/String;")) return@mapNotNull null
+                val owner = classDefByOrNull(ref.definingClass)
+                if (ref.definingClass != "Ljava/io/File;" && owner?.superclass != "Ljava/io/File;") return@mapNotNull null
+                val read = body.getOrNull(index - 1)
+                val field = read?.getReference<FieldReference>()
+                field?.takeIf { it.definingClass == definingClass && it.type == "Ljava/lang/String;" &&
+                    read.opcode == Opcode.IGET_OBJECT && (read as OneRegisterInstruction).registerA == instruction.argumentRegisters().last() }
+            }.distinctBy { it.toString() }.singleOrThrow("Download success path field")
+            val awemeField = fieldReferences.filter { it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" }
+                .distinctBy { it.toString() }.singleOrThrow("Download success Aweme field")
+            requireLocals(2)
 
             addInstructions(
                 0,
