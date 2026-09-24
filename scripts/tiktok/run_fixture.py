@@ -14,7 +14,9 @@ def validate_catalog(metadata,result,fixture,expected):
     if not names or set(names)!=set(expected) or len(names)!=len(set(names)): raise ValueError('Generated catalog differs from reviewed full catalog')
     applied=[p['name'] for p in result.get('appliedPatches',[])]
     if result.get('failedPatches') or len(applied)!=len(set(applied)) or set(applied)!=set(names): raise ValueError('Catalog failed, skipped or duplicated patches')
-    if any(not s.get('success') for s in result.get('patchingSteps',[])): raise ValueError('APK patching/rebuilding step failed')
+    steps=result.get('patchingSteps',[])
+    if {s.get('step') for s in steps}!={'PATCHING','REBUILDING'} or any(not s.get('success') for s in steps): raise ValueError('APK patching/rebuilding evidence failed or incomplete')
+    if (result.get('packageName'),result.get('packageVersion'))!=(fixture['package'],fixture['version']): raise ValueError('Catalog result APK identity mismatch')
     return names
 
 

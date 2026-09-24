@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
-from rediscover_hooks import classify, normalized_member, normalized_type
+from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run
 
@@ -28,6 +28,15 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual('getShowType',normalized_member('Lcom/tiktok/ACLCommonShare;','getShowType'))
         self.assertEqual('*',normalized_member('LX/Changed;','LJII'))
         self.assertEqual('onDoubleTap',normalized_member('LX/Changed;','onDoubleTap'))
+    def test_payload_names_match_the_jvm_parser(self):
+        self.assertEqual('array-payload',normalized_opcode('fill-array-data-payload'))
+    def test_fixture_lock_never_disambiguates_a_different_apk(self):
+        h=dict(self.hook,fixtureContractValidated=True,fixtureContractSha256='contract')
+        exact=dict(self.candidate,owner=h['owner'])
+        reviewed={'sha256':'approved','methods':{'LX/Old;->onDoubleTap(Landroid/view/MotionEvent;)Z':'contract'}}
+        self.assertEqual('resolved',classify(h,[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
+        self.assertEqual('ambiguous',classify(h,[self.candidate,exact],reviewed=reviewed,apk_sha='other')[0])
+        self.assertEqual('ambiguous',classify(dict(h,fixtureContractValidated=False),[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
 
 class QualificationTests(unittest.TestCase):
     def test_same_version_different_sha_rejected(self):
@@ -49,7 +58,10 @@ class QualificationTests(unittest.TestCase):
         f=select('global-46.7.3');metadata={'patches':[{'name':n,'compatiblePackages':{f['package']:[f['version']]}} for n in ['A','B']]}
         result={'appliedPatches':[{'name':'A'}],'failedPatches':[]}
         with self.assertRaises(ValueError):validate_catalog(metadata,result,f,['A','B'])
-        result['appliedPatches'].append({'name':'B'});self.assertEqual(['A','B'],validate_catalog(metadata,result,f,['A','B']))
+        result['appliedPatches'].append({'name':'B'})
+        with self.assertRaises(ValueError):validate_catalog(metadata,result,f,['A','B'])
+        result.update(packageName=f['package'],packageVersion=f['version'],patchingSteps=[{'step':s,'success':True} for s in ['PATCHING','REBUILDING']])
+        self.assertEqual(['A','B'],validate_catalog(metadata,result,f,['A','B']))
     def test_report_head_fixture_and_cardinality_are_required(self):
         f=select('global-46.7.3');report={'schema':2,'featureHead':'head','fixtureSha256':f['sha256'],'package':f['package'],'version':f['version'],'versionCode':f['versionCode'],'fingerprints':[{'hook':'a','required':True,'status':'resolved','selection':'unique','candidateCount':1}],'injections':[{}]}
         validate_hooks(report,f,'head')

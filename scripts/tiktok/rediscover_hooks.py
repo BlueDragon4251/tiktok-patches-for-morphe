@@ -52,8 +52,12 @@ def method_tokens(method, schema=2):
             elif value.startswith(('L', '[')):
                 detail = 't:' + normalized_type(value)
             break
-        tokens.append(instruction.get_name().replace('/', '-').replace('_', '-') + ' ' + detail)
+        tokens.append(normalized_opcode(instruction.get_name()) + ' ' + detail)
     return tokens
+
+
+def normalized_opcode(name):
+    return name.replace('fill-array-data-payload', 'array-payload').replace('/', '-').replace('_', '-')
 
 
 def digest(tokens):
@@ -63,10 +67,15 @@ def digest(tokens):
     return hashlib.sha256(value.encode('utf-8', 'replace')).hexdigest()
 
 
-def owner_shape(owner, schema=2):
+def field_shape_parts(owner):
     parts = ['super:' + normalized_type(owner.get_superclassname() or '')]
     parts += sorted('interface:' + normalized_type(x) for x in owner.get_interfaces())
     parts += sorted('field:' + normalized_type(f.get_descriptor()) + ':' + str(f.get_access_flags()) for f in owner.get_fields())
+    return parts
+
+
+def owner_shape(owner, schema=2):
+    parts = field_shape_parts(owner)
     parts += sorted('method:' + normalized_member(owner.get_name(), m.get_name(), schema) + ':' + str(m.get_access_flags()) + ':' + digest(method_tokens(m, schema)) for m in owner.get_methods())
     return digest(parts)
 
@@ -80,15 +89,23 @@ def contextual_candidates(hook, candidates):
     return [c for c in candidates if
         (not context.get('stableOwner') or c['owner']==context['stableOwner']) and
         (not context.get('stableName') or c['name']==context['stableName']) and
-        (not context.get('ownerShapeSha256') or c.get('ownerShapeSha256')==context['ownerShapeSha256'])]
+        (not context.get('ownerShapeSha256') or c.get('ownerShapeSha256')==context['ownerShapeSha256']) and
+        (not context.get('returnTypeShapeSha256') or c.get('returnTypeShapeSha256')==context['returnTypeShapeSha256'])]
 
 
-def classify(hook, candidates, anchored=()):
+def classify(hook, candidates, anchored=(), reviewed=None, apk_sha=None):
     if hook.get('origin')=='extension': return 'resolved',[]
     if not hook.get('structuralSha256'): return hook.get('status','missing'),[]
     selected=contextual_candidates(hook,candidates)
     if not selected: return ('contract-changed' if candidates or anchored else 'missing'),[]
-    if len(selected)!=1: return 'ambiguous',selected
+    if len(selected)!=1:
+        # This explicit lock is only valid for the reviewed APK's exact bytes.
+        identity=hook['owner']+'->'+hook['name']+'('+''.join(hook['parameters'])+')'+hook['returns']
+        if (reviewed and apk_sha==reviewed.get('sha256') and hook.get('fixtureContractValidated') is True
+                and reviewed.get('methods',{}).get(identity)==hook.get('fixtureContractSha256')):
+            exact=[c for c in selected if same_identity(hook,c)]
+            if len(exact)==1:return 'resolved',exact
+        return 'ambiguous',selected
     return ('resolved' if same_identity(hook,selected[0]) else 'relocated'),selected
 
 
@@ -111,12 +128,17 @@ def main():
     if a.verify_baseline:
         if report.get('fixtureSha256') and report['fixtureSha256']!=sha:raise SystemExit('Baseline fixture SHA-256 mismatch')
         if (apk.get_package(),apk.get_androidversion_name())!=(report['package'],report['version']):raise SystemExit('Baseline package/version mismatch')
-    found=defaultdict(list);anchored=defaultdict(list)
+    reviewed=None
+    if a.verify_baseline and schema==2:
+        contracts=Path(__file__).resolve().parents[2]/'patches/src/main/resources/tiktok-contracts'/f"{report['version']}.json"
+        if contracts.is_file():reviewed=json.loads(contracts.read_text())
+    found=defaultdict(list);anchored=defaultdict(list);return_shapes={}
     with zipfile.ZipFile(a.apk) as archive:
         for name in sorted(archive.namelist()):
             if not re.fullmatch(r'classes\d*\.dex',name):continue
             dex=DEX(archive.read(name))
             for owner in dex.get_classes():
+                if schema==2:return_shapes[owner.get_name()]=digest(field_shape_parts(owner))
                 shape=None
                 for method in owner.get_methods():
                     if method.get_code() is None:continue
@@ -127,11 +149,17 @@ def main():
                     if key in wanted:found[key].append(candidate)
                     if anchor in anchors:anchored[anchor].append(candidate)
             del dex
+    for candidates in list(found.values())+list(anchored.values()):
+        for candidate in candidates:
+            candidate['returnTypeShapeSha256']=return_shapes.get(candidate['descriptor'].split(')',1)[1])
     rows=[];invalid=[]
     for hook in report['fingerprints']:
         candidates=found.get(hook.get('structuralSha256'),[]);context=hook.get('semanticContext',{})
-        state,selected=classify(hook,candidates,anchored.get((context.get('stableOwner'),context.get('stableName')),[]))
-        rows.append({'hook':hook['hook'],'required':hook.get('required',True),'status':state,'candidates':selected or candidates})
+        state,selected=classify(hook,candidates,anchored.get((context.get('stableOwner'),context.get('stableName')),[]),reviewed,sha)
+        pinned=state=='resolved' and len(contextual_candidates(hook,candidates))>1
+        rows.append({'hook':hook['hook'],'required':hook.get('required',True),'status':state,
+            'resolutionBasis':'verified-fixture-contract' if pinned else 'structural-context',
+            'newApkInjectionApproved':False,'candidates':selected or candidates})
         if a.verify_baseline and hook.get('origin')!='extension':
             if schema==2 and hook.get('required',True) and state!='resolved':invalid.append(hook['hook'])
             elif hook.get('structuralSha256') and not any(same_identity(hook,c) for c in selected):invalid.append(hook['hook'])
