@@ -10,14 +10,15 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.removeInstructions
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
-import app.morphe.util.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
+import app.morphe.patcher.patch.PatchException
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -74,12 +75,12 @@ val downloadsPatch = bytecodePatch(
         }
 
         CommentImageWatermarkFingerprint.uniqueMethod.apply {
-            val drawBitmapIndex = findInstructionIndicesReversedOrThrow {
-                opcode.name == "invoke-virtual" &&
-                    this is ReferenceInstruction &&
-                    reference.toString().contains("->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V")
-            }.first()
-            val drawInstr = getInstruction<FiveRegisterInstruction>(drawBitmapIndex)
+            val drawBitmapIndex = uniqueInstructionIndex("Comment watermark bitmap draw") { instruction ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction is ReferenceInstruction &&
+                    instruction.reference.toString() == "Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V"
+            }
+            val drawInstr = getInstruction(drawBitmapIndex) as? FiveRegisterInstruction
+                ?: throw PatchException("Comment watermark draw register contract changed in $this")
             val canvasReg = drawInstr.registerC
             val bitmapReg = drawInstr.registerD
             val xReg = drawInstr.registerE

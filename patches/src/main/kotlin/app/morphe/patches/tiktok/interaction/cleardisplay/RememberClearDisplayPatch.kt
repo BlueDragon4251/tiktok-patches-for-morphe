@@ -10,7 +10,7 @@ import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.util.indexOfFirstInstructionOrThrow
-import app.morphe.util.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 

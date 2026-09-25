@@ -8,6 +8,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
@@ -74,10 +75,14 @@ val settingsPatch = bytecodePatch(
 
         fun resolveOpenDebugTargets(): OpenDebugTargets {
             val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
-            val stateClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
-                if (insn.opcode != Opcode.NEW_INSTANCE) return@firstNotNullOfOrNull null
-                ((insn as? ReferenceInstruction)?.reference as? TypeReference)?.type
-            } ?: throw PatchException("Enable Open Debug: could not resolve OpenDebug state class from defaultState().")
+            val returningRegisters = defaultState.implementation?.instructions?.filter { it.opcode == Opcode.RETURN_OBJECT }
+                ?.map { (it as OneRegisterInstruction).registerA }?.distinct()
+                ?.singleOrThrow("OpenDebug default state return register")
+                ?: throw PatchException("OpenDebug defaultState has no implementation")
+            val stateClass = defaultState.implementation!!.instructions.mapNotNull { insn ->
+                if (insn.opcode != Opcode.NEW_INSTANCE || (insn as? OneRegisterInstruction)?.registerA != returningRegisters) null
+                else ((insn as? ReferenceInstruction)?.reference as? TypeReference)?.type
+            }.distinct().singleOrThrow("OpenDebug state class returned from defaultState")
 
             val composeMethods = mutableListOf<Pair<ClassDef, SmaliMethod>>()
             classDefForEach { classDef ->
@@ -135,16 +140,15 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveClickWrapperMethod(): MutableMethod {
-            var wrapperInvokeName: String? = null
             val composeInstructions = composeMutable.implementation!!.instructions.toList()
-            val wrapperClass = composeInstructions.withIndex().firstNotNullOfOrNull { (index, insn) ->
-                if (insn.opcode != Opcode.INVOKE_DIRECT) return@firstNotNullOfOrNull null
-                val instruction = insn as? Instruction35c ?: return@firstNotNullOfOrNull null
+            val (wrapperClass, wrapperInvokeName) = composeInstructions.withIndex().mapNotNull { (index, insn) ->
+                if (insn.opcode != Opcode.INVOKE_DIRECT) return@mapNotNull null
+                val instruction = insn as? Instruction35c ?: return@mapNotNull null
                 val ref = instruction.reference as? MethodReference
-                    ?: return@firstNotNullOfOrNull null
-                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@firstNotNullOfOrNull null
+                    ?: return@mapNotNull null
+                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@mapNotNull null
                 if (ref.parameterTypes != listOf(openDebugStateClass, "Landroid/content/Context;", "I")) {
-                    return@firstNotNullOfOrNull null
+                    return@mapNotNull null
                 }
 
                 val discriminatorRegister = when (instruction.registerCount) {
@@ -165,11 +169,8 @@ val settingsPatch = bytecodePatch(
                     } ?: throw PatchException(
                     "Enable Open Debug: could not resolve click wrapper discriminator.",
                 )
-                wrapperInvokeName = "invoke\$$discriminator"
-                ref.definingClass
-            } ?: throw PatchException(
-                "Enable Open Debug: could not resolve OpenDebug click wrapper class from compose method.",
-            )
+                ref.definingClass to "invoke\$$discriminator"
+            }.distinct().singleOrThrow("OpenDebug click wrapper and constructor discriminator")
 
             val matches = mutableListOf<MutableMethod>()
             classDefForEach { classDef ->
@@ -194,16 +195,15 @@ val settingsPatch = bytecodePatch(
         fun resolveOpenDebugFunction2Method(): MutableMethod {
             val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
             val openDebugVmClass = defaultState.definingClass
-            val lambdaClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
-                if (insn.opcode != Opcode.INVOKE_DIRECT) return@firstNotNullOfOrNull null
+            val lambdaClass = defaultState.implementation?.instructions?.mapNotNull { insn ->
+                if (insn.opcode != Opcode.INVOKE_DIRECT) return@mapNotNull null
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
-                    ?: return@firstNotNullOfOrNull null
-                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@firstNotNullOfOrNull null
-                if (ref.parameterTypes.firstOrNull() != openDebugVmClass) return@firstNotNullOfOrNull null
+                    ?: return@mapNotNull null
+                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@mapNotNull null
+                if (ref.parameterTypes.firstOrNull() != openDebugVmClass) return@mapNotNull null
                 ref.definingClass
-            } ?: throw PatchException(
-                "Enable Open Debug: could not resolve OpenDebug Function2 lambda class.",
-            )
+            }?.distinct()?.singleOrThrow("OpenDebug Function2 lambda class")
+                ?: throw PatchException("Enable Open Debug: could not resolve OpenDebug Function2 lambda class.")
 
             val matches = mutableListOf<MutableMethod>()
             classDefForEach { classDef ->

@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.google.gson.GsonBuilder
 import java.io.File
 import java.security.MessageDigest
+import java.security.DigestInputStream
 
 /** One evidence session per patcher context, never per process or per weak fingerprint instance. */
 internal object HookEvidence {
@@ -19,6 +20,9 @@ internal object HookEvidence {
     private val originals = linkedMapOf<String, ClassDef>()
     private val rows = linkedMapOf<String, MutableMap<String, Any?>>()
     private val sites = mutableListOf<Map<String, Any?>>()
+    private val validated = hashSetOf<String>()
+    private var reviewed: FixtureContracts.Reviewed? = null
+    private var apkSha256: String? = null
 
     fun begin(current: BytecodePatchContext) {
         if (context === current) return
@@ -27,6 +31,9 @@ internal object HookEvidence {
         shapes.clear()
         rows.clear()
         sites.clear()
+        validated.clear()
+        reviewed = null
+        apkSha256 = null
         current.classDefForEach { owner ->
             if (!owner.type.startsWith("Lapp/morphe/")) {
                 originals[owner.type] = if (owner is DexBackedClassDef) owner else ImmutableClassDef.of(owner)
@@ -61,9 +68,32 @@ internal object HookEvidence {
     fun sha256(value: String): String = MessageDigest.getInstance("SHA-256")
         .digest(value.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
 
+    /** Hash the patcher's actual input APK once per context; metadata alone cannot certify APK bytes. */
+    private fun inputApkSha256(current: BytecodePatchContext): String = apkSha256 ?: try {
+        val configField = BytecodePatchContext::class.java.getDeclaredField("config")
+        configField.isAccessible = true
+        val config = configField.get(current) ?: throw PatchException("Input APK config is absent")
+        val apk = config.javaClass.getMethod("getApkFile\$morphe_patcher").invoke(config) as? File
+            ?: throw PatchException("Input APK file is absent")
+        val digest = MessageDigest.getInstance("SHA-256")
+        DigestInputStream(apk.inputStream(), digest).use { stream ->
+            val buffer = ByteArray(1024 * 1024)
+            while (stream.read(buffer) != -1) Unit
+        }
+        digest.digest().joinToString("") { "%02x".format(it) }.also { apkSha256 = it }
+    } catch (error: Exception) {
+        throw PatchException("Could not verify original APK SHA-256 at patch time: ${error.message}")
+    }
+
     private fun original(method: Method): Method? = originals[method.definingClass]?.methods
-        ?.filter { it.name == method.name && it.parameterTypes == method.parameterTypes && it.returnType == method.returnType }
+        ?.filter { it.name == method.name && it.parameterTypes.map(CharSequence::toString) ==
+            method.parameterTypes.map(CharSequence::toString) && it.returnType == method.returnType }
         ?.singleOrNull()
+
+    private fun fieldShape(owner: ClassDef): String = sha256((listOf("super:" + normalizedType(owner.superclass ?: "")) +
+        owner.interfaces.map { "interface:" + normalizedType(it) }.sorted() +
+        owner.fields.map { "field:" + normalizedType(it.type) + ":" + it.accessFlags }.sorted()
+        ).joinToString("\n"))
 
     private val shapes = hashMapOf<String, String>()
     private fun ownerShape(owner: ClassDef): String = shapes.getOrPut(owner.type) {
@@ -80,15 +110,17 @@ internal object HookEvidence {
         return linkedMapOf(
             "hook" to id, "status" to "resolved", "required" to true,
             "owner" to method.definingClass, "name" to method.name,
-            "parameters" to method.parameterTypes, "returns" to method.returnType,
+            "parameters" to method.parameterTypes.map(CharSequence::toString), "returns" to method.returnType,
             "accessFlags" to method.accessFlags, "registers" to source?.implementation?.registerCount,
             "origin" to if (method.definingClass.startsWith("Lapp/morphe/")) "extension" else "apk",
             "semanticContext" to mapOf(
                 "stableOwner" to method.definingClass.takeUnless { obfuscated.containsMatchIn(it) },
                 "stableName" to normalizedMember(method.definingClass, method.name).takeUnless { it == "*" },
-                "ownerShapeSha256" to originals[method.definingClass]?.let(::ownerShape)),
+                "ownerShapeSha256" to originals[method.definingClass]?.let(::ownerShape),
+                "returnTypeShapeSha256" to originals[method.returnType]?.let(::fieldShape)),
             "fixtureContractSha256" to source?.let(FixtureContracts::signature),
-            "contractMode" to "fixture-locked",
+            "fixtureContractValidated" to (method.toString() in validated),
+            "contractMode" to if (source != null) "fixture-locked" else "extension",
             "tokens" to signature, "structuralSha256" to signature?.let { sha256(it.joinToString("\n")) },
             "literals" to source?.implementation?.instructions?.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral },
             "exceptionHandlers" to source?.implementation?.tryBlocks?.flatMap { it.exceptionHandlers }
@@ -120,11 +152,40 @@ internal object HookEvidence {
 
     fun touch(method: Method, contract: String = "native-injection") {
         if (context == null) throw PatchException("Hook evidence session was not initialized before $method")
+        requireReviewed(method)
         val key = "$contract:$method"
         if (rows.values.none { it["owner"] == method.definingClass && it["name"] == method.name &&
-                it["parameters"] == method.parameterTypes && it["returns"] == method.returnType }) {
+                it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }) {
             rows[key] = evidence(key, method).also { it["selection"] = "explicit-site" }
         }
+    }
+
+    fun requireReviewed(method: Method) {
+        if (method.definingClass.startsWith("Lapp/morphe/")) return
+        val current = context ?: throw PatchException("Hook evidence session missing before $method")
+        val key = method.toString()
+        if (key in validated) return
+        val source = original(method) ?: throw PatchException("No original APK method for $method")
+        val contracts = reviewed ?: FixtureContracts.load(current.packageMetadata.versionName).also { loaded ->
+            val metadata = current.packageMetadata
+            if (metadata.packageName != loaded.packageName || metadata.versionCode.toLong() != loaded.versionCode)
+                throw PatchException("Fixture identity changed for ${metadata.packageName} ${metadata.versionName} (${metadata.versionCode})")
+            val actualApkSha256 = inputApkSha256(current)
+            if (actualApkSha256 != loaded.apkSha256)
+                throw PatchException("Unreviewed TikTok APK SHA-256: expected ${loaded.apkSha256}, got $actualApkSha256")
+            System.getenv("TIKTOK_FIXTURE_SHA256")?.let { actual ->
+                if (actual != loaded.apkSha256) throw PatchException("Fixture SHA-256 mismatch for $key: expected ${loaded.apkSha256}, got $actual")
+            }
+            reviewed = loaded
+        }
+        val owner = originals[method.definingClass] ?: throw PatchException("No original APK class for $key")
+        if (contracts.classes[owner.type] != FixtureContracts.classSignature(owner))
+            throw PatchException("Changed class contract for ${owner.type}: inheritance, fields or method set changed")
+        FixtureContracts.requireMatch(source, contracts.methods[key])
+        validated += key
+        rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
+            it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
+            .forEach { it["fixtureContractValidated"] = true }
     }
 
     fun injection(method: Method, index: Int, code: String) {
@@ -137,7 +198,7 @@ internal object HookEvidence {
         val metadata = current.packageMetadata
         val report = mapOf("schema" to 2, "normalization" to 2,
             "package" to metadata.packageName, "version" to metadata.versionName,
-            "versionCode" to metadata.versionCode, "fixtureSha256" to System.getenv("TIKTOK_FIXTURE_SHA256"), "featureHead" to System.getenv("TIKTOK_FEATURE_HEAD"),
+            "versionCode" to metadata.versionCode, "fixtureSha256" to (apkSha256 ?: inputApkSha256(current)), "featureHead" to System.getenv("TIKTOK_FEATURE_HEAD"),
             "fingerprints" to rows.toSortedMap().values, "injections" to sites)
         File("tiktok-hook-report.json").writeText(GsonBuilder().setPrettyPrinting().create().toJson(report))
         val failed = rows.values.filter { it["required"] == true && it["status"] != "resolved" }

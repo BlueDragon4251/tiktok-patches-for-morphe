@@ -12,7 +12,7 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.stringOption

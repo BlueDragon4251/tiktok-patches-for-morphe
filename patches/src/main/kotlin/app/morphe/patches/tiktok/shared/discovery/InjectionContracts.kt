@@ -4,6 +4,8 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstruction as raw
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions as rawAddInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels as rawAddWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction as rawReplaceInstruction
+import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions as rawRemoveInstructions
+import app.morphe.util.returnEarly as rawReturnEarly
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -110,4 +112,43 @@ internal object ContractInstructions {
     }
     fun MutableMethod.addInstruction(index: Int, code: String) = inject(index, code)
     fun MutableMethod.addInstructionsWithLabels(index: Int, code: String, vararg labels: ExternalLabel) = inject(index, code, labels)
+
+    fun MutableMethod.replaceInstruction(index: Int, code: String) {
+        val target = implementation?.instructions?.getOrNull(index)
+            ?: throw PatchException("Replacement contract: invalid index $index in $this")
+        HookEvidence.touch(this)
+        try {
+            rawReplaceInstruction(index, code)
+            HookEvidence.injection(this, index, "replace ${target.opcode}: $code")
+        } catch (error: PatchException) { throw error
+        } catch (error: Exception) { throw PatchException("Replacement contract failed in $this: ${error.message}") }
+    }
+
+    fun MutableMethod.removeInstructions(index: Int, count: Int) {
+        val body = implementation ?: throw PatchException("Removal contract: no body: $this")
+        if (count < 1 || index < 0 || index + count > body.instructions.size)
+            throw PatchException("Removal contract: invalid range $index + $count in $this")
+        val removed = body.instructions.subList(index, index + count)
+        if (removed.drop(1).any { it.location.labels.isNotEmpty() })
+            throw PatchException("Removal contract: a branch, handler, switch or try boundary enters removed instructions in $this")
+        if (body.instructions.getOrNull(index + count)?.opcode in setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT))
+            throw PatchException("Removal contract: would orphan move-result in $this")
+        HookEvidence.touch(this)
+        rawRemoveInstructions(index, count)
+        HookEvidence.injection(this, index, "remove $count instructions")
+    }
+
+    fun MutableMethod.returnEarly() {
+        if (returnType != "V") throw PatchException("Early return contract: expected void in $this")
+        HookEvidence.touch(this)
+        rawReturnEarly()
+        HookEvidence.injection(this, 0, "return-void")
+    }
+
+    fun MutableMethod.returnEarly(value: Int) {
+        if (returnType != "I") throw PatchException("Early return contract: expected int in $this")
+        HookEvidence.touch(this)
+        rawReturnEarly(value)
+        HookEvidence.injection(this, 0, "return $value")
+    }
 }

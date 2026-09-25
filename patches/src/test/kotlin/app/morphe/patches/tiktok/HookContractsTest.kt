@@ -1,6 +1,9 @@
 package app.morphe.patches.tiktok
 
 import app.morphe.patches.tiktok.shared.discovery.*
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.removeInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -9,6 +12,8 @@ import com.android.tools.smali.dexlib2.builder.MethodImplementationBuilder
 import com.android.tools.smali.dexlib2.builder.SwitchLabelElement
 import com.android.tools.smali.dexlib2.builder.instruction.*
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
+import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import org.junit.Assert.*
@@ -84,5 +89,33 @@ class HookContractsTest {
         assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(fixture(3, 1), hash) }
         assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(fixture(2, 0), hash) }
         assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(baseline, null) }
+    }
+
+    @Test fun classContractCoversFieldTypeSuperclassAndMethodSet() {
+        fun owner(superclass: String, fields: List<ImmutableField>, methods: List<MutableMethod> = emptyList()) =
+            ImmutableClassDef("LX/Fixture;", AccessFlags.PUBLIC.value, superclass,
+                emptyList(), null, emptySet(), fields, methods)
+        val field = ImmutableField("LX/Fixture;", "state", "I", AccessFlags.PUBLIC.value, null, emptySet(), emptySet())
+        val changed = ImmutableField("LX/Fixture;", "state", "J", AccessFlags.PUBLIC.value, null, emptySet(), emptySet())
+        val baseline = FixtureContracts.classSignature(owner("Ljava/lang/Object;", listOf(field)))
+        assertNotEquals(baseline, FixtureContracts.classSignature(owner("Ljava/lang/Object;", listOf(changed))))
+        assertNotEquals(baseline, FixtureContracts.classSignature(owner("Ljava/lang/Number;", listOf(field))))
+    }
+
+    @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
+        fun payload(values: List<Number>): MutableMethod {
+            val b = MethodImplementationBuilder(2)
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 1))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            b.addInstruction(BuilderArrayPayload(1, values))
+            return method(b)
+        }
+        val baseline = FixtureContracts.signature(payload(listOf(1, 2)))
+        assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(payload(listOf(1, 3)), baseline) }
+        val m = payload(listOf(1, 2))
+        assertThrows(PatchException::class.java) { m.removeInstructions(-1, 1) }
+        assertThrows(PatchException::class.java) { m.removeInstructions(1, 99) }
+        assertThrows(PatchException::class.java) { m.returnEarly() }
+        assertThrows(PatchException::class.java) { m.replaceInstruction(0, "nop") }
     }
 }

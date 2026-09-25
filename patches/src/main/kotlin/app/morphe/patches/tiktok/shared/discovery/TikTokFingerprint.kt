@@ -75,13 +75,14 @@ open class TikTokFingerprint(
         val matches = candidates()
         HookEvidence.resolution(this, matches, required = range.first > 0, multiple = true)
         if (matches.size !in range) throw PatchException("Hook $hookId: expected $range matches, found ${matches.size}")
+        matches.forEach { HookEvidence.requireReviewed(it.originalMethod) }
         return matches
     }
 
     context(BytecodePatchContext)
-    val uniqueMethod get() = uniqueMatch().method
+    val uniqueMethod get() = uniqueMatch().also { HookEvidence.requireReviewed(it.originalMethod) }.method
     context(BytecodePatchContext)
-    val optionalMethod get() = uniqueMatchOrNull()?.method
+    val optionalMethod get() = uniqueMatchOrNull()?.also { HookEvidence.requireReviewed(it.originalMethod) }?.method
     context(BytecodePatchContext)
     val uniqueOriginalMethod get() = uniqueMatch().originalMethod
     context(BytecodePatchContext)

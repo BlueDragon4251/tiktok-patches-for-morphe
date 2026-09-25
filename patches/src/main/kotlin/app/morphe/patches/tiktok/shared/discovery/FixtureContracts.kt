@@ -1,8 +1,11 @@
 package app.morphe.patches.tiktok.shared.discovery
 
 import app.morphe.patcher.patch.PatchException
+import com.android.tools.smali.dexlib2.formatter.DexFormatter
+import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.*
+import com.android.tools.smali.dexlib2.iface.instruction.formats.ArrayPayload
 import com.google.gson.JsonParser
 
 /** Reviewed patch-time contracts for native assumptions not yet generalized. */
@@ -21,6 +24,10 @@ internal object FixtureContracts {
             if (i is ReferenceInstruction) append(" ref=").append(i.reference)
             if (i is OffsetInstruction) append(" offset=").append(i.codeOffset)
             if (i is SwitchPayload) i.switchElements.forEach { append(" case=").append(it.key).append(':').append(it.offset) }
+            if (i is ArrayPayload) {
+                append(" width=").append(i.elementWidth)
+                i.arrayElements.forEach { append(" element=").append(it) }
+            }
             append('\n')
         }
         body.tryBlocks.forEach { block ->
@@ -30,16 +37,34 @@ internal object FixtureContracts {
         }
     }.let(HookEvidence::sha256)
 
+    /** Pin class relationships and fields as well as the method body before editing native bytecode. */
+    fun classSignature(owner: ClassDef): String = HookEvidence.sha256(buildString {
+        append(owner.type).append('|').append(owner.accessFlags).append('|').append(owner.superclass).append('\n')
+        owner.interfaces.sorted().forEach { append("interface:").append(it).append('\n') }
+        owner.fields.map { field ->
+            "field:$field:${field.accessFlags}:" +
+                (field.initialValue?.let(DexFormatter.INSTANCE::getEncodedValue) ?: "null")
+        }.sorted().forEach { append(it).append('\n') }
+        owner.methods.map { "method:$it:${it.accessFlags}" }.sorted().forEach { append(it).append('\n') }
+    })
+
+    data class Reviewed(val packageName: String, val versionCode: Long, val apkSha256: String,
+                        val methods: Map<String, String>, val classes: Map<String, String>)
+
     fun requireMatch(method: Method, expected: String?) {
         if (expected == null) throw PatchException("Missing reviewed fixture contract for $method; run discovery and review before enabling this APK")
         val actual = signature(method)
         if (expected != actual) throw PatchException("Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused")
     }
 
-    fun load(version: String): Map<String, String> {
+    fun load(version: String): Reviewed {
         val stream = FixtureContracts::class.java.getResourceAsStream("/tiktok-contracts/$version.json")
             ?: throw PatchException("No reviewed injection contracts for TikTok $version")
         val root = stream.bufferedReader().use { JsonParser.parseReader(it).asJsonObject }
-        return root.getAsJsonObject("methods").entrySet().associate { it.key to it.value.asString }
+        if (root.get("version").asString != version || root.get("schema").asInt != 1)
+            throw PatchException("Invalid reviewed fixture contract for TikTok $version")
+        fun entries(name: String) = root.getAsJsonObject(name).entrySet().associate { it.key to it.value.asString }
+        return Reviewed(root.get("package").asString, root.get("versionCode").asLong,
+            root.get("sha256").asString, entries("methods"), entries("classes"))
     }
 }
