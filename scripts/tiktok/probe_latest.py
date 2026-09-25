@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from fixtures import ROOT
 
 
 def inspect(apk_path, source_url, expected_sha=None):
@@ -23,6 +24,19 @@ def inspect(apk_path, source_url, expected_sha=None):
             'sizeBytes': apk_path.stat().st_size, 'qualified': False}
 
 
+def candidate_status(identity, manifest):
+    if manifest.get('schema') != 1:
+        raise ValueError('Invalid candidate manifest')
+    known = [c for c in manifest.get('candidates', [])
+             if (c['package'], c['version'], c['versionCode']) ==
+                (identity['package'], identity['version'], identity['versionCode'])]
+    if len(known) > 1:
+        raise ValueError('Ambiguous candidate identity in manifest')
+    if not known:
+        return 'new-candidate'
+    return 'same-candidate-hash' if known[0]['sha256'] == identity['sha256'] else 'same-version-different-sha'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('apk', type=Path)
@@ -31,8 +45,11 @@ def main():
     parser.add_argument('--output', type=Path, default=Path('candidate-identity.json'))
     args = parser.parse_args()
     identity = inspect(args.apk, args.source, args.expected_sha)
+    manifest = ROOT / 'fixtures/tiktok/candidates.json'
+    if manifest.is_file():
+        identity['candidateStatus'] = candidate_status(identity, json.loads(manifest.read_text()))
     args.output.write_text(json.dumps(identity, indent=2) + '\n')
-    print(f"Candidate {identity['version']} {identity['sha256']} ({identity['sizeBytes']} bytes); discovery only")
+    print(f"Candidate {identity['version']} {identity['sha256']} ({identity['sizeBytes']} bytes), {identity.get('candidateStatus', 'new-candidate')}; discovery only")
 
 
 if __name__ == '__main__':

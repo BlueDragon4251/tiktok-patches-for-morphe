@@ -9,10 +9,22 @@ from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from portable_baseline import extract
 from run_experimental import blockers
+from probe_latest import candidate_status
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
 
 class DiscoveryTests(unittest.TestCase):
+    def test_candidate_of_same_version_but_other_sha_is_not_the_fixture(self):
+        known={'schema':1,'candidates':[{'package':'com.zhiliaoapp.musically',
+                 'version':'47.1.3','versionCode':2024701030,'sha256':'original'}]}
+        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3',
+             'versionCode':2024701030,'sha256':'different'}
+        self.assertEqual('same-version-different-sha',candidate_status(apk,known))
+        apk['sha256']='original'
+        self.assertEqual('same-candidate-hash',candidate_status(apk,known))
+        apk['version']='47.1.4'
+        self.assertEqual('new-candidate',candidate_status(apk,known))
+
     def test_portable_index_never_exposes_unvalidated_native_hook(self):
         base={'schema':2,'normalization':2,'package':'com.zhiliaoapp.musically',
               'version':'46.7.3','versionCode':2024607030,'fixtureSha256':'hash','featureHead':'head',

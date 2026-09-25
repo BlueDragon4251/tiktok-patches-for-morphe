@@ -126,6 +126,15 @@ the entire catalog with this opt-in on the actual downloaded APK, writes
 `experimental-result.json` and discards any partial output; a blocked
 diagnostic run is never counted as acceptance.
 
+The first probe (run 36153094965) actually downloaded the 47.1.3 APK,
+`com.zhiliaoapp.musically`, version code 2024701030, 472304867 bytes, SHA-256
+`8b5569f592a5534652ae460ef1d9e7f7394b5b7fdde44ae64f106d76767e2622`.
+Discovery on head `827ee6c548e7f458473b2d8fd971323c29711356`
+reported 19 resolved, 35 relocated, 81 contract-changed and 45 missing rows.
+The exact download provenance lives in `fixtures/tiktok/candidates.json`,
+separate from the selectable-fixture matrix. Later probes distinguish the
+same-version/different-SHA case and keep candidate qualification false.
+
 ## Review order
 
 Inventory and qualification manifest; shared resolution/injection contracts;
