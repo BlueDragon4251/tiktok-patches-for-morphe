@@ -10,11 +10,14 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.uniqueInstructionIndex
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/morphe/extension/tiktok/externalbrowser/ExternalBrowserPatch;"
@@ -64,10 +67,11 @@ val openExternalLinksPatch = bytecodePatch(
             ),
         )
 
-        val superOnCreateIndex = SparkActivityOnCreateFingerprint.uniqueMethod.implementation!!.instructions
-            .indexOfFirst { it.opcode == Opcode.INVOKE_SUPER }
-        check(superOnCreateIndex >= 0) {
-            "Could not find SparkActivity super.onCreate call"
+        val superOnCreateIndex = SparkActivityOnCreateFingerprint.uniqueMethod.uniqueInstructionIndex(
+            "SparkActivity super.onCreate(Bundle)") { instruction ->
+            val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference
+            instruction.opcode == Opcode.INVOKE_SUPER && ref?.name == "onCreate" &&
+                ref.parameterTypes == listOf("Landroid/os/Bundle;") && ref.returnType == "V"
         }
         SparkActivityOnCreateFingerprint.uniqueMethod.addInstructionsWithLabels(
             superOnCreateIndex + 1,
