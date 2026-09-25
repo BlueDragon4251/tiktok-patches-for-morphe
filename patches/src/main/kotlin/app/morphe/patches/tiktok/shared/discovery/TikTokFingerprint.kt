@@ -49,12 +49,12 @@ open class TikTokFingerprint(
             HookEvidence.canRelocate(hookId)) {
             // The original owner/name/type spelling is obfuscated. Keep the real
             // predicate and prove the unique original class and method below.
-            Fingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == "*" },
+            TikTokFingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == "*" },
                 accessFlags = accessFlags,
                 returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },
                 parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },
                 filters = semanticFilters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() },
-                custom = semanticCustom).matchAllOrNull().orEmpty()
+                exactStrings = exactStrings, custom = semanticCustom).candidates()
         } else emptyList()
         val matches = (initial + relocated)
             .distinctBy { it.originalMethod.toString() }
