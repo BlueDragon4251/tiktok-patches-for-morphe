@@ -27,14 +27,21 @@ dependencies {
     compileOnly(project(":patches:stub"))
 }
 
-// Fixture contract capture uses the exact original APK only after full catalog acceptance.
-sourceSets["main"].java.srcDir("../scripts/tiktok")
+// Compile the one-off fixture capture tool separately; it is not part of the patch bundle.
+val contractCapture = sourceSets.create("contractCapture") {
+    java.srcDir("../scripts/tiktok")
+    compileClasspath += sourceSets["main"].output + sourceSets["main"].compileClasspath
+    runtimeClasspath += output + compileClasspath + sourceSets["main"].runtimeClasspath
+}
+tasks.named<JavaCompile>(contractCapture.compileJavaTaskName) {
+    options.release.set(17)
+}
 
 tasks {
     register<JavaExec>("captureTikTokContracts") {
         description = "Capture portable and exact TikTok hook contracts from an accepted APK"
-        dependsOn("classes")
-        classpath = sourceSets["main"].runtimeClasspath
+        dependsOn(contractCapture.classesTaskName)
+        classpath = contractCapture.runtimeClasspath
         mainClass.set("CaptureFixtureContracts")
         jvmArgs("-Xmx6g")
     }
