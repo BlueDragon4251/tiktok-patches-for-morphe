@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from run_fixture import validate_catalog, validate_hooks
-from verify_qualification import validate_run
+from verify_qualification import validate_run, validate_evidence
 
 class DiscoveryTests(unittest.TestCase):
     def setUp(self):
@@ -69,5 +69,18 @@ class QualificationTests(unittest.TestCase):
             with self.assertRaises(ValueError):validate_hooks(dict(report,**change),f,'head')
         report['fingerprints'][0]['candidateCount']=2
         with self.assertRaises(ValueError):validate_hooks(report,f,'head')
+        report['fingerprints'][0].update(candidateCount=1,origin='apk',fixtureContractValidated=False)
+        with self.assertRaises(ValueError):validate_hooks(report,f,'head')
+        report['fingerprints'][0]['fixtureContractValidated']=True
+        validate_hooks(report,f,'head')
+
+    def test_new_version_evidence_cannot_reuse_a_sha_head_or_partial_catalog(self):
+        f=select('global-46.7.3')
+        count=len(json.loads((Path(__file__).resolve().parents[3]/'fixtures/tiktok'/f['catalog']).read_text())['appliedPatches'])
+        evidence=dict(fixture=f['id'],head='head',package=f['package'],version=f['version'],sha256=f['sha256'],
+                      catalogCount=count,catalog='passed',contracts='passed',discovery='passed',baselineSelfComparison='passed')
+        validate_evidence(evidence,f,'head')
+        for change in (dict(sha256='another apk'),dict(head='other head'),dict(catalogCount=count-1),dict(contracts='failed'),dict(baselineSelfComparison='missing')):
+            with self.subTest(change=change),self.assertRaises(ValueError):validate_evidence(dict(evidence,**change),f,'head')
 
 if __name__=='__main__':unittest.main()

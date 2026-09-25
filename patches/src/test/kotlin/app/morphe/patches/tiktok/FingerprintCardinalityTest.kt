@@ -42,8 +42,8 @@ class FingerprintCardinalityTest {
     }
     @Test fun resolvesMovedOwnerWithoutReusingThePreviousApkCache() {
         val fp = TikTokFingerprint(returnType = "Ljava/lang/String;", exactStrings = listOf("stable-hook"))
-        with(context("LX/Old;")) { assertEquals("LX/Old;", fp.uniqueOriginalMethod.definingClass) }
-        with(context("LX/New;")) { assertEquals("LX/New;", fp.uniqueOriginalMethod.definingClass) }
+        with(context("LX/Old;")) { assertEquals("LX/Old;", fp.uniqueMatch().originalMethod.definingClass) }
+        with(context("LX/New;")) { assertEquals("LX/New;", fp.uniqueMatch().originalMethod.definingClass) }
         with(context()) { assertThrows(PatchException::class.java) { fp.uniqueMatch() } }
     }
 }

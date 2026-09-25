@@ -25,7 +25,9 @@ def validate_hooks(report,fixture,head):
     if (report.get('package'),report.get('version'),int(report.get('versionCode',0)))!=(fixture['package'],fixture['version'],fixture['versionCode']): raise ValueError('Hook APK identity mismatch')
     hooks=report.get('fingerprints',[])
     if not hooks or not report.get('injections'): raise ValueError('Empty hook/injection evidence')
-    invalid=[h['hook'] for h in hooks if h.get('required') and (h.get('status')!='resolved' or (h.get('selection')=='unique' and h.get('candidateCount')!=1))]
+    invalid=[h['hook'] for h in hooks if h.get('required') and (h.get('status')!='resolved' or
+        (h.get('selection')=='unique' and h.get('candidateCount')!=1) or
+        (h.get('origin')=='apk' and h.get('fixtureContractValidated') is not True))]
     if invalid: raise ValueError('Mandatory hooks unresolved: '+', '.join(invalid))
 
 
