@@ -7,9 +7,9 @@ The complete, line-addressed and machine-readable source inventory is in `docs/t
 | Patch | Baseline catalog | Native or version-sensitive source assumptions | Selection requiring review |
 |---|---|---:|---:|
 | Advanced feed filter | applied | 7 | 0 |
-| Always show publish date | applied | 5 | 2 |
+| Always show publish date | applied | 10 | 0 |
 | Automatic clear display | applied | 7 | 1 |
-| BlueIT Service | applied | 49 | 7 |
+| BlueIT Service | applied | 48 | 7 |
 | Copy comments without username | applied | 1 | 2 |
 | Custom offline videos limit | applied | 1 | 0 |
 | Diagnostic tools | applied | 5 | 0 |
@@ -22,17 +22,17 @@ The complete, line-addressed and machine-readable source inventory is in `docs/t
 | Enable non-personalized search | applied | 2 | 0 |
 | Feature Gate Lab | applied | 68 | 0 |
 | Feature Gate Recorder | applied | 1 | 0 |
-| Feed filter | applied | 23 | 0 |
+| Feed filter | applied | 21 | 0 |
 | Feed tab navigation | applied | 1 | 0 |
 | Fix Google login | applied | 3 | 0 |
-| Follow diagnostics | outside tested 37-patch catalog | 24 | 6 |
+| Follow diagnostics | outside tested 37-patch catalog | 23 | 6 |
 | Gesture remapper | applied | 68 | 2 |
 | Hide CAPTCHA popups | applied | 41 | 0 |
 | Hide already seen videos | applied | 10 | 0 |
 | Hide floating promotions | applied | 1 | 1 |
 | Hide quick comment reactions | applied | 3 | 0 |
 | Hold-and-slide 2x lock | applied | 1 | 2 |
-| Open external links directly | applied | 15 | 1 |
+| Open external links directly | applied | 15 | 0 |
 | Original Photo Mode downloader | applied | 1 | 0 |
 | Playback speed | applied | 4 | 1 |
 | Remember clear display | applied | 4 | 2 |

@@ -49013,7 +49013,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/feedfilter/FeedFilterPatch.kt",
-      "sha256": "4de8931fe2308fa3141c7ae27147e048af86bc9e11d6e89b4d20f2c5bd466d9d",
+      "sha256": "20900c6e4a56a577e27f4c8a8c2ce567e53ca804a7f41ebc5ac578c30576ca1c",
       "patches": [
         {
           "symbol": "feedFilterPatch",
@@ -49023,201 +49023,195 @@
       "findings": [
         {
           "kind": "literal",
-          "line": 20,
+          "line": 21,
           "text": "\"Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 21,
+          "line": 22,
           "text": "\"Lapp/morphe/extension/tiktok/feedfilter/ForYouFeedGuard;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 22,
+          "line": 23,
           "text": "\"Lapp/morphe/extension/tiktok/feedfilter/TakoAiFilter;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 23,
+          "line": 24,
           "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 23,
+          "line": 24,
           "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 25,
+          "line": 26,
           "text": "\"unused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 27,
+          "line": 28,
           "text": "\"Feed filter\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 27,
+          "line": 28,
           "text": "name = \"Feed filter\",",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 28,
+          "line": 29,
           "text": "\"Hides feed ads, TikTok Shop items, livestreams, stories, photo posts, and videos outside configured view or like ranges.\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 35,
+          "line": 36,
           "text": "AppCompatibilities.tiktokVerified())",
           "category": "version-specific"
         },
         {
           "kind": "instruction-selection",
-          "line": 39,
+          "line": 40,
           "text": "addInstruction(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 41,
+          "line": 42,
           "text": "\"invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableFeedFilter()V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 41,
+          "line": 42,
           "text": "->enableFeedFilter()V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 48,
+          "line": 49,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 53,
+          "line": 54,
           "text": "registerA",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 54,
+          "line": 55,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 56,
+          "line": 57,
           "text": "\"invoke-static/range {v$register .. v$register}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 56,
+          "line": 57,
           "text": "->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "version",
-          "line": 61,
+          "line": 62,
           "text": "46.4.3",
           "category": "version-specific"
         },
         {
           "kind": "control-flow",
-          "line": 67,
+          "line": 68,
           "text": "RETURN_VOID",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 72,
+          "line": 73,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 74,
+          "line": 75,
           "text": "\"invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "member",
-          "line": 74,
+          "line": 75,
           "text": "->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 74,
+          "line": 75,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 74,
+          "line": 75,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 83,
+          "line": 84,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 88,
+          "line": 89,
           "text": "registerA",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 89,
+          "line": 90,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 91,
+          "line": 92,
           "text": "\"invoke-static/range {v$register .. v$register}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 91,
+          "line": 92,
           "text": "->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "version",
-          "line": 96,
+          "line": 97,
           "text": "46.4.3",
           "category": "version-specific"
         },
         {
           "kind": "literal",
-          "line": 115,
-          "text": "\"Exact TikTok 46.4.3 Feed0VVManager commit matched without a FeedItemList CHECK_CAST\"",
+          "line": 116,
+          "text": "\"Feed0VVManager commit has no FeedItemList CHECK_CAST in $method\"",
           "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "version",
-          "line": 115,
-          "text": "46.4.3",
-          "category": "version-specific"
         },
         {
           "kind": "register",
@@ -49300,230 +49294,236 @@
         {
           "kind": "literal",
           "line": 142,
-          "text": "\"Exact TikTok 46.4.3 Feed0VVManager commit expected one Message.obj UI handoff, found ${uiCommitIndices.size}\"",
+          "text": "\"Feed0VVManager commit expected one Message.obj UI handoff, found ${uiCommitIndices.size} in $method\"",
           "category": "structural-or-semantic-evidence"
         },
         {
-          "kind": "version",
-          "line": 142,
-          "text": "46.4.3",
-          "category": "version-specific"
-        },
-        {
           "kind": "register",
-          "line": 147,
+          "line": 146,
           "text": "registerA",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 148,
+          "line": 147,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 150,
+          "line": 149,
           "text": "\"invoke-static/range {v$resultRegister .. v$resultRegister}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->filterBeforeUiCommit(Ljava/lang/Object;)V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 150,
+          "line": 149,
           "text": "->filterBeforeUiCommit(Ljava/lang/Object;)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 150,
+          "line": 149,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 160,
+          "line": 159,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 165,
+          "line": 164,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 167,
+          "line": 166,
           "text": "\"invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->filterIfMarked($FEED_ITEM_LIST_DESCRIPTOR)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "member",
-          "line": 167,
+          "line": 166,
           "text": "->filterIfMarked($FEED_ITEM_LIST_DESCRIPTOR)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 167,
+          "line": 166,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 167,
+          "line": 166,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 175,
+          "line": 174,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 180,
+          "line": 179,
           "text": "registerA",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 182,
+          "line": 181,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 184,
+          "line": 183,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "control-flow",
-          "line": 185,
+          "line": 184,
           "text": "if-eqz",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 186,
+          "line": 185,
           "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 186,
+          "line": 185,
           "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 189,
+          "line": 188,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "control-flow",
-          "line": 196,
+          "line": 195,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 200,
+          "line": 199,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 202,
+          "line": 201,
           "text": "\"invoke-static/range {p0 .. p0}, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "member",
-          "line": 202,
+          "line": 201,
           "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 202,
+          "line": 201,
           "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 202,
+          "line": 201,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 202,
+          "line": 201,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 209,
+          "line": 208,
           "text": "RETURN_VOID",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 213,
+          "line": 212,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 215,
+          "line": 214,
           "text": "\"invoke-static/range {p1 .. p1}, $EXTENSION_CLASS_DESCRIPTOR->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "member",
-          "line": 215,
+          "line": 214,
           "text": "->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 215,
+          "line": 214,
           "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 215,
+          "line": 214,
           "text": "p1",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 215,
+          "line": 214,
           "text": "p1",
           "category": "hard-coded"
         },
         {
           "kind": "instruction-selection",
-          "line": 220,
+          "line": 219,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 222,
+          "line": 221,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 223,
+          "line": 222,
           "text": "->shouldHideFeedButton()Z",
           "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 223,
+          "text": "v0",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "control-flow",
+          "line": 224,
+          "text": "if-eqz",
+          "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
@@ -49532,56 +49532,44 @@
           "category": "hard-coded"
         },
         {
-          "kind": "control-flow",
-          "line": 225,
-          "text": "if-eqz",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
           "kind": "register",
           "line": 225,
-          "text": "v0",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "register",
-          "line": 226,
           "text": "p1",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 229,
+          "line": 228,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 232,
+          "line": 231,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 234,
+          "line": 233,
           "text": "\"invoke-static {p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "member",
-          "line": 234,
+          "line": 233,
           "text": "->hideBoundFeedButtonView(Landroid/view/View;)V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 234,
+          "line": 233,
           "text": "Landroid/view/View;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 234,
+          "line": 233,
           "text": "p1",
           "category": "hard-coded"
         }
@@ -62755,7 +62743,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/misc/externalbrowser/OpenExternalLinksPatch.kt",
-      "sha256": "5566c1e7bde5197ce15c957dd34a28b2a696406772ce485fbb878fe89ca5faf5",
+      "sha256": "02226dd7d577966a92cd362947ea7cd8385a6b21923cc1789e0aaad288a7e7f7",
       "patches": [
         {
           "symbol": "openExternalLinksPatch",
@@ -62777,319 +62765,355 @@
         },
         {
           "kind": "literal",
-          "line": 20,
+          "line": 23,
           "text": "\"Lapp/morphe/extension/tiktok/externalbrowser/ExternalBrowserPatch;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 22,
+          "line": 25,
           "text": "\"unused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 24,
+          "line": 27,
           "text": "\"Open external links directly\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 24,
+          "line": 27,
           "text": "name = \"Open external links directly\",",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 25,
+          "line": 28,
           "text": "\"Opens profile and story website links in the system browser instead of TikTok's in-app browser. Thanks to lyyako for the original implementation.\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 30,
+          "line": 33,
           "text": "AppCompatibilities.tiktokVerified())",
           "category": "version-specific"
         },
         {
           "kind": "instruction-selection",
-          "line": 33,
+          "line": 36,
           "text": "addInstruction(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 35,
+          "line": 38,
           "text": "\"invoke-static {}, \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 36,
+          "line": 39,
           "text": "\"Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableExternalBrowser()V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 36,
+          "line": 39,
           "text": "->enableExternalBrowser()V",
           "category": "stable-named-anchor"
         },
         {
           "kind": "instruction-selection",
-          "line": 39,
+          "line": 42,
           "text": "addInstructionsWithLabels(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 41,
+          "line": 44,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 42,
+          "line": 45,
           "text": "->openSparkThirdContext(Landroid/content/Context;Ljava/lang/Object;)Z",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 42,
+          "line": 45,
           "text": "Landroid/content/Context;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 42,
+          "line": 45,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 42,
+          "line": 45,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 42,
+          "line": 45,
           "text": "p1",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 43,
+          "line": 46,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 44,
+          "line": 47,
           "text": "if-eqz",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 44,
+          "line": 47,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 45,
+          "line": 48,
           "text": "return-void",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 46,
+          "line": 49,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 48,
+          "line": 51,
           "text": "\"external_browser_spark_router_original\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 49,
+          "line": 52,
           "text": "getInstruction(0),",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 53,
+          "line": 56,
           "text": "addInstructionsWithLabels(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 55,
+          "line": 58,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 56,
+          "line": 59,
           "text": "->openStoryLink(Ljava/lang/Object;Ljava/lang/Object;)Z",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 56,
+          "line": 59,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 56,
+          "line": 59,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 56,
+          "line": 59,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 56,
+          "line": 59,
           "text": "p1",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 57,
+          "line": 60,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 58,
+          "line": 61,
           "text": "if-eqz",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 58,
+          "line": 61,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 59,
+          "line": 62,
           "text": "return-void",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 60,
+          "line": 63,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 62,
+          "line": 65,
           "text": "\"external_browser_story_original\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 63,
+          "line": 66,
           "text": "getInstruction(0),",
           "category": "structural-or-semantic-evidence"
         },
         {
-          "kind": "instruction-selection",
-          "line": 68,
-          "text": "indexOfFirst { it.opcode == Opcode.INVOKE_SUPER }",
-          "category": "requires-cardinality-or-dataflow-review"
-        },
-        {
           "kind": "literal",
-          "line": 70,
-          "text": "\"Could not find SparkActivity super.onCreate call\"",
+          "line": 71,
+          "text": "\"SparkActivity super.onCreate(Bundle)\"",
           "category": "structural-or-semantic-evidence"
         },
         {
-          "kind": "instruction-selection",
-          "line": 72,
-          "text": "addInstructionsWithLabels(",
+          "kind": "literal",
+          "line": 73,
+          "text": "\"onCreate\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 73,
+          "text": "name == \"onCreate\" &&",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 74,
+          "text": "\"Landroid/os/Bundle;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 74,
+          "text": "\"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 74,
+          "text": "returnType == \"V\"",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 74,
+          "text": "Landroid/os/Bundle;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 74,
+          "text": "parameterTypes == listOf(\"Landroid/os/Bundle;\") && ref.returnType == \"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 76,
+          "text": "addInstructionsWithLabels(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 78,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 75,
+          "line": 79,
           "text": "->openSparkActivity(Landroid/app/Activity;)Z",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 75,
+          "line": 79,
           "text": "Landroid/app/Activity;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 75,
+          "line": 79,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 75,
+          "line": 79,
           "text": "p0",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 76,
+          "line": 80,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 77,
+          "line": 81,
           "text": "if-eqz",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 77,
+          "line": 81,
           "text": "v0",
           "category": "hard-coded"
         },
         {
           "kind": "control-flow",
-          "line": 78,
+          "line": 82,
           "text": "return-void",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 79,
+          "line": 83,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 81,
+          "line": 85,
           "text": "\"external_browser_spark_activity_original\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 82,
+          "line": 86,
           "text": "getInstruction(superOnCreateIndex + 1),",
           "category": "structural-or-semantic-evidence"
         }
@@ -66325,7 +66349,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/misc/follow/FollowDiagnosticsPatch.kt",
-      "sha256": "28564c9f4c0300384e821f33c532163e1a03511604c9b684f89418dfbe86d9ee",
+      "sha256": "55081c877273d55d050249ccf258d874e012c47f1387f2231c5ff45d3b43634e",
       "patches": [
         {
           "symbol": "followDiagnosticsPatch",
@@ -66420,14 +66444,8 @@
         {
           "kind": "literal",
           "line": 37,
-          "text": "\"Adds debug-only logs around TikTok follow requests to help diagnose follow actions that do not persist. Supports TikTok 46.4.3.\"",
+          "text": "\"Adds debug-only logs around TikTok follow requests to help diagnose follow actions that do not persist.\"",
           "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "version",
-          "line": 37,
-          "text": "46.4.3",
-          "category": "version-specific"
         },
         {
           "kind": "version",
@@ -68466,7 +68484,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/misc/settings/SettingsPatch.kt",
-      "sha256": "cbe1eb0dca6cd23942f63083c56d6d8a6b2d438264bd8863ae1bf310f4a57e80",
+      "sha256": "dd6e606af95087637940a1111ac4b740a425e1fc246ece0601f79d72208408bf",
       "patches": [
         {
           "symbol": "settingsPatch",
@@ -68537,14 +68555,8 @@
         {
           "kind": "literal",
           "line": 47,
-          "text": "\"Adds the BlueIT Service settings menu to TikTok. Supports TikTok 46.4.3.\"",
+          "text": "\"Adds the BlueIT Service settings menu to supported TikTok builds.\"",
           "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "version",
-          "line": 47,
-          "text": "46.4.3",
-          "category": "version-specific"
         },
         {
           "kind": "version",
