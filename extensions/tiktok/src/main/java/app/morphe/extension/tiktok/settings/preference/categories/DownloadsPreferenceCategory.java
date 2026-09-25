@@ -68,6 +68,14 @@ public class DownloadsPreferenceCategory extends ConditionalPreferenceCategory {
                     Settings.DOWNLOAD_ORIGINAL_PHOTOS
             ));
         }
+        if (SettingsStatus.storyDownloadsEnabled) {
+            addPreference(new TogglePreference(
+                    context,
+                    "Download stories",
+                    "Show the download button on other people's stories.",
+                    Settings.DOWNLOAD_STORIES
+            ));
+        }
         if (SettingsStatus.advancedDownloadsEnabled) {
             addPreference(new DownloadQualityPreference(context, Settings.DOWNLOAD_VIDEO_QUALITY));
             addPreference(new DownloadSourcePreference(context, Settings.DOWNLOAD_VIDEO_SOURCE));
