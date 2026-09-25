@@ -52,6 +52,11 @@ jobs:
             --retry 3 --retry-all-errors --connect-timeout 30 --max-time 900 \
             "$SOURCE_URL" --output candidate.apk
           python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-candidate-identity-${{ github.event.pull_request.head.sha }}
+          path: candidate-identity.json
+          retention-days: 30
       - name: Rediscover baseline hooks in candidate APK
         run: |
           python3 scripts/tiktok/rediscover_hooks.py \
