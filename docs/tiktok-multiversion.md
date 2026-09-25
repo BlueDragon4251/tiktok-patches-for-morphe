@@ -85,6 +85,25 @@ The initial fixture remains TikTok global 46.7.3, SHA-256
 No additional version is claimed. New source still needs its own matrix result even
 though that original baseline was already accepted on a device.
 
+## Latest candidate probe (2026-09-25)
+
+The feature branch PR runs `TikTok candidate hook discovery` against the current
+global APK downloaded on a GitHub runner. `probe_latest.py` reads its package,
+version, version code, size and SHA-256 from the downloaded bytes; it rejects a
+wrong package and writes the actual identity to a per-head artifact. This probe
+does not publish the APK, add a fixture, extend Morphe compatibility or approve
+any injection. Its discovery report lists unresolved and changed hooks for the
+next port. The URL uses APKPure's current APK redirect, so the resulting version
+must always be read from the identity artifact, not guessed from the web page.
+
+`fixtures/tiktok/46.7.3/portable-hooks.json` was extracted from successful
+discovery run 36150261971 on feature head
+`bf126ed1dace798db5008202f7e3f2efa34f2b66` with
+`scripts/tiktok/portable_baseline.py`. It holds structural hashes and context,
+but no APK bytes. Exact source fixture: SHA-256
+`b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`.
+Only full acceptance on a later version can establish supported status.
+
 ## Review order
 
 Inventory and qualification manifest; shared resolution/injection contracts;

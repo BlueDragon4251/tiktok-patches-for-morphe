@@ -1,6 +1,12 @@
 name: TikTok candidate hook discovery
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/tiktok_update_probe.yml'
+      - 'scripts/tiktok/**'
+      - 'fixtures/tiktok/46.7.3/portable-hooks.json'
+      - 'patches/src/main/kotlin/app/morphe/patches/tiktok/**'
   workflow_dispatch:
     inputs:
       apk_url:
@@ -26,7 +32,42 @@ permissions:
   actions: read
 
 jobs:
+  latest:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/tiktok-multiversion-contracts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install -r scripts/tiktok/requirements.txt
+      - name: Download the current global APK candidate
+        env:
+          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+        run: |
+          curl --fail --location --silent --show-error --proto '=https' --proto-redir '=https' \
+            --retry 3 --retry-all-errors --connect-timeout 30 --max-time 900 \
+            "$SOURCE_URL" --output candidate.apk
+          python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL"
+      - name: Rediscover baseline hooks in candidate APK
+        run: |
+          python3 scripts/tiktok/rediscover_hooks.py \
+            fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tiktok-latest-candidate-${{ github.event.pull_request.head.sha }}
+          path: |
+            candidate-identity.json
+            tiktok-hook-migration.json
+            tiktok-hook-migration.md
+          retention-days: 30
+          if-no-files-found: warn
   compare:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

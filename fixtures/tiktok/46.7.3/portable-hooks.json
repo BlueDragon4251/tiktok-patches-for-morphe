@@ -1,0 +1,4573 @@
+{
+  "schema": 2,
+  "normalization": 2,
+  "package": "com.zhiliaoapp.musically",
+  "version": "46.7.3",
+  "versionCode": "2024607030",
+  "fixtureSha256": "b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e",
+  "featureHead": "bf126ed1dace798db5008202f7e3f2efa34f2b66",
+  "fingerprints": [
+    {
+      "hook": "app.morphe.patches.tiktok.captchapopup.CaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptchaV2",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+      "name": "popCaptchaV2",
+      "parameters": [
+        "Landroid/app/Activity;",
+        "Ljava/lang/String;",
+        "LX/17qC;",
+        "Landroidx/fragment/app/Fragment;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+        "stableName": "popCaptchaV2",
+        "ownerShapeSha256": "78bb64b155a20fc58acc857fb8e63c91b01283edea8991eddfb67b681e64ec38"
+      },
+      "structuralSha256": "1ad4133d86e24a7c06678c45e3a9b89fb1bf6d1ed7186796853fc2c498ed439c",
+      "fixtureContractSha256": "f4e0d4be1ab6cacbcdc31f9cd44e84956f48ae5d75dcf805b66f30522d5e672e",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/sec/SecApiImpl;",
+        "name": "popCaptchaV2",
+        "parameters": [
+          "Landroid/app/Activity;",
+          "Ljava/lang/String;",
+          "LX/17qC;",
+          "Landroidx/fragment/app/Fragment;"
+        ],
+        "returns": "V",
+        "strings": [
+          "popCaptchaV2 - riskInfo ="
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.captchapopup.LegacyCaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptcha",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+      "name": "popCaptcha",
+      "parameters": [
+        "Landroid/app/Activity;",
+        "I",
+        "LX/17qC;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+        "stableName": "popCaptcha",
+        "ownerShapeSha256": "78bb64b155a20fc58acc857fb8e63c91b01283edea8991eddfb67b681e64ec38"
+      },
+      "structuralSha256": "e3d38f95c4e1cc222bbf9445f920d04efee6990bef749f2452dacd511d79c644",
+      "fixtureContractSha256": "2bb84b10ef2b975fbc4cdc523e0bcdbf403e09f13aeec809499f819e85f8dc0c",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/sec/SecApiImpl;",
+        "name": "popCaptcha",
+        "parameters": [
+          "Landroid/app/Activity;",
+          "I",
+          "LX/17qC;"
+        ],
+        "returns": "V",
+        "strings": [
+          "popCaptcha - errorcode = "
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.captchapopup.LiveHostCaptchaPopupFingerprint:/live/livehostimpl/LiveHostUser;:popCaptchaV2",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;",
+      "name": "popCaptchaV2",
+      "parameters": [
+        "Landroid/app/Activity;",
+        "Ljava/lang/String;",
+        "LX/1NRi;",
+        "Landroidx/fragment/app/Fragment;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;",
+        "stableName": "popCaptchaV2",
+        "ownerShapeSha256": "1a60431357c24e27a9e6d82f6ed31ae26b4dcb36002999b7a7f4c5ec2e2827ff"
+      },
+      "structuralSha256": "d06d0d6ce20f36b7d4edfddccbdb0390490af1f1c964518bf3909c4092e0b7b0",
+      "fixtureContractSha256": "837b09e5f90ec5102bac71437200edf00d34f19bfd0b52626d0ce7582d9b70fc",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/live/livehostimpl/LiveHostUser;",
+        "name": "popCaptchaV2",
+        "parameters": [
+          "Landroid/app/Activity;",
+          "Ljava/lang/String;",
+          "LX/1NRi;",
+          "Landroidx/fragment/app/Fragment;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.captchapopup.OecCaptchaPopupFingerprint:Lcom/tts/oecverify/verify/RiskControlService;:execute",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/tts/oecverify/verify/RiskControlService;",
+      "name": "execute",
+      "parameters": [
+        "LX/16eW;",
+        "Lcom/tts/oecverify/BdTuringCallback;"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/tts/oecverify/verify/RiskControlService;",
+        "stableName": "execute",
+        "ownerShapeSha256": "4e7469990ef3aa87a7462257fa0353646b11770be8e8c1aaaff1a2e20bc2141d"
+      },
+      "structuralSha256": "0d1a72ab8c115af57a89cbe1e60192abd3e0ec58b401bac3c0ddff31e0e1baa1",
+      "fixtureContractSha256": "ccf42f8f0dac4872c5bcd0d5b0efce1eaa8e362b6c61f4508fc7ef873af46595",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/tts/oecverify/verify/RiskControlService;",
+        "name": "execute",
+        "parameters": [
+          "LX/16eW;",
+          "Lcom/tts/oecverify/BdTuringCallback;"
+        ],
+        "returns": "Z",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.FeedItemListGetItemsFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+      "name": "getItems",
+      "parameters": [],
+      "returns": "Ljava/util/List;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+        "stableName": "getItems",
+        "ownerShapeSha256": "f43faa5b11c230ff27ad287507036d8efba97ae8aa9dabe9c54db9610466068a"
+      },
+      "structuralSha256": "b607179dcc8d908c91369d69433949c6e80534f2bdf2e9f9b440d2c882820c98",
+      "fixtureContractSha256": "432782fd3276dfa639e8d63646dd73995d82741b602de63ffc617146308049d6",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "Ljava/util/List;",
+        "exactStrings": [],
+        "accessFlags": 1
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.FollowFeedFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1N7W;",
+      "name": "LIZ",
+      "parameters": [
+        "LX/0lqn;",
+        "LX/04zA;"
+      ],
+      "returns": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "46ec60b2f13dd2f96d9445f86b4203d790ac1a4929edb1b39891db2bb1c107b5",
+        "returnTypeShapeSha256": "ed5ef96c32e096c81f0d4067d0deace7758272f95c7b557098275307b3ce26ac"
+      },
+      "structuralSha256": "9afc00a0b5b13060a5051b1ad1b7230d16502374e33834cb6720eba0cdc97ec4",
+      "fixtureContractSha256": "b8549d3c63d7b911f9ac5637d589ac3b742decf88c37276bb89bb27e3814c74a",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+        "exactStrings": [],
+        "accessFlags": 9
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.FollowFeedListGetItemsFingerprint:Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;:getItems",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+      "name": "getItems",
+      "parameters": [],
+      "returns": "Ljava/util/List;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+        "stableName": "getItems",
+        "ownerShapeSha256": "71191bb10b949d43f5067b97eac0368b262c895be52e5848320f628dc7c65ad9"
+      },
+      "structuralSha256": "1e8d9ab41c0e34d1854e16836f55f0e5e99ae6b11c71d16d931cd38daacdc183",
+      "fixtureContractSha256": "c0c9eb91214897f40055e024f98d69bbc8e4b7b47dfa635b9c6ba1353c7a3970",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+        "name": "getItems",
+        "parameters": [],
+        "returns": "Ljava/util/List;",
+        "exactStrings": [],
+        "accessFlags": 1
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.FollowFeedPresenterPostProcessFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1N7X;",
+      "name": "LJIILL",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "6286c381f9e993fee2835a4e1fe630697defb949232033c667153c83d5b0d094"
+      },
+      "structuralSha256": "de0221301627f53494787b57fa1207e4c859e16ab82c40cc5efd815d669b4196",
+      "fixtureContractSha256": "69722057faa667245ee331f21d7503d4463e74cd71db35045f649bc8e2accea2",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.ForYouCachedFeedFilterFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/04Ju;",
+      "name": "LIZIZ",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "7be79e05684b57d66c391677d58833b8228a337340b4f00ff5d3d9ffb2556031"
+      },
+      "structuralSha256": "ee62b206d1c4cfd5090e7f74f1f6216774fa44a4cd57ad9a0d2e3f2b35c9d3d8",
+      "fixtureContractSha256": "fd7c09b1b5aaa4c0c2a64509aaf9f4f6e2dd4120008b01ad293cb870401c4c36",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"
+        ],
+        "returns": "V",
+        "strings": [
+          "fetchFeeds, filter by is ad",
+          "fetchFeeds, filter by is duplicate"
+        ],
+        "exactStrings": [],
+        "accessFlags": 9
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.ForYouCachedFeedReadFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/04Ju;",
+      "name": "LJIJJ",
+      "parameters": [],
+      "returns": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "7be79e05684b57d66c391677d58833b8228a337340b4f00ff5d3d9ffb2556031",
+        "returnTypeShapeSha256": "73eecca7a67e7f9922edaec1d2537ebf5fe596571481b2c193d043733dface4c"
+      },
+      "structuralSha256": "dbad832e24b97766ea282faf6eb0e7e057221000c8cc606c549d068366f8fcfe",
+      "fixtureContractSha256": "13bcd2565fac66b7ab25101900fa026f855908c3d432999c2765f499b2788b6e",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [],
+        "returns": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+        "strings": [
+          "feed_use_cache_size",
+          "tryUseCache list size "
+        ],
+        "exactStrings": [],
+        "accessFlags": 9
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.ForYouFeedResponseFingerprint:Lcom/ss/android/ugc/aweme/feed/api/FeedApi;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
+      "name": "LIZIZ",
+      "parameters": [
+        "LX/06F0;"
+      ],
+      "returns": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
+        "ownerShapeSha256": "8f3ce2437e9e68b78e8ddfff412e0e2ea85246a2e71f6db3f32d6f311816b0f0",
+        "returnTypeShapeSha256": "73eecca7a67e7f9922edaec1d2537ebf5fe596571481b2c193d043733dface4c"
+      },
+      "structuralSha256": "66b856d4d620f012a1b5b9bf471aed13a1e8134ff2c6975da8aa9ebbcc26605b",
+      "fixtureContractSha256": "687dca127bcd80a9d565fc48d5e86f03476d171207d21ae6bedd5d8b5674631b",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
+        "returns": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+        "strings": [
+          "fyp",
+          "first_feed_duration"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.ForYouFinalCommitFingerprint::run",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/07fn;",
+      "name": "run",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "run",
+        "ownerShapeSha256": "002fabdd77c17bdf304c5c0b02d2779989b8efd0126d7f2b76080efc935b92e6"
+      },
+      "structuralSha256": "3e67f0d875a9f2473ca321789ccda34f875e40e3f260a66be21be6d9e641554f",
+      "fixtureContractSha256": "f2421e8b640d729fd9860a21ecac554d0e1a4d0472cdf3b1f6449320edca997b",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "run",
+        "parameters": [],
+        "returns": "V",
+        "strings": [
+          "Feed0VVManager@",
+          "full_feed_commit_process_data",
+          "homepage_hot",
+          "filter_show_ad",
+          "filter_installed_ad",
+          "fyp",
+          "soft_ads",
+          "roi2"
+        ],
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.TakoAiFeedButtonBindFingerprint:/feed/assem/tikbot/TakoAssem;:onViewCreated",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoAssem;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoAssem;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "0748c9d1f76db93002f7342d7acd479ffd77eecaa45bed7eb6c29c020e3ed087"
+      },
+      "structuralSha256": "802abaca8470c040d8050374b9c346ec0c6013e7bfb98778a489f43fd408fc11",
+      "fixtureContractSha256": "826659c3800612d238f07b61bb83263358d7847f80ea1c8f4e3fd3ba6f6e80c4",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/feed/assem/tikbot/TakoAssem;",
+        "name": "onViewCreated",
+        "parameters": [
+          "Landroid/view/View;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.feedfilter.TakoAiFeedButtonSetVisibleFingerprint:/feed/assem/tikbot/TakoAssem;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoAssem;",
+      "name": "Ar",
+      "parameters": [
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/assem/tikbot/TakoAssem;",
+        "ownerShapeSha256": "0748c9d1f76db93002f7342d7acd479ffd77eecaa45bed7eb6c29c020e3ed087"
+      },
+      "structuralSha256": "f0fc246a0b9fd8c23779675342227fc4ad2b231971a97fba472dae758b568efa",
+      "fixtureContractSha256": "c982a4d876b95e56d4d790579e9ed137119375de1dbf347cbf5cb748c1ff73c7",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/feed/assem/tikbot/TakoAssem;",
+        "parameters": [
+          "Z"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.cleardisplay.ClearModeLogCoreFingerprint::",
+      "status": "missing",
+      "required": false,
+      "candidateCount": 0
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.cleardisplay.ClearModeLogPlaytimeFingerprint::",
+      "status": "missing",
+      "required": false,
+      "candidateCount": 0
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.cleardisplay.ClearModeLogStateFingerprint::",
+      "status": "resolved",
+      "required": false,
+      "owner": "LX/0De5;",
+      "name": "LJIIJJI",
+      "parameters": [
+        "Lcom/bytedance/common/utility/collection/WeakHandler;",
+        "Z",
+        "Ljava/lang/String;",
+        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+        "J",
+        "I",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "2c6f352a57ddb7447f0c73588319d0a5652be50073e4472a6a08e1b1f34487e2"
+      },
+      "structuralSha256": "ee8a7f541e4a6f139f2a3aa25c3acb67a61177cd7d31591965543289738a5404",
+      "fixtureContractSha256": "0fd65220c5a7dbedc359094a43dffc138543ae2634e6322354acbccd6b1298cd",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Lcom/bytedance/common/utility/collection/WeakHandler;",
+          "Z",
+          "Ljava/lang/String;",
+          "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+          "J",
+          "I",
+          "I"
+        ],
+        "returns": "V",
+        "exactStrings": [],
+        "accessFlags": 25
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.cleardisplay.ClearModePanelResetFingerprint:Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+      "name": "vq",
+      "parameters": [
+        "LX/06SG;",
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+        "ownerShapeSha256": "de84d6b0e0300b8cf7de22a5d75a94d4ed3c84b82c5c410ede4e0cadf2b9851a"
+      },
+      "structuralSha256": "54b510015addfb310408e272d1d83417ed667b67e106237ad745750b7786e196",
+      "fixtureContractSha256": "01fe199f696699b9207e1e74ca78a796c66c0a3253d372219f37fa7fd97b4d74",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+        "returns": "V",
+        "strings": [
+          "resetClearMode"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.cleardisplay.OnClearDisplayEventFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+      "name": "onClearModeEvent",
+      "parameters": [
+        "LX/0AuQ;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+        "stableName": "onClearModeEvent",
+        "ownerShapeSha256": "de84d6b0e0300b8cf7de22a5d75a94d4ed3c84b82c5c410ede4e0cadf2b9851a"
+      },
+      "structuralSha256": "b73fdb6fcc87dd88b624637c6abbe4efd003418997b1b2b2bff4ca00cca8ac15",
+      "fixtureContractSha256": "ec5aa86b5f562b0385dfcf6e362f43ea248feb2a81da49f73f1487456efaa04f",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.AclCommonShare2Fingerprint:/ACLCommonShare;:getShowType",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+      "name": "getShowType",
+      "parameters": [],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+        "stableName": "getShowType",
+        "ownerShapeSha256": "38baab2ba116c04f9b23a13ddd6b3aa03c571cb6492d37203b150de8b773aa6b"
+      },
+      "structuralSha256": "41cb24049741d00152bf5b496af76bfb44ef65106c2e4a4a22ddd2e354dd1826",
+      "fixtureContractSha256": "7510a846c1708716bdbf460dae9b7bfb695ec27633136227b2a64ed9ded9d657",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/ACLCommonShare;",
+        "name": "getShowType",
+        "returns": "I",
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.AclCommonShare3Fingerprint:/ACLCommonShare;:getTranscode",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+      "name": "getTranscode",
+      "parameters": [],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+        "stableName": "getTranscode",
+        "ownerShapeSha256": "38baab2ba116c04f9b23a13ddd6b3aa03c571cb6492d37203b150de8b773aa6b"
+      },
+      "structuralSha256": "f0dab6f985771ce0ef81453fc1ed84d77f39c67fc59df2304111ff8739b69193",
+      "fixtureContractSha256": "88a294c60513bb4fe0ef33c46a0826ffc47bb4b44840b788bf51bfef49df70d3",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/ACLCommonShare;",
+        "name": "getTranscode",
+        "returns": "I",
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.AclCommonShareFingerprint:/ACLCommonShare;:getCode",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+      "name": "getCode",
+      "parameters": [],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/model/ACLCommonShare;",
+        "stableName": "getCode",
+        "ownerShapeSha256": "38baab2ba116c04f9b23a13ddd6b3aa03c571cb6492d37203b150de8b773aa6b"
+      },
+      "structuralSha256": "105969c75adc034297db17689960279398f0e4306bc29f9f3454df2de6effde3",
+      "fixtureContractSha256": "0aab56d18b709c60531233b135a4340f0f19cd04d38ad27113522aefc0729a36",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/ACLCommonShare;",
+        "name": "getCode",
+        "returns": "I",
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.AwemeGetVideoFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+      "name": "getVideo",
+      "parameters": [],
+      "returns": "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+        "stableName": "getVideo",
+        "ownerShapeSha256": "dd9d34fe10d76b93811a1bfb78dfcc0431edc20977ed628da143dfaf7f9185c7",
+        "returnTypeShapeSha256": "7f9f08935781c291940135f9585632064d2be487773e492d0e2971ea3659cf2e"
+      },
+      "structuralSha256": "4f7fb6cadb9edc1dc2c0c927b1757de0ffd78236a9f697ef7384fd29672ffb37",
+      "fixtureContractSha256": "29ab7d9e55a7672547dc9fbbd8242db06b0bbe74b2464f42e0887ae9aec0fd78",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "Lcom/ss/android/ugc/aweme/feed/model/Video;",
+        "exactStrings": [],
+        "accessFlags": 1
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.CommentImageWatermarkFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0Xtt;",
+      "name": "LIZ",
+      "parameters": [
+        "Landroid/graphics/Bitmap;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "1e2d043f09ea33d6a183b120e9f1c1f3880c179bb6ac31c9519979a4e1411074"
+      },
+      "structuralSha256": "efb296aa3fadafa00e5bb0fa0018d6d6a4a4f0b691512e1379edba46dbfaf882",
+      "fixtureContractSha256": "dbcf7b97e9bb3e06f3d1b2bf8f41d957aa071de5350b981eb5112e4fb1dc7258",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Landroid/graphics/Bitmap;"
+        ],
+        "returns": "V",
+        "strings": [
+          "[tiktok_logo]",
+          "image/jpeg",
+          "is_pending"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.DownloadSuccessCoroutineFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0Xo8;",
+      "name": "invokeSuspend",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invokeSuspend",
+        "ownerShapeSha256": "d1958025d04369ab53014bd5cfc07e8ef464a8192582832168690f6fd8295f1f"
+      },
+      "structuralSha256": "7678a6269261ef2c4f37c1cd0dfec59a1a898b693d46e0da84d01c49c02ede88",
+      "fixtureContractSha256": "62d2341c0a67e1da6f40ac89ab3abd0c4c5bedb198b63f35984e2cb35f1a6074",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/lang/Object;"
+        ],
+        "returns": "Ljava/lang/Object;",
+        "strings": [
+          ".startDownload$globalListener$1$onSuccess$1",
+          "filePath",
+          "fileExist"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.DownloadUriFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/01Cd;",
+      "name": "LIZLLL",
+      "parameters": [
+        "Landroid/content/Context;",
+        "Ljava/lang/String;"
+      ],
+      "returns": "Landroid/net/Uri;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "806a273b5877016c5c1daed3142205244cb11afe2e060a05078aa5f75f132647"
+      },
+      "structuralSha256": "8703138c147921e3af2afa0ad4919bfe069ce6faf81317223b1719fac0e6b16b",
+      "fixtureContractSha256": "13196e7bc96b081c5fc3379470793ed5347fa693f105c8db325c49091cab0bfe",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Landroid/content/Context;",
+          "Ljava/lang/String;"
+        ],
+        "returns": "Landroid/net/Uri;",
+        "strings": [
+          "/",
+          "/Camera",
+          "/Camera/",
+          "video/mp4"
+        ],
+        "exactStrings": [],
+        "accessFlags": 9
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.StickerPreviewBinderFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1L9I;",
+      "name": "LIZ",
+      "parameters": [
+        "LX/1L9K;",
+        "Z",
+        "Ljava/lang/String;",
+        "Ljava/util/Map;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "a304277440b5657ccea00b6afc50ed8b4cefae1a1a84c2a0340abf48c46463fd"
+      },
+      "structuralSha256": "18157dd7f4107133a97714717f7ae1e6b58e6061fab43db7753d058b8328b128",
+      "fixtureContractSha256": "8bdd0fb0a321ac52ecb841405383c99b5078d8077e8f4a56f713fe73a34f7a0f",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "L",
+          "Z",
+          "Ljava/lang/String;",
+          "Ljava/util/Map;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.downloads.StickerPreviewSourceFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0Hgh;",
+      "name": "LJ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
+        "Landroid/view/View;",
+        "Z",
+        "Ljava/lang/String;",
+        "Ljava/util/Map;",
+        "Lkotlin/jvm/functions/Function0;",
+        "Lkotlin/jvm/functions/Function0;",
+        "Lkotlin/jvm/functions/Function0;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "e35f114699694235ff5bb0eb5de65d24b8e07ac927672226bb34ff16a021bcd2"
+      },
+      "structuralSha256": "fbcc71272693830ddb6829f3f758d3bc932c2ca3f52724b905b2e4ae8efb8879",
+      "fixtureContractSha256": "e0766835b9550bd5e201c5f039fbcae34f35ca6a8518f8fdc072134de6702491",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/lang/String;",
+          "Lcom/ss/android/ugc/aweme/im/common/model/StickerItem;",
+          "Landroid/view/View;",
+          "Z",
+          "Ljava/lang/String;",
+          "Ljava/util/Map;",
+          "Lkotlin/jvm/functions/Function0;",
+          "Lkotlin/jvm/functions/Function0;",
+          "Lkotlin/jvm/functions/Function0;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.gesture.PortraitDoubleTapFingerprint::onDoubleTap",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0BBw;",
+      "name": "onDoubleTap",
+      "parameters": [
+        "Landroid/view/MotionEvent;"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "onDoubleTap",
+        "ownerShapeSha256": "a67c46c9a278ff23d6f0b3313c76aa8fdb30cc3611c94d81b51925a7264b80a4"
+      },
+      "structuralSha256": "df0dd0a74d27ce971d36207f7595a54cdf17113a47907395ec65fe199698c3fd",
+      "fixtureContractSha256": "6884914426fc98b7cf1e28fc298b2d1caa552907ce18ebd783a92664168e1a24",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "onDoubleTap",
+        "parameters": [
+          "Landroid/view/MotionEvent;"
+        ],
+        "returns": "Z",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.gesture.PortraitLongPressFingerprint::onLongPress",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0BBw;",
+      "name": "onLongPress",
+      "parameters": [
+        "Landroid/view/MotionEvent;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "onLongPress",
+        "ownerShapeSha256": "a67c46c9a278ff23d6f0b3313c76aa8fdb30cc3611c94d81b51925a7264b80a4"
+      },
+      "structuralSha256": "6841c59b6fb8c004d3b6367d3b0f6a516f0a8b4b3c19d03ff92832c1ba56159b",
+      "fixtureContractSha256": "811cc3b50fc74601defbe6a54ebde00f4e0287b1614f465fca06c51b0a409759",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "onLongPress",
+        "parameters": [
+          "Landroid/view/MotionEvent;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.gesture.PortraitSingleTapFingerprint::onSingleTapConfirmed",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0BBw;",
+      "name": "onSingleTapConfirmed",
+      "parameters": [
+        "Landroid/view/MotionEvent;"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "onSingleTapConfirmed",
+        "ownerShapeSha256": "a67c46c9a278ff23d6f0b3313c76aa8fdb30cc3611c94d81b51925a7264b80a4"
+      },
+      "structuralSha256": "9166ab3e449da55d307e06dfa48a46eb3f5bebd932d52de4714c45b58c94d4aa",
+      "fixtureContractSha256": "29f42f855d06b59b037ab6de40b199fb6b917f40a6ca22d628482e154b8106bd",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "onSingleTapConfirmed",
+        "parameters": [
+          "Landroid/view/MotionEvent;"
+        ],
+        "returns": "Z",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.looping.VideoEngineSetLoopingFingerprint:Lcom/ss/ttvideoengine/TTVideoEngine;:setLooping",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/ttvideoengine/TTVideoEngine;",
+      "name": "setLooping",
+      "parameters": [
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/ttvideoengine/TTVideoEngine;",
+        "stableName": "setLooping",
+        "ownerShapeSha256": "ac9a4ceb6c0b0e3067d45d4ab16b75fee7f303d392acb77e2662f33377fd22db"
+      },
+      "structuralSha256": "2f4f22fdba105e6e2b073be1edcc66652cef41448aa0271b086747ddc6cfa7f2",
+      "fixtureContractSha256": "798df2dd6d578d16cceb9ca2be1d416d3df59ee509395b12173540df1e38bcdb",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/ttvideoengine/TTVideoEngine;",
+        "name": "setLooping",
+        "parameters": [
+          "Z"
+        ],
+        "returns": "V",
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.offlinevideos.OfflineModeOptionEnumFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1DkP;",
+      "name": "<clinit>",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "<clinit>",
+        "ownerShapeSha256": "2240bd8d659d150669d5ae459fec320e514c170878330f67b5aac399fa283613"
+      },
+      "structuralSha256": "c7c2bdea6dd321a901f40835c238e3a68439fb35b23b0ba6aba57c23db7115bb",
+      "fixtureContractSha256": "1b56d34339414856994ee290ae6f3a812825b642c1839a766d8829169c0878e3",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.offlinevideos.OfflineModeSheetOptionsFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
+      "name": "<clinit>",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
+        "stableName": "<clinit>",
+        "ownerShapeSha256": "da4a7a437f9c7b6b52141276148b876845d11c06960b1478d403d6d4a9c86431"
+      },
+      "structuralSha256": "233e22ef09cf97468104a5d979d9d479fb1260480860d674e58ac757217f566f",
+      "fixtureContractSha256": "53188cbec0d05071a3a81ce67c9e0b18fdcb82a9e4eb9ccfb5569fe54c83b480",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.publishdate.VideoAuthorInfoStateFingerprint:Lcom/ss/android/ugc/aweme/feed/assem/videoauthorinfo/VideoAuthorInfoVM;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/assem/videoauthorinfo/VideoAuthorInfoVM;",
+      "name": "paramSync2StateAccept",
+      "parameters": [
+        "LX/06Ty;",
+        "Lcom/ss/android/ugc/aweme/feed/model/VideoItemParams;"
+      ],
+      "returns": "LX/06Ty;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/assem/videoauthorinfo/VideoAuthorInfoVM;",
+        "stableName": "paramSync2StateAccept",
+        "ownerShapeSha256": "6b4b1f5ff6f50fa4e92a1526c205388d21200564af327d4dc6e3fe3a4da94c01",
+        "returnTypeShapeSha256": "165aed14fe82541cb521eb3b9b23cc7ae5ba032b8b44e1fba9ac9ba5ab8b8ddf"
+      },
+      "structuralSha256": "ddeb74c059405bc5c8670643516db7343b54d6f8a374720ac7247155e48be6a3",
+      "fixtureContractSha256": "721f248c9e4f22c0ace11c6090b8312fe76004b798a6dcbb5dc6db668d858413",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/feed/assem/videoauthorinfo/VideoAuthorInfoVM;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.quickactions.LongPressQuickShareProviderFingerprint::invoke",
+      "status": "resolved",
+      "required": false,
+      "owner": "LX/09Y7;",
+      "name": "invoke",
+      "parameters": [],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "1cf3eac1c0ed997cc750683754f8719a511ef0d9639759d2e09b058fa1e8cd85"
+      },
+      "structuralSha256": "b46b16a209380d5ccc5ed926b436d0607ba5b2863da5ae7221abc56756bfa042",
+      "fixtureContractSha256": "d270aa12f32cb00a615effad4946a77391b743e84910826b4758f74ee2108ebb",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "invoke",
+        "parameters": [],
+        "returns": "Ljava/lang/Object;",
+        "strings": [
+          "im_long_press_share_button_to_quick_share"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.quickactions.QuickCommentReactionGateBooleanFingerprint:Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;:LIZ",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
+      "name": "LIZ",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
+        "ownerShapeSha256": "ee350b258aaf1436db763b699d2dbf147892e2f62495952ca2aaf590c40f99d5"
+      },
+      "structuralSha256": "67ba900a0d76a1f596e507d92875fc9a751fb1ab020eb49e2c2f655b501c098e",
+      "fixtureContractSha256": "a1beb9d1c09a414ae8ad473bec398641538ce01168344d16b2526c44537bf5d1",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/comment/experiment/PersonalizedEmojiExperiment;",
+        "name": "LIZ",
+        "parameters": [],
+        "returns": "Z",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.quickactions.QuickCommentReactionGateLegacyFingerprint::",
+      "status": "missing",
+      "required": false,
+      "candidateCount": 0
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.resume.FeedProgressContinueGateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/08eF;",
+      "name": "invoke",
+      "parameters": [],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "683d080dc68f5ce30826229fb39db1f56e4cb749247e2c74418443377ce53e8b"
+      },
+      "structuralSha256": "2ea6ed76668cf237b28cf478f8a22e2f757dd1d2dfed79bb4e980adc699685a0",
+      "fixtureContractSha256": "67da3e22b66fe7a1ea60c5720576cbe280c32b027a385e48b2c87b576873da19",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [],
+        "returns": "Ljava/lang/Object;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.searchfeatures.LiveSearchGateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/livesdk/livesetting/feed/LiveDrawerSearchEnableSetting;",
+      "name": "getValue",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/livesdk/livesetting/feed/LiveDrawerSearchEnableSetting;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "405895d84334ab38d20566a208ecb957fd29a8e84f0e1e8966ac997b2b9b0035"
+      },
+      "structuralSha256": "c116aa473faa77d889d3f1fffc0ceed8c7b45e8aa5dfaaf381ae98d1ad6edbf1",
+      "fixtureContractSha256": "a3d256b894c7b2b741dd74411e9051549311713b3fa7a170c8248c64e0296c23",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [],
+        "returns": "Z",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.searchfeatures.NonPersonalizedSearchGateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/04y0;",
+      "name": "LIZ",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "42cffaf7fc73fa6981753cab802dab8232925de45a4a2094cd9cb520920dfc4a"
+      },
+      "structuralSha256": "f96733d3221d3b9a1039d5eef68b09e5e60db1cd8b61027db1b0c3bb4558c11f",
+      "fixtureContractSha256": "9fa2f077799767af6863256703b5735181800c504c760aec1f0c2ba8d898cbdc",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [],
+        "returns": "Z",
+        "strings": [
+          "enable_non_personalized_search"
+        ],
+        "exactStrings": [
+          "enable_non_personalized_search"
+        ]
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.searchfeatures.NonPersonalizedSearchStateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/04uK;",
+      "name": "LIZLLL",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "784f660fdbba21af1e1cc554953abb1d2d3c161a861409aa56d57c91914f3fd3"
+      },
+      "structuralSha256": "de9aace530b3a1bac8439f1f810121ab80fd6d1e1dc7231fe38f75d16400b454",
+      "fixtureContractSha256": "cbd0b31d21577a83c7073a3713c853021dd207a7438d006563beab72a2e221fc",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [],
+        "returns": "Z",
+        "strings": [
+          "non_personalized_search_state_"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.seekbar.SetSeekBarShowTypeFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/06W4;",
+      "name": "setSeekBarShowType",
+      "parameters": [
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "setSeekBarShowType",
+        "ownerShapeSha256": "f6d3579aa1faaae9cdfdaa1e86d1900188fcf08379ab114dd963d1039f61cac3"
+      },
+      "structuralSha256": "fe03c89e54a590bb6effde66af6f01de0a7a69bf7f0f45108ecf61d8376f9f95",
+      "fixtureContractSha256": "938887f0e27edda789a2402943323fd25609fddd54b85b6aa803d8a3c9dc5b0c",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I"
+        ],
+        "returns": "V",
+        "strings": [
+          "seekbar show type change, change to:"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.seekbar.ShouldShowProgressBarFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/04wK;",
+      "name": "LJ",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "ca787f1155a5f655d11a82b59d7b6bc74bdcbadc1a0b531b8aa2caf5a4928eb8"
+      },
+      "structuralSha256": "1820b00a19339b432d9221a6629087160fd62e4b6acd5790318b52aab83b7379",
+      "fixtureContractSha256": "f7dca1d6930691fc84ddad5944609028e5eceab1e4205ab09ad30450a065e400",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+        ],
+        "returns": "Z",
+        "exactStrings": [],
+        "accessFlags": 25
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.seen.PlayerProgressFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
+      "name": "onPlayProgressChange",
+      "parameters": [
+        "Ljava/lang/String;",
+        "J",
+        "J"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
+        "stableName": "onPlayProgressChange",
+        "ownerShapeSha256": "4557f0ea74c533122c26c9df04920c2d01f59f42bf7610d0f6b35611e5515b54"
+      },
+      "structuralSha256": "7a7f0339109874f44581efdd25ea020c4b21c9e96af66f26cc13db506400d395",
+      "fixtureContractSha256": "818cb8757b5427e6c61c33ed344c7d203ef4a51201c8bd153b3a4dbc8fe902ed",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/lang/String;",
+          "J",
+          "J"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.speed.GetSpeedFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/panel/BaseListFragmentPanel;",
+      "name": "onFeedSpeedSelectedEvent",
+      "parameters": [
+        "LX/07Wm;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/panel/BaseListFragmentPanel;",
+        "stableName": "onFeedSpeedSelectedEvent",
+        "ownerShapeSha256": "b918c5b45f36a3cc2b78e9e95e473a497311fa71ef6ae807120440ff1771c099"
+      },
+      "structuralSha256": "cfbe04669f43666990c17de75d5ff9769aa44aafa4ab2e0931da3c8fd2f7d954",
+      "fixtureContractSha256": "9f009e99f472059123d98a2a30d3e136c016d7f84e4f3d45b677767f503a64cb",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.speed.LongPressSpeedUpEnableFingerprint::<clinit>",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/08R3;",
+      "name": "<clinit>",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "<clinit>",
+        "ownerShapeSha256": "4240e7ae6dc6e374ce1104e198662b1b3ff107a7fc728be17bce513e81907222"
+      },
+      "structuralSha256": "7d12d5448b29a4f25f0e5cad859422233d74c13f240ca519223edf21d7d6b0c9",
+      "fixtureContractSha256": "9c6bf73ff912737f49a306382c0895b968b8904899e87e91b025cacfb86499a4",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "<clinit>",
+        "parameters": [],
+        "returns": "V",
+        "strings": [
+          "long_press_speed_up_enable"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.interaction.speed.LongPressSpeedUpLockFingerprint::invoke",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0AxV;",
+      "name": "invoke",
+      "parameters": [],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "cb9528b106b38cba2851afbce667bc1c14350c951a0aa4415d9580c95a27dd03"
+      },
+      "structuralSha256": "f51c695671a1829345cc8d52db2f81e12281bd3b44f8b05e1e55b1d17ec3fc9f",
+      "fixtureContractSha256": "87a843e07a51ad8d59f87e581d87c8a76e455facfa8e28b41cc2c02d3fd46014",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "invoke",
+        "parameters": [],
+        "returns": "Ljava/lang/Object;",
+        "strings": [
+          "long_press_speed_up_lock"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.ComposePaletteProviderFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0VTU;",
+      "name": "LIZIZ",
+      "parameters": [
+        "LX/008m;"
+      ],
+      "returns": "LX/05Pc;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c19a9bb3d4f18ab48ff01c155096adf48f475c50ca517f15ba21506bd27d4636",
+        "returnTypeShapeSha256": "3303edc8abed5b7059b2be010d947d0d54ac8e3d576ac66726901f9fab211d8e"
+      },
+      "structuralSha256": "3fcd0907619c53ad635d07ff9ce6290e632ccc77a7a2e83d2c845ec70c44a5a8",
+      "fixtureContractSha256": "7cddfb0cc72220f5d6036d015c191c7f758a830d01cc7e492e2a1c90779c0694",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.ComposePaletteProviderFingerprint:::LX/0VTU;->LIZIZ(LX/008m;)LX/05Pc;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0VTU;",
+      "name": "LIZIZ",
+      "parameters": [
+        "LX/008m;"
+      ],
+      "returns": "LX/05Pc;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c19a9bb3d4f18ab48ff01c155096adf48f475c50ca517f15ba21506bd27d4636",
+        "returnTypeShapeSha256": "3303edc8abed5b7059b2be010d947d0d54ac8e3d576ac66726901f9fab211d8e"
+      },
+      "structuralSha256": "3fcd0907619c53ad635d07ff9ce6290e632ccc77a7a2e83d2c845ec70c44a5a8",
+      "fixtureContractSha256": "7cddfb0cc72220f5d6036d015c191c7f758a830d01cc7e492e2a1c90779c0694",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.HomePagerViewCreatedFingerprint:Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;:onViewCreated:Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;->onViewCreated(Landroid/view/View;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "bc289a54146a62cd00f95782268d1539bc5b9a6033df063cbf6cb98d5c104fe8"
+      },
+      "structuralSha256": "d067e00d556ee8c7a39cd71dc0d183a68ecb8e538295eff7f59751c86dcb89ac",
+      "fixtureContractSha256": "9bace884fc8ebeab13f9459775f02635078d724b5c0978f2c885ce0e55a8dd34",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;",
+        "name": "onViewCreated",
+        "parameters": [
+          "Landroid/view/View;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.InboxSessionBindFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;",
+      "name": "Z5",
+      "parameters": [
+        "LX/0CcN;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;",
+        "stableName": "Z5",
+        "ownerShapeSha256": "f6d8ee59d208bde1044fd7ae0c40f8339792b9f2eef9001bac514fc1d266904b"
+      },
+      "structuralSha256": "57bb7415b2782aa04b0abda401db5070a427a14ae21785b2772aaed48cab7308",
+      "fixtureContractSha256": "9d1aebc4874434ee0bea718c214e5191a7b5d1376b529368408d2eb68cf0de9a",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.InboxSessionBindFingerprint:::Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;->Z5(LX/0CcN;I)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;",
+      "name": "Z5",
+      "parameters": [
+        "LX/0CcN;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;",
+        "stableName": "Z5",
+        "ownerShapeSha256": "f6d8ee59d208bde1044fd7ae0c40f8339792b9f2eef9001bac514fc1d266904b"
+      },
+      "structuralSha256": "57bb7415b2782aa04b0abda401db5070a427a14ae21785b2772aaed48cab7308",
+      "fixtureContractSha256": "9d1aebc4874434ee0bea718c214e5191a7b5d1376b529368408d2eb68cf0de9a",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.MainBottomNavigationDividerFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+      "name": "sh",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+        "ownerShapeSha256": "145f3240d8affd5e660c47cc7b20c610adff2604cdd38fca33e6cef516fdb5b9"
+      },
+      "structuralSha256": "46ac7068d2224b3203df5aad010994aaf8b80a99f0ce471c466632cd5d2a7f7e",
+      "fixtureContractSha256": "c6a0ad6a868d4e6ccafbb6002402a6c5d20ed40e882cf5ca833affcd18b0b212",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.MainBottomNavigationDividerFingerprint:::Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;->sh()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+      "name": "sh",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+        "ownerShapeSha256": "145f3240d8affd5e660c47cc7b20c610adff2604cdd38fca33e6cef516fdb5b9"
+      },
+      "structuralSha256": "46ac7068d2224b3203df5aad010994aaf8b80a99f0ce471c466632cd5d2a7f7e",
+      "fixtureContractSha256": "c6a0ad6a868d4e6ccafbb6002402a6c5d20ed40e882cf5ca833affcd18b0b212",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativePagerDrawFingerprint::dispatchDraw:LX/05nh;->dispatchDraw(Landroid/graphics/Canvas;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/05nh;",
+      "name": "dispatchDraw",
+      "parameters": [
+        "Landroid/graphics/Canvas;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "dispatchDraw",
+        "ownerShapeSha256": "f9bee5aea693caf3b013f1813ae804fa5f5a16c4b9b11d81fc61797aca27383f"
+      },
+      "structuralSha256": "8c8115cfbff377fa0334624fc559bbb90301028023abe1d656b9902a6e4d2dbc",
+      "fixtureContractSha256": "211705b6d24f3ea03b340f2633346d316cadd71508507d19b49c1dded1ae81bc",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "name": "dispatchDraw",
+        "parameters": [
+          "Landroid/graphics/Canvas;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;:onCreateView:Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "acc365788a6592e51a461a1c57475f42a8178eacfc8aa6fc5df418595105bc0f"
+      },
+      "structuralSha256": "1abed0d3b41f45f72c3cf674784fbb88b51d7f2df88c9e82efdeb409e30dfb4a",
+      "fixtureContractSha256": "54928d95f6735c28b57c601d0c4642daf2f94b17ebbb4d619fd80663ac03b4ed",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/im/sdk/chat/ui/powerpage/BaseChatRoomFragment;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;:onCreateView:Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "36d9a37f51ef261cc7e821b509a2ab1458b8374b587ceccf38977874c4afa414"
+      },
+      "structuralSha256": "d30317167562d53d76cf080fd09693fe9dae919a2cfcee33fa93b4f14ab7f15b",
+      "fixtureContractSha256": "e9bba2569b24a5ecfa0643be1a37db0682e1c02033aa9dc86a15e9d2d40a351d",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;:onCreateView:Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "0d789b7b6060427850d95852979cb945a6cc48c15aa62b1977a90a162b93f5d6"
+      },
+      "structuralSha256": "4ec63403db103370a6b6038262662e950fcb7c419ca852360a12db8cc5f204cd",
+      "fixtureContractSha256": "87030ef5d57af7d8e5e42ecba36c7b68e29132cc40c6c97d217037028105a686",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;:onCreateView:Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "1f0214b4a7e38cd9301c90d20e1b7f5eddbbfcff8645f5799f93cb2d755f74f1"
+      },
+      "structuralSha256": "4ec63403db103370a6b6038262662e950fcb7c419ca852360a12db8cc5f204cd",
+      "fixtureContractSha256": "42434e59be1dc959d45b31ccdb216ce8693d494b7f26a560c2cb03c5cfff503d",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;:onCreateView:Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "dd9b23109a977898f8ec5c4cc62ac803b0f5a93f1042ce4192e2506bdff5a243"
+      },
+      "structuralSha256": "4a6fea2e83330b9bdec0e4c0e16fa7e17c2f4c7da3c68f5ddb0b56e047b91965",
+      "fixtureContractSha256": "35d617509a9e8dd65d2e057f7b37135d4b4935d95f7033f8ab41f755992eaf8f",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;:onCreateView:Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;->onCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "c9c6cb62ecf649159fffbac9c38770a3600f42bc37a3d22fa8cc042d4df72a40"
+      },
+      "structuralSha256": "e670c987697074670252398a741f4eb5349120fadbf74e44c3f45eaabc51a40d",
+      "fixtureContractSha256": "ca198ab7cc1f0b7ff1bfaf6a8f124c5a557e9c65360d8919c6ac5b3f6b7988a3",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;",
+        "name": "onCreateView",
+        "parameters": [
+          "Landroid/view/LayoutInflater;",
+          "Landroid/view/ViewGroup;",
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "Landroid/view/View;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.ProfileLeftAlignFingerprint::<clinit>:LX/0C0Y;-><clinit>()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0C0Y;",
+      "name": "<clinit>",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "<clinit>",
+        "ownerShapeSha256": "6a00cfedbee1296d2549f10245de6215775bab2589cf664edde4dbcca770014c"
+      },
+      "structuralSha256": "511662d835423baaadfd05e34cf72c72aa2fa76860eb68c5164f20dbd43c905f",
+      "fixtureContractSha256": "6479d8f0c0a0002403955f318ce4d9e28dcb98dae1e3afe5d6b0980920809c89",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "name": "<clinit>",
+        "parameters": [],
+        "returns": "V",
+        "strings": [
+          "profile_left_align"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.SettingsComposeCreateViewFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+      "name": "onCreateView",
+      "parameters": [
+        "Landroid/view/LayoutInflater;",
+        "Landroid/view/ViewGroup;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "Landroid/view/View;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+        "stableName": "onCreateView",
+        "ownerShapeSha256": "354fde6107a81aeeebfaf562f7b92c938f06049226b7abdcb4de4485f61f6140"
+      },
+      "structuralSha256": "423fe606f23e06ef6e89ad720a5769efc0f8a0a9ef2e17555e4cb19beec59cae",
+      "fixtureContractSha256": "882e670f64ae3f70d75f6cd29a7269cadcb1efaef9afd745902b8057f2675c55",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.SettingsComposeGroupRendererFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0VGt;",
+      "name": "LIZ",
+      "parameters": [
+        "LX/0VSj;",
+        "Ljava/util/List;",
+        "LX/008m;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "7c7c38ea8abd8d642eb0b1447d4840061dd36492f14ac8ac1e3ff092e540cca8"
+      },
+      "structuralSha256": "fde7aaf67319d1c87e175b8dacd2e1b5e3d4f12c2836ef40a6090a56af79ec37",
+      "fixtureContractSha256": "e9d6e39154dd6b5b4b5dec74d408f17eb37bb7fe890e80c60bde584da2cf319c",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.SettingsComposeScreenRendererFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0VGt;",
+      "name": "LIZIZ",
+      "parameters": [
+        "LX/0VSj;",
+        "Ljava/util/List;",
+        "LX/008m;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "7c7c38ea8abd8d642eb0b1447d4840061dd36492f14ac8ac1e3ff092e540cca8"
+      },
+      "structuralSha256": "319c419775558d76618ca14a5583f65495cbb0fcd04c1ac2c7b6b859341e8060",
+      "fixtureContractSha256": "76be2c100d40e7ff6d4133281b1331e8e40d685f9f761dfa981fa3bcb560d114",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.SettingsComposeViewCreatedFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "354fde6107a81aeeebfaf562f7b92c938f06049226b7abdcb4de4485f61f6140"
+      },
+      "structuralSha256": "2c168a5d009997d955d8fddaa47d098b4a2472b32a3be523de1de0df9e968542",
+      "fixtureContractSha256": "132a61216c60bba1451ee18af528206892c1d70ed313c21dec5a7b1d4c1b3306",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxDirectColorResolverFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "561c738948f0494b8517e864f329131cc50a0cdbc7cd073bf9417f7accc355e3",
+      "fixtureContractSha256": "2bd6a53313cdcabfed82ccd8c5d7a919f8977862c885a6d54ca83f4bf029a987",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxDirectColorResolverFingerprint:::LX/0547;->LIZ(ILandroid/content/Context;)Ljava/lang/Integer;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "561c738948f0494b8517e864f329131cc50a0cdbc7cd073bf9417f7accc355e3",
+      "fixtureContractSha256": "2bd6a53313cdcabfed82ccd8c5d7a919f8977862c885a6d54ca83f4bf029a987",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxGenericAttributeResolverFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZIZ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;",
+        "Lkotlin/jvm/functions/Function1;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "e6011a937d7ed87579cce032c78825789da2cd995c225486ab034eadfdbf4948",
+      "fixtureContractSha256": "d3e98ce18f2cd30f15c2e9ce28e93aae9132fec8d93d6f6e93178338203e86d7",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;",
+          "Lkotlin/jvm/functions/Function1;"
+        ],
+        "returns": "Ljava/lang/Object;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxGenericAttributeResolverFingerprint:::LX/0547;->LIZIZ(ILandroid/content/Context;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZIZ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;",
+        "Lkotlin/jvm/functions/Function1;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "e6011a937d7ed87579cce032c78825789da2cd995c225486ab034eadfdbf4948",
+      "fixtureContractSha256": "d3e98ce18f2cd30f15c2e9ce28e93aae9132fec8d93d6f6e93178338203e86d7",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;",
+          "Lkotlin/jvm/functions/Function1;"
+        ],
+        "returns": "Ljava/lang/Object;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxSemanticColorResolverFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZJ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "c5dc38da7e5da5e109b5019b15e1db4234673e4c257ab6e0146dc5a85fd01c88",
+      "fixtureContractSha256": "78921a799a8aaeb2995f80cb82e393789ad4277a3adc47345fd36f72610c856c",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxSemanticColorResolverFingerprint:::LX/0547;->LIZJ(ILandroid/content/Context;)Ljava/lang/Integer;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZJ",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "c5dc38da7e5da5e109b5019b15e1db4234673e4c257ab6e0146dc5a85fd01c88",
+      "fixtureContractSha256": "78921a799a8aaeb2995f80cb82e393789ad4277a3adc47345fd36f72610c856c",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxStyledColorResolverFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZLLL",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;",
+        "[I"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "8919e0b7b7dbba1447cff94b593b9336890b70cf5eed355bcaee658b1f53379e",
+      "fixtureContractSha256": "8996e02073c42ca6065ca8ca96fa4d90ecb5e275a27c50ed1a0e5eb845f733d9",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;",
+          "[I"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.layout.theme.TuxStyledColorResolverFingerprint:::LX/0547;->LIZLLL(ILandroid/content/Context;[I)Ljava/lang/Integer;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0547;",
+      "name": "LIZLLL",
+      "parameters": [
+        "I",
+        "Landroid/content/Context;",
+        "[I"
+      ],
+      "returns": "Ljava/lang/Integer;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "c8cb5e52c661b63037562c16d631cb9737db6f1571b0f0aedfc270ca84c96df2"
+      },
+      "structuralSha256": "8919e0b7b7dbba1447cff94b593b9336890b70cf5eed355bcaee658b1f53379e",
+      "fixtureContractSha256": "8996e02073c42ca6065ca8ca96fa4d90ecb5e275a27c50ed1a0e5eb845f733d9",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "Landroid/content/Context;",
+          "[I"
+        ],
+        "returns": "Ljava/lang/Integer;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.absettings.AppAbIntBoundaryFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LJFF",
+      "parameters": [
+        "I",
+        "I",
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "610d2a447b2cb3c8ae6b5138d549a7984375c729987fb7a2c2802aaac3c39dc4",
+      "fixtureContractSha256": "794b71daa95f92b9738e5690e1f3e772c90a648ab5d894a6a63f1c0de9e335c9",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I",
+          "I",
+          "Ljava/lang/String;",
+          "Z"
+        ],
+        "returns": "I",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.extension.JatoInitTaskRunFingerprint:Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;:run",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;",
+      "name": "run",
+      "parameters": [
+        "Landroid/content/Context;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;",
+        "stableName": "run",
+        "ownerShapeSha256": "dfbb0d08b61b1ca9507be6697dad9e7a83b69db63b48d7ddd2e4e58feb3d0b90"
+      },
+      "structuralSha256": "346592b1811a57144bcbd1db0c014a6841e8abf82b6d20b283a213629307771d",
+      "fixtureContractSha256": "8d99973eb01a74eb6057b784021fe452a6b19558c07876c511499d6d9e3e48e1",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;",
+        "name": "run",
+        "parameters": [
+          "Landroid/content/Context;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.extension.MainActivityOnCreateFingerprint:Lcom/ss/android/ugc/aweme/main/MainActivity;:onCreate",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+      "name": "onCreate",
+      "parameters": [
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+        "stableName": "onCreate",
+        "ownerShapeSha256": "d8deabf14cc90ce3416c7aacae4ea4b97e3870c657ea1db992a0a82c2d66e9c8"
+      },
+      "structuralSha256": "3b0014dee45755600277d98233a6e6f44e57fc7c57a91849b594557746dd55f5",
+      "fixtureContractSha256": "0c9c9ca852f1637d2d02d1be8b524aa650038c8a07fab7292264c0ac86f620a2",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+        "name": "onCreate",
+        "parameters": [
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.extension.StoreRegionInitTaskRunFingerprint:Lcom/ss/android/ugc/aweme/legoImp/task/StoreRegionInitTask;:run",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/legoImp/task/StoreRegionInitTask;",
+      "name": "run",
+      "parameters": [
+        "Landroid/content/Context;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/legoImp/task/StoreRegionInitTask;",
+        "stableName": "run",
+        "ownerShapeSha256": "7b595bd235e8abab3238d3d1bcc67736acd6939ded942f4dca1c6cf08b503d67"
+      },
+      "structuralSha256": "1440fd702eb6ea29ce3d3808e80ba21c1157eaa56ebd84961401f8f07eb5dfa8",
+      "fixtureContractSha256": "08cc19eb6b08518e00b5b5e7e6aca1122f13ee6d93ce6b5b45005a4d9b715365",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/legoImp/task/StoreRegionInitTask;",
+        "name": "run",
+        "parameters": [
+          "Landroid/content/Context;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.externalbrowser.SparkActivityOnCreateFingerprint:Lcom/bytedance/hybrid/spark/page/SparkActivity;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/hybrid/spark/page/SparkActivity;",
+      "name": "onCreate",
+      "parameters": [
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/hybrid/spark/page/SparkActivity;",
+        "stableName": "onCreate",
+        "ownerShapeSha256": "45be7e32b0f218562e67976b10e58f41954c38b56a7af092349a7ed0d691cd32"
+      },
+      "structuralSha256": "27f713ab47674092f635ed5e19fb0e8a4512d78ffdcfc2166c966601072ee8b4",
+      "fixtureContractSha256": "686ffccccb33655df48ba555a624dbba13d76db76dc717c8859040a5e61134c2",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/bytedance/hybrid/spark/page/SparkActivity;",
+        "parameters": [
+          "Landroid/os/Bundle;"
+        ],
+        "returns": "V",
+        "strings": [
+          "SparkContextContainerId"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.externalbrowser.SparkThirdRouterOpenFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/046f;",
+      "name": "LIZIZ",
+      "parameters": [
+        "Landroid/content/Context;",
+        "Lcom/bytedance/hybrid/spark/third/router/SparkThirdContext;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "3c9618d0b457735617cdcf9185de5423439a1750b43fa9422ea2fdb5cbc018c3"
+      },
+      "structuralSha256": "1d8c340792a6a9892522a04bb5ede610c12d773020a1257bf892b402a77bfe47",
+      "fixtureContractSha256": "03e4492c527dccce3651a9ab1e3f6f743c72f068de6103eb7e7c8d6e8394df0c",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Landroid/content/Context;",
+          "Lcom/bytedance/hybrid/spark/third/router/SparkThirdContext;"
+        ],
+        "returns": "V",
+        "strings": [
+          "ContainerId",
+          "Context_startActivity_1"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.externalbrowser.StoryLinkSheetFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/15NO;",
+      "name": "LIZIZ",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/sticker/data/InteractStickerStruct;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "94155f2f8fa63de6910786bcb423265908c34ecaed1fd90169c6bd3faa6c26e8"
+      },
+      "structuralSha256": "30a634d1ce0a6ae9e403d98ed093fdba1d2b2aa3175c8ed3e5aa179bf6cdab7e",
+      "fixtureContractSha256": "3f0369b6c029a50f002282833f8a28f6ebad2125453e9065c3324062a9228e09",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Lcom/ss/android/ugc/aweme/sticker/data/InteractStickerStruct;"
+        ],
+        "returns": "V",
+        "strings": [
+          "external_website_security_pop_up_window_show"
+        ],
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.login.disablerequirement.MandatoryLoginService2Fingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;",
+      "name": "shouldShowForcedLogin",
+      "parameters": [
+        "Z"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;",
+        "stableName": "shouldShowForcedLogin",
+        "ownerShapeSha256": "b42957a30feeab8f97c046db8d0dc55dfd28bdc740f4eccd180adfd1bcda728f"
+      },
+      "structuralSha256": "ae2190bb492748675f5d402e1a833397353d89f45f1cdf2d6a35d2e37d54b95b",
+      "fixtureContractSha256": "7af3df61c30b9c9a03201fa850b168245bbc8602fd4fd8469790effe3ea4ef3f",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.login.disablerequirement.MandatoryLoginServiceFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;",
+      "name": "enableForcedLogin",
+      "parameters": [
+        "Z"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;",
+        "stableName": "enableForcedLogin",
+        "ownerShapeSha256": "b42957a30feeab8f97c046db8d0dc55dfd28bdc740f4eccd180adfd1bcda728f"
+      },
+      "structuralSha256": "18aba9183fd6188346f8b74c5f9c2e73cae36e29067649e381d8c3417083096b",
+      "fixtureContractSha256": "7b83894ae66c947ca4a199fab9592950b1e851e4d81bfca8a0cbb94aba1e7d2e",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.login.fixgoogle.GoogleAuthAvailableFingerprint:Lcom/bytedance/lobby/google/GoogleAuth;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/lobby/google/GoogleAuth;",
+      "name": "isAvailable",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/lobby/google/GoogleAuth;",
+        "stableName": "isAvailable",
+        "ownerShapeSha256": "5fb756585bb3535394012425ba9356ab528a8db9fa28fdb4594824e98219fbbd"
+      },
+      "structuralSha256": "439d0d236dcb2fde90fb28cc6aa228bc25d1e12929816de700ec14356ddf3011",
+      "fixtureContractSha256": "4dd9238424629174c2442fccabe958827e50a0d432fc580d7648fbcef995562f",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/bytedance/lobby/google/GoogleAuth;",
+        "parameters": [],
+        "returns": "Z",
+        "exactStrings": [],
+        "accessFlags": 17
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.navigation.BottomTabModelListFingerprint:/TabAbilityAssem;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;",
+      "name": "QB",
+      "parameters": [],
+      "returns": "Ljava/util/List;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;",
+        "ownerShapeSha256": "1146ec5b7fd44c14545aeb072ff568e34bf10dcb8a05c836a5f3ed7569acd9d8"
+      },
+      "structuralSha256": "50ad0b737ff27b97362670405eb3da2c835dc266392b1265364cdf8bb3923708",
+      "fixtureContractSha256": "5735b7d65c55a6ccd802598c59418a53db4cdf06ad9c7a15ca2f3fdf3813fbe4",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/TabAbilityAssem;",
+        "parameters": [],
+        "returns": "Ljava/util/List;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.navigation.TopTabModelListFingerprint:/TabAbilityAssem;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;",
+      "name": "M9",
+      "parameters": [],
+      "returns": "Ljava/util/List;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;",
+        "stableName": "M9",
+        "ownerShapeSha256": "1146ec5b7fd44c14545aeb072ff568e34bf10dcb8a05c836a5f3ed7569acd9d8"
+      },
+      "structuralSha256": "5af7922b2647503453d26b4e05c0c2c5cefbec7b347dd651f82992711b934593",
+      "fixtureContractSha256": "0b09ce7041fd9ea88a9fc9f1372c62459f766277d95e518b0d5eb6e15567d2b9",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "/TabAbilityAssem;",
+        "parameters": [],
+        "returns": "Ljava/util/List;",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.AdPersonalizationActivityOnBackPressedFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;",
+      "name": "onBackPressed",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;",
+        "stableName": "onBackPressed",
+        "ownerShapeSha256": "0999a79977b43ce79130d530cfb96a830c31e6a2c7eb811a7a4aecede112e97d"
+      },
+      "structuralSha256": "04e3337047a5a7d8160e9e4f87cb37fa00c6e49d5382f2626ca15f19c234094d",
+      "fixtureContractSha256": "c40585a6fc072b263429555a05608992e4d2fe43910df9044f59d2bcc0d25de3",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.AdPersonalizationActivityOnCreateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;",
+      "name": "onCreate",
+      "parameters": [
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;",
+        "stableName": "onCreate",
+        "ownerShapeSha256": "0999a79977b43ce79130d530cfb96a830c31e6a2c7eb811a7a4aecede112e97d"
+      },
+      "structuralSha256": "915fddab47b754c39e3b77ddafd2c12e5156e9e04c1f9b23ec2f05a96d6c7ab2",
+      "fixtureContractSha256": "c7e244b187b065331ae11b618bdfbe5ed1813d2825627906e7b2fadec780cc34",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.AddSettingsEntryFingerprint::",
+      "status": "missing",
+      "required": false,
+      "candidateCount": 0
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.NpthExtentTaskInitFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/legoImp/task/NpthExtentTask;",
+      "name": "LIZ",
+      "parameters": [
+        "Landroid/content/Context;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/legoImp/task/NpthExtentTask;",
+        "ownerShapeSha256": "94c055a887d87c9cbd590820eb13b6ddb8ec2329014554ee6c8e3ba1f073c84d"
+      },
+      "structuralSha256": "93be727371e782430036e6ce1d1a4e9b528770dbfc262aa2880328adb9c63491",
+      "fixtureContractSha256": "240a7102c790f481789a4998bc8dad330b30733e607e56f32f5c0e0109a9099b",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.OpenDebugCellVmDefaultStateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;",
+      "name": "defaultState",
+      "parameters": [],
+      "returns": "LX/06Ty;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;",
+        "stableName": "defaultState",
+        "ownerShapeSha256": "6da3cc3de7b5cd2dab2e055899cf50f9b0c5cdb301a5a9c7023fb6ba0ce28466",
+        "returnTypeShapeSha256": "165aed14fe82541cb521eb3b9b23cc7ae5ba032b8b44e1fba9ac9ba5ab8b8ddf"
+      },
+      "structuralSha256": "f34747d5928c2bacc67ff5e28ccc8fa219eb5224e9d77b3740dd28b095dc4ce1",
+      "fixtureContractSha256": "15091f1a817db7b096d6f04a93e22d5f74df0a62ccd31da157c90cee21cc527d",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.SettingsComposeRowsFingerprint::",
+      "status": "resolved",
+      "required": false,
+      "owner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+      "name": "kS",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsRvmpComposeViewModel;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/banner/SettingsBannerVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/top/TopGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/account/AccountGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/privacy/VisibilityGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/privacy/InteractionsGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/cache/CacheGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/content/ContentGroupVM;",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;",
+        "LX/008m;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/SettingsComposeRvmpFragment;",
+        "ownerShapeSha256": "354fde6107a81aeeebfaf562f7b92c938f06049226b7abdcb4de4485f61f6140"
+      },
+      "structuralSha256": "ad7ac9f73dbb7bf55b357b12fd3fa43eb7ae632d0c171f849936e5edf10f6e72",
+      "fixtureContractSha256": "070fe953523118fce7c862bbc0c5d6cb3bc4d131d1f5d4bdcc4d79e6f3e023d4",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.SettingsEntryFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1MMP;",
+      "name": "LIZLLL",
+      "parameters": [],
+      "returns": "LX/1357;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "aa35a2007bf09b87dd7f7f93a7a0b8fcc29ea9d6cebead15ad839e45aa96d5bd",
+        "returnTypeShapeSha256": "7d0493d4a3c3c380a655dba1713f3def3416ace0ea19f0339840b2d910ff4016"
+      },
+      "structuralSha256": "46f5e7826629fbcbfe010685dbf5515a67575268972884c005c0a9b7da4451f7",
+      "fixtureContractSha256": "a553dbeccbd020f71e024af04d5f48161f7d6a15e51195e073d44ae0e5ca623d",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "strings": [
+          "pls pass item or extends the EventUnit"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.SettingsEntryInfoFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1MMN;",
+      "name": "toString",
+      "parameters": [],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "toString",
+        "ownerShapeSha256": "e8c3a7093e1cfacd51c92d6f5dd57bc45973dda9fbdd3586ac6a01c2cfffdb66"
+      },
+      "structuralSha256": "e68b87560211ce7c4e05f3406430cfbf036fdaf799a63bf8df0c04f614b58ce2",
+      "fixtureContractSha256": "9667376558e93d3b6e7b31d7ae8f99079ea3e33229699692876ce754df7cb72e",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "strings": [
+          "ExposeItem(title=",
+          ", icon="
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lapp/morphe/extension/tiktok/settings/SettingsStatus;",
+      "name": "load",
+      "parameters": [],
+      "returns": "V",
+      "origin": "extension",
+      "semanticContext": {
+        "stableOwner": "Lapp/morphe/extension/tiktok/settings/SettingsStatus;",
+        "stableName": "load"
+      },
+      "fixtureContractValidated": false,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.settings.SupportGroupDefaultStateFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;",
+      "name": "defaultState",
+      "parameters": [],
+      "returns": "LX/06Ty;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;",
+        "stableName": "defaultState",
+        "ownerShapeSha256": "730abec793d45f36b85ea684c7e813ee432759f04ff8a0f1c429bf692a1cdede",
+        "returnTypeShapeSha256": "165aed14fe82541cb521eb3b9b23cc7ae5ba032b8b44e1fba9ac9ba5ab8b8ddf"
+      },
+      "structuralSha256": "d7fe74ba6f86f837018657ce175a5edc51ce58c241fcccb7831d30befcc29a3c",
+      "fixtureContractSha256": "cb7e40e1700645f87c78514a53103f02a0ae95719bebead3408db53f9e935103",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.share.ShareUrlTrackerFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1GG6;",
+      "name": "LIZ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "Lcom/ss/android/ugc/aweme/share/base/model/BaseSharePackage;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "474355b11ca6ff62ecd79d3b70d0d5a6ae096caf52d715f910f6ebb34602e1a8"
+      },
+      "structuralSha256": "72fbc27b7eda428f73e9210f47929c38c859022644f2199924443d7650a7e058",
+      "fixtureContractSha256": "761b80aefe67086c666bc57f0b65035b714a04c3411c18e0e9eb6b19e5dacf88",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "Ljava/lang/String;",
+        "strings": [
+          "utm_campaign",
+          "share_link_id"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.translation.BaseCommentCellBindFingerprint:Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;:",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
+      "name": "e7",
+      "parameters": [
+        "LX/0FhG;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
+        "stableName": "e7",
+        "ownerShapeSha256": "af1de4ce8a95174dc3a9c031ff2410718fcb1b24f59b6fbe36f5076f9874d629"
+      },
+      "structuralSha256": "698af93bb10dd4acdc8969126b944bf1bbdb04f84d700fe2e2f7c6b3b468e080",
+      "fixtureContractSha256": "9490af2cd39924d099a8e143ae40cd8408712325e0c05808dd7115713463b2e7",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "Lcom/ss/android/ugc/aweme/commentv2/commentlist/powercell/BaseCommentCell;",
+        "parameters": [
+          "L"
+        ],
+        "returns": "V",
+        "strings": [
+          "comment_panel"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.translation.CommentListLoadedFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0FhJ;",
+      "name": "LJJI",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;",
+        "Z",
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "LX/0HX7;",
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "LX/03Ym;",
+        "I",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "af9e46afcb28d6efafdb12344937a0ead6351f237fc4ec2db73eaf1f0b5825cd"
+      },
+      "structuralSha256": "88472a656704dae24dcccb57cb0aee328106a3230f57eed8030f5af63459deee",
+      "fixtureContractSha256": "d330a91ea01db332a19059c1fbc5e194385484cf818c0ed4578fd80fe9cd3474",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.translation.MultiCommentTranslationCompleteFingerprint::run",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/12dG;",
+      "name": "run",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "run",
+        "ownerShapeSha256": "b7b160e5a2728c5e755a849fdca690a4b2cc7a409682df3b9a64315d9e5c2551"
+      },
+      "structuralSha256": "16d04d9082488eb3bd00416fb4fa738d428c124de1db3841073a4d24ddeff128",
+      "fixtureContractSha256": "8c9f29d19b66e504a544f7683e95ce9cd0e7672c6b9215ea5882b2db26144ee2",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "name": "run",
+        "parameters": [],
+        "returns": "V",
+        "strings": [
+          "MultiCommentTranslationTask startTranslate onComplete "
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.misc.translation.MultiCommentTranslationStartFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0HK0;",
+      "name": "LJ",
+      "parameters": [
+        "Ljava/util/List;",
+        "LX/0Hea;",
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "7fe5288d3ba18b831848c922b6f1faa3c2d2b38f749bf3f2fe3d67ebe20aa160"
+      },
+      "structuralSha256": "2770b5f3fe0b5c813abc92897d99b4a3f52059b1a3e8c5b54871384141621c9f",
+      "fixtureContractSha256": "6d11c3122280015b6c6900243dff5688746c18345c3dfab75771ebc12ebc9fef",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/util/List;",
+          "L",
+          "Z"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.promobanners.TouchPointPendantParserFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/07TS;",
+      "name": "LIZ",
+      "parameters": [
+        "Ljava/util/HashMap;",
+        "Ljava/util/List;",
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "207d4d8cec2ce36bfa80bbbc0090d2d2d0585ec81cab28c065ae440c71f40abd"
+      },
+      "structuralSha256": "1cceef510b98552e46585b92262497ce9170755639f9b12136cf2144c9a6d113",
+      "fixtureContractSha256": "fc93ae830a9a7195be55ed3c2afe87c13207633cf2cbc3aa01cae81d860c1e47",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/util/HashMap;",
+          "Ljava/util/List;",
+          "Z"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint::",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
+      "name": "onRenderFirstFrame",
+      "parameters": [
+        "LX/09y1;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
+        "stableName": "onRenderFirstFrame",
+        "ownerShapeSha256": "4557f0ea74c533122c26c9df04920c2d01f59f42bf7610d0f6b35611e5515b54"
+      },
+      "structuralSha256": "209fa9a49c3a2380c8c004bd0eaae89ba4606828a735e253c019f4500dce21a8",
+      "fixtureContractSha256": "cdc876001d78933ac3a9efeca34243a0bbc9f2218ae87b8788fe632d008c6d7a",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint::::LX/1BaG;->LIZ(Landroid/content/Context;Lcom/ss/android/ugc/aweme/comment/model/Comment;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1BaG;",
+      "name": "LIZ",
+      "parameters": [
+        "Landroid/content/Context;",
+        "Lcom/ss/android/ugc/aweme/comment/model/Comment;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "d5a82f9fba89a0b2bf52c320fd60e7354332df4a120799319d6b8ff876cd36b3"
+      },
+      "structuralSha256": "25c2dc96a4ea67084bdc2ab7fb497b015c6224fdbcf5fc02ffe9ecd75603abe0",
+      "fixtureContractSha256": "991db288424eefd7137622eba6107061a4922840ec43c9c95483716f28d3192a",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 3,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint::::Lcom/ss/android/ugc/aweme/favorites/business/comment/CommentCollectViewHolder;->copy(Lcom/ss/android/ugc/aweme/comment/model/Comment;Lcom/bytedance/bpea/basics/Cert;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/favorites/business/comment/CommentCollectViewHolder;",
+      "name": "copy",
+      "parameters": [
+        "Lcom/ss/android/ugc/aweme/comment/model/Comment;",
+        "Lcom/bytedance/bpea/basics/Cert;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/favorites/business/comment/CommentCollectViewHolder;",
+        "stableName": "copy",
+        "ownerShapeSha256": "1f2951b6888a776e68e21f6d0d7291eb9d6bb9013d78c3d3bcb78b0b2e86cb09"
+      },
+      "structuralSha256": "4b22c58f5ed97f334d62fc65704b2f23e456556c3b008d4152701256f03c1700",
+      "fixtureContractSha256": "4b75879b39e1deba383698b18e324e8101f8e42e3dabe10bee8e11e1c02e4be9",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 3,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint::::Lkotlin/jvm/internal/AwS375S0200000_28_I1;->invoke$155(Lkotlin/jvm/internal/AwS375S0200000_28_I1;Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lkotlin/jvm/internal/AwS375S0200000_28_I1;",
+      "name": "invoke$155",
+      "parameters": [
+        "Lkotlin/jvm/internal/AwS375S0200000_28_I1;",
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "a3a77ba5f06a2683e1a9f50b364dddfc693a5ca3711a7ae54ea716ec8b968a6c"
+      },
+      "structuralSha256": "a0d1397dc274197ba03a94e7d6ee0c2e8777455c133d83d95daab17ca1a1ace9",
+      "fixtureContractSha256": "898099ff2995ed4bccdd9e94d6d9e08eac8fd00b3ef4b827f6a80b9ad5835e86",
+      "fixtureContractValidated": true,
+      "selection": "all-sites",
+      "candidateCount": 3,
+      "selector": {
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint:::Ljava/lang/String;|Ljava/lang/String;|Landroid/content/Context;|Lcom/bytedance/bpea/basics/Cert;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1J08;",
+      "name": "LIZ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "Landroid/content/Context;",
+        "Lcom/bytedance/bpea/basics/Cert;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "8baa5ebc877a7bd651403498a7cc8d4f61ebfb4f3636e61acd742f0f864fa810"
+      },
+      "structuralSha256": "252136cdda52dbafc5628311a57e6108c7b84adc48b00485e05d2b49e83ec538",
+      "fixtureContractSha256": "8914cf71f4b07f2462fc7744fc907acfc606846f6c2f3c76a07a4359f52c084e",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "Ljava/lang/String;",
+          "Ljava/lang/String;",
+          "Landroid/content/Context;",
+          "Lcom/bytedance/bpea/basics/Cert;"
+        ],
+        "returns": "V",
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint:::[onDisplayAdded]",
+      "status": "resolved",
+      "required": false,
+      "owner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+      "name": "onDisplayAdded",
+      "parameters": [
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+        "stableName": "onDisplayAdded",
+        "ownerShapeSha256": "de84d6b0e0300b8cf7de22a5d75a94d4ed3c84b82c5c410ede4e0cadf2b9851a"
+      },
+      "structuralSha256": "387a4cb668b77c1ec6f073a28a24fa203750d0ae9d403cb27dc236c5cddfde4a",
+      "fixtureContractSha256": "45fa2108e30d301b1c92d08baf8b3bf4f08a310bce865995bf41d32a2ff2b77d",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I"
+        ],
+        "returns": "V",
+        "strings": [
+          "[onDisplayAdded]"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint:::[onDisplayRemoved]",
+      "status": "resolved",
+      "required": false,
+      "owner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+      "name": "onDisplayRemoved",
+      "parameters": [
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;",
+        "stableName": "onDisplayRemoved",
+        "ownerShapeSha256": "de84d6b0e0300b8cf7de22a5d75a94d4ed3c84b82c5c410ede4e0cadf2b9851a"
+      },
+      "structuralSha256": "0f9e1bbc8dbada3af300764d3fe6a12e7ceb5f68f37b0bcf995fe2497ae0829a",
+      "fixtureContractSha256": "47d72f7c318f87a5691e6011ef017e7cedc7bfec707630e4a55a585e7e02df25",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "parameters": [
+          "I"
+        ],
+        "returns": "V",
+        "strings": [
+          "[onDisplayRemoved]"
+        ],
+        "exactStrings": []
+      }
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LIZ(ILjava/lang/String;ZZ)Z",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LIZ",
+      "parameters": [
+        "I",
+        "Ljava/lang/String;",
+        "Z",
+        "Z"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "5058a4a4cdb5d65e119dab873ba0cadfcff8a60f7cbae04871078b23f408fec2",
+      "fixtureContractSha256": "0d397ea956b6befdc47f80c36af5dba8400306561aa452c2d935e1866f58e32e",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LIZJ(DILjava/lang/String;Z)D",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LIZJ",
+      "parameters": [
+        "D",
+        "I",
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "D",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "d820d020cd43d6677730214fc284ea8e826c792b8b8e62e0140b9b9814a4ccfa",
+      "fixtureContractSha256": "18bb84ece2942cc9553f93df201cec9501378f9e702e9168c059ad06b8c6f784",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LIZLLL(ILjava/lang/String;ZF)F",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LIZLLL",
+      "parameters": [
+        "I",
+        "Ljava/lang/String;",
+        "Z",
+        "F"
+      ],
+      "returns": "F",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "1823ae989bdf4c2fec746bad46b8c1ef65c66101d94a8ad5237234957d5d6128",
+      "fixtureContractSha256": "52ed6222ca927378f5d5bbc83c185c789b80d44a3ddb0ac588203907aad37a9d",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LJII(IJLjava/lang/String;Z)J",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LJII",
+      "parameters": [
+        "I",
+        "J",
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "J",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "e89b44c7ef9a7578c5f47ad1ef897b7264409d92470046a9d20b0d0e9c090860",
+      "fixtureContractSha256": "19518224883ef821224336037c81b9e6888507bb7071b8f3249c654acb56e053",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LJIIIIZZ(ILjava/lang/String;Ljava/lang/String;Z)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LJIIIIZZ",
+      "parameters": [
+        "I",
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "674900fb13f23eb782876a41feededcc97db75f487264dfccab97718ec289993",
+      "fixtureContractSha256": "78b7e47cb76d8294456ccdad28772d281a8d5b32a38e517ea787e04ca085b811",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02z2;->LJIIJJI(Ljava/lang/String;Z)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02z2;",
+      "name": "LJIIJJI",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4012b2a035cc44c814740d606b5e188fac6a348dde4c41a215b971862631203d"
+      },
+      "structuralSha256": "25a4b141324bbb41b3cd0205503fd8ed6d99d5e378c6a7f24245d1b2652411c6",
+      "fixtureContractSha256": "3b8f0c7c96264124d28a650b4825c9303a3bf4e4f48c9031044e2f917f91222f",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02zL;->LLIFFJFJJ(Landroid/telephony/TelephonyManager;LX/02zK;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02zL;",
+      "name": "LLIFFJFJJ",
+      "parameters": [
+        "Landroid/telephony/TelephonyManager;",
+        "LX/02zK;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "36b99b5cd3858c46fb505ffc86808a46c3c5ce9f94e75989706872db87707741"
+      },
+      "structuralSha256": "fceab71f80f41e2ca1c7ede20d66c09d6ff40d941aa75481d0e9d6ca0b5cc4a5",
+      "fixtureContractSha256": "03e9d3f9b5841102ea3c4f686fff23192403a181d19440489544f81b485adad1",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02zL;->LLII(Landroid/telephony/TelephonyManager;LX/02zK;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02zL;",
+      "name": "LLII",
+      "parameters": [
+        "Landroid/telephony/TelephonyManager;",
+        "LX/02zK;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "36b99b5cd3858c46fb505ffc86808a46c3c5ce9f94e75989706872db87707741"
+      },
+      "structuralSha256": "6cae734b571a6b6c0742f944eca582bb4c1b75d4e0a458aadeaf23df1d88ec32",
+      "fixtureContractSha256": "b67cac019d4931fda947bebf6142503c1cb959c8e6675f56632fcd1c7bced2ac",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02zL;->LLIIIJ(Landroid/telephony/TelephonyManager;LX/02zK;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02zL;",
+      "name": "LLIIIJ",
+      "parameters": [
+        "Landroid/telephony/TelephonyManager;",
+        "LX/02zK;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "36b99b5cd3858c46fb505ffc86808a46c3c5ce9f94e75989706872db87707741"
+      },
+      "structuralSha256": "1b5e063ee699b6a916ed0227e3220bfe6ebda7c4c2945b9b0d8764a03ca83206",
+      "fixtureContractSha256": "510e79c52781b918695e62f39eb111a578c7f30759d0f7d5e2f27e4edf5199e1",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02zL;->LLIIIL(Landroid/telephony/TelephonyManager;LX/02zK;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02zL;",
+      "name": "LLIIIL",
+      "parameters": [
+        "Landroid/telephony/TelephonyManager;",
+        "LX/02zK;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "36b99b5cd3858c46fb505ffc86808a46c3c5ce9f94e75989706872db87707741"
+      },
+      "structuralSha256": "fd42368f7f3ea4a60184fff94733d9301a449006f165213565f126f0434cfcaf",
+      "fixtureContractSha256": "f5731f06a4f4e227d20f20b18a90b84d281b2ad9fe9f1fe760ad428fdc21f655",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/02zL;->LLIIIZ(Landroid/telephony/TelephonyManager;LX/02zK;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/02zL;",
+      "name": "LLIIIZ",
+      "parameters": [
+        "Landroid/telephony/TelephonyManager;",
+        "LX/02zK;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "36b99b5cd3858c46fb505ffc86808a46c3c5ce9f94e75989706872db87707741"
+      },
+      "structuralSha256": "5ea6e8b7e5bc7eb29dd752b1eaca7ce68d9c1fd1f8fc4d4c49e2a7ecdf0b1583",
+      "fixtureContractSha256": "767683e8a46ef7c87500cde636579a47146deb5ab2b128fa36493854ce1929e7",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/06As;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/06As;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "e2108fe519d944db9e7954267a0d66612dba7798fdceea7fb7929b2e56b68838"
+      },
+      "structuralSha256": "162ce3f78deda52d9ee8ec5687b21abeebde074171a5e50ad569f355f403f748",
+      "fixtureContractSha256": "3d05ed532d1ce8104ae9aa103a93b42f85b1c76256fad4002725ece5037b8640",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/06lG;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/06lG;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "69889bd344a9a6e1f3fc964a35d74dc5aa24a712dfc3284c99e36008d395d7dc"
+      },
+      "structuralSha256": "4644ea5861ff12d54d1144bddceec822026a9da5f1ed6acc7b78762b63210d00",
+      "fixtureContractSha256": "94c2bc99ba02579607869c8578f052698423f00d456492c87c442d1c41d65995",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/08RJ;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/08RJ;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "31aa6647021fe0e6a22b00bf3114a57c0a8971785512478786e5e6ea191c0dad"
+      },
+      "structuralSha256": "1068a3e1ab2e16b3d5475b00300c3ec649b4fd9ccecd0e546026b4c9db08ad19",
+      "fixtureContractSha256": "da95b4bccda70fccbbcd04a92d3cd6b639f9910d9dd278d363ab83ffbab3c2dd",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/0AMB;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0AMB;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "9d590be6cc7d77fea6e604392d82a9e09b933cbf1301fd6bfb5fa67ed1d05e4d"
+      },
+      "structuralSha256": "66db83b4f8f852b47e6a4a6ed1b2be1c7d7a558cac985f27945860ea4042080e",
+      "fixtureContractSha256": "c35b063de5078cfb4d6952351b5eb19cde45ab53ea4633a901319020f29d8033",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/0AMk;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0AMk;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "72243e2dc27fc71dff95af9b485883da4248b8cee5ac2f8845ec9cb900929e6d"
+      },
+      "structuralSha256": "17a294268948a2f9c8fb33b9e165bb225c208bbf6c5a5a2aef51b157c477a088",
+      "fixtureContractSha256": "d688e73427253e1bbc02f5e81d8091bb912d2e4e91e01ca018b0429cbc1b64a6",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/0g4R;->invoke(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0g4R;",
+      "name": "invoke",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invoke",
+        "ownerShapeSha256": "b19d4e39f9730e33f310021533094de3eb366489344311ccc85cd69f2d8329f3"
+      },
+      "structuralSha256": "8ae204fba12e79ff52db21356d96f87e82358f8fd21ef7cae15ab50fed946031",
+      "fixtureContractSha256": "1eb56fab140c8b0a12f3b744aab9f446fdb640b552c41ef7127f661a35a16d6e",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1A3e;->LJI(LX/1A0g;LX/1A1P;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1A3e;",
+      "name": "LJI",
+      "parameters": [
+        "LX/1A0g;",
+        "LX/1A1P;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "409dec5fa8261f6a33c495a01c280653a0db37777a9bc2fe15a68fac9c5b17b2"
+      },
+      "structuralSha256": "acac7929599454a6ff441b7f1db6f2c48f58eda58a20ae1113fbdae77f12f9e0",
+      "fixtureContractSha256": "7bd2f0c06a11ef609332412f1d2ba0774dd780fb3ebdc5836e9b730f87a72896",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1A3e;->LJJJ()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1A3e;",
+      "name": "LJJJ",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "409dec5fa8261f6a33c495a01c280653a0db37777a9bc2fe15a68fac9c5b17b2"
+      },
+      "structuralSha256": "93a4055efc484f1b874db802ead2aff1c2addce1e9d8acbd61842f89d11eede9",
+      "fixtureContractSha256": "f7abfdf86cde9729bdebb3b3c94c62eaee49f335ad976e5d1da4e5813dbed43f",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1C4V;->LIZ(LX/0mGA;ZZLX/008m;I)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1C4V;",
+      "name": "LIZ",
+      "parameters": [
+        "LX/0mGA;",
+        "Z",
+        "Z",
+        "LX/008m;",
+        "I"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "2c1dbe4564d1d71a983c878692dfcb0ce74432cc4d1ada6a3ba88444ff8a4719"
+      },
+      "structuralSha256": "d0488823099ca5bc1dd0b1b151f65eecfbff5e705c0e09d982bc29c5bbcc8677",
+      "fixtureContractSha256": "5fb9577c7e9a524e373bdbf01eb2ef75e3d10afdc8197229e947450d10413be8",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Id6;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Id6;",
+      "name": "invokeSuspend",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invokeSuspend",
+        "ownerShapeSha256": "ceb35a5163f4ca826b252f9cd1d38097c3e175f0783fc9ae71ba72fc946b2581"
+      },
+      "structuralSha256": "3b73dc9ff9ca27da775d3201f3fa602d6778b8dcc906a3e12b147a13ee7547db",
+      "fixtureContractSha256": "7bf640d76afdfbc02497595f9fa5262debac4b930ed375b48e3a69f71f9f2915",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Id7;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Id7;",
+      "name": "invokeSuspend",
+      "parameters": [
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "invokeSuspend",
+        "ownerShapeSha256": "27ef14481e2e0583d719f609640df9b54c3d2526b368a90a2b7394178618e5a0"
+      },
+      "structuralSha256": "4a7d3ff9d90edcd25a73ac75640572704fe971eaf37c1d5e1af5aff1a9a9f8b8",
+      "fixtureContractSha256": "9121659de6f78cc5dabd43ae72bac3f2e82eef57d4ba8bf345d54fe08140bc8a",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1IdB;->LIZIZ(Landroid/app/Activity;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1IdB;",
+      "name": "LIZIZ",
+      "parameters": [
+        "Landroid/app/Activity;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "1e9aa5169be75d7f027dc867769b1000650eda753604965fabca4385059b1ffb"
+      },
+      "structuralSha256": "b27173266c9db770aecbcace7f1a99bb093bb3f3bb8cdb606a05063680df1c01",
+      "fixtureContractSha256": "588717fa6d52c929d1da3db1d71089914cb271bc736d489aa926af7d83d27a40",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1IdB;->LIZJ(Landroid/app/Activity;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1IdB;",
+      "name": "LIZJ",
+      "parameters": [
+        "Landroid/app/Activity;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "1e9aa5169be75d7f027dc867769b1000650eda753604965fabca4385059b1ffb"
+      },
+      "structuralSha256": "db41759bc6ec4575a8e0be212456900fa0e8d829e49775640ef67d4dd924d6ea",
+      "fixtureContractSha256": "9896c844010cd9e3bc39564d25e96222c75396ac711fa70ac5eae9f403886cb0",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1LdQ;->onStart()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1LdQ;",
+      "name": "onStart",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "onStart",
+        "ownerShapeSha256": "8e840081d2ff72214e3e003eaa1ff087ed3ffa0a51ec7f23549017f6c698b788"
+      },
+      "structuralSha256": "ea5db37bc1c7c22807db6273534f261b93ab6d67ff761b106e0b90bde55cc20a",
+      "fixtureContractSha256": "0e8a7b34bb29cb4fd9a6e267638640eb4308178592ad6c4ed99c7f6e5a850f28",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1LdQ;->onStop()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1LdQ;",
+      "name": "onStop",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableName": "onStop",
+        "ownerShapeSha256": "8e840081d2ff72214e3e003eaa1ff087ed3ffa0a51ec7f23549017f6c698b788"
+      },
+      "structuralSha256": "446a3d907a652771ad466ec5e78f447e1d2723ee9114b1750e695a84eec6b7ba",
+      "fixtureContractSha256": "8db00f81b33b4de70896ae1fb64f0c40e36ce77e35d4455d7161ce13cee68ff8",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Mpk;->LJIIJJI(Lcom/bytedance/hybrid/spark/page/SparkPopup;Landroid/view/LayoutInflater;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Mpk;",
+      "name": "LJIIJJI",
+      "parameters": [
+        "Lcom/bytedance/hybrid/spark/page/SparkPopup;",
+        "Landroid/view/LayoutInflater;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4da136ae9191882c91d4e6efc25c5758cbf071ff09ec79547d3fe2753d1882ba"
+      },
+      "structuralSha256": "7cf3ee64ae5093deba53598a1f82faf37947420d82a774c0380658950f540ef4",
+      "fixtureContractSha256": "c7ecf48115c27a109ff769ec94622b8acb64515ca05d8e6b612fec5c24f8c792",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Mpk;->LJJIFFI(Lcom/bytedance/hybrid/spark/page/SparkPopup;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Mpk;",
+      "name": "LJJIFFI",
+      "parameters": [
+        "Lcom/bytedance/hybrid/spark/page/SparkPopup;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "4da136ae9191882c91d4e6efc25c5758cbf071ff09ec79547d3fe2753d1882ba"
+      },
+      "structuralSha256": "416bee5db6c4b98496685b7b3d8facc800d846a23cd6827eb4c263938a96fd52",
+      "fixtureContractSha256": "8240fc1532abfcee7992759090139ad99b4739f6287d4514837ea366cded5efc",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Mpl;->LJJIIJ(Lcom/bytedance/hybrid/spark/page/SparkActivity;Landroid/os/Bundle;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Mpl;",
+      "name": "LJJIIJ",
+      "parameters": [
+        "Lcom/bytedance/hybrid/spark/page/SparkActivity;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "9e657b9ccc1d9f292e4fa4d297c03f4efd91a9b89801e20bb0452b83457cd340"
+      },
+      "structuralSha256": "b59fdb44e927f8d8882cfc3516ce4d37c36f00d8879f9a57e300afa3ad5dfebf",
+      "fixtureContractSha256": "7aa1856a311fa1dcc1eca5850bd204df4a1adc27cc96436d1e0ca0c8c2d0c3b6",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:LX/1Mpl;->LJJJJLI(Lcom/bytedance/hybrid/spark/page/SparkActivity;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/1Mpl;",
+      "name": "LJJJJLI",
+      "parameters": [
+        "Lcom/bytedance/hybrid/spark/page/SparkActivity;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "9e657b9ccc1d9f292e4fa4d297c03f4efd91a9b89801e20bb0452b83457cd340"
+      },
+      "structuralSha256": "9e74e6a08caa07b2c4645ad12c8305b66da0d8be38bbc7ad0b770ddf0e403271",
+      "fixtureContractSha256": "0a3d8d04d37052a45e780543cb93f870773605e2569c3c35bde20f6eb146d714",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lapp/morphe/extension/tiktok/featuregatelab/FeatureGateLabRuntime;->isInstalled()Z",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lapp/morphe/extension/tiktok/featuregatelab/FeatureGateLabRuntime;",
+      "name": "isInstalled",
+      "parameters": [],
+      "returns": "Z",
+      "origin": "extension",
+      "semanticContext": {
+        "stableOwner": "Lapp/morphe/extension/tiktok/featuregatelab/FeatureGateLabRuntime;",
+        "stableName": "isInstalled"
+      },
+      "fixtureContractValidated": false,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getBooleanValue(Ljava/lang/String;Z)Z",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getBooleanValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getBooleanValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "9b87760b1a71f2cafd7d31205e293c2dade18834634a4891225c8e88d6c95763",
+      "fixtureContractSha256": "379e4dbcb6a8f0a3acfb91e5f0460f2f49b7cea3a20eb0d42568dbcd32ddd31e",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getDoubleValue(Ljava/lang/String;D)D",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getDoubleValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "D"
+      ],
+      "returns": "D",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getDoubleValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "57731ba280372e4b43a0551954fa4fcfb66c142ac2a76f2ab6369c0b16520c83",
+      "fixtureContractSha256": "cbf88b4c69bb22e92a6aef4b24e778070c1343022e0d33ca194f8af6af15d95a",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getFloatValue(Ljava/lang/String;F)F",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getFloatValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "F"
+      ],
+      "returns": "F",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getFloatValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "a08d9b56d09d00049aa94c3ee6e910426efc881ea64cc30994055a87a8581a72",
+      "fixtureContractSha256": "794d6487e9a8f529060fe04d52cce025373dce02305d39fe8b76ee5257bf0b2d",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getIntValue(Ljava/lang/String;I)I",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getIntValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "I"
+      ],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getIntValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "a25af87a07061afa8003aca8fc576f3479b429503da607f40e811ddd0f6e91a5",
+      "fixtureContractSha256": "e4e8bf6aced8a2aaf8d9477f15235ad404eb3e9664021492a6cb9966e0395124",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getLongValue(Ljava/lang/String;J)J",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getLongValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "J"
+      ],
+      "returns": "J",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getLongValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "39b465d09d0900a344a02855d36a79466b63a35db743ab2d1cc3595fe3ef0aea",
+      "fixtureContractSha256": "b625680085d5b80e7466468a3990a72af259baa900d68a68d676748f399529a9",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getStringArrayValue(Ljava/lang/String;[Ljava/lang/String;)[Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getStringArrayValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "[Ljava/lang/String;"
+      ],
+      "returns": "[Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getStringArrayValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "1e0e21493fbb5c28c9523bc1047193bdf0ed38be7a1668d6a9f787a468227596",
+      "fixtureContractSha256": "df046f14a0f9d3357eef4247afc0218be33b461eaba44138bc7e1c1cd1b1da8d",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getStringValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getStringValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getStringValue",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "4af752fbc2895d83302f2458c63b948558a6cf4318ce06387e9b027bd65a9a98",
+      "fixtureContractSha256": "7f912e749ef65b189c246d608ee618e1aa74f33976408eeff88db97f486ec35a",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getValueSafely(Ljava/lang/Class;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getValueSafely",
+      "parameters": [
+        "Ljava/lang/Class;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getValueSafely",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "eec788323bc4e75f8a766a0bef41da17f9d7d1b25193524efc1f6da5595833e7",
+      "fixtureContractSha256": "ccec178c12a84a286fa6cc3d2a5ade40c6ced4d9af17f9b3760343adf54cbcc3",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/android/live_settings/SettingsManager;->getValueSafely(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+      "name": "getValueSafely",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/android/live_settings/SettingsManager;",
+        "stableName": "getValueSafely",
+        "ownerShapeSha256": "5aa926a6aa4ffe81271b323895935cd9f6c89d85492e49d18c13eb65173b1b98"
+      },
+      "structuralSha256": "0ed2fd451ec96cb231936162dd1bca5da44f879b129f7d5335807840a9c26d0f",
+      "fixtureContractSha256": "524f29d884eb9643027ddb47566494a266737c164e3ea120cb603b175471b313",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LIZ(Ljava/lang/String;Z)Z",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LIZ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "Z",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "b6194eeb299efc2c9ab3d62dcebf8bad215b3095032b10e10afccbd673d25b35",
+      "fixtureContractSha256": "044def88745b40f902bb7a1c1312e50b6d5b82d0aad760f867d8b3e088449e35",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LIZIZ(Ljava/lang/String;D)D",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LIZIZ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "D"
+      ],
+      "returns": "D",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "0a17862bb454ad6295468b37607f98bfcbb1471a8509c7f3ee272f09ff0901c5",
+      "fixtureContractSha256": "5f36ba6010a118b2abcd42ef64bffaa67ba5e809ba7b6e1127570b87b684f92c",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LIZJ(Ljava/lang/String;F)F",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LIZJ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "F"
+      ],
+      "returns": "F",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "1945ee669aa1999a9a346e31c176f417e3912cbd488263a5459162de960f3d2b",
+      "fixtureContractSha256": "38560b468dc9ddaaefd547e7b5aeb6a1f14739773effc37913bdc050731c43e0",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LJ(Ljava/lang/String;I)I",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LJ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "I"
+      ],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "904c8ea6db05a750794e45799696916be2cb1bbcd3ef947da5eb51eb178c6123",
+      "fixtureContractSha256": "adcc40f005d6411d187bf6ad5bb596f5efe044aea1fb1c045c17ac99c3e859ca",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LJFF(Ljava/lang/String;J)J",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LJFF",
+      "parameters": [
+        "Ljava/lang/String;",
+        "J"
+      ],
+      "returns": "J",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "ac3394bc48df33ad74d3b9060b4afc352faea714a930da2b9bea0a55c36ce57c",
+      "fixtureContractSha256": "f0116c21d9b7d6905d73a72b43067fa182da99f698e32c4faa69d0e42ce3bb59",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LJI(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LJI",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "31082539fb0ba77d01dca063ff0f0322a48a632a0c32786be68be113d60d31b1",
+      "fixtureContractSha256": "71e307464565d91c704222f899c2587912dbc042f0dc57bf4b1e34fcff1a7e73",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LJII(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LJII",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/Class;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "2794bbeafbefea79be94596469f30f21edf6a66bfbc65cdad21e0657142ea813",
+      "fixtureContractSha256": "2dce554a88963671b8e757cad9f4f97a4970b5d080c6b527b3200a79026b1d2b",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/ies/abmock/SettingsManager;->LJIIIIZZ(Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+      "name": "LJIIIIZZ",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/Class;",
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/ies/abmock/SettingsManager;",
+        "ownerShapeSha256": "af86bc6d1a0b73d2b09bf062a08eb6fc3a0e8914fe0fe5052dd3532b42a2acab"
+      },
+      "structuralSha256": "453dc73f1781bdad523d317cdc99d78819a468c8852e3a4ae00050b4817d1840",
+      "fixtureContractSha256": "db245ff367ef6381c4b37415cba6bec5538941c36de491e36bc005f8a4c9a01b",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;->onViewCreated(Landroid/view/View;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "145f3240d8affd5e660c47cc7b20c610adff2604cdd38fca33e6cef516fdb5b9"
+      },
+      "structuralSha256": "133ba60971a5cdbc26a44799af88951749ae14371d150004079c77353dd7fd7f",
+      "fixtureContractSha256": "89be968965244c7a37b6c54e446c6ddafc21e0f903c8b305811ec0378c459df5",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;->rc(Z)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+      "name": "rc",
+      "parameters": [
+        "Z"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;",
+        "ownerShapeSha256": "145f3240d8affd5e660c47cc7b20c610adff2604cdd38fca33e6cef516fdb5b9"
+      },
+      "structuralSha256": "edfa127476dfb2cbc68db2e62e423189f54c6c043702c8f3f5288d183979faa7",
+      "fixtureContractSha256": "ed640be142ea7d079e78a035ca3ae062fccb0178b71bbf037779cf70d10608b0",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;->onCreate()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;",
+      "name": "onCreate",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;",
+        "stableName": "onCreate",
+        "ownerShapeSha256": "42c5e61760a18686eaeec4ae3aaeb2c8b38f76e0b4eff024fc592e91c401247b"
+      },
+      "structuralSha256": "64c145d973a565ac0348b3c7b61f5606b0f2e42ec51da676ca4c6ff8e7f7039b",
+      "fixtureContractSha256": "0a412ee9e8bb90f429e91c2d245113906dd828e58aea9cd20de942fd3de7875c",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;->onDestroy()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;",
+      "name": "onDestroy",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/sea/widget/SeaPdpBodyWidget;",
+        "stableName": "onDestroy",
+        "ownerShapeSha256": "42c5e61760a18686eaeec4ae3aaeb2c8b38f76e0b4eff024fc592e91c401247b"
+      },
+      "structuralSha256": "26e56aecfaad73347b02cae90d7e83ca123a325f1d926ddacd8ac1d14bd2563b",
+      "fixtureContractSha256": "e6eaa3784dd22dbdb2667ed2d7df93945bedc29770deffa2141611a53f268551",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;->onDestroy()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;",
+      "name": "onDestroy",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;",
+        "stableName": "onDestroy",
+        "ownerShapeSha256": "193b4dbbe3dd718a93ce6f27434d5fd13053404eb47c12505e921efcc9dd2982"
+      },
+      "structuralSha256": "173975ba4bbe2a5d36e4ab116c03e073cd07014764d070144bcd593d6d54d5e5",
+      "fixtureContractSha256": "e9104d9785aa996b33f35751111dcd27fbfda2ebf5b0c703b0b8cb770fc484a5",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;->onViewCreated(Landroid/view/View;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/pdp/us/core/page/body/PdpBodyAssem;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "193b4dbbe3dd718a93ce6f27434d5fd13053404eb47c12505e921efcc9dd2982"
+      },
+      "structuralSha256": "177624cbb0284b2a5447508304dd4b2acde431e7884e0c827d40016f26a6cc0d",
+      "fixtureContractSha256": "c3664b1dcc3718df2b1dc9525c3762621e0ecb6636b7468cfbc1cc7cd68a4fee",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;->onCreate(Landroid/os/Bundle;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;",
+      "name": "onCreate",
+      "parameters": [
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;",
+        "stableName": "onCreate",
+        "ownerShapeSha256": "be4b32088265a36551a98238cdc8a44be60d3951606252414183db5f5f9fefcd"
+      },
+      "structuralSha256": "b731a36c1895bbc590e536305c69f42043a16032090a47a8bab71f1a38528938",
+      "fixtureContractSha256": "73aa71a278644eed8192c8f1f930fc003f36ca5503a3ca4177e319bc89f683b6",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;->onDestroyView()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;",
+      "name": "onDestroyView",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/sea/strategy/SeaSkuPanelFragment;",
+        "stableName": "onDestroyView",
+        "ownerShapeSha256": "be4b32088265a36551a98238cdc8a44be60d3951606252414183db5f5f9fefcd"
+      },
+      "structuralSha256": "07345ccfdb95c43b14b6b6aca556bb3d11526ff165b4905652213ac704d0add6",
+      "fixtureContractSha256": "f15cb5a37cc2ef6be8e2694993cf0e4af6fb32aa7df84bd2cdc1b08d20726a39",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;->onDestroyView()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;",
+      "name": "onDestroyView",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;",
+        "stableName": "onDestroyView",
+        "ownerShapeSha256": "fe68dfbc56c0ecdb34bdbb075da54b68e8d8eb270b67ec2c5d39e1f2da4e8c90"
+      },
+      "structuralSha256": "c9de64d2c1f06acfbef5ba0f8a838bc3639e7bd6225e837154142713eb100f10",
+      "fixtureContractSha256": "8e1e2cbfe7c184d90042d0f124093a4fc7bd542cdd3d1f0fd2767721d3b39d86",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;",
+      "name": "onViewCreated",
+      "parameters": [
+        "Landroid/view/View;",
+        "Landroid/os/Bundle;"
+      ],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/base/sku/strategy/SkuPanelAssemFragment;",
+        "stableName": "onViewCreated",
+        "ownerShapeSha256": "fe68dfbc56c0ecdb34bdbb075da54b68e8d8eb270b67ec2c5d39e1f2da4e8c90"
+      },
+      "structuralSha256": "9912e3fa9870f6b8ca970d8b1d757cb90c3298df3761f900719af10318723a6c",
+      "fixtureContractSha256": "86ea9b8e38ffb49ecbb47508278767ba130cd77dab8a550025105046d6127d77",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;->onStart()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;",
+      "name": "onStart",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;",
+        "stableName": "onStart",
+        "ownerShapeSha256": "e12f427da5954e854c555911577014a2ccb727843d90f82b81ab17977f610487"
+      },
+      "structuralSha256": "248980cb707d972a7b062b28bd1ba13c4d78e5cd32a3498805ac0084833a9cc2",
+      "fixtureContractSha256": "42b574d027684adc7c78128dfdea95009dd9d58302437c68012f2fc7884a5ee9",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;->onStop()V",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;",
+      "name": "onStop",
+      "parameters": [],
+      "returns": "V",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;",
+        "stableName": "onStop",
+        "ownerShapeSha256": "e12f427da5954e854c555911577014a2ccb727843d90f82b81ab17977f610487"
+      },
+      "structuralSha256": "fce61d71e4e12e72c379f56387ed0975b80ab8141bbee0372d6734521ed84cf7",
+      "fixtureContractSha256": "c1448c54554ea5eb079bc55a738982dc46ef13e9662258a1825ffb62a81995c3",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/aweme/video/simplayer/PlayerSettingServiceImpl;->get(Ljava/lang/String;Ljava/lang/reflect/Type;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/aweme/video/simplayer/PlayerSettingServiceImpl;",
+      "name": "get",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/reflect/Type;",
+        "Ljava/lang/Object;",
+        "Z",
+        "Z"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/aweme/video/simplayer/PlayerSettingServiceImpl;",
+        "stableName": "get",
+        "ownerShapeSha256": "4eedb3bcbdced099d9e18c1824a13b1dc4fca036d8652f098b0f9065cf5e24d7"
+      },
+      "structuralSha256": "7d69b7f001817ff1901a8209cb6422ea79e795e3abab859869242d8336b9058c",
+      "fixtureContractSha256": "58220eb5bc7f6a7b0230fbc51920b8497b0e2248f9df287e65ec856d6e83965c",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/ugc/tiktok/pns/activitycenter/EnterActivityCenterAction;->getSchema(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/ugc/tiktok/pns/activitycenter/EnterActivityCenterAction;",
+      "name": "getSchema",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;",
+        "Ljava/lang/String;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/ugc/tiktok/pns/activitycenter/EnterActivityCenterAction;",
+        "stableName": "getSchema",
+        "ownerShapeSha256": "faef4bd459cc0b08669b7abe41a50cc1701766cb8edf7777fa03651e1d5d32e8"
+      },
+      "structuralSha256": "16aa33551c038d3585da676adceca88ce83c979651f7e97ab58899b49001c58b",
+      "fixtureContractSha256": "2eddd9e2f064838511679767793e3836a26e55c4e13cc89e2c7496ed7a29b508",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;->getValue(Ljava/lang/String;F)F",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+      "name": "getValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "F"
+      ],
+      "returns": "F",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "4f3e7431eabaee84eca6ccbee496750d29ce9f25030383ddffd3c490fd20153d"
+      },
+      "structuralSha256": "33f44689d5d64870b2a6c16d172dfcc9fde78c2e3b4091ae4b87922202b5d689",
+      "fixtureContractSha256": "20f92bf9a91c10bfe9305087f559f45aae46c7098baba9d8c6a2e0b8532df4ad",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;->getValue(Ljava/lang/String;I)I",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+      "name": "getValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "I"
+      ],
+      "returns": "I",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "4f3e7431eabaee84eca6ccbee496750d29ce9f25030383ddffd3c490fd20153d"
+      },
+      "structuralSha256": "60cb788d0cf0c563167233caa005fc332f7105231b56e314d6430b63279f6432",
+      "fixtureContractSha256": "3ae7b9de8507ef5081ea66a8a1bf86d1c378307b1d475561ffbcedd93b7c73be",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;->getValue(Ljava/lang/String;J)J",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+      "name": "getValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "J"
+      ],
+      "returns": "J",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "4f3e7431eabaee84eca6ccbee496750d29ce9f25030383ddffd3c490fd20153d"
+      },
+      "structuralSha256": "53cd92c3f2cfd232634fa2c66bbda1413a0ce0d81249a945261f61c03f902fc3",
+      "fixtureContractSha256": "1e2b56d90f0b0092c38e5628b75d31fc24797afa6ea5e96ab4517c98824e52c6",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;->getValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+      "name": "getValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Ljava/lang/String;"
+      ],
+      "returns": "Ljava/lang/String;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "4f3e7431eabaee84eca6ccbee496750d29ce9f25030383ddffd3c490fd20153d"
+      },
+      "structuralSha256": "81c042cdf7de6a7366224cf1b93faa2be254a92ef655c3601ea67f1822e8c4a4",
+      "fixtureContractSha256": "79c26cd7656445cbec8120056f790ada139fb30a00298dea6d8c224c2f935292",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;->getValue(Ljava/lang/String;Z)Ljava/lang/Boolean;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+      "name": "getValue",
+      "parameters": [
+        "Ljava/lang/String;",
+        "Z"
+      ],
+      "returns": "Ljava/lang/Boolean;",
+      "origin": "apk",
+      "semanticContext": {
+        "stableOwner": "Lcom/ss/android/vesdk/VEConfigCenter;",
+        "stableName": "getValue",
+        "ownerShapeSha256": "4f3e7431eabaee84eca6ccbee496750d29ce9f25030383ddffd3c490fd20153d"
+      },
+      "structuralSha256": "e812a7981f5bc6fd488ee06d844bca1d08f22b24d48723f8671d981114339360",
+      "fixtureContractSha256": "adcc0e1633972655485159444e798fed5917ac9e2eaa40d67c83427c651469eb",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lkotlin/jvm/internal/AwS398S0200000_21_I1;->invoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lkotlin/jvm/internal/AwS398S0200000_21_I1;",
+      "name": "invoke$60",
+      "parameters": [
+        "Lkotlin/jvm/internal/AwS398S0200000_21_I1;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "9ea70f46bb366af283fed97c2627707a26baaea7a3e0a17f931de44c7864bc57"
+      },
+      "structuralSha256": "9e157c7e13f1995f7a570e08372192c77b2ce393ae6a49fb02ee2cc8643fa043",
+      "fixtureContractSha256": "091fbbdd125b4b625c950a8c5a04408b711c432bacfa3c711210ff03064aaba8",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "native-injection:Lkotlin/jvm/internal/AwS567S0100000_21_I1;->invoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
+      "status": "resolved",
+      "required": true,
+      "owner": "Lkotlin/jvm/internal/AwS567S0100000_21_I1;",
+      "name": "invoke$13",
+      "parameters": [
+        "Lkotlin/jvm/internal/AwS567S0100000_21_I1;",
+        "Ljava/lang/Object;",
+        "Ljava/lang/Object;"
+      ],
+      "returns": "Ljava/lang/Object;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "855d60d47e575d224ab9482b4f4ee111970e1b77ca7d0c59a8789a2828d468f8"
+      },
+      "structuralSha256": "a49fa505b264726118c2005985e3cbd08a8027c9e0988de85f789e4f7cfa09b5",
+      "fixtureContractSha256": "8d31bf91793b55ca42f2113f9294a2373107fdfa23e429b4e72ef3f78b1854d5",
+      "fixtureContractValidated": true,
+      "selection": "explicit-site"
+    },
+    {
+      "hook": "offline.native-options-provider",
+      "status": "resolved",
+      "required": true,
+      "owner": "LX/0AIU;",
+      "name": "LJFF",
+      "parameters": [],
+      "returns": "Ljava/util/List;",
+      "origin": "apk",
+      "semanticContext": {
+        "ownerShapeSha256": "49f562f6e589de0d3f8aa43cc5ab2f52af18780711e19926ee589d4d57070e99"
+      },
+      "structuralSha256": "484e930b65384304ff7140bf477a2f0fc9742c0f1dd1f1bdde1c197c42d2aec1",
+      "fixtureContractSha256": "b4bd1c941628adb8f9160ad668c6af6ee0159483cfc0a0a8295b807a029d778a",
+      "fixtureContractValidated": true,
+      "selection": "unique",
+      "candidateCount": 1,
+      "selector": {
+        "owner": "LX/0AIU;",
+        "name": "LJFF",
+        "parameters": [],
+        "returns": "Ljava/util/List;",
+        "exactStrings": []
+      }
+    }
+  ]
+}

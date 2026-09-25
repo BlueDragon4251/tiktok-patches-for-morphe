@@ -7,10 +7,21 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
+from portable_baseline import extract
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
 
 class DiscoveryTests(unittest.TestCase):
+    def test_portable_index_never_exposes_unvalidated_native_hook(self):
+        base={'schema':2,'normalization':2,'package':'com.zhiliaoapp.musically',
+              'version':'46.7.3','versionCode':2024607030,'fixtureSha256':'hash','featureHead':'head',
+              'fingerprints':[{'hook':'a','origin':'apk','fixtureContractValidated':True,
+                               'structuralSha256':'shape','tokens':['private string']}]} 
+        index=extract(base)
+        self.assertNotIn('tokens',index['fingerprints'][0])
+        base['fingerprints'][0]['fixtureContractValidated']=False
+        with self.assertRaisesRegex(ValueError,'Unvalidated native'):extract(base)
+
     def setUp(self):
         self.hook={'hook':'callback','owner':'LX/Old;','name':'onDoubleTap','parameters':['Landroid/view/MotionEvent;'],'returns':'Z','structuralSha256':'hash','semanticContext':{'stableName':'onDoubleTap','ownerShapeSha256':'family'}}
         self.candidate={'owner':'LX/New;','name':'onDoubleTap','descriptor':'(Landroid/view/MotionEvent;)Z','ownerShapeSha256':'family'}
