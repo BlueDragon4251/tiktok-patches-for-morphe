@@ -121,7 +121,10 @@ The hook report labels those methods `experimental-identical-class`, marks
 `portableContractValidated` separately and leaves `fixtureContractValidated`
 false. The qualification CI requires the latter, so experimental APKs cannot
 silently enter Morphe's supported-version list. The probe report is used to
-prioritize the remaining semantic migrations.
+prioritize the remaining semantic migrations. The candidate workflow also runs
+the entire catalog with this opt-in on the actual downloaded APK, writes
+`experimental-result.json` and discards any partial output; a blocked
+diagnostic run is never counted as acceptance.
 
 ## Review order
 

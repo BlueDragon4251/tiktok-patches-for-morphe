@@ -35,7 +35,7 @@ jobs:
   latest:
     if: github.event_name == 'pull_request' && github.head_ref == 'agent/tiktok-multiversion-contracts'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
         with:
@@ -56,6 +56,31 @@ jobs:
         run: |
           python3 scripts/tiktok/rediscover_hooks.py \
             fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build experimental bundle and check bytecode/runtime tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
+      - name: Attempt full catalog with patch-time contracts
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+        run: |
+          python3 scripts/tiktok/toolchain.py
+          python3 - <<'PY'
+          import os, pathlib, subprocess
+          bundles = [p for p in pathlib.Path('patches/build/libs').glob('*.mpp')
+                     if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          if len(bundles) != 1:
+              raise SystemExit(f'Expected one bundle, got {bundles}')
+          subprocess.run(['python3', 'scripts/tiktok/run_experimental.py',
+                          '--apk', 'candidate.apk', '--bundle', str(bundles[0]),
+                          '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'],
+                          '--source', os.environ['SOURCE_URL'], '--output', 'reports/latest'], check=True)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -64,6 +89,8 @@ jobs:
             candidate-identity.json
             tiktok-hook-migration.json
             tiktok-hook-migration.md
+            reports/latest/*.json
+            reports/latest/*.log
           retention-days: 30
           if-no-files-found: warn
   compare:

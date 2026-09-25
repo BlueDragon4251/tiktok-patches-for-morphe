@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from portable_baseline import extract
+from run_experimental import blockers
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
 
@@ -50,6 +51,26 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual('ambiguous',classify(dict(h,fixtureContractValidated=False),[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
 
 class QualificationTests(unittest.TestCase):
+    def test_experimental_partial_catalog_and_unvalidated_hooks_never_pass(self):
+        meta={'patches':[{'name':n,'compatiblePackages':{'com.zhiliaoapp.musically':['46.7.3']}}
+                         for n in ('A','B')]}
+        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3','sha256':'new'}
+        result={'packageName':apk['package'],'packageVersion':apk['version'],
+                'appliedPatches':[{'name':'A'},{'name':'B'}],'failedPatches':[]}
+        hook={'hook':'native','required':True,'origin':'apk','status':'resolved',
+              'portableContractValidated':True}
+        report={'package':apk['package'],'version':apk['version'],'fixtureSha256':'new',
+                'experimental':True,'fingerprints':[hook]}
+        self.assertEqual([],blockers(meta,result,report,['A','B'],apk))
+        result['appliedPatches'].pop()
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+        result['appliedPatches'].append({'name':'B'})
+        hook['portableContractValidated']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+        hook['portableContractValidated']=True
+        report['experimental']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+
     def test_same_version_different_sha_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             apk=Path(tmp)/'same-version.apk';apk.write_bytes(b'different bytes')
