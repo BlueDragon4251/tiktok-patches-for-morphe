@@ -183,6 +183,27 @@ internal object HookEvidence {
         selection.contracts
     }
 
+    fun canRelocate(hookId: String): Boolean {
+        val current = context ?: return false
+        val contracts = selectContracts(current)
+        return experimental && hookId in contracts.hookMethods
+    }
+
+    /** Only a unique baseline bytecode/class contract may disambiguate a new APK. */
+    fun portableCandidates(hookId: String, matches: List<Match>): List<Match> {
+        val current = context ?: return matches
+        val contracts = selectContracts(current)
+        if (!experimental) return matches
+        val accepted = contracts.hookMethods[hookId] ?: return matches
+        val expectedClass = contracts.portableClasses[accepted.substringBefore("->")] ?: return matches
+        val expectedMethod = contracts.portableMethods[accepted] ?: return matches
+        return matches.filter { match ->
+            val method = original(match.originalMethod) ?: return@filter false
+            val owner = originals[method.definingClass] ?: return@filter false
+            ownerShape(owner) == expectedClass && FixtureContracts.portableSignature(method) == expectedMethod
+        }
+    }
+
     fun requireReviewed(method: Method) {
         if (method.definingClass.startsWith("Lapp/morphe/")) return
         val current = context ?: throw PatchException("Hook evidence session missing before $method")

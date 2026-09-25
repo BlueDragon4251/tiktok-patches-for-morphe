@@ -23,6 +23,8 @@ open class TikTokFingerprint(
     private val id: String? = null,
 ) : Fingerprint(definingClass = definingClass, name = name, accessFlags = accessFlags,
     returnType = returnType, parameters = parameters, filters = filters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() }, custom = custom) {
+    private val semanticFilters = filters
+    private val semanticCustom = custom
     private var session: BytecodePatchContext? = null
     private var selected: List<Match>? = null
     val hookId: String get() = id ?: (javaClass.name + ":" + (definingClass ?: "") + ":" +
@@ -41,7 +43,19 @@ open class TikTokFingerprint(
         clearMatch()
         val owner = definingClass?.takeIf { it.startsWith("L") && it.endsWith(";") }
             ?.let { classDefByOrNull(it) }
-        val matches = (if (owner != null) super.matchAllOrNull(owner) else super.matchAllOrNull()).orEmpty()
+        val initial = (if (owner != null) super.matchAllOrNull(owner) else super.matchAllOrNull()).orEmpty()
+        val relocated = if (initial.isEmpty() && definingClass?.let { HookEvidence.normalizedType(it) != it } == true &&
+            HookEvidence.canRelocate(hookId)) {
+            // The original owner/name/type spelling is obfuscated. Keep the real
+            // predicate and prove the unique original class and method below.
+            Fingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(definingClass, it) == "*" },
+                accessFlags = accessFlags,
+                returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },
+                parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },
+                filters = semanticFilters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() },
+                custom = semanticCustom).matchAllOrNull().orEmpty()
+        } else emptyList()
+        val matches = (initial + relocated)
             .distinctBy { it.originalMethod.toString() }
             .filter { match ->
                 val literals = match.originalMethod.implementation?.instructions?.mapNotNull {
@@ -51,8 +65,12 @@ open class TikTokFingerprint(
                 strings.orEmpty().all { marker -> literals.any { it.contains(marker) } } && exactStrings.all { it in literals }
             }
         clearMatch()
-        selected = matches
-        return matches
+        val proven = if (relocated.isNotEmpty() || matches.size > 1)
+            HookEvidence.portableCandidates(hookId, matches) else matches
+        // Keep the raw candidates if none pass: a singleton gets a concrete
+        // contract error at injection, and multiple candidates fail as ambiguous.
+        selected = proven.ifEmpty { matches }
+        return selected!!
     }
 
     context(BytecodePatchContext)
