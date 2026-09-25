@@ -68,12 +68,17 @@ class QualificationTests(unittest.TestCase):
                          for n in ('A','B')]}
         apk={'package':'com.zhiliaoapp.musically','version':'47.1.3','sha256':'new'}
         result={'packageName':apk['package'],'packageVersion':apk['version'],
-                'appliedPatches':[{'name':'A'},{'name':'B'}],'failedPatches':[]}
+                'appliedPatches':[{'name':'A'},{'name':'B'}],'failedPatches':[],
+                'patchingSteps':[{'step':n,'success':True} for n in ('PATCHING','REBUILDING')]}
         hook={'hook':'native','required':True,'origin':'apk','status':'resolved',
               'portableContractValidated':True}
         report={'package':apk['package'],'version':apk['version'],'fixtureSha256':'new',
-                'experimental':True,'fingerprints':[hook]}
-        self.assertEqual([],blockers(meta,result,report,['A','B'],apk))
+                'experimental':True,'featureHead':'head','fingerprints':[hook],'injections':[{}]}
+        self.assertEqual([],blockers(meta,result,report,['A','B'],apk,'head'))
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'different-head'))
+        result['patchingSteps'][1]['success']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
+        result['patchingSteps'][1]['success']=True
         result['appliedPatches'].pop()
         self.assertTrue(blockers(meta,result,report,['A','B'],apk))
         result['appliedPatches'].append({'name':'B'})

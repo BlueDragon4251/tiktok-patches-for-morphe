@@ -12,7 +12,7 @@ from fixtures import ROOT
 from probe_latest import inspect
 
 
-def blockers(metadata, result, report, expected, identity):
+def blockers(metadata, result, report, expected, identity, head=None):
     package = identity['package']
     names = [p['name'] for p in metadata['patches'] if package in (p.get('compatiblePackages') or {})]
     if len(names) != len(set(names)) or set(names) != set(expected):
@@ -25,14 +25,22 @@ def blockers(metadata, result, report, expected, identity):
         problems.append(f"Incomplete catalog: {len(applied)}/{len(names)} applied, {len(result.get('failedPatches', []))} failed")
     if (result.get('packageName'), result.get('packageVersion')) != (package, identity['version']):
         problems.append('Morphe reported a different APK package/version')
+    steps = result.get('patchingSteps', [])
+    if {s.get('step') for s in steps} != {'PATCHING', 'REBUILDING'} or any(not s.get('success') for s in steps):
+        problems.append('Patching or APK rebuilding did not complete successfully')
     if not report:
         problems.append('No patch-time hook report')
     elif (report.get('fixtureSha256'), report.get('package'), report.get('version'), report.get('experimental')) != (
             identity['sha256'], package, identity['version'], True):
         problems.append('Hook report is not for this exact experimental APK')
     else:
+        if head is not None and report.get('featureHead') != head:
+            problems.append('Hook report belongs to a different feature head')
+        if not report.get('injections') or not report.get('fingerprints'):
+            problems.append('Missing injection or fingerprint evidence')
         for hook in report.get('fingerprints', []):
             if hook.get('required') and (hook.get('status') != 'resolved' or
+                  (hook.get('selection') == 'unique' and hook.get('candidateCount') != 1) or
                   (hook.get('origin') == 'apk' and hook.get('portableContractValidated') is not True)):
                 problems.append('Unresolved native hook: ' + hook['hook'])
     return problems
@@ -68,7 +76,7 @@ def main():
         result = json.loads(result_path.read_text()) if result_path.is_file() else None
         report_path = out / 'tiktok-hook-report.json'
         report = json.loads(report_path.read_text()) if report_path.is_file() else None
-        problems = blockers(metadata, result, report, expected, identity)
+        problems = blockers(metadata, result, report, expected, identity, a.head)
         if process.returncode:
             problems.append(f'Morphe exited with code {process.returncode}')
         if not patched.is_file() and not problems:
