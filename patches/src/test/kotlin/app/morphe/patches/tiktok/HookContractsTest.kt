@@ -126,6 +126,33 @@ class HookContractsTest {
         assertNotEquals(baseline, FixtureContracts.classSignature(owner("Ljava/lang/Number;", listOf(field))))
     }
 
+    @Test fun experimentalNativeHookRequiresIdenticalClassAndFullOriginalMethod() {
+        fun fixture(registers: Int): MutableMethod {
+            val b = MethodImplementationBuilder(registers)
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 1))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            return method(b)
+        }
+        fun owner(superclass: String, target: MutableMethod) = ImmutableClassDef(
+            "LX/Fixture;", AccessFlags.PUBLIC.value, superclass,
+            emptyList(), null, emptySet(), emptyList(), listOf(target))
+        val accepted = fixture(3)
+        val acceptedOwner = owner("Ljava/lang/Object;", accepted)
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", mapOf(accepted.toString() to FixtureContracts.signature(accepted)),
+            mapOf(acceptedOwner.type to FixtureContracts.classSignature(acceptedOwner)))
+        FixtureContracts.requireNativeMatch(accepted, acceptedOwner, reviewed, experimental = true)
+        val changedRegisters = fixture(4)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requireNativeMatch(changedRegisters, owner("Ljava/lang/Object;", changedRegisters),
+                reviewed, experimental = true)
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requireNativeMatch(accepted, owner("Ljava/lang/Number;", accepted),
+                reviewed, experimental = true)
+        }
+    }
+
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
         fun payload(values: List<Number>): MutableMethod {
             val b = MethodImplementationBuilder(2)

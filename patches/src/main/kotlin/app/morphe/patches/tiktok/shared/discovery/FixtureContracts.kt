@@ -76,6 +76,12 @@ internal object FixtureContracts {
         if (expected != actual) throw PatchException("Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused")
     }
 
+    fun requireNativeMatch(method: Method, owner: ClassDef, contracts: Reviewed, experimental: Boolean) {
+        if (method.definingClass != owner.type || contracts.classes[owner.type] != classSignature(owner))
+            throw PatchException("Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) "; unreviewed APK injection refused" else ""}")
+        requireMatch(method, contracts.methods[method.toString()])
+    }
+
     fun loadOrNull(version: String): Reviewed? {
         val stream = FixtureContracts::class.java.getResourceAsStream("/tiktok-contracts/$version.json") ?: return null
         val root = stream.bufferedReader().use { JsonParser.parseReader(it).asJsonObject }

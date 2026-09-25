@@ -188,9 +188,7 @@ internal object HookEvidence {
         val source = original(method) ?: throw PatchException("No original APK method for $method")
         val contracts = selectContracts(current)
         val owner = originals[method.definingClass] ?: throw PatchException("No original APK class for $key")
-        if (contracts.classes[owner.type] != FixtureContracts.classSignature(owner))
-            throw PatchException("Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) "; unreviewed APK injection refused" else ""}")
-        FixtureContracts.requireMatch(source, contracts.methods[key])
+        FixtureContracts.requireNativeMatch(source, owner, contracts, experimental)
         validated += key
         rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
             it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
