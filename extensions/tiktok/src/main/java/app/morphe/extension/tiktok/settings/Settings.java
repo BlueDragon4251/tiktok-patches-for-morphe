@@ -117,6 +117,7 @@ public class Settings extends BaseSettings {
             "blueit_download_video_quality",
             "auto"
     );
+    public static final BooleanSetting DOWNLOAD_STORIES = new BooleanSetting("blueit_download_stories", TRUE);
     public static final BooleanSetting DOWNLOAD_ORIGINAL_PHOTOS =
             new BooleanSetting("blueit_download_original_photos", FALSE);
     public static final BooleanSetting CUSTOM_OFFLINE_VIDEOS = new BooleanSetting("custom_offline_videos", FALSE, true);

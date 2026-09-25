@@ -17,6 +17,7 @@ public class SettingsStatus {
     public static boolean downloadEnabled = false;
     public static boolean advancedDownloadsEnabled = false;
     public static boolean originalPhotoModeDownloaderEnabled = false;
+    public static boolean storyDownloadsEnabled = false;
     public static boolean simSpoofEnabled = false;
     public static boolean captchaPopupSuppressionEnabled = false;
     public static boolean promotionalBannersEnabled = false;
@@ -45,6 +46,7 @@ public class SettingsStatus {
     public static void enableDownload() { downloadEnabled = true; }
     public static void enableAdvancedDownloads() { advancedDownloadsEnabled = true; }
     public static void enableOriginalPhotoModeDownloader() { originalPhotoModeDownloaderEnabled = true; }
+    public static void enableStoryDownloads() { storyDownloadsEnabled = true; }
     public static void enableSimSpoof() { simSpoofEnabled = true; }
     public static void enableCaptchaPopupSuppression() { captchaPopupSuppressionEnabled = true; }
     public static void enablePromotionalBanners() { promotionalBannersEnabled = true; }
