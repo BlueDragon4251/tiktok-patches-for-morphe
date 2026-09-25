@@ -44,7 +44,7 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "BlueIT Service",
-    description = "Adds the BlueIT Service settings menu to TikTok. Supports TikTok 46.4.3.",
+    description = "Adds the BlueIT Service settings menu to supported TikTok builds.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
