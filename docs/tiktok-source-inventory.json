@@ -61757,7 +61757,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/misc/comment/CopyCommentsWithoutUsernamePatch.kt",
-      "sha256": "5b3c7d8d0c52dee0a6ea0788f5896e5ad0ae07cf79563a3199d061818df0f6b7",
+      "sha256": "34c513f325dff1b75ffa004c174c81c3fe811ab7abed924b0fbf9964ab0b3163",
       "patches": [
         {
           "symbol": "copyCommentsWithoutUsernamePatch",

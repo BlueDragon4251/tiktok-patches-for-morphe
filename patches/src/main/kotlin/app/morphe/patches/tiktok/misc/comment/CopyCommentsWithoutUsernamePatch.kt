@@ -56,12 +56,12 @@ val copyCommentsWithoutUsernamePatch = bytecodePatch(
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableCopyCommentsWithoutUsername()V",
         )
 
-        val clipboardHelperMatch = clipboardTextHelperFingerprint.uniqueMatch()
+        val clipboardHelperMethod = clipboardTextHelperFingerprint.uniqueOriginalMethod
         val clipboardHelper = MethodSignature(
-            clipboardHelperMatch.originalClassDef.type,
-            clipboardHelperMatch.originalMethod.name,
-            clipboardHelperMatch.originalMethod.parameterTypes.map { it.toString() },
-            clipboardHelperMatch.originalMethod.returnType,
+            clipboardHelperMethod.definingClass,
+            clipboardHelperMethod.name,
+            clipboardHelperMethod.parameterTypes.map { it.toString() },
+            clipboardHelperMethod.returnType,
         )
 
         val commentCopyFingerprint = Fingerprint(
