@@ -153,6 +153,71 @@ class HookContractsTest {
         }
     }
 
+    @Test fun relocatedNativeHookRequiresIdenticalPortableBodyAndClassShape() {
+        fun hooked(ownerName: String, methodName: String, registers: Int = 2, constant: Int = 1,
+                   superclass: String = "Ljava/lang/Object;"): Pair<MutableMethod, ImmutableClassDef> {
+            val b = MethodImplementationBuilder(registers)
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, constant))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            val m = MutableMethod(ImmutableMethod(ownerName, methodName, emptyList(), "I",
+                AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
+            return m to ImmutableClassDef(ownerName, AccessFlags.PUBLIC.value, superclass,
+                emptyList(), null, emptySet(), emptyList(), listOf(m))
+        }
+        val (accepted, oldOwner) = hooked("LX/0AAA;", "LIZ")
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(accepted.toString() to FixtureContracts.portableSignature(accepted)),
+            mapOf(oldOwner.type to FixtureContracts.portableClassSignature(oldOwner)))
+        val (renamed, newOwner) = hooked("LX/0BBB;", "LJII")
+        FixtureContracts.requirePortableMatch(renamed, newOwner, accepted.toString(), reviewed)
+        for ((method, owner) in listOf(
+            hooked("LX/0BBB;", "LJII", registers = 3),
+            hooked("LX/0BBB;", "LJII", constant = 2),
+            hooked("LX/0BBB;", "LJII", superclass = "Ljava/lang/Number;"))) {
+            assertThrows(PatchException::class.java) {
+                FixtureContracts.requirePortableMatch(method, owner, accepted.toString(), reviewed)
+            }
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(renamed, newOwner, "LX/other;->LIZ()I", reviewed)
+        }
+    }
+
+    @Test fun portableSignatureProtectsBranchesSwitchCasesAndExceptionHandlers() {
+        fun branched(change: Boolean): MutableMethod {
+            val b = MethodImplementationBuilder(2)
+            val first = b.getLabel("first"); val second = b.getLabel("second")
+            b.addInstruction(BuilderInstruction21t(Opcode.IF_EQZ, 0, if (change) second else first))
+            b.addLabel("first"); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            b.addLabel("second"); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 1))
+            return method(b)
+        }
+        assertNotEquals(FixtureContracts.portableSignature(branched(false)),
+            FixtureContracts.portableSignature(branched(true)))
+        fun switched(value: Int): MutableMethod {
+            val b = MethodImplementationBuilder(2)
+            val target = b.getLabel("return")
+            b.addInstruction(BuilderInstruction31t(Opcode.SPARSE_SWITCH, 0, b.getLabel("payload")))
+            b.addLabel("return"); b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            b.addLabel("payload"); b.addInstruction(BuilderSparseSwitchPayload(listOf(SwitchLabelElement(value, target))))
+            return method(b)
+        }
+        assertNotEquals(FixtureContracts.portableSignature(switched(1)), FixtureContracts.portableSignature(switched(2)))
+        fun caught(exceptionType: String): MutableMethod {
+            val b = MethodImplementationBuilder(2)
+            val start = b.addLabel("start")
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            val end = b.addLabel("end")
+            val handler = b.addLabel("handler")
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 1))
+            b.addCatch(exceptionType, start, end, handler)
+            return method(b)
+        }
+        assertNotEquals(FixtureContracts.portableSignature(caught("Ljava/lang/Exception;")),
+            FixtureContracts.portableSignature(caught("Ljava/lang/Error;")))
+    }
+
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
         fun payload(values: List<Number>): MutableMethod {
             val b = MethodImplementationBuilder(2)

@@ -27,7 +27,17 @@ dependencies {
     compileOnly(project(":patches:stub"))
 }
 
+// Fixture contract capture uses the exact original APK only after full catalog acceptance.
+sourceSets["main"].java.srcDir("../scripts/tiktok")
+
 tasks {
+    register<JavaExec>("captureTikTokContracts") {
+        description = "Capture portable and exact TikTok hook contracts from an accepted APK"
+        dependsOn("classes")
+        classpath = sourceSets["main"].runtimeClasspath
+        mainClass.set("CaptureFixtureContracts")
+        jvmArgs("-Xmx6g")
+    }
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 

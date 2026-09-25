@@ -48,8 +48,56 @@ internal object FixtureContracts {
         owner.methods.map { "method:$it:${it.accessFlags}" }.sorted().forEach { append(it).append('\n') }
     })
 
+    /** Register and control-flow preserving signature with only obfuscated DEX names normalized. */
+    fun portableSignature(method: Method): String = HookEvidence.sha256(buildString {
+        append(HookEvidence.normalizedType(method.parameterTypes.joinToString("") + ")" + method.returnType))
+            .append('|').append(method.accessFlags).append('|')
+        val body = method.implementation ?: return@buildString
+        append(body.registerCount).append('\n')
+        val tokens = HookEvidence.tokens(method).drop(1).iterator()
+        body.instructions.forEach { instruction ->
+            if (instruction.opcode == com.android.tools.smali.dexlib2.Opcode.NOP) return@forEach
+            append(tokens.next())
+            if (instruction is OneRegisterInstruction) append(" a=").append(instruction.registerA)
+            if (instruction is TwoRegisterInstruction) append(" b=").append(instruction.registerB)
+            if (instruction is ThreeRegisterInstruction) append(" c=").append(instruction.registerC)
+            if (instruction is FiveRegisterInstruction || instruction is RegisterRangeInstruction)
+                append(" args=").append(instruction.argumentRegisters())
+            if (instruction is WideLiteralInstruction) append(" literal=").append(instruction.wideLiteral)
+            if (instruction is OffsetInstruction) append(" offset=").append(instruction.codeOffset)
+            if (instruction is SwitchPayload) instruction.switchElements.forEach {
+                append(" case=").append(it.key).append(':').append(it.offset)
+            }
+            if (instruction is ArrayPayload) {
+                append(" width=").append(instruction.elementWidth)
+                instruction.arrayElements.forEach { append(" element=").append(it) }
+            }
+            append('\n')
+        }
+        body.tryBlocks.forEach { block ->
+            append("try=").append(block.startCodeAddress).append(':').append(block.codeUnitCount)
+            block.exceptionHandlers.forEach {
+                append('|').append(HookEvidence.normalizedType(it.exceptionType ?: "<all>"))
+                    .append(':').append(it.handlerCodeAddress)
+            }
+            append('\n')
+        }
+    })
+
+    fun portableClassSignature(owner: ClassDef): String = HookEvidence.sha256((
+        listOf("super:" + HookEvidence.normalizedType(owner.superclass ?: "")) +
+            owner.interfaces.map { "interface:" + HookEvidence.normalizedType(it) }.sorted() +
+            owner.fields.map { "field:" + HookEvidence.normalizedType(it.type) + ":" + it.accessFlags }.sorted() +
+            owner.methods.map {
+                "method:" + HookEvidence.normalizedMember(owner.type, it.name) + ":" + it.accessFlags +
+                    ":" + HookEvidence.sha256(HookEvidence.tokens(it).joinToString("\n"))
+            }.sorted()).joinToString("\n"))
+
     data class Reviewed(val packageName: String, val versionCode: Long, val apkSha256: String,
-                        val methods: Map<String, String>, val classes: Map<String, String>)
+                        val methods: Map<String, String>, val classes: Map<String, String>,
+                        val portableMethods: Map<String, String> = emptyMap(),
+                        val portableClasses: Map<String, String> = emptyMap(),
+                        val hookMethods: Map<String, String> = emptyMap())
 
     data class Selection(val contracts: Reviewed, val experimental: Boolean)
 
@@ -82,6 +130,21 @@ internal object FixtureContracts {
         requireMatch(method, contracts.methods[method.toString()])
     }
 
+    /** A relocated hook needs the accepted hook identity and the complete portable contract. */
+    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed) {
+        if (method.definingClass != owner.type)
+            throw PatchException("Portable hook owner mismatch for $method")
+        val oldOwner = acceptedMethod.substringBefore("->")
+        val expectedClass = contracts.portableClasses[oldOwner]
+            ?: throw PatchException("Missing accepted portable class contract for $oldOwner")
+        val expectedMethod = contracts.portableMethods[acceptedMethod]
+            ?: throw PatchException("Missing accepted portable method contract for $acceptedMethod")
+        if (portableClassSignature(owner) != expectedClass)
+            throw PatchException("Changed portable class contract for $method: field types, inheritance or member structure changed")
+        if (portableSignature(method) != expectedMethod)
+            throw PatchException("Changed portable method contract for $method: registers, literals, references, branches, switch or exception paths changed")
+    }
+
     fun loadOrNull(version: String): Reviewed? {
         val stream = FixtureContracts::class.java.getResourceAsStream("/tiktok-contracts/$version.json") ?: return null
         val root = stream.bufferedReader().use { JsonParser.parseReader(it).asJsonObject }
@@ -89,7 +152,10 @@ internal object FixtureContracts {
             throw PatchException("Invalid reviewed fixture contract for TikTok $version")
         fun entries(name: String) = root.getAsJsonObject(name).entrySet().associate { it.key to it.value.asString }
         return Reviewed(root.get("package").asString, root.get("versionCode").asLong,
-            root.get("sha256").asString, entries("methods"), entries("classes"))
+            root.get("sha256").asString, entries("methods"), entries("classes"),
+            if (root.has("portableMethods")) entries("portableMethods") else emptyMap(),
+            if (root.has("portableClasses")) entries("portableClasses") else emptyMap(),
+            if (root.has("hookMethods")) entries("hookMethods") else emptyMap())
     }
 
     fun load(version: String): Reviewed = loadOrNull(version)

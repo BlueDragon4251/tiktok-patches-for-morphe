@@ -12,15 +12,18 @@ import com.google.gson.*;
 import java.io.*;
 import java.nio.file.*;
 import java.security.MessageDigest;
+import java.security.DigestInputStream;
 import java.util.*;
 
 class CaptureFixtureContracts {
     static final String SCREEN_CAPTURE_REGISTER = "Landroid/app/Activity;->registerScreenCaptureCallback(Ljava/util/concurrent/Executor;Landroid/app/Activity$ScreenCaptureCallback;)V";
     static final String SCREEN_CAPTURE_UNREGISTER = "Landroid/app/Activity;->unregisterScreenCaptureCallback(Landroid/app/Activity$ScreenCaptureCallback;)V";
     static String digest(Path file) throws Exception {
-        try (InputStream in = Files.newInputStream(file)) {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(in.readAllBytes()));
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream in = new DigestInputStream(Files.newInputStream(file), digest)) {
+            in.transferTo(OutputStream.nullOutputStream());
         }
+        return HexFormat.of().formatHex(digest.digest());
     }
     public static void main(String[] args) throws Exception {
         if (args.length != 3) throw new IllegalArgumentException("APK REPORT OUTPUT required");
@@ -30,6 +33,7 @@ class CaptureFixtureContracts {
         if (!actualSha.equals(report.get("fixtureSha256").getAsString())) throw new IllegalArgumentException("APK SHA differs from full catalog report");
         if (report.get("schema").getAsInt() != 2) throw new IllegalArgumentException("Expected schema 2 hook report");
         Set<String> wanted = new HashSet<>();
+        TreeMap<String,String> hookMethods = new TreeMap<>();
         for (JsonElement element : report.getAsJsonArray("fingerprints")) {
             JsonObject hook = element.getAsJsonObject();
             if (hook.has("status") && !hook.get("status").getAsString().equals("resolved") && hook.get("required").getAsBoolean())
@@ -42,8 +46,12 @@ class CaptureFixtureContracts {
             }
             descriptor.append(')').append(hook.get("returns").getAsString());
             wanted.add(descriptor.toString());
+            String previous = hookMethods.putIfAbsent(hook.get("hook").getAsString(), descriptor.toString());
+            if (previous != null && !previous.equals(descriptor.toString()))
+                throw new IllegalArgumentException("Ambiguous baseline hook id " + hook.get("hook"));
         }
         TreeMap<String,String> methods = new TreeMap<>(), classes = new TreeMap<>();
+        TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
         MultiDexContainer<?> container = DexFileFactory.loadDexContainer(apk.toFile(), Opcodes.getDefault());
         for (String dex : container.getDexEntryNames()) {
@@ -69,6 +77,8 @@ class CaptureFixtureContracts {
                         if (methods.putIfAbsent(key, FixtureContracts.INSTANCE.signature(method)) != null)
                             throw new IllegalArgumentException("Duplicate original method " + key);
                         classes.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.classSignature(owner));
+                        portableMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableSignature(method));
+                        portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                     }
                 }
             }
@@ -85,6 +95,9 @@ class CaptureFixtureContracts {
         reviewed.add("allSiteFrameworkCalls", new Gson().toJsonTree(allSite));
         reviewed.add("methods", new Gson().toJsonTree(methods));
         reviewed.add("classes", new Gson().toJsonTree(classes));
+        reviewed.add("portableMethods", new Gson().toJsonTree(portableMethods));
+        reviewed.add("portableClasses", new Gson().toJsonTree(portableClasses));
+        reviewed.add("hookMethods", new Gson().toJsonTree(hookMethods));
         Files.createDirectories(output.getParent());
         Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(reviewed));
         System.out.println("Captured " + methods.size() + " original methods, " + classes.size() + " classes, " + allSite.size() + " screen capture callers; SHA " + actualSha);

@@ -21,6 +21,7 @@ internal object HookEvidence {
     private val rows = linkedMapOf<String, MutableMap<String, Any?>>()
     private val sites = mutableListOf<Map<String, Any?>>()
     private val validated = hashSetOf<String>()
+    private val validationMode = hashMapOf<String, String>()
     private var reviewed: FixtureContracts.Reviewed? = null
     private var apkSha256: String? = null
     private var experimental = false
@@ -33,6 +34,7 @@ internal object HookEvidence {
         rows.clear()
         sites.clear()
         validated.clear()
+        validationMode.clear()
         reviewed = null
         apkSha256 = null
         experimental = false
@@ -123,7 +125,8 @@ internal object HookEvidence {
             "fixtureContractSha256" to source?.let(FixtureContracts::signature),
             "fixtureContractValidated" to (!experimental && method.toString() in validated),
             "portableContractValidated" to (experimental && method.toString() in validated),
-            "contractMode" to if (source == null) "extension" else if (experimental) "experimental-identical-class" else "fixture-locked",
+            "contractMode" to if (source == null) "extension" else validationMode[method.toString()]
+                ?: if (experimental) "experimental-unvalidated" else "fixture-locked",
             "tokens" to signature, "structuralSha256" to signature?.let { sha256(it.joinToString("\n")) },
             "literals" to source?.implementation?.instructions?.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral },
             "exceptionHandlers" to source?.implementation?.tryBlocks?.flatMap { it.exceptionHandlers }
@@ -188,14 +191,30 @@ internal object HookEvidence {
         val source = original(method) ?: throw PatchException("No original APK method for $method")
         val contracts = selectContracts(current)
         val owner = originals[method.definingClass] ?: throw PatchException("No original APK class for $key")
-        FixtureContracts.requireNativeMatch(source, owner, contracts, experimental)
+        var mode = if (experimental) "experimental-identical-class" else "fixture-locked"
+        try {
+            FixtureContracts.requireNativeMatch(source, owner, contracts, experimental)
+        } catch (exactFailure: PatchException) {
+            if (!experimental) throw exactFailure
+            val hooks = rows.values.filter { row ->
+                row["owner"] == method.definingClass && row["name"] == method.name &&
+                    row["parameters"] == method.parameterTypes.map(CharSequence::toString) &&
+                    row["returns"] == method.returnType && row["selection"] == "unique" &&
+                    row["candidateCount"] == 1 && row["required"] == true
+            }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
+            if (hooks.size != 1)
+                throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
+            FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
+            mode = "experimental-semantic-contract"
+        }
         validated += key
+        validationMode[key] = mode
         rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
             it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
             .forEach {
                 it["fixtureContractValidated"] = !experimental
                 it["portableContractValidated"] = experimental
-                it["contractMode"] = if (experimental) "experimental-identical-class" else "fixture-locked"
+                it["contractMode"] = mode
             }
     }
 

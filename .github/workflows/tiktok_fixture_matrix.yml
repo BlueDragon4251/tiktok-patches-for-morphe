@@ -67,6 +67,21 @@ jobs:
               raise SystemExit(f'Expected exactly one runtime bundle: {bundles}')
           subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture', '${{ matrix.id }}', '--apk', 'fixture.apk', '--bundle', str(bundles[0]), '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'], '--output', 'reports/${{ matrix.id }}'], check=True)
           PY
+      - name: Capture baseline portable contracts from accepted original APK
+        if: matrix.id == 'global-46.7.3'
+        run: |
+          ./gradlew :patches:captureTikTokContracts --no-daemon --args="$(realpath fixture.apk) $(realpath reports/${{ matrix.id }}/tiktok-hook-report.json) $(realpath reports/${{ matrix.id }}/captured-contracts.json)"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          captured = json.loads(Path('reports/global-46.7.3/captured-contracts.json').read_text())
+          reviewed = json.loads(Path('patches/src/main/resources/tiktok-contracts/46.7.3.json').read_text())
+          for field in ('sha256', 'methods', 'classes'):
+              if captured[field] != reviewed[field]:
+                  raise SystemExit('Original accepted contract changed: ' + field)
+          if len(captured['portableMethods']) != len(captured['methods']) or not captured['hookMethods']:
+              raise SystemExit('Incomplete portable contract capture')
+          PY
       - name: Upload per-version evidence
         if: always()
         uses: actions/upload-artifact@v4
