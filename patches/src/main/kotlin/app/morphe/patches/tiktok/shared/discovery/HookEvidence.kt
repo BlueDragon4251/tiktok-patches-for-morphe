@@ -200,7 +200,8 @@ internal object HookEvidence {
         return matches.filter { match ->
             val method = original(match.originalMethod) ?: return@filter false
             val owner = originals[method.definingClass] ?: return@filter false
-            ownerShape(owner) == expectedClass && FixtureContracts.portableSignature(method) == expectedMethod
+            FixtureContracts.portableSignature(method) == expectedMethod &&
+                FixtureContracts.portableClassSignature(owner) == expectedClass
         }
     }
 

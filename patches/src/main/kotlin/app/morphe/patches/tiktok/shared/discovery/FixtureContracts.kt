@@ -85,12 +85,14 @@ internal object FixtureContracts {
     })
 
     fun portableClassSignature(owner: ClassDef): String = HookEvidence.sha256((
-        listOf("super:" + HookEvidence.normalizedType(owner.superclass ?: "")) +
+        listOf("access:" + owner.accessFlags, "super:" + HookEvidence.normalizedType(owner.superclass ?: "")) +
             owner.interfaces.map { "interface:" + HookEvidence.normalizedType(it) }.sorted() +
-            owner.fields.map { "field:" + HookEvidence.normalizedType(it.type) + ":" + it.accessFlags }.sorted() +
+            owner.fields.map { field ->
+                "field:" + HookEvidence.normalizedType(field.type) + ":" + field.accessFlags + ":" +
+                    (field.initialValue?.let(DexFormatter.INSTANCE::getEncodedValue) ?: "null")
+            }.sorted() +
             owner.methods.map {
-                "method:" + HookEvidence.normalizedMember(owner.type, it.name) + ":" + it.accessFlags +
-                    ":" + HookEvidence.sha256(HookEvidence.tokens(it).joinToString("\n"))
+                "method:" + HookEvidence.normalizedMember(owner.type, it.name) + ":" + portableSignature(it)
             }.sorted()).joinToString("\n"))
 
     data class Reviewed(val packageName: String, val versionCode: Long, val apkSha256: String,

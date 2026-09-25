@@ -155,13 +155,13 @@ class HookContractsTest {
 
     @Test fun relocatedNativeHookRequiresIdenticalPortableBodyAndClassShape() {
         fun hooked(ownerName: String, methodName: String, registers: Int = 2, constant: Int = 1,
-                   superclass: String = "Ljava/lang/Object;"): Pair<MutableMethod, ImmutableClassDef> {
+                   superclass: String = "Ljava/lang/Object;", classFlags: Int = AccessFlags.PUBLIC.value): Pair<MutableMethod, ImmutableClassDef> {
             val b = MethodImplementationBuilder(registers)
             b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, constant))
             b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
             val m = MutableMethod(ImmutableMethod(ownerName, methodName, emptyList(), "I",
                 AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
-            return m to ImmutableClassDef(ownerName, AccessFlags.PUBLIC.value, superclass,
+            return m to ImmutableClassDef(ownerName, classFlags, superclass,
                 emptyList(), null, emptySet(), emptyList(), listOf(m))
         }
         val (accepted, oldOwner) = hooked("LX/0AAA;", "LIZ")
@@ -174,7 +174,8 @@ class HookContractsTest {
         for ((method, owner) in listOf(
             hooked("LX/0BBB;", "LJII", registers = 3),
             hooked("LX/0BBB;", "LJII", constant = 2),
-            hooked("LX/0BBB;", "LJII", superclass = "Ljava/lang/Number;"))) {
+            hooked("LX/0BBB;", "LJII", superclass = "Ljava/lang/Number;"),
+            hooked("LX/0BBB;", "LJII", classFlags = AccessFlags.PUBLIC.value or AccessFlags.FINAL.value))) {
             assertThrows(PatchException::class.java) {
                 FixtureContracts.requirePortableMatch(method, owner, accepted.toString(), reviewed)
             }
