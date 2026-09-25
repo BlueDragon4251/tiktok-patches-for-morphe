@@ -91,6 +91,30 @@ class HookContractsTest {
         assertThrows(PatchException::class.java) { FixtureContracts.requireMatch(baseline, null) }
     }
 
+    @Test fun experimentalSelectionNeverPromotesAnUnknownShaToVerified() {
+        val baseline = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap())
+        val verified = FixtureContracts.select(baseline.packageName, baseline.versionCode,
+            baseline.apkSha256, baseline, baseline, experimentalOptIn = false)
+        assertFalse(verified.experimental)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.select(baseline.packageName, baseline.versionCode, "new-sha",
+                baseline, baseline, experimentalOptIn = false)
+        }
+        val candidate = FixtureContracts.select(baseline.packageName, 2024701030, "new-sha",
+            null, baseline, experimentalOptIn = true)
+        assertTrue(candidate.experimental)
+        assertSame(baseline, candidate.contracts)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.select("com.ss.android.ugc.trill", 2024701030, "new-sha",
+                null, baseline, experimentalOptIn = true)
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.select(baseline.packageName, 123, baseline.apkSha256,
+                baseline, baseline, experimentalOptIn = false)
+        }
+    }
+
     @Test fun classContractCoversFieldTypeSuperclassAndMethodSet() {
         fun owner(superclass: String, fields: List<ImmutableField>, methods: List<MutableMethod> = emptyList()) =
             ImmutableClassDef("LX/Fixture;", AccessFlags.PUBLIC.value, superclass,

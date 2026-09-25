@@ -16,7 +16,7 @@ class DiscoveryTests(unittest.TestCase):
         base={'schema':2,'normalization':2,'package':'com.zhiliaoapp.musically',
               'version':'46.7.3','versionCode':2024607030,'fixtureSha256':'hash','featureHead':'head',
               'fingerprints':[{'hook':'a','origin':'apk','fixtureContractValidated':True,
-                               'structuralSha256':'shape','tokens':['private string']}]} 
+                               'structuralSha256':'shape','tokens':['private string']}]}
         index=extract(base)
         self.assertNotIn('tokens',index['fingerprints'][0])
         base['fingerprints'][0]['fixtureContractValidated']=False

@@ -104,6 +104,25 @@ but no APK bytes. Exact source fixture: SHA-256
 `b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`.
 Only full acceptance on a later version can establish supported status.
 
+### Explicit experimental patching
+
+With `TIKTOK_EXPERIMENTAL_PORTABLE=1` and the Morphe CLI's `--force` option,
+an unlisted APK can attempt the current catalog at patch time. For every
+native hook, the original declaring class (including inheritance, fields and
+method set) and the complete target method (registers, references, literals,
+branches, switch payloads and exception ranges) must still equal the reviewed
+46.7.3 contract. Otherwise the patch aborts with `PatchException`. The global
+package must match; no input hash or version is treated as qualified by this
+mode. A same-version APK with different bytes requires the opt-in too.
+
+This initial guard admits APKs where the touched native classes are unchanged;
+it does not yet relocate renamed or changed classes or prove runtime behavior.
+The hook report labels those methods `experimental-identical-class`, marks
+`portableContractValidated` separately and leaves `fixtureContractValidated`
+false. The qualification CI requires the latter, so experimental APKs cannot
+silently enter Morphe's supported-version list. The probe report is used to
+prioritize the remaining semantic migrations.
+
 ## Review order
 
 Inventory and qualification manifest; shared resolution/injection contracts;

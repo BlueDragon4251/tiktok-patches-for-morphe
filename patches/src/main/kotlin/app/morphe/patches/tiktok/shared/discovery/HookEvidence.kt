@@ -23,6 +23,7 @@ internal object HookEvidence {
     private val validated = hashSetOf<String>()
     private var reviewed: FixtureContracts.Reviewed? = null
     private var apkSha256: String? = null
+    private var experimental = false
 
     fun begin(current: BytecodePatchContext) {
         if (context === current) return
@@ -34,6 +35,7 @@ internal object HookEvidence {
         validated.clear()
         reviewed = null
         apkSha256 = null
+        experimental = false
         current.classDefForEach { owner ->
             if (!owner.type.startsWith("Lapp/morphe/")) {
                 originals[owner.type] = if (owner is DexBackedClassDef) owner else ImmutableClassDef.of(owner)
@@ -119,8 +121,9 @@ internal object HookEvidence {
                 "ownerShapeSha256" to originals[method.definingClass]?.let(::ownerShape),
                 "returnTypeShapeSha256" to originals[method.returnType]?.let(::fieldShape)),
             "fixtureContractSha256" to source?.let(FixtureContracts::signature),
-            "fixtureContractValidated" to (method.toString() in validated),
-            "contractMode" to if (source != null) "fixture-locked" else "extension",
+            "fixtureContractValidated" to (!experimental && method.toString() in validated),
+            "portableContractValidated" to (experimental && method.toString() in validated),
+            "contractMode" to if (source == null) "extension" else if (experimental) "experimental-identical-class" else "fixture-locked",
             "tokens" to signature, "structuralSha256" to signature?.let { sha256(it.joinToString("\n")) },
             "literals" to source?.implementation?.instructions?.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral },
             "exceptionHandlers" to source?.implementation?.tryBlocks?.flatMap { it.exceptionHandlers }
@@ -160,32 +163,42 @@ internal object HookEvidence {
         }
     }
 
+    private fun selectContracts(current: BytecodePatchContext): FixtureContracts.Reviewed = reviewed ?: run {
+        val metadata = current.packageMetadata
+        val actualApkSha256 = inputApkSha256(current)
+        System.getenv("TIKTOK_FIXTURE_SHA256")?.let { actual ->
+            if (actual != actualApkSha256)
+                throw PatchException("Fixture SHA-256 mismatch: expected $actual, got $actualApkSha256")
+        }
+        val exact = FixtureContracts.loadOrNull(metadata.versionName)
+        val baseline = exact?.takeIf { it.apkSha256 == actualApkSha256 }
+            ?: FixtureContracts.load("46.7.3")
+        val selection = FixtureContracts.select(metadata.packageName, metadata.versionCode.toLong(),
+            actualApkSha256, exact, baseline, System.getenv("TIKTOK_EXPERIMENTAL_PORTABLE") == "1")
+        experimental = selection.experimental
+        reviewed = selection.contracts
+        selection.contracts
+    }
+
     fun requireReviewed(method: Method) {
         if (method.definingClass.startsWith("Lapp/morphe/")) return
         val current = context ?: throw PatchException("Hook evidence session missing before $method")
         val key = method.toString()
         if (key in validated) return
         val source = original(method) ?: throw PatchException("No original APK method for $method")
-        val contracts = reviewed ?: FixtureContracts.load(current.packageMetadata.versionName).also { loaded ->
-            val metadata = current.packageMetadata
-            if (metadata.packageName != loaded.packageName || metadata.versionCode.toLong() != loaded.versionCode)
-                throw PatchException("Fixture identity changed for ${metadata.packageName} ${metadata.versionName} (${metadata.versionCode})")
-            val actualApkSha256 = inputApkSha256(current)
-            if (actualApkSha256 != loaded.apkSha256)
-                throw PatchException("Unreviewed TikTok APK SHA-256: expected ${loaded.apkSha256}, got $actualApkSha256")
-            System.getenv("TIKTOK_FIXTURE_SHA256")?.let { actual ->
-                if (actual != loaded.apkSha256) throw PatchException("Fixture SHA-256 mismatch for $key: expected ${loaded.apkSha256}, got $actual")
-            }
-            reviewed = loaded
-        }
+        val contracts = selectContracts(current)
         val owner = originals[method.definingClass] ?: throw PatchException("No original APK class for $key")
         if (contracts.classes[owner.type] != FixtureContracts.classSignature(owner))
-            throw PatchException("Changed class contract for ${owner.type}: inheritance, fields or method set changed")
+            throw PatchException("Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) "; unreviewed APK injection refused" else ""}")
         FixtureContracts.requireMatch(source, contracts.methods[key])
         validated += key
         rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
             it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
-            .forEach { it["fixtureContractValidated"] = true }
+            .forEach {
+                it["fixtureContractValidated"] = !experimental
+                it["portableContractValidated"] = experimental
+                it["contractMode"] = if (experimental) "experimental-identical-class" else "fixture-locked"
+            }
     }
 
     fun injection(method: Method, index: Int, code: String) {
@@ -195,8 +208,9 @@ internal object HookEvidence {
 
     fun writeReport() {
         val current = context ?: throw PatchException("Hook report has no APK session")
+        selectContracts(current)
         val metadata = current.packageMetadata
-        val report = mapOf("schema" to 2, "normalization" to 2,
+        val report = mapOf("schema" to 2, "normalization" to 2, "experimental" to experimental,
             "package" to metadata.packageName, "version" to metadata.versionName,
             "versionCode" to metadata.versionCode, "fixtureSha256" to (apkSha256 ?: inputApkSha256(current)), "featureHead" to System.getenv("TIKTOK_FEATURE_HEAD"),
             "fingerprints" to rows.toSortedMap().values, "injections" to sites)

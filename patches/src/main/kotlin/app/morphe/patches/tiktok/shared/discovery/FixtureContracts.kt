@@ -51,15 +51,33 @@ internal object FixtureContracts {
     data class Reviewed(val packageName: String, val versionCode: Long, val apkSha256: String,
                         val methods: Map<String, String>, val classes: Map<String, String>)
 
+    data class Selection(val contracts: Reviewed, val experimental: Boolean)
+
+    /** An unknown APK may only reuse native hooks byte-for-byte from the baseline.
+     * The method and its entire declaring class are separately checked before each edit.
+     */
+    fun select(packageName: String, versionCode: Long, actualSha256: String, exact: Reviewed?,
+               baseline: Reviewed, experimentalOptIn: Boolean): Selection {
+        if (packageName != baseline.packageName)
+            throw PatchException("Expected global TikTok ${baseline.packageName}, got $packageName")
+        if (exact?.apkSha256 == actualSha256) {
+            if (versionCode != exact.versionCode)
+                throw PatchException("Fixture version code changed: expected ${exact.versionCode}, got $versionCode")
+            return Selection(exact, experimental = false)
+        }
+        if (!experimentalOptIn)
+            throw PatchException("Unreviewed TikTok APK SHA-256: $actualSha256. Use TIKTOK_EXPERIMENTAL_PORTABLE=1 only for explicitly experimental patching")
+        return Selection(baseline, experimental = true)
+    }
+
     fun requireMatch(method: Method, expected: String?) {
         if (expected == null) throw PatchException("Missing reviewed fixture contract for $method; run discovery and review before enabling this APK")
         val actual = signature(method)
         if (expected != actual) throw PatchException("Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused")
     }
 
-    fun load(version: String): Reviewed {
-        val stream = FixtureContracts::class.java.getResourceAsStream("/tiktok-contracts/$version.json")
-            ?: throw PatchException("No reviewed injection contracts for TikTok $version")
+    fun loadOrNull(version: String): Reviewed? {
+        val stream = FixtureContracts::class.java.getResourceAsStream("/tiktok-contracts/$version.json") ?: return null
         val root = stream.bufferedReader().use { JsonParser.parseReader(it).asJsonObject }
         if (root.get("version").asString != version || root.get("schema").asInt != 1)
             throw PatchException("Invalid reviewed fixture contract for TikTok $version")
@@ -67,4 +85,7 @@ internal object FixtureContracts {
         return Reviewed(root.get("package").asString, root.get("versionCode").asLong,
             root.get("sha256").asString, entries("methods"), entries("classes"))
     }
+
+    fun load(version: String): Reviewed = loadOrNull(version)
+        ?: throw PatchException("No reviewed injection contracts for TikTok $version")
 }
