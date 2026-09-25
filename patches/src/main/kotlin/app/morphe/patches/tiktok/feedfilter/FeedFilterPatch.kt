@@ -8,6 +8,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.getReference
@@ -111,9 +112,8 @@ val feedFilterPatch = bytecodePatch(
                 .map { it.index }
                 .toList()
 
-            check(castIndices.isNotEmpty()) {
-                "Exact TikTok 46.4.3 Feed0VVManager commit matched without a FeedItemList CHECK_CAST"
-            }
+            if (castIndices.isEmpty()) throw PatchException(
+                "Feed0VVManager commit has no FeedItemList CHECK_CAST in $method")
 
             castIndices.asReversed().forEach { castIndex ->
                 val register = (method.implementation!!.instructions[castIndex] as OneRegisterInstruction).registerA
@@ -138,9 +138,8 @@ val feedFilterPatch = bytecodePatch(
                 .map { it.index }
                 .toList()
 
-            check(uiCommitIndices.size == 1) {
-                "Exact TikTok 46.4.3 Feed0VVManager commit expected one Message.obj UI handoff, found ${uiCommitIndices.size}"
-            }
+            if (uiCommitIndices.size != 1) throw PatchException(
+                "Feed0VVManager commit expected one Message.obj UI handoff, found ${uiCommitIndices.size} in $method")
 
             uiCommitIndices.asReversed().forEach { uiCommitIndex ->
                 val resultRegister =
