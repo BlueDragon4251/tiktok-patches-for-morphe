@@ -44,11 +44,12 @@ open class TikTokFingerprint(
         val owner = definingClass?.takeIf { it.startsWith("L") && it.endsWith(";") }
             ?.let { classDefByOrNull(it) }
         val initial = (if (owner != null) super.matchAllOrNull(owner) else super.matchAllOrNull()).orEmpty()
-        val relocated = if (initial.isEmpty() && definingClass?.let { HookEvidence.normalizedType(it) != it } == true &&
+        val oldOwner = definingClass
+        val relocated = if (initial.isEmpty() && oldOwner != null && HookEvidence.normalizedType(oldOwner) != oldOwner &&
             HookEvidence.canRelocate(hookId)) {
             // The original owner/name/type spelling is obfuscated. Keep the real
             // predicate and prove the unique original class and method below.
-            Fingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(definingClass, it) == "*" },
+            Fingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == "*" },
                 accessFlags = accessFlags,
                 returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },
                 parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },
