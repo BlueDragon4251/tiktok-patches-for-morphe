@@ -55200,7 +55200,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/interaction/publishdate/AlwaysShowPublishDatePatch.kt",
-      "sha256": "851280cab836c2a242fefdcd44e01522e29780b907f82a2d4b5f10ccd0613ea2",
+      "sha256": "68d7293449ba3137752eb2475ec754890faefe0c24badc665cbfe4d473356c14",
       "patches": [
         {
           "symbol": "alwaysShowPublishDatePatch",
@@ -55222,199 +55222,211 @@
         },
         {
           "kind": "literal",
-          "line": 23,
+          "line": 26,
           "text": "\"Lapp/morphe/extension/tiktok/publishdate/AlwaysShowPublishDatePatch;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 25,
+          "line": 28,
           "text": "\"unused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 27,
+          "line": 30,
           "text": "\"Always show publish date\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 27,
+          "line": 30,
           "text": "name = \"Always show publish date\",",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 28,
+          "line": 31,
           "text": "\"Always shows the publish date in video author information. Thanks to lyyako for the original implementation.\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 33,
+          "line": 36,
           "text": "AppCompatibilities.tiktokVerified())",
           "category": "version-specific"
         },
         {
           "kind": "instruction-selection",
-          "line": 36,
+          "line": 39,
           "text": "addInstruction(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 38,
+          "line": 41,
           "text": "\"invoke-static {}, \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 39,
+          "line": 42,
           "text": "\"Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAlwaysShowPublishDate()V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 39,
+          "line": 42,
           "text": "->enableAlwaysShowPublishDate()V",
           "category": "stable-named-anchor"
         },
         {
-          "kind": "instruction-selection",
-          "line": 48,
-          "text": "indexOfFirst { instruction ->",
-          "category": "requires-cardinality-or-dataflow-review"
+          "kind": "literal",
+          "line": 51,
+          "text": "\"Video author post-time v3 marker\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 51,
+          "text": "v3",
+          "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 50,
+          "line": 53,
           "text": "\"v3\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 50,
+          "line": 53,
           "text": "v3",
           "category": "hard-coded"
         },
         {
-          "kind": "instruction-selection",
-          "line": 52,
-          "text": "indexOfFirst { (index, instruction) ->",
-          "category": "requires-cardinality-or-dataflow-review"
-        },
-        {
           "kind": "literal",
-          "line": 57,
+          "line": 58,
           "text": "\"getCreateTime\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 57,
+          "line": 58,
           "text": "name == \"getCreateTime\" &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 58,
+          "line": 59,
           "text": "parameterTypes.isEmpty() &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 59,
+          "line": 60,
           "text": "\"J\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 59,
-          "text": "returnType == \"J\"",
+          "line": 60,
+          "text": "returnType == \"J\" &&",
           "category": "stable-named-anchor"
         },
         {
+          "kind": "instruction-selection",
+          "line": 66,
+          "text": "singleOrThrow(\"Video author timestamp comparison after v3 marker in $this\")",
+          "category": "hard-coded"
+        },
+        {
           "kind": "literal",
-          "line": 63,
-          "text": "\"Could not find video author post-time visibility region\"",
-          "category": "structural-or-semantic-evidence"
+          "line": 66,
+          "text": "\"Video author timestamp comparison after v3 marker in $this\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 66,
+          "text": "v3",
+          "category": "hard-coded"
         },
         {
           "kind": "instruction-selection",
-          "line": 70,
+          "line": 72,
           "text": "getInstruction(index + 1).opcode == Opcode.MOVE_RESULT }",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 74,
-          "text": "\"Expected five video author post-time visibility gates, found ${gateCallIndices.size}\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 78,
-          "text": "getInstruction<OneRegisterInstruction>(index + 1).registerA",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 78,
-          "text": "registerA",
+          "line": 76,
+          "text": "\"Expected five video author post-time visibility gates, found ${gateCallIndices.size} in $this\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
           "line": 79,
+          "text": "getInstruction<OneRegisterInstruction>(index + 1).registerA",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 79,
+          "text": "registerA",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 80,
           "text": "addInstructions(",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 81,
+          "line": 82,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 82,
+          "line": 83,
           "text": "->showPostTimeForMainFeeds(Z)Z",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 84,
+          "line": 85,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 95,
+          "line": 96,
           "text": "\"Z\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 95,
+          "line": 96,
           "text": "returnType == \"Z\" &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 96,
+          "line": 97,
           "text": "\"Ljava/lang/String;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 96,
+          "line": 97,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 96,
+          "line": 97,
           "text": "parameterTypes == listOf(\"Ljava/lang/String;\")",
           "category": "structural-or-semantic-evidence"
         }

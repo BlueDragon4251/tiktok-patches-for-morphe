@@ -10,6 +10,9 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.uniqueInstructionIndex
+import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -45,23 +48,22 @@ val alwaysShowPublishDatePatch = bytecodePatch(
 
 private fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.showPostTimeForMainFeeds() {
     val instructions = implementation!!.instructions
-    val regionStart = instructions.indexOfFirst { instruction ->
+    val regionStart = uniqueInstructionIndex("Video author post-time v3 marker") { instruction ->
         val reference = (instruction as? ReferenceInstruction)?.reference
         reference is StringReference && reference.string == "v3"
     }
-    val regionEnd = instructions.withIndex().indexOfFirst { (index, instruction) ->
-        if (index <= regionStart) {
-            return@indexOfFirst false
-        }
+    val regionEnd = instructions.withIndex().filter { (index, instruction) ->
+        if (index <= regionStart) return@filter false
         val reference = (instruction as? ReferenceInstruction)?.reference as? MethodReference
         reference?.name == "getCreateTime" &&
             reference.parameterTypes.isEmpty() &&
-            reference.returnType == "J"
-    }
-
-    check(regionStart >= 0 && regionEnd > regionStart) {
-        "Could not find video author post-time visibility region"
-    }
+            reference.returnType == "J" &&
+            instructions.getOrNull(index + 1)?.opcode == Opcode.MOVE_RESULT_WIDE &&
+            // The visibility gate compares the timestamp; the later formatting
+            // path also reads it, but multiplies it for display instead.
+            instructions.subList(index + 2, minOf(index + 6, instructions.size))
+                .any { it.opcode == Opcode.CMP_LONG }
+    }.map { it.index }.singleOrThrow("Video author timestamp comparison after v3 marker in $this")
 
     val gateCallIndices = instructions.withIndex()
         .filter { (index, instruction) ->
@@ -70,9 +72,8 @@ private fun app.morphe.patcher.util.proxy.mutableTypes.MutableMethod.showPostTim
         .filter { (index, _) -> getInstruction(index + 1).opcode == Opcode.MOVE_RESULT }
         .map { it.index }
 
-    check(gateCallIndices.size == 5) {
-        "Expected five video author post-time visibility gates, found ${gateCallIndices.size}"
-    }
+    if (gateCallIndices.size != 5) throw PatchException(
+        "Expected five video author post-time visibility gates, found ${gateCallIndices.size} in $this")
 
     gateCallIndices.asReversed().forEach { index ->
         val resultRegister = getInstruction<OneRegisterInstruction>(index + 1).registerA
