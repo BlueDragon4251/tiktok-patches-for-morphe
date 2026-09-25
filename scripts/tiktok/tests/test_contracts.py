@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from portable_baseline import extract
-from run_experimental import blockers
+from run_experimental import blockers, patch_failures, read_result
 from probe_latest import candidate_status
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
@@ -63,6 +63,23 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual('ambiguous',classify(dict(h,fixtureContractValidated=False),[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
 
 class QualificationTests(unittest.TestCase):
+    def test_morphe_serialization_failure_retains_patch_diagnostics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'result.json'
+            path.write_text('{"appliedPatches":[{"name":"A"}],"failedPatches":[')
+            result, error = read_result(path)
+            self.assertIsNone(result)
+            self.assertIn('incomplete or invalid JSON', error)
+            log = ('SEVERE: FAILED: Feed patch\n'
+                   'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n'
+                   'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n')
+            self.assertEqual(['Changed class contract', 'Feed patch'], patch_failures(log))
+            metadata = {'patches': [{'name': 'A', 'compatiblePackages': {'p': ['v']}}]}
+            identity = {'package': 'p', 'version': 'v', 'sha256': 'h'}
+            failures = blockers(metadata, result, {'fingerprints': [], 'injections': []}, ['A'], identity)
+            self.assertTrue(any('no complete result' in p for p in failures))
+            self.assertTrue(any('Hook report' in p or 'hook report' in p for p in failures))
+
     def test_experimental_partial_catalog_and_unvalidated_hooks_never_pass(self):
         meta={'patches':[{'name':n,'compatiblePackages':{'com.zhiliaoapp.musically':['46.7.3']}}
                          for n in ('A','B')]}

@@ -6,6 +6,7 @@ This records diagnostic evidence, never qualification for Morphe compatibility.
 import argparse
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 from fixtures import ROOT
@@ -17,17 +18,18 @@ def blockers(metadata, result, report, expected, identity, head=None):
     names = [p['name'] for p in metadata['patches'] if package in (p.get('compatiblePackages') or {})]
     if len(names) != len(set(names)) or set(names) != set(expected):
         return ['Generated catalog differs from the accepted complete catalog']
-    if not result:
-        return ['Morphe produced no result file; inspect the patch log']
-    applied = [p['name'] for p in result.get('appliedPatches', [])]
     problems = []
-    if result.get('failedPatches') or len(applied) != len(set(applied)) or set(applied) != set(names):
-        problems.append(f"Incomplete catalog: {len(applied)}/{len(names)} applied, {len(result.get('failedPatches', []))} failed")
-    if (result.get('packageName'), result.get('packageVersion')) != (package, identity['version']):
-        problems.append('Morphe reported a different APK package/version')
-    steps = result.get('patchingSteps', [])
-    if {s.get('step') for s in steps} != {'PATCHING', 'REBUILDING'} or any(not s.get('success') for s in steps):
-        problems.append('Patching or APK rebuilding did not complete successfully')
+    if result is None:
+        problems.append('Morphe produced no complete result file; inspect the patch log')
+    else:
+        applied = [p['name'] for p in result.get('appliedPatches', [])]
+        if result.get('failedPatches') or len(applied) != len(set(applied)) or set(applied) != set(names):
+            problems.append(f"Incomplete catalog: {len(applied)}/{len(names)} applied, {len(result.get('failedPatches', []))} failed")
+        if (result.get('packageName'), result.get('packageVersion')) != (package, identity['version']):
+            problems.append('Morphe reported a different APK package/version')
+        steps = result.get('patchingSteps', [])
+        if {s.get('step') for s in steps} != {'PATCHING', 'REBUILDING'} or any(not s.get('success') for s in steps):
+            problems.append('Patching or APK rebuilding did not complete successfully')
     if not report:
         problems.append('No patch-time hook report')
     elif (report.get('fixtureSha256'), report.get('package'), report.get('version'), report.get('experimental')) != (
@@ -44,6 +46,25 @@ def blockers(metadata, result, report, expected, identity, head=None):
                   (hook.get('origin') == 'apk' and hook.get('portableContractValidated') is not True)):
                 problems.append('Unresolved native hook: ' + hook['hook'])
     return problems
+
+
+def read_result(path):
+    if not path.is_file():
+        return None, None
+    try:
+        result = json.loads(path.read_text())
+        if not isinstance(result, dict):
+            return None, 'Morphe result is not a JSON object'
+        return result, None
+    except (UnicodeError, json.JSONDecodeError) as error:
+        return None, f'Morphe result is incomplete or invalid JSON: {error}'
+
+
+def patch_failures(log):
+    """Retain actionable patch failures even if Morphe fails to serialize its JSON."""
+    failures = re.findall(r'^Caused by: [^\n]*PatchException: ([^\r\n]+)', log, re.MULTILINE)
+    failures += re.findall(r'^SEVERE: FAILED: ([^\r\n]+)', log, re.MULTILINE)
+    return list(dict.fromkeys(failures))
 
 
 def main():
@@ -73,10 +94,17 @@ def main():
             process = subprocess.run(command, cwd=out, stdout=log, stderr=subprocess.STDOUT,
                                      env=dict(os.environ, TIKTOK_EXPERIMENTAL_PORTABLE='1',
                                               TIKTOK_FEATURE_HEAD=a.head))
-        result = json.loads(result_path.read_text()) if result_path.is_file() else None
+        result, result_error = read_result(result_path)
         report_path = out / 'tiktok-hook-report.json'
-        report = json.loads(report_path.read_text()) if report_path.is_file() else None
+        report, report_error = read_result(report_path)
         problems = blockers(metadata, result, report, expected, identity, a.head)
+        for error in (result_error, report_error):
+            if error:
+                problems.append(error)
+        failures = patch_failures(log_path.read_text(errors='replace'))
+        problems.extend('Patch failed: ' + failure for failure in failures[:40])
+        if len(failures) > 40:
+            problems.append(f'{len(failures) - 40} additional distinct patch failures in morphe.log')
         if process.returncode:
             problems.append(f'Morphe exited with code {process.returncode}')
         if not patched.is_file() and not problems:
