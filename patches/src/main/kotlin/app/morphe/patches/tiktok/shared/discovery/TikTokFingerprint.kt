@@ -24,6 +24,7 @@ open class TikTokFingerprint(
 ) : Fingerprint(definingClass = definingClass, name = name, accessFlags = accessFlags,
     returnType = returnType, parameters = parameters, filters = filters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() }, custom = custom) {
     private val semanticFilters = filters
+    private val selectorAccessFlags = accessFlags
     private val semanticCustom = custom
     private var session: BytecodePatchContext? = null
     private var selected: List<Match>? = null
@@ -50,7 +51,7 @@ open class TikTokFingerprint(
             // The original owner/name/type spelling is obfuscated. Keep the real
             // predicate and prove the unique original class and method below.
             TikTokFingerprint(name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == "*" },
-                accessFlags = accessFlags,
+                accessFlags = selectorAccessFlags,
                 returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },
                 parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },
                 filters = semanticFilters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() },
