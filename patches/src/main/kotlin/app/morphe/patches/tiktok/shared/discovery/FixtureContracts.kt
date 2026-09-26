@@ -139,6 +139,8 @@ internal object FixtureContracts {
         "Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V"
     private const val CAPTCHA_LEGACY = "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptcha(" +
         "Landroid/app/Activity;ILX/17qC;)V"
+    private const val OEC_CAPTCHA = "Lcom/tts/oecverify/verify/RiskControlService;->execute(" +
+        "LX/16eW;Lcom/tts/oecverify/BdTuringCallback;)Z"
 
     /** The entry parameter is a FeedItemList; the return register has become an Iterator. */
     fun cachedFeedEntryBoundary(owner: ClassDef, method: Method): Boolean {
@@ -200,6 +202,53 @@ internal object FixtureContracts {
             callbackMethod.accessFlags == AccessFlags.PUBLIC.value &&
             callbackBody.registerCount == 1 && callbackBody.tryBlocks.none() &&
             callbackBody.instructions.map { it.opcode }.toList() == listOf(Opcode.RETURN_VOID)
+    }
+
+    /** OEC only injects before the original entry. The callback and the first field read are pinned. */
+    fun oecCaptchaEntryBoundary(owner: ClassDef, method: Method, callback: ClassDef?): Boolean {
+        val body = method.implementation ?: return false
+        val first = body.instructions.take(3).toList()
+        val parameters = method.parameterTypes.map(CharSequence::toString)
+        val callbackOwner = callback ?: return false
+        val callbackMethods = callbackOwner.methods.toList()
+        val field = (first.getOrNull(1) as? ReferenceInstruction)?.reference as? FieldReference
+        val fields = owner.fields.associate { it.name to it.type }
+        return owner.type == "Lcom/tts/oecverify/verify/RiskControlService;" &&
+            method.definingClass == owner.type && owner.accessFlags ==
+                (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) &&
+            owner.superclass == "Ljava/lang/Object;" && owner.interfaces.size == 1 &&
+            owner.interfaces.single().startsWith("LX/") &&
+            owner.fields.count() == 4 && fields.size == 4 &&
+            fields["mDialogShowing"]?.let { it.startsWith("LX/") && it.endsWith(";") } == true &&
+            fields["mForceFetchSettings"] == "Z" &&
+            fields["mShowingRequestPath"] == "Ljava/lang/String;" &&
+            fields["mSyncSettings"] == "Z" &&
+            method.name == "execute" && method.accessFlags == AccessFlags.PUBLIC.value &&
+            method.returnType == "Z" && parameters.size == 2 &&
+            parameters[0].startsWith("LX/") && parameters[0].endsWith(";") &&
+            parameters[1] == callbackOwner.type &&
+            callbackOwner.type == "Lcom/tts/oecverify/BdTuringCallback;" &&
+            callbackOwner.accessFlags ==
+                (AccessFlags.PUBLIC.value or AccessFlags.INTERFACE.value or AccessFlags.ABSTRACT.value) &&
+            callbackOwner.superclass == "Ljava/lang/Object;" && callbackOwner.interfaces.none() &&
+            callbackOwner.fields.none() && callbackMethods.size == 2 &&
+            callbackMethods.map { it.name }.toSet() == setOf("onFail", "onSuccess") &&
+            callbackMethods.all { it.parameterTypes.map(CharSequence::toString) ==
+                listOf("I", "Lorg/json/JSONObject;") && it.returnType == "V" &&
+                it.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.ABSTRACT.value) &&
+                it.implementation == null } &&
+            body.registerCount == 19 && body.tryBlocks.none { it.startCodeAddress == 0 } &&
+            first.getOrNull(0)?.opcode == Opcode.MOVE_OBJECT_FROM16 &&
+            (first[0] as? TwoRegisterInstruction)?.let {
+                it.registerA == 3 && it.registerB == body.registerCount - 3
+            } == true && first.getOrNull(1)?.opcode == Opcode.IGET_OBJECT &&
+            (first[1] as? TwoRegisterInstruction)?.let {
+                it.registerA == 2 && it.registerB == 3
+            } == true && field?.let { it.definingClass == owner.type &&
+                it.name == "mShowingRequestPath" && it.type == "Ljava/lang/String;" } == true &&
+            first.getOrNull(2)?.opcode == Opcode.CONST_4 &&
+            (first[2] as? OneRegisterInstruction)?.registerA == 0 &&
+            (first[2] as? WideLiteralInstruction)?.wideLiteral == 1L
     }
 
     fun entrySignature(owner: ClassDef, method: Method): String {
@@ -349,8 +398,11 @@ internal object FixtureContracts {
         val captchaEntryMatch = (!fullClassMatches || !methodMatches) &&
             acceptedMethod in setOf(CAPTCHA_V2, CAPTCHA_LEGACY) && oldOwner == owner.type &&
             captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
+        val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
+            oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
         val classMatches = fullClassMatches || scopedMatch
-        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch && !captchaEntryMatch) {
+        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch &&
+            !captchaEntryMatch && !oecEntryMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -362,6 +414,7 @@ internal object FixtureContracts {
             entryMatch -> "experimental-entry-contract"
             feedEntryMatch -> "experimental-feed-entry"
             captchaEntryMatch -> "experimental-captcha-entry"
+            oecEntryMatch -> "experimental-oec-entry"
             scopedMatch -> "experimental-method-scope"
             else -> "experimental-semantic-contract"
         }

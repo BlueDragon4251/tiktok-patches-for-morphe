@@ -154,7 +154,10 @@ method body do not certify or invalidate that specific entry boundary.
 The OEC `RiskControlService.execute` selector permits an obfuscated first
 parameter name to change while pinning its owner, callback type and return
 type. Injection still requires the complete portable method and class
-contracts; a changed body or class remains blocked.
+contracts. When those change, its reviewed entry contract checks the original
+register layout, first field read, owner fields and interface, callback methods
+and the exception boundary before allowing an entry-only injection. Other
+changed or ambiguous OEC shapes remain blocked.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.

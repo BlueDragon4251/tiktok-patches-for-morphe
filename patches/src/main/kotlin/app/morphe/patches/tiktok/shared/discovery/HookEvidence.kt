@@ -234,8 +234,10 @@ internal object HookEvidence {
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
+            val callbackIndex = if (hooks.single().startsWith(
+                    "Lcom/tts/oecverify/verify/RiskControlService;->execute(")) 1 else 2
             mode = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
-                source.parameterTypes.getOrNull(2)?.toString()?.let { originals[it] })
+                source.parameterTypes.getOrNull(callbackIndex)?.toString()?.let { originals[it] })
         }
         validated += key
         validationMode[key] = mode

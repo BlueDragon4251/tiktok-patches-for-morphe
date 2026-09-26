@@ -226,6 +226,60 @@ class HookContractsTest {
         }
     }
 
+    @Test fun changedOecBodyNeedsItsReviewedEntryAndCallbackBoundary() {
+        val ownerName = "Lcom/tts/oecverify/verify/RiskControlService;"
+        val callbackName = "Lcom/tts/oecverify/BdTuringCallback;"
+        val callbackMethods = listOf("onFail", "onSuccess").map { name ->
+            ImmutableMethod(callbackName, name, listOf("I", "Lorg/json/JSONObject;").map {
+                ImmutableMethodParameter(it, emptySet(), null)
+            }, "V", AccessFlags.PUBLIC.value or AccessFlags.ABSTRACT.value,
+                emptySet(), emptySet(), null)
+        }
+        fun callback(methods: List<ImmutableMethod> = callbackMethods) = ImmutableClassDef(
+            callbackName, AccessFlags.PUBLIC.value or AccessFlags.INTERFACE.value or AccessFlags.ABSTRACT.value,
+            "Ljava/lang/Object;", emptyList(), null, emptySet(), emptyList(), methods)
+        fun target(registers: Int = 19, input: String = "LX/1PbY;", changedTail: Boolean = false,
+                   firstField: String = "mShowingRequestPath"): MutableMethod {
+            val b = MethodImplementationBuilder(registers)
+            b.addInstruction(BuilderInstruction22x(Opcode.MOVE_OBJECT_FROM16, 3, 16))
+            b.addInstruction(BuilderInstruction22c(Opcode.IGET_OBJECT, 2, 3,
+                ImmutableFieldReference(ownerName, firstField, "Ljava/lang/String;")))
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 1))
+            if (changedTail) b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 1, 0))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            return MutableMethod(ImmutableMethod(ownerName, "execute",
+                listOf(input, callbackName).map { ImmutableMethodParameter(it, emptySet(), null) },
+                "Z", AccessFlags.PUBLIC.value, emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod) = ImmutableClassDef(ownerName,
+            AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, "Ljava/lang/Object;",
+            listOf("LX/08ps;"), null, emptySet(), listOf(
+                ImmutableField(ownerName, "mDialogShowing", "LX/1PbI;", 0, null, emptySet(), emptySet()),
+                ImmutableField(ownerName, "mForceFetchSettings", "Z", 0, null, emptySet(), emptySet()),
+                ImmutableField(ownerName, "mShowingRequestPath", "Ljava/lang/String;", 0, null, emptySet(), emptySet()),
+                ImmutableField(ownerName, "mSyncSettings", "Z", 0, null, emptySet(), emptySet()),
+            ), listOf(method))
+        val baseline = target(input = "LX/16eW;")
+        val accepted = baseline.toString()
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(accepted to FixtureContracts.portableSignature(baseline)),
+            mapOf(owner(baseline).type to FixtureContracts.portableClassSignature(owner(baseline))))
+        val changed = target(changedTail = true)
+        assertTrue(FixtureContracts.oecCaptchaEntryBoundary(owner(changed), changed, callback()))
+        assertEquals("experimental-oec-entry", FixtureContracts.requirePortableMatch(
+            changed, owner(changed), accepted, reviewed, callback()))
+        for (invalid in listOf(target(registers = 20, changedTail = true),
+                               target(changedTail = true, firstField = "mOtherPath"))) {
+            assertFalse(FixtureContracts.oecCaptchaEntryBoundary(owner(invalid), invalid, callback()))
+            assertThrows(PatchException::class.java) {
+                FixtureContracts.requirePortableMatch(invalid, owner(invalid), accepted, reviewed, callback())
+            }
+        }
+        assertFalse(FixtureContracts.oecCaptchaEntryBoundary(owner(changed), changed,
+            callback(callbackMethods.dropLast(1))))
+    }
+
     @Test fun portableSignatureProtectsBranchesSwitchCasesAndExceptionHandlers() {
         fun branched(change: Boolean): MutableMethod {
             val b = MethodImplementationBuilder(2)
