@@ -60,10 +60,13 @@ class CaptureFixtureContracts {
             for (ClassDef owner : entry.getDexFile().getClasses()) {
                 for (Method method : owner.getMethods()) {
                     boolean selected = wanted.contains(method.toString());
-                    if (!selected && method.getImplementation() != null) {
+                    // A method can already be in the hook report and still be an
+                    // all-site framework caller. Record that independent fact.
+                    if (method.getImplementation() != null) {
                         for (var instruction : method.getImplementation().getInstructions()) {
                             if (instruction instanceof ReferenceInstruction reference && reference.getReference() instanceof MethodReference invoke) {
-                                String call = invoke.toString();
+                                String call = invoke.getDefiningClass() + "->" + invoke.getName() + "(" +
+                                    String.join("", invoke.getParameterTypes()) + ")" + invoke.getReturnType();
                                 if (call.equals(SCREEN_CAPTURE_REGISTER) || call.equals(SCREEN_CAPTURE_UNREGISTER)) {
                                     selected = true;
                                     allSite.add(method.toString());

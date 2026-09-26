@@ -78,11 +78,21 @@ jobs:
           from pathlib import Path
           captured = json.loads(Path('reports/global-46.7.3/captured-contracts.json').read_text())
           reviewed = json.loads(Path('patches/src/main/resources/tiktok-contracts/46.7.3.json').read_text())
-          for field in ('sha256', 'methods', 'classes'):
+          for field in ('sha256', 'methods', 'classes', 'allSiteFrameworkCalls',
+                        'portableMethods', 'portableClasses', 'hookMethods'):
               if captured[field] != reviewed[field]:
                   raise SystemExit('Original accepted contract changed: ' + field)
-          if len(captured['portableMethods']) != len(captured['methods']) or not captured['hookMethods']:
+          report = json.loads(Path('reports/global-46.7.3/tiktok-hook-report.json').read_text())
+          hook_ids = {row['hook'] for row in report['fingerprints'] if row.get('origin') == 'apk'}
+          if (set(captured['portableMethods']) != set(captured['methods']) or
+              set(captured['portableClasses']) != set(captured['classes']) or
+              set(captured['hookMethods']) != hook_ids or
+              not set(captured['hookMethods'].values()) <= set(captured['methods'])):
               raise SystemExit('Incomplete portable contract capture')
+          pairs = {(captured['portableClasses'][method.split('->')[0]], signature)
+                   for method, signature in captured['portableMethods'].items()}
+          if len(pairs) != len(captured['portableMethods']):
+              raise SystemExit('Ambiguous accepted portable class/method contract')
           PY
       - name: Upload per-version evidence
         if: always()
