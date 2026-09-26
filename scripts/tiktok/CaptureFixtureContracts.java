@@ -18,6 +18,7 @@ import java.util.*;
 class CaptureFixtureContracts {
     static final String SCREEN_CAPTURE_REGISTER = "Landroid/app/Activity;->registerScreenCaptureCallback(Ljava/util/concurrent/Executor;Landroid/app/Activity$ScreenCaptureCallback;)V";
     static final String SCREEN_CAPTURE_UNREGISTER = "Landroid/app/Activity;->unregisterScreenCaptureCallback(Landroid/app/Activity$ScreenCaptureCallback;)V";
+    static final String LIVE_CAPTCHA = "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V";
     static String digest(Path file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (InputStream in = new DigestInputStream(Files.newInputStream(file), digest)) {
@@ -53,6 +54,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> methods = new TreeMap<>(), classes = new TreeMap<>();
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         TreeMap<String,String> scopedMethods = new TreeMap<>();
+        TreeMap<String,String> methodScopeCandidates = new TreeMap<>();
         TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
         TreeMap<String,String> entryMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
@@ -87,6 +89,8 @@ class CaptureFixtureContracts {
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                         if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
                             scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMethodScopeSignature(owner, method, key));
+                        if (key.equals(LIVE_CAPTCHA))
+                            methodScopeCandidates.put(key, FixtureContracts.INSTANCE.portableMethodScopeSignature(owner, method, key));
                         if (FixtureContracts.INSTANCE.memberRenameHooks().contains(key)) {
                             memberRenameMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMemberSignature(method));
                             memberRenameScopes.putIfAbsent(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
@@ -101,6 +105,8 @@ class CaptureFixtureContracts {
         if (!wanted.isEmpty()) throw new IllegalArgumentException("Missing original hooks: " + wanted);
         if (!scopedMethods.keySet().equals(FixtureContracts.INSTANCE.methodScopedHooks()))
             throw new IllegalArgumentException("Missing method-scoped baseline hooks: " + scopedMethods.keySet());
+        if (!methodScopeCandidates.keySet().equals(Set.of(LIVE_CAPTCHA)))
+            throw new IllegalArgumentException("Missing LIVE CAPTCHA scope candidate");
         if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
             !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))
             throw new IllegalArgumentException("Missing member-rename baseline hooks: " + memberRenameMethods.keySet());
@@ -120,6 +126,8 @@ class CaptureFixtureContracts {
         reviewed.add("portableClasses", new Gson().toJsonTree(portableClasses));
         reviewed.add("hookMethods", new Gson().toJsonTree(hookMethods));
         reviewed.add("scopedMethods", new Gson().toJsonTree(scopedMethods));
+        // Diagnostic evidence only. Activation still requires review and a separate scopedMethods entry.
+        reviewed.add("methodScopeCandidates", new Gson().toJsonTree(methodScopeCandidates));
         reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
         reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
         reviewed.add("entryMethods", new Gson().toJsonTree(entryMethods));
