@@ -35,11 +35,16 @@ def blockers(metadata, result, report, expected, identity, head=None):
             problems.append('Patching or APK rebuilding did not complete successfully')
     if not report:
         problems.append('No patch-time hook report')
-    elif (report.get('schema'), report.get('fixtureSha256'), report.get('package'),
-          report.get('version'), report.get('versionCode'), report.get('experimental')) != (
+    else:
+        try:
+            report_version_code = int(report.get('versionCode'))
+        except (TypeError, ValueError):
+            report_version_code = None
+    if report and (report.get('schema'), report.get('fixtureSha256'), report.get('package'),
+          report.get('version'), report_version_code, report.get('experimental')) != (
             2, identity['sha256'], package, identity['version'], identity['versionCode'], True):
         problems.append('Hook report is not for this exact experimental APK')
-    else:
+    elif report:
         if head is not None and report.get('featureHead') != head:
             problems.append('Hook report belongs to a different feature head')
         if not report.get('injections') or not report.get('fingerprints'):
@@ -113,7 +118,7 @@ def main():
     result_path, log_path, report_path, patched = (out / name for name in
         ('morphe-result.json', 'morphe.log', 'tiktok-hook-report.json', 'patched.apk'))
     # A reused output directory must never make a later failed attempt look successful.
-    for path in (result_path, log_path, report_path, patched):
+    for path in (result_path, log_path, report_path, patched, out / 'experimental-result.json'):
         path.unlink(missing_ok=True)
     identity = inspect(a.apk, a.source, a.expected_sha)
     metadata = json.loads(a.metadata.read_text())

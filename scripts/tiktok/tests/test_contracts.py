@@ -93,15 +93,15 @@ class QualificationTests(unittest.TestCase):
               'returns':'V','required':True,'origin':'apk','status':'resolved',
               'portableContractValidated':True}
         report={'package':apk['package'],'version':apk['version'],'fixtureSha256':'new',
-                'versionCode':apk['versionCode'],'schema':2,'experimental':True,'featureHead':'head',
+                'versionCode':str(apk['versionCode']),'schema':2,'experimental':True,'featureHead':'head',
                 'fingerprints':[hook],'injections':[{'method':'LX/New;->call()V'}]}
         self.assertEqual([],blockers(meta,result,report,['A','B'],apk,'head'))
         report['injections'][0]['method'] = 'LX/Other;->call()V'
         self.assertTrue(any('Injection has no validated hook' in p for p in blockers(meta,result,report,['A','B'],apk,'head')))
         report['injections'][0]['method'] = 'LX/New;->call()V'
-        report['versionCode'] += 1
+        report['versionCode'] = str(apk['versionCode'] + 1)
         self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
-        report['versionCode'] -= 1
+        report['versionCode'] = str(apk['versionCode'])
         self.assertTrue(blockers(meta,result,report,['A','B'],apk,'different-head'))
         result['patchingSteps'][1]['success']=False
         self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
@@ -139,7 +139,7 @@ class QualificationTests(unittest.TestCase):
                       'owner':'LX/A;','name':'m','parameters':[],'returns':'V'}
                 (out/'tiktok-hook-report.json').write_text(json.dumps({'schema':2,'featureHead':'head',
                     'fixtureSha256':identity['sha256'],'package':identity['package'],
-                    'version':identity['version'],'versionCode':identity['versionCode'],
+                    'version':identity['version'],'versionCode':str(identity['versionCode']),
                     'experimental':True,'fingerprints':[hook],
                     'injections':[{'method':'LX/A;->m()V'}]}))
                 with zipfile.ZipFile(out/'patched.apk','w') as apk:
