@@ -70,8 +70,8 @@ Morphe compatibility metadata lists version names, not hashes; the patch-time
 SHA-256 and reviewed contracts reject different bytes. CI evidence must always
 be interpreted together with the fixture identity. Unlisted APK bytes are not certified.
 
-`patches/src/main/resources/tiktok-contracts/46.7.3.json` contains 167 original
-method digests and 106 class digests, including all 22 Android screen-capture call
+`patches/src/main/resources/tiktok-contracts/46.7.3.json` contains 165 original
+method digests and 104 class digests, including all 22 Android screen-capture call
 sites. `scripts/tiktok/CaptureFixtureContracts.java` regenerates it from a successful
 full-catalog hook report and the verified original APK. Regeneration is a manual
 review step after obtaining a new fixture; the manifest and per-version CI matrix
@@ -79,6 +79,9 @@ do not make a candidate selectable without same-head acceptance, discovery,
 full-catalog, bytecode/runtime and migration checks. The historical accepted
 46.7.3 baseline is explicitly grandfathered by exact run IDs and SHA in the
 qualification verifier; later versions must provide per-version artifacts.
+The old `SettingNewVersionFragment` fallback is optional and absent from both
+46.7.3 and the 47.1.3 candidate. Its two reflected row types are resolved only
+when that legacy insertion point exists; they are not required baseline hooks.
 
 The initial fixture remains TikTok global 46.7.3, SHA-256
 `b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`.
