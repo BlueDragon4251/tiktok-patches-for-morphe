@@ -53,13 +53,21 @@ internal object HookEvidence {
         else -> "*"
     }
 
-    fun tokens(method: Method): List<String> = buildList {
+    fun tokens(method: Method): List<String> = tokens(method, ignoreAppMethodNames = false)
+
+    /** Used only by explicitly reviewed hooks when an obfuscated callee was renamed. */
+    fun tokensIgnoringAppMethodNames(method: Method): List<String> = tokens(method, ignoreAppMethodNames = true)
+
+    private fun tokens(method: Method, ignoreAppMethodNames: Boolean): List<String> = buildList {
         add(normalizedType(method.parameterTypes.joinToString("") + ")" + method.returnType))
         method.implementation?.instructions?.forEach { instruction ->
             if (instruction.opcode == com.android.tools.smali.dexlib2.Opcode.NOP) return@forEach
             val detail = when (val ref = (instruction as? ReferenceInstruction)?.reference) {
                 is StringReference -> "s:" + ref.string
-                is MethodReference -> "m:" + normalizedType(ref.definingClass) + "->" + normalizedMember(ref.definingClass, ref.name) +
+                is MethodReference -> "m:" + normalizedType(ref.definingClass) + "->" +
+                    (if (ignoreAppMethodNames && !ref.definingClass.startsWith("Ljava/") &&
+                        !ref.definingClass.startsWith("Ljavax/") && !ref.definingClass.startsWith("Landroid/") &&
+                        ref.name !in setOf("<init>", "<clinit>")) "*" else normalizedMember(ref.definingClass, ref.name)) +
                     "(" + normalizedType(ref.parameterTypes.joinToString("")) + ")" + normalizedType(ref.returnType)
                 is FieldReference -> "f:" + normalizedType(ref.definingClass) + "->" + normalizedMember(ref.definingClass, ref.name) + ":" + normalizedType(ref.type)
                 is TypeReference -> "t:" + normalizedType(ref.type)
@@ -226,8 +234,7 @@ internal object HookEvidence {
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
-            val scoped = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
-            mode = if (scoped) "experimental-method-scope" else "experimental-semantic-contract"
+            mode = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
         }
         validated += key
         validationMode[key] = mode

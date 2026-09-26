@@ -122,6 +122,12 @@ survive unrelated changes to its stable declaring class when the hash-bound clas
 interfaces and fields read by that method also match. The baseline capture
 records these three method scopes from the original 46.7.3 APK. Changes to the
 method, its relevant fields, or its class hierarchy still block injection.
+The canonical For You `FeedApi` response has a separate reviewed contract:
+its unique `fyp` and `first_feed_duration` markers, return type and return
+site must survive, as must its complete register, literal, reference type,
+branch, switch and exception layout. That contract permits renamed app
+callee names only for this method. It preserves Android and Java API names,
+constructor calls, class hierarchy and the fields used by the method.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.

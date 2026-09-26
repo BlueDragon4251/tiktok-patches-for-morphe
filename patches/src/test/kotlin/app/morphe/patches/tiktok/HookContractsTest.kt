@@ -250,7 +250,8 @@ class HookContractsTest {
             mapOf(className to FixtureContracts.portableClassSignature(owner(accepted))),
             scopedMethods = mapOf(acceptedKey to FixtureContracts.portableScopeSignature(owner(accepted), accepted)))
         val candidate = target()
-        assertTrue(FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true), acceptedKey, reviewed))
+        assertEquals("experimental-method-scope",
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true), acceptedKey, reviewed))
         assertThrows(PatchException::class.java) {
             FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true,
                 superclass = "Ljava/lang/Number;"), acceptedKey, reviewed)
@@ -270,6 +271,32 @@ class HookContractsTest {
             }.methodImplementation))
         assertThrows(PatchException::class.java) {
             FixtureContracts.requirePortableMatch(changed, owner(changed, extra = true), acceptedKey, reviewed)
+        }
+    }
+
+    @Test fun memberRenameContractIgnoresOnlyAppCalleeNames() {
+        val reviewed = FixtureContracts.load("46.7.3")
+        assertEquals(FixtureContracts.memberRenameHooks(), reviewed.memberRenameMethods.keys)
+        assertEquals(reviewed.memberRenameMethods.keys, reviewed.memberRenameScopes.keys)
+        fun calling(name: String, owner: String = "Lcom/bytedance/pumbaa/utility/method_id/MethodIDManager;",
+                    registers: Int = 2, constant: Int = 1): MutableMethod {
+            val b = MethodImplementationBuilder(registers)
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, constant))
+            b.addInstruction(BuilderInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0,
+                ImmutableMethodReference(owner, name, listOf("I"), "Z")))
+            b.addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT, 0))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            return method(b)
+        }
+        val obfuscated = calling("LJI")
+        assertNotEquals(FixtureContracts.portableSignature(obfuscated),
+            FixtureContracts.portableSignature(calling("push")))
+        assertEquals(FixtureContracts.portableMemberSignature(obfuscated),
+            FixtureContracts.portableMemberSignature(calling("push")))
+        for (changed in listOf(calling("push", owner = "Lother/MethodIDManager;"),
+            calling("push", registers = 3), calling("push", constant = 2))) {
+            assertNotEquals(FixtureContracts.portableMemberSignature(obfuscated),
+                FixtureContracts.portableMemberSignature(changed))
         }
     }
 

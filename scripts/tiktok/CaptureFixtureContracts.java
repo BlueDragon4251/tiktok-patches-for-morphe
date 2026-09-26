@@ -53,6 +53,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> methods = new TreeMap<>(), classes = new TreeMap<>();
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         TreeMap<String,String> scopedMethods = new TreeMap<>();
+        TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
         MultiDexContainer<?> container = DexFileFactory.loadDexContainer(apk.toFile(), Opcodes.getDefault());
         for (String dex : container.getDexEntryNames()) {
@@ -85,6 +86,10 @@ class CaptureFixtureContracts {
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                         if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
                             scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableScopeSignature(owner, method));
+                        if (FixtureContracts.INSTANCE.memberRenameHooks().contains(key)) {
+                            memberRenameMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMemberSignature(method));
+                            memberRenameScopes.putIfAbsent(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
+                        }
                     }
                 }
             }
@@ -93,6 +98,9 @@ class CaptureFixtureContracts {
         if (!wanted.isEmpty()) throw new IllegalArgumentException("Missing original hooks: " + wanted);
         if (!scopedMethods.keySet().equals(FixtureContracts.INSTANCE.methodScopedHooks()))
             throw new IllegalArgumentException("Missing method-scoped baseline hooks: " + scopedMethods.keySet());
+        if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
+            !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))
+            throw new IllegalArgumentException("Missing member-rename baseline hooks: " + memberRenameMethods.keySet());
         JsonObject reviewed = new JsonObject();
         reviewed.addProperty("schema", 1);
         reviewed.addProperty("package", report.get("package").getAsString());
@@ -107,6 +115,8 @@ class CaptureFixtureContracts {
         reviewed.add("portableClasses", new Gson().toJsonTree(portableClasses));
         reviewed.add("hookMethods", new Gson().toJsonTree(hookMethods));
         reviewed.add("scopedMethods", new Gson().toJsonTree(scopedMethods));
+        reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
+        reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
         Files.createDirectories(output.getParent());
         Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(reviewed));
         System.out.println("Captured " + methods.size() + " original methods, " + classes.size() + " classes, " + allSite.size() + " screen capture callers; SHA " + actualSha);

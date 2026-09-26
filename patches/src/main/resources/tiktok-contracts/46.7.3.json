@@ -763,5 +763,11 @@
     "Lcom/ss/android/ugc/aweme/main/MainActivity;-\u003eonCreate(Landroid/os/Bundle;)V": "f130794ef03b0d1ceb3646ebbf18de212a96ced1cb6e39a07b9c84e97df5936e",
     "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-\u003e<clinit>()V": "d43c6de45600375e5994519519b519c024b1fc7124cba2ec108a2ca9b554b0b2",
     "Lcom/ss/ttvideoengine/TTVideoEngine;-\u003esetLooping(Z)V": "35592f66dd803db0c476b08825d53cdb6975479f8fe41707e2b627405f37f4d9"
+  },
+  "memberRenameMethods": {
+    "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;-\u003eLIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;": "28a8682127ad0eb279f9a0f1dbc2bae3d28d6843c5dab3ded68c2dc983075d41"
+  },
+  "memberRenameScopes": {
+    "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;-\u003eLIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;": "4d628b02a0b3b428a50f9a419aae57cc0cfa8eafcf522f73c684a7084ee83404"
   }
 }

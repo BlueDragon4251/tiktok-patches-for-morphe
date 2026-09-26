@@ -51,12 +51,18 @@ internal object FixtureContracts {
     })
 
     /** Register and control-flow preserving signature with only obfuscated DEX names normalized. */
-    fun portableSignature(method: Method): String = HookEvidence.sha256(buildString {
+    fun portableSignature(method: Method): String = portableSignature(method, relaxedMembers = false)
+
+    /** Preserve the entire bytecode layout while ignoring only app callee names. */
+    fun portableMemberSignature(method: Method): String = portableSignature(method, relaxedMembers = true)
+
+    private fun portableSignature(method: Method, relaxedMembers: Boolean): String = HookEvidence.sha256(buildString {
         append(HookEvidence.normalizedType(method.parameterTypes.joinToString("") + ")" + method.returnType))
             .append('|').append(method.accessFlags).append('|')
         val body = method.implementation ?: return@buildString
         append(body.registerCount).append('\n')
-        val tokens = HookEvidence.tokens(method).drop(1).iterator()
+        val tokens = (if (relaxedMembers) HookEvidence.tokensIgnoringAppMethodNames(method)
+                      else HookEvidence.tokens(method)).drop(1).iterator()
         body.instructions.forEach { instruction ->
             if (instruction.opcode == com.android.tools.smali.dexlib2.Opcode.NOP) return@forEach
             append(tokens.next())
@@ -104,8 +110,20 @@ internal object FixtureContracts {
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
     )
 
+    /** The FYP response has unique feed markers but renamed app method references in 47.1.3. */
+    fun memberRenameHooks(): Set<String> = setOf(
+        "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+    )
+
     /** The target body is pinned separately. This pins its class hierarchy and fields it reads. */
-    fun portableScopeSignature(owner: ClassDef, method: Method): String {
+    fun portableScopeSignature(owner: ClassDef, method: Method): String =
+        portableScopeSignature(owner, method, allowSelfCalls = false)
+
+    /** A return-site hook can inspect a sibling method while preserving its own injection boundary. */
+    fun portableReturnScopeSignature(owner: ClassDef, method: Method): String =
+        portableScopeSignature(owner, method, allowSelfCalls = true)
+
+    private fun portableScopeSignature(owner: ClassDef, method: Method, allowSelfCalls: Boolean): String {
         if (method.definingClass != owner.type || method.implementation == null)
             throw PatchException("No original method body in scoped owner ${owner.type}")
         val fields = method.implementation!!.instructions.mapNotNull { instruction ->
@@ -117,7 +135,7 @@ internal object FixtureContracts {
                 HookEvidence.normalizedType(field.type) + ":" + field.accessFlags + ":" +
                 (field.initialValue?.let(DexFormatter.INSTANCE::getEncodedValue) ?: "null")
         }.sorted()
-        if (method.implementation!!.instructions.any { instruction ->
+        if (!allowSelfCalls && method.implementation!!.instructions.any { instruction ->
                 ((instruction as? ReferenceInstruction)?.reference as? MethodReference)
                     ?.let { it.definingClass == owner.type && it.name != method.name } == true
             }) throw PatchException("Scoped hook calls another method on ${owner.type}")
@@ -133,7 +151,9 @@ internal object FixtureContracts {
                         val portableMethods: Map<String, String> = emptyMap(),
                         val portableClasses: Map<String, String> = emptyMap(),
                         val hookMethods: Map<String, String> = emptyMap(),
-                        val scopedMethods: Map<String, String> = emptyMap())
+                        val scopedMethods: Map<String, String> = emptyMap(),
+                        val memberRenameMethods: Map<String, String> = emptyMap(),
+                        val memberRenameScopes: Map<String, String> = emptyMap())
 
     data class Selection(val contracts: Reviewed, val experimental: Boolean)
 
@@ -167,7 +187,7 @@ internal object FixtureContracts {
     }
 
     /** A relocated hook needs the accepted hook identity and the complete portable contract. */
-    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed): Boolean {
+    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed): String {
         if (method.definingClass != owner.type)
             throw PatchException("Portable hook owner mismatch for $method")
         val oldOwner = acceptedMethod.substringBefore("->")
@@ -181,15 +201,29 @@ internal object FixtureContracts {
             oldOwner == owner.type && contracts.scopedMethods[acceptedMethod]?.let {
                 portableScopeSignature(owner, method) == it
             } == true
+        val memberRenameMatch = !methodMatches && acceptedMethod in memberRenameHooks() &&
+            oldOwner == owner.type && method.returnType == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;" &&
+            method.implementation?.instructions?.count { it.opcode == com.android.tools.smali.dexlib2.Opcode.RETURN_OBJECT } == 1 &&
+            listOf("fyp", "first_feed_duration").all { marker ->
+                HookEvidence.tokens(method).any { it.contains("s:$marker") }
+            } && contracts.memberRenameMethods[acceptedMethod]?.let {
+                portableMemberSignature(method) == it
+            } == true && contracts.memberRenameScopes[acceptedMethod]?.let {
+                portableReturnScopeSignature(owner, method) == it
+            } == true
         val classMatches = fullClassMatches || scopedMatch
-        if (!classMatches || !methodMatches) {
+        if ((!classMatches || !methodMatches) && !memberRenameMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
             }
             throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused")
         }
-        return scopedMatch
+        return when {
+            memberRenameMatch -> "experimental-member-rename"
+            scopedMatch -> "experimental-method-scope"
+            else -> "experimental-semantic-contract"
+        }
     }
 
     fun loadOrNull(version: String): Reviewed? {
@@ -203,7 +237,9 @@ internal object FixtureContracts {
             if (root.has("portableMethods")) entries("portableMethods") else emptyMap(),
             if (root.has("portableClasses")) entries("portableClasses") else emptyMap(),
             if (root.has("hookMethods")) entries("hookMethods") else emptyMap(),
-            if (root.has("scopedMethods")) entries("scopedMethods") else emptyMap())
+            if (root.has("scopedMethods")) entries("scopedMethods") else emptyMap(),
+            if (root.has("memberRenameMethods")) entries("memberRenameMethods") else emptyMap(),
+            if (root.has("memberRenameScopes")) entries("memberRenameScopes") else emptyMap())
     }
 
     fun load(version: String): Reviewed = loadOrNull(version)
