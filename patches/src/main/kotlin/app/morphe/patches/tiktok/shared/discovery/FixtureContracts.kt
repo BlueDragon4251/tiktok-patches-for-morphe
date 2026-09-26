@@ -100,6 +100,7 @@ internal object FixtureContracts {
     /** Only these reviewed entry hooks may survive unrelated changes to their declaring class. */
     fun methodScopedHooks(): Set<String> = setOf(
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
+        "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
     )
 

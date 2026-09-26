@@ -761,6 +761,7 @@
   },
   "scopedMethods": {
     "Lcom/ss/android/ugc/aweme/main/MainActivity;-\u003eonCreate(Landroid/os/Bundle;)V": "f130794ef03b0d1ceb3646ebbf18de212a96ced1cb6e39a07b9c84e97df5936e",
+    "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-\u003e<clinit>()V": "d43c6de45600375e5994519519b519c024b1fc7124cba2ec108a2ca9b554b0b2",
     "Lcom/ss/ttvideoengine/TTVideoEngine;-\u003esetLooping(Z)V": "35592f66dd803db0c476b08825d53cdb6975479f8fe41707e2b627405f37f4d9"
   }
 }

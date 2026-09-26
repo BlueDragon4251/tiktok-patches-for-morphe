@@ -224,6 +224,7 @@ class HookContractsTest {
     }
 
     @Test fun methodScopeAllowsUnrelatedClassGrowthButPinsHierarchyAndReferencedFields() {
+        assertEquals(FixtureContracts.methodScopedHooks(), FixtureContracts.load("46.7.3").scopedMethods.keys)
         val className = "Lcom/ss/ttvideoengine/TTVideoEngine;"
         val acceptedKey = "$className->setLooping(Z)V"
         fun target(): MutableMethod {

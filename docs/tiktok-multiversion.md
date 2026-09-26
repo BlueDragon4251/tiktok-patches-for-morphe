@@ -116,11 +116,11 @@ Every native injection requires its original class and method contract or one
 unique portable baseline match. The latter preserves registers, references,
 literals, branches, switch payloads and exception paths, while normalizing
 obfuscated names. Relocated classes still need the complete class contract.
-For the reviewed `MainActivity.onCreate` and `TTVideoEngine.setLooping` entry
-hooks only, an unchanged target method can survive unrelated changes to its
-stable declaring class when the hash-bound class access, superclass,
+For the reviewed `MainActivity.onCreate`, `TTVideoEngine.setLooping` and
+`OfflineModeSheetPageAssem.<clinit>` hooks only, an unchanged target method can
+survive unrelated changes to its stable declaring class when the hash-bound class access, superclass,
 interfaces and fields read by that method also match. The baseline capture
-records these two method scopes from the original 46.7.3 APK. Changes to the
+records these three method scopes from the original 46.7.3 APK. Changes to the
 method, its relevant fields, or its class hierarchy still block injection.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
