@@ -190,6 +190,42 @@ class HookContractsTest {
         }
     }
 
+    @Test fun oecCallbackParameterRenameStillRequiresWholeMethodAndClassContract() {
+        val callback = "Lcom/tts/oecverify/BdTuringCallback;"
+        fun target(input: String, callbackType: String = callback, registerCount: Int = 5) =
+            MutableMethod(ImmutableMethod("Lcom/tts/oecverify/verify/RiskControlService;", "execute",
+                listOf(input, callbackType).map { ImmutableMethodParameter(it, emptySet(), null) },
+                "Z", AccessFlags.PUBLIC.value, emptySet(), emptySet(),
+                MethodImplementationBuilder(registerCount).apply {
+                    addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 1))
+                    addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+                }.methodImplementation))
+        fun owner(method: MutableMethod, iface: String) = ImmutableClassDef(method.definingClass,
+            AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, "Ljava/lang/Object;",
+            listOf(iface), null, emptySet(), emptyList(), listOf(method))
+        val original = target("LX/16eW;")
+        val renamed = target("LX/1PbY;")
+        val originalOwner = owner(original, "LX/0AaA;")
+        val renamedOwner = owner(renamed, "LX/08ps;")
+        assertEquals(FixtureContracts.portableSignature(original), FixtureContracts.portableSignature(renamed))
+        assertEquals(FixtureContracts.portableClassSignature(originalOwner),
+            FixtureContracts.portableClassSignature(renamedOwner))
+        val accepted = original.toString()
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(accepted to FixtureContracts.portableSignature(original)),
+            mapOf(originalOwner.type to FixtureContracts.portableClassSignature(originalOwner)))
+        FixtureContracts.requirePortableMatch(renamed, renamedOwner, accepted, reviewed)
+        assertThrows(PatchException::class.java) {
+            val changed = target("LX/1PbY;", registerCount = 6)
+            FixtureContracts.requirePortableMatch(changed, owner(changed, "LX/08ps;"), accepted, reviewed)
+        }
+        assertThrows(PatchException::class.java) {
+            val changed = target("LX/1PbY;", "Lother/Callback;")
+            FixtureContracts.requirePortableMatch(changed, owner(changed, "LX/08ps;"), accepted, reviewed)
+        }
+    }
+
     @Test fun portableSignatureProtectsBranchesSwitchCasesAndExceptionHandlers() {
         fun branched(change: Boolean): MutableMethod {
             val b = MethodImplementationBuilder(2)

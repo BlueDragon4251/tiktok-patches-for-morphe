@@ -11,6 +11,7 @@ import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecod
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
 private const val LIVE_CAPTCHA_CALLBACK_DESCRIPTOR = "LX/1NRi;"
@@ -45,7 +46,13 @@ private object OecCaptchaPopupFingerprint : Fingerprint(
     definingClass = "Lcom/tts/oecverify/verify/RiskControlService;",
     name = "execute",
     returnType = "Z",
-    parameters = listOf("LX/16eW;", "Lcom/tts/oecverify/BdTuringCallback;"),
+    custom = { method, _ ->
+        val parameters = method.parameterTypes.map(CharSequence::toString)
+        method.accessFlags == AccessFlags.PUBLIC.value &&
+            parameters.size == 2 && parameters[0].startsWith("LX/") &&
+            parameters[0].endsWith(";") &&
+            parameters[1] == "Lcom/tts/oecverify/BdTuringCallback;"
+    },
 )
 
 private object LiveHostCaptchaPopupFingerprint : Fingerprint(

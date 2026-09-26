@@ -151,6 +151,10 @@ declaring hierarchy, method flags and registers, first three original
 instructions and whether the entry lies in a try block must match. Its
 extension context call is injected at index zero, so later changes to its
 method body do not certify or invalidate that specific entry boundary.
+The OEC `RiskControlService.execute` selector permits an obfuscated first
+parameter name to change while pinning its owner, callback type and return
+type. Injection still requires the complete portable method and class
+contracts; a changed body or class remains blocked.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.
