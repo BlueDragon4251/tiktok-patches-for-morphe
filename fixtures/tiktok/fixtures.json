@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "fixtures": [{
+    "id": "global-46.7.3",
+    "package": "com.zhiliaoapp.musically",
+    "version": "46.7.3",
+    "versionCode": 2024607030,
+    "sha256": "b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e",
+    "url": "https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024607030",
+    "provenance": "APKPure original global APK. Exact bytes of the user-confirmed acceptance fixture; re-downloaded and SHA-256 verified on 2026-09-15.",
+    "selectable": true,
+    "catalog": "46.7.3/accepted-catalog.json",
+    "qualification": {
+      "head": "232bf9c28134db0b9bf2f9e8cf4a3f8021681667",
+      "acceptanceRun": 34620836565,
+      "discoveryRun": 34620836595,
+      "runtime": "User confirmed all features on this exact head and fixture, including profile, drawer, FYP, Inbox, Activity, Search, Chat, TUX and Compose. Existing bytecode/runtime regression tests passed in acceptance."
+    }
+  }]
+}

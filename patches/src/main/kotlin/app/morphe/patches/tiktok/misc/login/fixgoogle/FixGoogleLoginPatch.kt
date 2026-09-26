@@ -5,8 +5,8 @@
 package app.morphe.patches.tiktok.misc.login.fixgoogle
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 
 @Suppress("unused")
 val fixGoogleLoginPatch = bytecodePatch(
@@ -14,10 +14,10 @@ val fixGoogleLoginPatch = bytecodePatch(
     description = "Restores Google account sign-in after patching.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        listOf(GoogleAuthAvailableFingerprint.method).forEach { method ->
+        listOf(GoogleAuthAvailableFingerprint.uniqueMethod).forEach { method ->
             method.addInstructions(
                 0,
                 """

@@ -4,13 +4,13 @@
  */
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.util.indexOfFirstInstructionOrThrow
-import app.morphe.util.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
@@ -25,14 +25,14 @@ val rememberClearDisplayPatch = bytecodePatch(
     description = "Remembers TikTok's clear-display state between videos.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        ClearModeLogCoreFingerprint.methodOrNull?.returnEarly()
-        ClearModeLogStateFingerprint.methodOrNull?.returnEarly()
-        ClearModeLogPlaytimeFingerprint.methodOrNull?.returnEarly()
+        ClearModeLogCoreFingerprint.optionalMethod?.returnEarly()
+        ClearModeLogStateFingerprint.optionalMethod?.returnEarly()
+        ClearModeLogPlaytimeFingerprint.optionalMethod?.returnEarly()
 
-        OnClearDisplayEventFingerprint.method.let { method ->
+        OnClearDisplayEventFingerprint.uniqueMethod.let { method ->
             val isEnabledIndex = method.indexOfFirstInstructionOrThrow(Opcode.IGET_BOOLEAN) + 1
             val isEnabledRegister = method.getInstruction<TwoRegisterInstruction>(isEnabledIndex - 1).registerA
 
@@ -50,7 +50,7 @@ val rememberClearDisplayPatch = bytecodePatch(
                 .removeSuffix(";")
                 .replace('/', '.')
 
-            OnRenderFirstFrameFingerprint.method.apply {
+            OnRenderFirstFrameFingerprint.uniqueMethod.apply {
                 val returnIndex = implementation!!.instructions.withIndex()
                     .filter { it.value.opcode == Opcode.RETURN_VOID }
                     .map { it.index }

@@ -1,10 +1,11 @@
 package app.morphe.patches.tiktok.misc.translation
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.*
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -24,21 +25,22 @@ val commentTranslationPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableCommentTranslation()V",
         )
 
-        BaseCommentCellBindFingerprint.method.apply {
+        BaseCommentCellBindFingerprint.uniqueMethod.apply {
             val instructions = implementation!!.instructions
             val managerMatch = instructions.withIndex().mapNotNull { (index, instruction) ->
                 val field = instruction.getReference<FieldReference>()
                     ?: return@mapNotNull null
                 if (instruction.opcode != Opcode.IPUT_OBJECT ||
                     field.type != "Lcom/ss/android/ugc/aweme/comment/model/Comment;" ||
+                    "Landroidx/lifecycle/Observer;" !in classDefBy(field.definingClass).interfaces ||
                     instruction !is TwoRegisterInstruction
                 ) {
                     return@mapNotNull null
@@ -62,9 +64,7 @@ val commentTranslationPatch = bytecodePatch(
                 }
 
                 if (matchingWrites >= 2) lastWriteIndex to managerRegister else null
-            }.lastOrNull() ?: throw PatchException(
-                "Translate comments: could not locate initialized native comment translation manager.",
-            )
+            }.distinct().singleOrThrow("Translate comments initialized observer")
             val (managerReadyIndex, managerRegister) = managerMatch
 
             addInstructions(
@@ -77,31 +77,28 @@ val commentTranslationPatch = bytecodePatch(
             )
         }
 
-        CommentListLoadedFingerprint.method.apply {
-            val responseReadyIndex = implementation!!.instructions.withIndex()
-                .firstOrNull { (_, instruction) ->
-                    instruction.getReference<FieldReference>()?.let { reference ->
-                        reference.definingClass == "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;" &&
-                            reference.name == "lazySplitItemsParseTask"
-                    } == true
-                }?.index ?: throw PatchException(
-                "Translate comments: could not locate loaded comment list response.",
-            )
+        CommentListLoadedFingerprint.uniqueMethod.apply {
+            val responseReadyIndex = uniqueInstructionIndex("Loaded comment response") { instruction ->
+                instruction.opcode == Opcode.IGET_OBJECT && instruction.getReference<FieldReference>()?.let {
+                    it.definingClass == "Lcom/ss/android/ugc/aweme/comment/model/CommentItemList;" && it.name == "lazySplitItemsParseTask"
+                } == true
+            }
+            val responseRegister = getInstruction<TwoRegisterInstruction>(responseReadyIndex).registerB
 
             addInstruction(
                 responseReadyIndex,
-                "invoke-static {v0}, $EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
+                "invoke-static/range {v$responseRegister .. v$responseRegister}, $EXTENSION_CLASS_DESCRIPTOR->onCommentListLoaded(Ljava/lang/Object;)V",
             )
         }
 
-        MultiCommentTranslationStartFingerprint.method.addInstructions(
-            0,
-            """
-                invoke-static/range {v16 .. v18}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchStart(Ljava/lang/Object;Ljava/lang/Object;Z)V
-            """,
-        )
+        MultiCommentTranslationStartFingerprint.uniqueMethod.apply {
+            val start = parameterRegister(0, "Ljava/util/List;")
+            val end = parameterRegister(2, "Z")
+            if (end != start + 2) throw PatchException("Batch translation requires three contiguous argument words")
+            addInstruction(0, "invoke-static/range {v$start .. v$end}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchStart(Ljava/lang/Object;Ljava/lang/Object;Z)V")
+        }
 
-        MultiCommentTranslationCompleteFingerprint.method.addInstructions(
+        MultiCommentTranslationCompleteFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->onNativeBatchComplete(Ljava/lang/Object;)V

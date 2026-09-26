@@ -1,0 +1,115 @@
+name: TikTok fixture validation
+on:
+  workflow_call:
+    inputs:
+      kind:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - id: matrix
+        run: echo "matrix=$(python3 scripts/tiktok/fixtures.py matrix)" >> "$GITHUB_OUTPUT"
+      - run: python3 scripts/tiktok/fixtures.py generate --check
+      - run: python3 -m unittest discover -s scripts/tiktok/tests -v
+      - run: python3 scripts/tiktok/inventory.py --check
+      - name: Verify selectable-version qualification on GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/tiktok/verify_qualification.py
+  validate:
+    needs: fixtures
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.fixtures.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FEATURE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Build full bundle and run bytecode/runtime regressions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
+      - run: python3 -m pip install -r scripts/tiktok/requirements.txt
+      - name: Fetch and verify exact fixture
+        run: python3 scripts/tiktok/fixtures.py fetch --fixture '${{ matrix.id }}' --apk fixture.apk
+      - name: Fetch pinned Morphe CLI
+        run: python3 scripts/tiktok/toolchain.py
+      - name: Apply catalog, validate contracts and discover hooks
+        run: |
+          python3 - <<'PY'
+          import pathlib, os, subprocess
+          bundles = [p for p in pathlib.Path('patches/build/libs').glob('*.mpp') if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          if len(bundles) != 1:
+              raise SystemExit(f'Expected exactly one runtime bundle: {bundles}')
+          subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture', '${{ matrix.id }}', '--apk', 'fixture.apk', '--bundle', str(bundles[0]), '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'], '--output', 'reports/${{ matrix.id }}'], check=True)
+          PY
+      - name: Capture baseline portable contracts from accepted original APK
+        if: matrix.id == 'global-46.7.3'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew :patches:captureTikTokContracts --no-daemon --args="$(realpath fixture.apk) $(realpath reports/${{ matrix.id }}/tiktok-hook-report.json) $(realpath reports/${{ matrix.id }}/captured-contracts.json)"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          captured = json.loads(Path('reports/global-46.7.3/captured-contracts.json').read_text())
+          reviewed = json.loads(Path('patches/src/main/resources/tiktok-contracts/46.7.3.json').read_text())
+          for field in ('sha256', 'methods', 'classes', 'allSiteFrameworkCalls',
+                        'portableMethods', 'portableClasses', 'hookMethods', 'scopedMethods',
+                        'memberRenameMethods', 'memberRenameScopes', 'entryMethods'):
+              if captured[field] != reviewed[field]:
+                  raise SystemExit('Original accepted contract changed: ' + field)
+          report = json.loads(Path('reports/global-46.7.3/tiktok-hook-report.json').read_text())
+          hook_ids = {row['hook'] for row in report['fingerprints'] if row.get('origin') == 'apk'}
+          if (set(captured['portableMethods']) != set(captured['methods']) or
+              set(captured['portableClasses']) != set(captured['classes']) or
+              set(captured['scopedMethods']) != set(reviewed['scopedMethods']) or
+              set(captured['memberRenameMethods']) != set(reviewed['memberRenameMethods']) or
+              set(captured['memberRenameScopes']) != set(reviewed['memberRenameMethods']) or
+              set(captured['entryMethods']) != set(reviewed['entryMethods']) or
+              set(captured['hookMethods']) != hook_ids or
+              not set(captured['hookMethods'].values()) <= set(captured['methods'])):
+              raise SystemExit('Incomplete portable contract capture')
+          pairs = {(captured['portableClasses'][method.split('->')[0]], signature)
+                   for method, signature in captured['portableMethods'].items()}
+          if len(pairs) != len(captured['portableMethods']):
+              raise SystemExit('Ambiguous accepted portable class/method contract')
+          PY
+      - name: Upload per-version evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-${{ matrix.id }}-${{ inputs.kind }}-${{ env.FEATURE_HEAD }}
+          path: |
+            reports/**/*.json
+            reports/**/*.log
+            reports/**/*.md
+            docs/tiktok-source-inventory.json
+            patches/build/test-results/**/*.xml
+            extensions/tiktok/build/test-results/**/*.xml
+          retention-days: 30
+          if-no-files-found: error

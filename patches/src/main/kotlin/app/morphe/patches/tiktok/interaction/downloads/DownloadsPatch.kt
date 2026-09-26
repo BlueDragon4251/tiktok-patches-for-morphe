@@ -5,18 +5,20 @@
 package app.morphe.patches.tiktok.interaction.downloads
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.*
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.removeInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.removeInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.findInstructionIndicesReversedOrThrow
 import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
-import app.morphe.util.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
+import app.morphe.patcher.patch.PatchException
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -38,18 +40,18 @@ val downloadsPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableDownload()V",
         )
 
-        AclCommonShareFingerprint.method.returnEarly(0)
-        AclCommonShare2Fingerprint.method.returnEarly(2)
+        AclCommonShareFingerprint.uniqueMethod.returnEarly(0)
+        AclCommonShare2Fingerprint.uniqueMethod.returnEarly(2)
 
-        AclCommonShare3Fingerprint.method.addInstructionsWithLabels(
+        AclCommonShare3Fingerprint.uniqueMethod.addInstructionsWithLabels(
             0,
             """
                 invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldRemoveWatermark()Z
@@ -62,22 +64,23 @@ val downloadsPatch = bytecodePatch(
             """,
         )
 
-        AwemeGetVideoFingerprint.method.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.first()
+        AwemeGetVideoFingerprint.uniqueMethod.apply {
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_OBJECT }.forEach { returnIndex ->
             val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
             addInstructions(
                 returnIndex,
                 "invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V",
             )
+            }
         }
 
-        CommentImageWatermarkFingerprint.method.apply {
-            val drawBitmapIndex = findInstructionIndicesReversedOrThrow {
-                opcode.name == "invoke-virtual" &&
-                    this is ReferenceInstruction &&
-                    reference.toString().contains("->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V")
-            }.first()
-            val drawInstr = getInstruction<FiveRegisterInstruction>(drawBitmapIndex)
+        CommentImageWatermarkFingerprint.uniqueMethod.apply {
+            val drawBitmapIndex = uniqueInstructionIndex("Comment watermark bitmap draw") { instruction ->
+                instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction is ReferenceInstruction &&
+                    instruction.reference.toString() == "Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V"
+            }
+            val drawInstr = getInstruction(drawBitmapIndex) as? FiveRegisterInstruction
+                ?: throw PatchException("Comment watermark draw register contract changed in $this")
             val canvasReg = drawInstr.registerC
             val bitmapReg = drawInstr.registerD
             val xReg = drawInstr.registerE
@@ -98,16 +101,17 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        StickerPreviewBinderFingerprint.method.apply {
-            val returnIndex = findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.first()
+        StickerPreviewBinderFingerprint.uniqueMethod.apply {
+            findInstructionIndicesReversedOrThrow { opcode == Opcode.RETURN_VOID }.forEach { returnIndex ->
             addInstructions(
                 returnIndex,
                 "invoke-static/range {p0 .. p1}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->attachSaveImageButton(Landroid/view/View;Ljava/lang/Object;)V",
             )
+            }
         }
 
-        val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.method
-        StickerPreviewSourceFingerprint.method.apply {
+        val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.uniqueMethod
+        StickerPreviewSourceFingerprint.uniqueMethod.apply {
             val bindCallIndices = implementation!!.instructions.withIndex()
                 .filter { (_, instruction) ->
                     instruction.getReference<MethodReference>()?.let { reference ->
@@ -151,14 +155,22 @@ val downloadsPatch = bytecodePatch(
             }
         }
 
-        DownloadSuccessCoroutineFingerprint.method.apply {
+        DownloadSuccessCoroutineFingerprint.uniqueMethod.apply {
             val fieldReferences = implementation!!.instructions.mapNotNull { it.getReference<FieldReference>() }
-            val pathField = fieldReferences.first {
-                it.definingClass == definingClass && it.type == "Ljava/lang/String;"
-            }
-            val awemeField = fieldReferences.first {
-                it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
-            }
+            val body = implementation!!.instructions
+            val pathField = body.withIndex().mapNotNull { (index, instruction) ->
+                val ref = instruction.getReference<MethodReference>()
+                if (ref?.name != "<init>" || ref.parameterTypes != listOf("Ljava/lang/String;")) return@mapNotNull null
+                val owner = classDefByOrNull(ref.definingClass)
+                if (ref.definingClass != "Ljava/io/File;" && owner?.superclass != "Ljava/io/File;") return@mapNotNull null
+                val read = body.getOrNull(index - 1)
+                val field = read?.getReference<FieldReference>()
+                field?.takeIf { it.definingClass == definingClass && it.type == "Ljava/lang/String;" &&
+                    read.opcode == Opcode.IGET_OBJECT && (read as OneRegisterInstruction).registerA == instruction.argumentRegisters().last() }
+            }.distinctBy { it.toString() }.singleOrThrow("Download success path field")
+            val awemeField = fieldReferences.filter { it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" }
+                .distinctBy { it.toString() }.singleOrThrow("Download success Aweme field")
+            requireLocals(2)
 
             addInstructions(
                 0,
@@ -173,7 +185,7 @@ val downloadsPatch = bytecodePatch(
             )
         }
 
-        DownloadUriFingerprint.method.apply {
+        DownloadUriFingerprint.uniqueMethod.apply {
             findInstructionIndicesReversedOrThrow {
                 getReference<FieldReference>().let { ref ->
                     ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")

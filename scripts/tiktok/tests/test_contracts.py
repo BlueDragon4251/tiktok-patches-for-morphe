@@ -1,0 +1,221 @@
+import copy
+import json
+import sys
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+from unittest.mock import patch
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from fixtures import fixtures, generated, select, verify
+from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
+from portable_baseline import extract
+from run_experimental import blockers, main as experimental_main, observed_applied, patch_failures, read_result
+from probe_latest import candidate_status
+from run_fixture import validate_catalog, validate_hooks
+from verify_qualification import validate_run, validate_evidence
+
+class DiscoveryTests(unittest.TestCase):
+    def test_candidate_of_same_version_but_other_sha_is_not_the_fixture(self):
+        known={'schema':1,'candidates':[{'package':'com.zhiliaoapp.musically',
+                 'version':'47.1.3','versionCode':2024701030,'sha256':'original'}]}
+        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3',
+             'versionCode':2024701030,'sha256':'different'}
+        self.assertEqual('same-version-different-sha',candidate_status(apk,known))
+        apk['sha256']='original'
+        self.assertEqual('same-candidate-hash',candidate_status(apk,known))
+        apk['version']='47.1.4'
+        self.assertEqual('new-candidate',candidate_status(apk,known))
+
+    def test_portable_index_never_exposes_unvalidated_native_hook(self):
+        base={'schema':2,'normalization':2,'package':'com.zhiliaoapp.musically',
+              'version':'46.7.3','versionCode':2024607030,'fixtureSha256':'hash','featureHead':'head',
+              'fingerprints':[{'hook':'a','origin':'apk','fixtureContractValidated':True,
+                               'structuralSha256':'shape','tokens':['private string']}]}
+        index=extract(base)
+        self.assertNotIn('tokens',index['fingerprints'][0])
+        base['fingerprints'][0]['fixtureContractValidated']=False
+        with self.assertRaisesRegex(ValueError,'Unvalidated native'):extract(base)
+
+    def setUp(self):
+        self.hook={'hook':'callback','owner':'LX/Old;','name':'onDoubleTap','parameters':['Landroid/view/MotionEvent;'],'returns':'Z','structuralSha256':'hash','semanticContext':{'stableName':'onDoubleTap','ownerShapeSha256':'family'}}
+        self.candidate={'owner':'LX/New;','name':'onDoubleTap','descriptor':'(Landroid/view/MotionEvent;)Z','ownerShapeSha256':'family'}
+    def test_relocation_ignores_obfuscated_owner(self):
+        self.assertEqual('relocated',classify(self.hook,[self.candidate])[0])
+        self.assertEqual(normalized_type('LX/Old;'),normalized_type('LX/New;'))
+    def test_ambiguity_never_uses_first(self):
+        other=dict(self.candidate,owner='LX/Other;')
+        for candidates in ([self.candidate,other],[other,self.candidate]):self.assertEqual('ambiguous',classify(self.hook,candidates)[0])
+    def test_missing_and_contract_change_are_distinct(self):
+        self.assertEqual('missing',classify(self.hook,[])[0])
+        self.assertEqual('contract-changed',classify(self.hook,[dict(self.candidate,ownerShapeSha256='other')])[0])
+        self.assertEqual('contract-changed',classify(self.hook,[],[self.candidate])[0])
+    def test_stable_named_anchors_survive_normalization(self):
+        self.assertEqual('getShowType',normalized_member('Lcom/tiktok/ACLCommonShare;','getShowType'))
+        self.assertEqual('*',normalized_member('LX/Changed;','LJII'))
+        self.assertEqual('onDoubleTap',normalized_member('LX/Changed;','onDoubleTap'))
+    def test_payload_names_match_the_jvm_parser(self):
+        self.assertEqual('array-payload',normalized_opcode('fill-array-data-payload'))
+    def test_fixture_lock_never_disambiguates_a_different_apk(self):
+        h=dict(self.hook,fixtureContractValidated=True,fixtureContractSha256='contract')
+        exact=dict(self.candidate,owner=h['owner'])
+        reviewed={'sha256':'approved','methods':{'LX/Old;->onDoubleTap(Landroid/view/MotionEvent;)Z':'contract'}}
+        self.assertEqual('resolved',classify(h,[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
+        self.assertEqual('ambiguous',classify(h,[self.candidate,exact],reviewed=reviewed,apk_sha='other')[0])
+        self.assertEqual('ambiguous',classify(dict(h,fixtureContractValidated=False),[self.candidate,exact],reviewed=reviewed,apk_sha='approved')[0])
+
+class QualificationTests(unittest.TestCase):
+    def test_morphe_serialization_failure_retains_patch_diagnostics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'result.json'
+            path.write_text('{"appliedPatches":[{"name":"A"},{"name":"B"}],"failedPatches":[')
+            result, error = read_result(path)
+            self.assertIsNone(result)
+            self.assertIn('incomplete or invalid JSON', error)
+            self.assertEqual(['A', 'B'], observed_applied(path, result))
+            path.write_text('{"appliedPatches":[{"name":"A"},')
+            self.assertEqual([], observed_applied(path, None))
+            log = ('SEVERE: FAILED: Feed patch\n'
+                   'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n'
+                   'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n')
+            self.assertEqual(['Changed class contract', 'Feed patch'], patch_failures(log))
+            nested = ('SEVERE: FAILED: Feed filter\n'
+                      'app.morphe.patcher.patch.PatchException: The patch depends on another patch:\n'
+                      'app.morphe.patcher.patch.PatchException: Changed portable contract for FeedApi: class and method; injection refused\n'
+                      '\tat app.morphe.patcher.Patcher.execute(Patcher.kt:1)\n')
+            self.assertEqual(['Feed filter: Changed portable contract for FeedApi: class and method; injection refused'],
+                             patch_failures(nested))
+            metadata = {'patches': [{'name': 'A', 'compatiblePackages': {'p': ['v']}}]}
+            identity = {'package': 'p', 'version': 'v', 'versionCode': 1, 'sha256': 'h'}
+            failures = blockers(metadata, result, {'fingerprints': [], 'injections': []}, ['A'], identity)
+            self.assertTrue(any('no complete result' in p for p in failures))
+            self.assertTrue(any('Hook report' in p or 'hook report' in p for p in failures))
+
+    def test_experimental_partial_catalog_and_unvalidated_hooks_never_pass(self):
+        meta={'patches':[{'name':n,'compatiblePackages':{'com.zhiliaoapp.musically':['46.7.3']}}
+                         for n in ('A','B')]}
+        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3','versionCode':2024701030,'sha256':'new'}
+        result={'packageName':apk['package'],'packageVersion':apk['version'],
+                'appliedPatches':[{'name':'A'},{'name':'B'}],'failedPatches':[],
+                'patchingSteps':[{'step':n,'success':True} for n in ('PATCHING','REBUILDING')]}
+        hook={'hook':'native','owner':'LX/New;','name':'call','parameters':[],
+              'returns':'V','required':True,'origin':'apk','status':'resolved',
+              'portableContractValidated':True}
+        report={'package':apk['package'],'version':apk['version'],'fixtureSha256':'new',
+                'versionCode':str(apk['versionCode']),'schema':2,'experimental':True,'featureHead':'head',
+                'fingerprints':[hook],'injections':[{'method':'LX/New;->call()V'}]}
+        self.assertEqual([],blockers(meta,result,report,['A','B'],apk,'head'))
+        report['injections'][0]['method'] = 'LX/Other;->call()V'
+        self.assertTrue(any('Injection has no validated hook' in p for p in blockers(meta,result,report,['A','B'],apk,'head')))
+        report['injections'][0]['method'] = 'LX/New;->call()V'
+        report['versionCode'] = str(apk['versionCode'] + 1)
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
+        report['versionCode'] = str(apk['versionCode'])
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'different-head'))
+        result['patchingSteps'][1]['success']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
+        result['patchingSteps'][1]['success']=True
+        result['appliedPatches'].pop()
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+        result['appliedPatches'].append({'name':'B'})
+        hook['portableContractValidated']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+        hook['portableContractValidated']=True
+        report['experimental']=False
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+
+    def test_experimental_output_is_retained_only_for_complete_rebuilt_catalog(self):
+        accepted=json.loads((Path(__file__).resolve().parents[3]/'fixtures/tiktok/46.7.3/accepted-catalog.json').read_text())
+        names=[entry['name'] for entry in accepted['appliedPatches']]
+        identity={'source':'https://example.invalid/input.apk','package':'com.zhiliaoapp.musically',
+                  'version':'47.1.3','versionCode':2024701030,'sha256':'input-hash','qualified':False}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); out=root/'out'
+            metadata=root/'patches-list.json'
+            metadata.write_text(json.dumps({'patches':[{'name':n,'compatiblePackages':{identity['package']:['46.7.3']}} for n in names]}))
+            argv=['run_experimental.py','--apk',str(root/'input.apk'),'--bundle',str(root/'bundle.mpp'),
+                  '--cli',str(root/'morphe.jar'),'--output',str(out),'--metadata',str(metadata),
+                  '--source',identity['source'],'--head','head']
+            failing=False
+            def run(command, **kwargs):
+                result={'packageName':identity['package'],'packageVersion':identity['version'],
+                        'appliedPatches':[{'name':n} for n in names],
+                        'failedPatches':[{'name':names[-1]}] if failing else [],
+                        'patchingSteps':[{'step':s,'success':True} for s in ('PATCHING','REBUILDING')]}
+                Path(command[command.index('--result-file')+1]).write_text(json.dumps(result))
+                hook={'hook':'h','required':True,'origin':'apk','status':'resolved','selection':'unique',
+                      'candidateCount':1,'portableContractValidated':True,
+                      'owner':'LX/A;','name':'m','parameters':[],'returns':'V'}
+                (out/'tiktok-hook-report.json').write_text(json.dumps({'schema':2,'featureHead':'head',
+                    'fixtureSha256':identity['sha256'],'package':identity['package'],
+                    'version':identity['version'],'versionCode':str(identity['versionCode']),
+                    'experimental':True,'fingerprints':[hook],
+                    'injections':[{'method':'LX/A;->m()V'}]}))
+                with zipfile.ZipFile(out/'patched.apk','w') as apk:
+                    apk.writestr('AndroidManifest.xml',b'manifest')
+                    apk.writestr('classes.dex',b'dex')
+                return subprocess.CompletedProcess(command, 0)
+            import subprocess
+            with patch('run_experimental.inspect',return_value=identity), \
+                 patch('run_experimental.subprocess.run',side_effect=run), patch.object(sys,'argv',argv):
+                experimental_main()
+                self.assertTrue((out/'patched.apk').is_file())
+                success=json.loads((out/'experimental-result.json').read_text())
+                self.assertEqual('experimental-catalog-passed',success['status'])
+                self.assertFalse(success['qualified'])
+                self.assertEqual(identity['sha256'],success['candidate']['sha256'])
+                self.assertEqual(64,len(success['patchedApk']['sha256']))
+                self.assertEqual(names, success['observedAppliedPatches'])
+                failing=True
+                experimental_main()
+                self.assertFalse((out/'patched.apk').exists())
+                blocked=json.loads((out/'experimental-result.json').read_text())
+                self.assertEqual('blocked',blocked['status'])
+                self.assertIsNone(blocked['patchedApk'])
+                self.assertEqual(names, blocked['observedAppliedPatches'])
+
+    def test_same_version_different_sha_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            apk=Path(tmp)/'same-version.apk';apk.write_bytes(b'different bytes')
+            with self.assertRaisesRegex(ValueError,'SHA-256 mismatch'):verify(select('global-46.7.3'),apk,metadata=False)
+    def test_qualification_requires_all_evidence(self):
+        for key in ('head','acceptanceRun','discoveryRun','runtime'):
+            f=copy.deepcopy(select('global-46.7.3'));del f['qualification'][key]
+            with tempfile.TemporaryDirectory() as tmp:
+                p=Path(tmp)/'fixtures.json';p.write_text(json.dumps({'schema':1,'fixtures':[f]}))
+                with self.assertRaises(ValueError):list(fixtures(p))
+    def test_pending_failed_or_different_head_cannot_qualify(self):
+        run={'conclusion':'success','status':'completed','head_sha':'head','path':'.github/workflows/pr_accept_tiktok_46_7_3.yml'}
+        validate_run(run,'head','acceptance')
+        for change in ({'head_sha':'old'},{'status':'in_progress'},{'conclusion':'failure'}):
+            with self.assertRaises(ValueError):validate_run(dict(run,**change),'head','acceptance')
+    def test_partial_catalog_cannot_pass(self):
+        f=select('global-46.7.3');metadata={'patches':[{'name':n,'compatiblePackages':{f['package']:[f['version']]}} for n in ['A','B']]}
+        result={'appliedPatches':[{'name':'A'}],'failedPatches':[]}
+        with self.assertRaises(ValueError):validate_catalog(metadata,result,f,['A','B'])
+        result['appliedPatches'].append({'name':'B'})
+        with self.assertRaises(ValueError):validate_catalog(metadata,result,f,['A','B'])
+        result.update(packageName=f['package'],packageVersion=f['version'],patchingSteps=[{'step':s,'success':True} for s in ['PATCHING','REBUILDING']])
+        self.assertEqual(['A','B'],validate_catalog(metadata,result,f,['A','B']))
+    def test_report_head_fixture_and_cardinality_are_required(self):
+        f=select('global-46.7.3');report={'schema':2,'featureHead':'head','fixtureSha256':f['sha256'],'package':f['package'],'version':f['version'],'versionCode':f['versionCode'],'fingerprints':[{'hook':'a','required':True,'status':'resolved','selection':'unique','candidateCount':1}],'injections':[{}]}
+        validate_hooks(report,f,'head')
+        for change in ({'featureHead':'old'},{'fixtureSha256':'other'},{'fingerprints':[]}):
+            with self.assertRaises(ValueError):validate_hooks(dict(report,**change),f,'head')
+        report['fingerprints'][0]['candidateCount']=2
+        with self.assertRaises(ValueError):validate_hooks(report,f,'head')
+        report['fingerprints'][0].update(candidateCount=1,origin='apk',fixtureContractValidated=False)
+        with self.assertRaises(ValueError):validate_hooks(report,f,'head')
+        report['fingerprints'][0]['fixtureContractValidated']=True
+        validate_hooks(report,f,'head')
+
+    def test_new_version_evidence_cannot_reuse_a_sha_head_or_partial_catalog(self):
+        f=select('global-46.7.3')
+        count=len(json.loads((Path(__file__).resolve().parents[3]/'fixtures/tiktok'/f['catalog']).read_text())['appliedPatches'])
+        evidence=dict(fixture=f['id'],head='head',package=f['package'],version=f['version'],sha256=f['sha256'],
+                      catalogCount=count,catalog='passed',contracts='passed',discovery='passed',baselineSelfComparison='passed')
+        validate_evidence(evidence,f,'head')
+        for change in (dict(sha256='another apk'),dict(head='other head'),dict(catalogCount=count-1),dict(contracts='failed'),dict(baselineSelfComparison='missing')):
+            with self.subTest(change=change),self.assertRaises(ValueError):validate_evidence(dict(evidence,**change),f,'head')
+
+if __name__=='__main__':unittest.main()

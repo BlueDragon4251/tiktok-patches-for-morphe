@@ -5,11 +5,11 @@
 package app.morphe.patches.tiktok.interaction.searchfeatures
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.absettings.hookAppAbIntBoundary
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -24,7 +24,7 @@ private fun BytecodePatchContext.patchBooleanGate(
     fingerprint: Fingerprint,
     extensionMethod: String,
 ) {
-    fingerprint.method.apply {
+    fingerprint.uniqueMethod.apply {
         implementation!!.instructions.withIndex()
             .filter { it.value.opcode == Opcode.RETURN }
             .map { it.index }
@@ -49,10 +49,10 @@ val enableNonPersonalizedSearchPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableNonPersonalizedSearch()V",
@@ -73,10 +73,10 @@ val enableLiveSearchPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableLiveSearch()V",

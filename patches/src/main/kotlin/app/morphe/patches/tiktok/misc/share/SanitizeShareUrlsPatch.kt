@@ -4,9 +4,10 @@
  */
 package app.morphe.patches.tiktok.misc.share
 
+import app.morphe.patches.tiktok.shared.discovery.parameterRegister
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/share/ShareUrlSanitizer;"
@@ -19,19 +20,18 @@ val sanitizeShareUrlsPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        ShareUrlTrackerFingerprint.method.apply {
-            val urlRegister = implementation!!.registerCount - parameterTypes.size +
-                if (parameterTypes[0] in arrayOf("J", "D")) 2 else 1
+        ShareUrlTrackerFingerprint.uniqueMethod.apply {
+            val urlRegister = parameterRegister(1, "Ljava/lang/String;")
 
             addInstructions(
                 0,
                 """
-                    invoke-static {v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->stripAllQueryParams(Ljava/lang/String;)Ljava/lang/String;
-                    move-result-object v0
-                    return-object v0
+                    invoke-static/range {v$urlRegister .. v$urlRegister}, $EXTENSION_CLASS_DESCRIPTOR->stripAllQueryParams(Ljava/lang/String;)Ljava/lang/String;
+                    move-result-object v$urlRegister
+                    return-object v$urlRegister
                 """,
             )
         }

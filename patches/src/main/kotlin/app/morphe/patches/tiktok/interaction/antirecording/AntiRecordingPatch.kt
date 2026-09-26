@@ -1,11 +1,11 @@
 package app.morphe.patches.tiktok.interaction.antirecording
 
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.util.findMutableMethodOf
-import app.morphe.util.returnEarly
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -24,7 +24,7 @@ val antiRecordingPatch = resourcePatch(
     description = "Prevents TikTok from reacting to screenshots and screen recordings.",
     default = true,
 ) {
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     dependsOn(
         bytecodePatch {
@@ -33,7 +33,7 @@ val antiRecordingPatch = resourcePatch(
                     antiRecordingAddedFingerprint,
                     antiRecordingRemovedFingerprint,
                 ).forEach { fingerprint ->
-                    fingerprint.methodOrNull?.returnEarly()
+                    fingerprint.optionalMethod?.returnEarly()
                 }
 
                 val callSites = mutableListOf<ScreenCaptureCallSite>()
@@ -47,10 +47,14 @@ val antiRecordingPatch = resourcePatch(
                                 if (reference.definingClass != "Landroid/app/Activity;") {
                                     return@mapIndexedNotNull null
                                 }
-                                if (
-                                    reference.name != "registerScreenCaptureCallback" &&
-                                    reference.name != "unregisterScreenCaptureCallback"
-                                ) {
+                                val supported = reference.returnType == "V" && when (reference.name) {
+                                    "registerScreenCaptureCallback" -> reference.parameterTypes.map(CharSequence::toString) ==
+                                        listOf("Ljava/util/concurrent/Executor;", "Landroid/app/Activity\$ScreenCaptureCallback;")
+                                    "unregisterScreenCaptureCallback" -> reference.parameterTypes.map(CharSequence::toString) ==
+                                        listOf("Landroid/app/Activity\$ScreenCaptureCallback;")
+                                    else -> false
+                                }
+                                if (!supported) {
                                     return@mapIndexedNotNull null
                                 }
                                 index

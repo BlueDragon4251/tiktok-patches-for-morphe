@@ -1,6 +1,13 @@
 name: TikTok candidate hook discovery
 
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/tiktok_update_probe.yml'
+      - 'scripts/tiktok/**'
+      - 'fixtures/tiktok/46.7.3/portable-hooks.json'
+      - 'patches/src/main/kotlin/app/morphe/patches/tiktok/**'
+      - 'patches/build.gradle.kts'
   workflow_dispatch:
     inputs:
       apk_url:
@@ -10,6 +17,11 @@ on:
       apk_sha256:
         description: Exact SHA-256 of that APK
         required: true
+        type: string
+      baseline_fixture:
+        description: Fixture id in the successful acceptance run
+        required: true
+        default: global-46.7.3
         type: string
       baseline_run_id:
         description: Successful acceptance run whose hook inventory should be compared
@@ -21,7 +33,82 @@ permissions:
   actions: read
 
 jobs:
+  latest:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/tiktok-multiversion-contracts'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install -r scripts/tiktok/requirements.txt
+      - name: Download the current global APK candidate
+        env:
+          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+        run: |
+          curl --fail --location --silent --show-error --proto '=https' --proto-redir '=https' \
+            --retry 3 --retry-all-errors --connect-timeout 30 --max-time 900 \
+            "$SOURCE_URL" --output candidate.apk
+          python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-candidate-identity-${{ github.event.pull_request.head.sha }}
+          path: candidate-identity.json
+          retention-days: 30
+      - name: Rediscover baseline hooks in candidate APK
+        run: |
+          python3 scripts/tiktok/rediscover_hooks.py \
+            fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
+      - name: Inspect changed OEC CAPTCHA signatures
+        run: |
+          python3 scripts/tiktok/inspect_native_targets.py candidate.apk \
+            --target 'Lcom/tts/oecverify/verify/RiskControlService;' \
+            --target 'Lcom/tts/oecverify/BdTuringCallback;' \
+            --related-prefix 'Lcom/tts/oecverify/' \
+            --output candidate-oec-evidence.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build experimental bundle and check bytecode/runtime tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
+      - name: Attempt full catalog with patch-time contracts
+        env:
+          FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
+          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+        run: |
+          python3 scripts/tiktok/toolchain.py
+          python3 - <<'PY'
+          import os, pathlib, subprocess
+          bundles = [p for p in pathlib.Path('patches/build/libs').glob('*.mpp')
+                     if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          if len(bundles) != 1:
+              raise SystemExit(f'Expected one bundle, got {bundles}')
+          subprocess.run(['python3', 'scripts/tiktok/run_experimental.py',
+                          '--apk', 'candidate.apk', '--bundle', str(bundles[0]),
+                          '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'],
+                          '--source', os.environ['SOURCE_URL'], '--output', 'reports/latest'], check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tiktok-latest-candidate-${{ github.event.pull_request.head.sha }}
+          path: |
+            candidate-identity.json
+            candidate-oec-evidence.json
+            tiktok-hook-migration.json
+            tiktok-hook-migration.md
+            reports/latest/*.json
+            reports/latest/*.log
+          retention-days: 30
+          if-no-files-found: warn
   compare:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -43,16 +130,32 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BASELINE_RUN_ID: ${{ inputs.baseline_run_id }}
+          BASELINE_FIXTURE: ${{ inputs.baseline_fixture }}
         run: |
-          set -euo pipefail
-          [[ "$BASELINE_RUN_ID" =~ ^[0-9]+$ ]]
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BASELINE_RUN_ID" > baseline-run.json
-          jq -e '.conclusion == "success" and .name == "TikTok 46.7.3 acceptance"' baseline-run.json
-          gh run download "$BASELINE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name tiktok-46.7.3-acceptance --dir baseline
+          python3 - <<'PYCODE'
+          import json, os, re, subprocess
+          run = os.environ['BASELINE_RUN_ID']; fixture = os.environ['BASELINE_FIXTURE']
+          if not run.isdigit() or not re.fullmatch('[a-z0-9.-]+', fixture):
+              raise SystemExit('Invalid run or fixture id')
+          repo = os.environ['GITHUB_REPOSITORY']
+          data = json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/actions/runs/{run}']))
+          if data['conclusion'] != 'success' or data['name'] != 'TikTok acceptance matrix':
+              raise SystemExit('Baseline must be a successful full acceptance matrix')
+          name = f"tiktok-{fixture}-acceptance-{data['head_sha']}"
+          subprocess.run(['gh', 'run', 'download', run, '--repo', repo, '--name', name, '--dir', 'baseline'], check=True)
+          open('baseline-run.json', 'w').write(json.dumps(data, indent=2))
+          PYCODE
       - name: Compare native hook contracts
         run: |
           python -m pip install -r scripts/tiktok/requirements.txt
-          python scripts/tiktok/rediscover_hooks.py baseline/tiktok-hook-report.json candidate.apk
+          python - <<'PYCODE'
+          from pathlib import Path
+          import subprocess
+          reports = list(Path('baseline').rglob('tiktok-hook-report.json'))
+          if len(reports) != 1:
+              raise SystemExit('Expected one baseline hook report')
+          subprocess.run(['python', 'scripts/tiktok/rediscover_hooks.py', str(reports[0]), 'candidate.apk'], check=True)
+          PYCODE
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -60,4 +163,5 @@ jobs:
           path: |
             baseline-run.json
             tiktok-hook-migration.json
+            tiktok-hook-migration.md
           retention-days: 30

@@ -4,10 +4,11 @@
  */
 package app.morphe.patches.tiktok.interaction.seekbar
 
+import app.morphe.patches.tiktok.shared.discovery.parameterRegister
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.absettings.hookAppAbIntBoundary
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -22,11 +23,11 @@ val showSeekbarPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         // This target is TikTok's short predicate used by the feed progress UI.
-        ShouldShowProgressBarFingerprint.method.addInstructions(
+        ShouldShowProgressBarFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 if-eqz p0, :show_seekbar_original
@@ -39,12 +40,12 @@ val showSeekbarPatch = bytecodePatch(
             """,
         )
 
-        SetSeekBarShowTypeFingerprint.method.apply {
-            val typeRegister = implementation!!.registerCount - 1
+        SetSeekBarShowTypeFingerprint.uniqueMethod.apply {
+            val typeRegister = parameterRegister(0, "I")
             addInstructions(
                 0,
                 """
-                    invoke-static {v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
+                    invoke-static/range {v$typeRegister .. v$typeRegister}, $EXTENSION_CLASS_DESCRIPTOR->overrideSeekbarShowType(I)I
                     move-result v$typeRegister
                 """,
             )
@@ -59,10 +60,10 @@ val showSeekbarThumbnailPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableSeekbarThumbnail()V",

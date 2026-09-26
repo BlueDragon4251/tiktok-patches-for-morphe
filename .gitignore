@@ -43,3 +43,8 @@ node_modules/
 
 # Local copy of upstream ReVanced sources (do not commit)
 revanced-patches/
+
+# Local discovery/build tools
+__pycache__/
+*.pyc
+morphe-desktop.jar

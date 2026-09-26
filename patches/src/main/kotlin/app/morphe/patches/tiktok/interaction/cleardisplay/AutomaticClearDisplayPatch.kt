@@ -1,8 +1,8 @@
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -23,11 +23,11 @@ val automaticClearDisplayPatch = bytecodePatch(
         rememberClearDisplayPatch,
     )
 
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         // Keep the settings surface aware that this optional patch is installed.
-        SettingsStatusLoadFingerprint.method.addInstructions(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAutomaticClearDisplay()V
@@ -37,12 +37,12 @@ val automaticClearDisplayPatch = bytecodePatch(
 
         // Retain first-frame activation as a secondary fallback, but it is no longer the primary
         // per-video trigger on 46.7.3.
-        OnRenderFirstFrameFingerprint.method.addInstruction(
+        OnRenderFirstFrameFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, $CONTROLLER->enablePatch()V",
         )
 
-        val eventClassName = OnClearDisplayEventFingerprint.method.parameters[0].type
+        val eventClassName = OnClearDisplayEventFingerprint.uniqueMethod.parameters[0].type
             .removePrefix("L")
             .removeSuffix(";")
             .replace('/', '.')
@@ -54,7 +54,7 @@ val automaticClearDisplayPatch = bytecodePatch(
         // vq has 8 registers / 3 ins, therefore v0 is a verified local and no parameter register is
         // stolen. Only a String crosses the injected bytecode boundary; event/enum classes remain
         // reflection-only inside extension code for ART verifier safety.
-        ClearModePanelResetFingerprint.method.apply {
+        ClearModePanelResetFingerprint.uniqueMethod.apply {
             val finalReturnIndex = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }

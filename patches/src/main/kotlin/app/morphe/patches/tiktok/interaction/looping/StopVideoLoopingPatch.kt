@@ -4,9 +4,9 @@
  */
 package app.morphe.patches.tiktok.interaction.looping
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -22,16 +22,16 @@ val stopVideoLoopingPatch = bytecodePatch(
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableStopVideoLooping()V",
         )
 
-        VideoEngineSetLoopingFingerprint.method.addInstructions(
+        VideoEngineSetLoopingFingerprint.uniqueMethod.addInstructions(
             0,
             """
                 invoke-static {p1}, $EXTENSION_DESCRIPTOR->overrideLooping(Z)Z

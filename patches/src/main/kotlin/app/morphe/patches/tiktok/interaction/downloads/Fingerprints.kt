@@ -132,7 +132,7 @@ internal object DownloadSuccessCoroutineFingerprint : Fingerprint(
     returnType = "Ljava/lang/Object;",
     parameters = listOf("Ljava/lang/Object;"),
     strings = listOf(
-        "DownloadAction@71a5.startDownload\$globalListener\$1\$onSuccess\$1",
+        ".startDownload\$globalListener\$1\$onSuccess\$1",
         "filePath",
         "fileExist",
     ),
