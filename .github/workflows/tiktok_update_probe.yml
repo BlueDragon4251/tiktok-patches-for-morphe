@@ -62,6 +62,13 @@ jobs:
         run: |
           python3 scripts/tiktok/rediscover_hooks.py \
             fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
+      - name: Inspect changed OEC CAPTCHA signatures
+        run: |
+          python3 scripts/tiktok/inspect_native_targets.py candidate.apk \
+            --target 'Lcom/tts/oecverify/verify/RiskControlService;' \
+            --target 'Lcom/tts/oecverify/BdTuringCallback;' \
+            --related-prefix 'Lcom/tts/oecverify/' \
+            --output candidate-oec-evidence.json
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -93,6 +100,7 @@ jobs:
           name: tiktok-latest-candidate-${{ github.event.pull_request.head.sha }}
           path: |
             candidate-identity.json
+            candidate-oec-evidence.json
             tiktok-hook-migration.json
             tiktok-hook-migration.md
             reports/latest/*.json
