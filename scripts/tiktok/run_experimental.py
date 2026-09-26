@@ -4,10 +4,12 @@
 This records diagnostic evidence, never qualification for Morphe compatibility.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
 import subprocess
+import zipfile
 from pathlib import Path
 from fixtures import ROOT
 from probe_latest import inspect
@@ -28,12 +30,14 @@ def blockers(metadata, result, report, expected, identity, head=None):
         if (result.get('packageName'), result.get('packageVersion')) != (package, identity['version']):
             problems.append('Morphe reported a different APK package/version')
         steps = result.get('patchingSteps', [])
-        if {s.get('step') for s in steps} != {'PATCHING', 'REBUILDING'} or any(not s.get('success') for s in steps):
+        if (len(steps) != 2 or {s.get('step') for s in steps} != {'PATCHING', 'REBUILDING'}
+                or any(s.get('success') is not True for s in steps)):
             problems.append('Patching or APK rebuilding did not complete successfully')
     if not report:
         problems.append('No patch-time hook report')
-    elif (report.get('fixtureSha256'), report.get('package'), report.get('version'), report.get('experimental')) != (
-            identity['sha256'], package, identity['version'], True):
+    elif (report.get('schema'), report.get('fixtureSha256'), report.get('package'),
+          report.get('version'), report.get('versionCode'), report.get('experimental')) != (
+            2, identity['sha256'], package, identity['version'], identity['versionCode'], True):
         problems.append('Hook report is not for this exact experimental APK')
     else:
         if head is not None and report.get('featureHead') != head:
@@ -45,7 +49,35 @@ def blockers(metadata, result, report, expected, identity, head=None):
                   (hook.get('selection') == 'unique' and hook.get('candidateCount') != 1) or
                   (hook.get('origin') == 'apk' and hook.get('portableContractValidated') is not True)):
                 problems.append('Unresolved native hook: ' + hook['hook'])
+        validated = {
+            hook['owner'] + '->' + hook['name'] + '(' + ''.join(hook['parameters']) + ')' + hook['returns']
+            for hook in report['fingerprints']
+            if hook.get('status') == 'resolved' and hook.get('required') and
+            (hook.get('origin') == 'extension' or
+             hook.get('origin') == 'apk' and hook.get('portableContractValidated') is True) and
+            all(key in hook for key in ('owner', 'name', 'parameters', 'returns'))
+        }
+        for site in report.get('injections', []):
+            if site.get('method') not in validated:
+                problems.append('Injection has no validated hook: ' + str(site.get('method')))
     return problems
+
+
+def output_identity(path):
+    """Require a usable rebuilt APK before retaining the experimental output."""
+    if not path.is_file() or path.stat().st_size == 0:
+        raise ValueError('No patched APK was generated')
+    try:
+        with zipfile.ZipFile(path) as apk:
+            if 'AndroidManifest.xml' not in apk.namelist() or 'classes.dex' not in apk.namelist():
+                raise ValueError('Rebuilt APK is missing its manifest or primary DEX')
+            if apk.testzip() is not None:
+                raise ValueError('Rebuilt APK has a corrupt ZIP entry')
+    except zipfile.BadZipFile as error:
+        raise ValueError('Rebuilt APK is not a valid ZIP') from error
+    with path.open('rb') as stream:
+        sha = hashlib.file_digest(stream, 'sha256').hexdigest()
+    return {'path': str(path), 'sha256': sha, 'sizeBytes': path.stat().st_size}
 
 
 def read_result(path):
@@ -74,28 +106,37 @@ def main():
     p.add_argument('--head', required=True)
     p.add_argument('--metadata', type=Path, default=ROOT / 'patches-list.json')
     p.add_argument('--source', required=True)
+    p.add_argument('--expected-sha', help='Optional SHA-256 to pin the downloaded input APK')
     a = p.parse_args()
     out = a.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    identity = inspect(a.apk, a.source)
+    result_path, log_path, report_path, patched = (out / name for name in
+        ('morphe-result.json', 'morphe.log', 'tiktok-hook-report.json', 'patched.apk'))
+    # A reused output directory must never make a later failed attempt look successful.
+    for path in (result_path, log_path, report_path, patched):
+        path.unlink(missing_ok=True)
+    identity = inspect(a.apk, a.source, a.expected_sha)
     metadata = json.loads(a.metadata.read_text())
     accepted = json.loads((ROOT / 'fixtures/tiktok/46.7.3/accepted-catalog.json').read_text())
     expected = [patch['name'] for patch in accepted['appliedPatches']]
     names = [p['name'] for p in metadata['patches'] if identity['package'] in (p.get('compatiblePackages') or {})]
-    result_path, log_path, patched = out / 'morphe-result.json', out / 'morphe.log', out / 'patched.apk'
     command = ['java', '-Xmx6g', '-jar', str(a.cli.resolve()), 'patch', '-p', str(a.bundle.resolve()),
                '--force', '--continue-on-error', '--exclusive', '--unsigned', '--result-file', str(result_path)]
     for name in names:
         command += ['-e', name]
     command += ['-o', str(patched), str(a.apk.resolve())]
     problems = []
+    rebuilt = None
     try:
         with log_path.open('w') as log:
-            process = subprocess.run(command, cwd=out, stdout=log, stderr=subprocess.STDOUT,
-                                     env=dict(os.environ, TIKTOK_EXPERIMENTAL_PORTABLE='1',
-                                              TIKTOK_FEATURE_HEAD=a.head))
+            try:
+                process = subprocess.run(command, cwd=out, stdout=log, stderr=subprocess.STDOUT,
+                                         env=dict(os.environ, TIKTOK_EXPERIMENTAL_PORTABLE='1',
+                                                  TIKTOK_FEATURE_HEAD=a.head))
+            except OSError as error:
+                process = None
+                problems.append(f'Could not run Morphe: {error}')
         result, result_error = read_result(result_path)
-        report_path = out / 'tiktok-hook-report.json'
         report, report_error = read_result(report_path)
         problems = blockers(metadata, result, report, expected, identity, a.head)
         for error in (result_error, report_error):
@@ -105,17 +146,21 @@ def main():
         problems.extend('Patch failed: ' + failure for failure in failures[:40])
         if len(failures) > 40:
             problems.append(f'{len(failures) - 40} additional distinct patch failures in morphe.log')
-        if process.returncode:
+        if process is not None and process.returncode:
             problems.append(f'Morphe exited with code {process.returncode}')
-        if not patched.is_file() and not problems:
-            problems.append('No patched APK was generated')
+        if not problems:
+            try:
+                rebuilt = output_identity(patched)
+            except (OSError, ValueError) as error:
+                problems.append(str(error))
     finally:
-        # Even a partially applied catalog may cause Morphe to produce an APK.
-        patched.unlink(missing_ok=True)
+        # Morphe can produce a partial APK even when it reports failed patches.
+        if rebuilt is None:
+            patched.unlink(missing_ok=True)
     (out / 'experimental-result.json').write_text(json.dumps({
         'schema': 1, 'head': a.head, 'candidate': identity, 'qualified': False,
         'status': 'blocked' if problems else 'experimental-catalog-passed',
-        'blockers': problems, 'expectedPatchCount': len(expected),
+        'blockers': problems, 'expectedPatchCount': len(expected), 'patchedApk': rebuilt,
     }, indent=2) + '\n')
     print(f"Experimental catalog: {len(expected)} patches; {len(problems)} blockers; never qualified")
 

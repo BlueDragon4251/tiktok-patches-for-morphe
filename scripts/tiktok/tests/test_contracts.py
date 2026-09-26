@@ -3,12 +3,14 @@ import json
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
+from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from portable_baseline import extract
-from run_experimental import blockers, patch_failures, read_result
+from run_experimental import blockers, main as experimental_main, patch_failures, read_result
 from probe_latest import candidate_status
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
@@ -75,7 +77,7 @@ class QualificationTests(unittest.TestCase):
                    'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n')
             self.assertEqual(['Changed class contract', 'Feed patch'], patch_failures(log))
             metadata = {'patches': [{'name': 'A', 'compatiblePackages': {'p': ['v']}}]}
-            identity = {'package': 'p', 'version': 'v', 'sha256': 'h'}
+            identity = {'package': 'p', 'version': 'v', 'versionCode': 1, 'sha256': 'h'}
             failures = blockers(metadata, result, {'fingerprints': [], 'injections': []}, ['A'], identity)
             self.assertTrue(any('no complete result' in p for p in failures))
             self.assertTrue(any('Hook report' in p or 'hook report' in p for p in failures))
@@ -83,15 +85,23 @@ class QualificationTests(unittest.TestCase):
     def test_experimental_partial_catalog_and_unvalidated_hooks_never_pass(self):
         meta={'patches':[{'name':n,'compatiblePackages':{'com.zhiliaoapp.musically':['46.7.3']}}
                          for n in ('A','B')]}
-        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3','sha256':'new'}
+        apk={'package':'com.zhiliaoapp.musically','version':'47.1.3','versionCode':2024701030,'sha256':'new'}
         result={'packageName':apk['package'],'packageVersion':apk['version'],
                 'appliedPatches':[{'name':'A'},{'name':'B'}],'failedPatches':[],
                 'patchingSteps':[{'step':n,'success':True} for n in ('PATCHING','REBUILDING')]}
-        hook={'hook':'native','required':True,'origin':'apk','status':'resolved',
+        hook={'hook':'native','owner':'LX/New;','name':'call','parameters':[],
+              'returns':'V','required':True,'origin':'apk','status':'resolved',
               'portableContractValidated':True}
         report={'package':apk['package'],'version':apk['version'],'fixtureSha256':'new',
-                'experimental':True,'featureHead':'head','fingerprints':[hook],'injections':[{}]}
+                'versionCode':apk['versionCode'],'schema':2,'experimental':True,'featureHead':'head',
+                'fingerprints':[hook],'injections':[{'method':'LX/New;->call()V'}]}
         self.assertEqual([],blockers(meta,result,report,['A','B'],apk,'head'))
+        report['injections'][0]['method'] = 'LX/Other;->call()V'
+        self.assertTrue(any('Injection has no validated hook' in p for p in blockers(meta,result,report,['A','B'],apk,'head')))
+        report['injections'][0]['method'] = 'LX/New;->call()V'
+        report['versionCode'] += 1
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
+        report['versionCode'] -= 1
         self.assertTrue(blockers(meta,result,report,['A','B'],apk,'different-head'))
         result['patchingSteps'][1]['success']=False
         self.assertTrue(blockers(meta,result,report,['A','B'],apk,'head'))
@@ -104,6 +114,54 @@ class QualificationTests(unittest.TestCase):
         hook['portableContractValidated']=True
         report['experimental']=False
         self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+
+    def test_experimental_output_is_retained_only_for_complete_rebuilt_catalog(self):
+        accepted=json.loads((Path(__file__).resolve().parents[3]/'fixtures/tiktok/46.7.3/accepted-catalog.json').read_text())
+        names=[entry['name'] for entry in accepted['appliedPatches']]
+        identity={'source':'https://example.invalid/input.apk','package':'com.zhiliaoapp.musically',
+                  'version':'47.1.3','versionCode':2024701030,'sha256':'input-hash','qualified':False}
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); out=root/'out'
+            metadata=root/'patches-list.json'
+            metadata.write_text(json.dumps({'patches':[{'name':n,'compatiblePackages':{identity['package']:['46.7.3']}} for n in names]}))
+            argv=['run_experimental.py','--apk',str(root/'input.apk'),'--bundle',str(root/'bundle.mpp'),
+                  '--cli',str(root/'morphe.jar'),'--output',str(out),'--metadata',str(metadata),
+                  '--source',identity['source'],'--head','head']
+            failing=False
+            def run(command, **kwargs):
+                result={'packageName':identity['package'],'packageVersion':identity['version'],
+                        'appliedPatches':[{'name':n} for n in names],
+                        'failedPatches':[{'name':names[-1]}] if failing else [],
+                        'patchingSteps':[{'step':s,'success':True} for s in ('PATCHING','REBUILDING')]}
+                Path(command[command.index('--result-file')+1]).write_text(json.dumps(result))
+                hook={'hook':'h','required':True,'origin':'apk','status':'resolved','selection':'unique',
+                      'candidateCount':1,'portableContractValidated':True,
+                      'owner':'LX/A;','name':'m','parameters':[],'returns':'V'}
+                (out/'tiktok-hook-report.json').write_text(json.dumps({'schema':2,'featureHead':'head',
+                    'fixtureSha256':identity['sha256'],'package':identity['package'],
+                    'version':identity['version'],'versionCode':identity['versionCode'],
+                    'experimental':True,'fingerprints':[hook],
+                    'injections':[{'method':'LX/A;->m()V'}]}))
+                with zipfile.ZipFile(out/'patched.apk','w') as apk:
+                    apk.writestr('AndroidManifest.xml',b'manifest')
+                    apk.writestr('classes.dex',b'dex')
+                return subprocess.CompletedProcess(command, 0)
+            import subprocess
+            with patch('run_experimental.inspect',return_value=identity), \
+                 patch('run_experimental.subprocess.run',side_effect=run), patch.object(sys,'argv',argv):
+                experimental_main()
+                self.assertTrue((out/'patched.apk').is_file())
+                success=json.loads((out/'experimental-result.json').read_text())
+                self.assertEqual('experimental-catalog-passed',success['status'])
+                self.assertFalse(success['qualified'])
+                self.assertEqual(identity['sha256'],success['candidate']['sha256'])
+                self.assertEqual(64,len(success['patchedApk']['sha256']))
+                failing=True
+                experimental_main()
+                self.assertFalse((out/'patched.apk').exists())
+                blocked=json.loads((out/'experimental-result.json').read_text())
+                self.assertEqual('blocked',blocked['status'])
+                self.assertIsNone(blocked['patchedApk'])
 
     def test_same_version_different_sha_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

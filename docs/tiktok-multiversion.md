@@ -106,25 +106,27 @@ Only full acceptance on a later version can establish supported status.
 
 ### Explicit experimental patching
 
-With `TIKTOK_EXPERIMENTAL_PORTABLE=1` and the Morphe CLI's `--force` option,
-an unlisted APK can attempt the current catalog at patch time. For every
-native hook, the original declaring class (including inheritance, fields and
-method set) and the complete target method (registers, references, literals,
-branches, switch payloads and exception ranges) must still equal the reviewed
-46.7.3 contract. Otherwise the patch aborts with `PatchException`. The global
-package must match; no input hash or version is treated as qualified by this
-mode. A same-version APK with different bytes requires the opt-in too.
+Use `python3 scripts/tiktok/run_experimental.py --apk input.apk --bundle patches/build/libs/<bundle>.mpp --cli morphe-desktop.jar --head <feature-commit-sha> --source <input-url> --expected-sha <input-sha256> --output reports/experimental`.
+The helper sets `TIKTOK_EXPERIMENTAL_PORTABLE=1` and Morphe `--force` for the
+full 37-patch catalog. The SHA flag is optional for a local APK, but useful to
+pin a downloaded input. The generated metadata and bundle must come from the
+same feature head. A different global TikTok version is still unqualified.
 
-This initial guard admits APKs where the touched native classes are unchanged;
-it does not yet relocate renamed or changed classes or prove runtime behavior.
-The hook report labels those methods `experimental-identical-class`, marks
-`portableContractValidated` separately and leaves `fixtureContractValidated`
-false. The qualification CI requires the latter, so experimental APKs cannot
-silently enter Morphe's supported-version list. The probe report is used to
-prioritize the remaining semantic migrations. The candidate workflow also runs
-the entire catalog with this opt-in on the actual downloaded APK, writes
-`experimental-result.json` and discards any partial output; a blocked
-diagnostic run is never counted as acceptance.
+Every native injection requires its original class and method contract or one
+unique portable baseline match. The latter preserves registers, references,
+literals, branches, switch payloads and exception paths, while normalizing
+obfuscated names. Renamed or changed classes only pass when that complete
+contract is identical; structural similarity alone cannot approve an injection.
+The report marks `portableContractValidated` separately and leaves
+`fixtureContractValidated` false, so experimental results cannot enter Morphe's
+supported-version list.
+
+`experimental-result.json` records the exact input identity, feature head,
+blockers and, on success, the rebuilt APK's SHA-256 and size. `patched.apk`
+remains in the output directory only after all 37 patches, rebuilding and all
+required hook and injection contracts pass. Any failure removes it. A successful
+experimental result still needs separate hash-bound acceptance, discovery and
+runtime testing before official support.
 
 The first probe (run 36153094965) actually downloaded the 47.1.3 APK,
 `com.zhiliaoapp.musically`, version code 2024701030, 472304867 bytes, SHA-256
