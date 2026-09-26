@@ -89,6 +89,11 @@ list reads and the UI commit hook reapply the filter after TikTok mutations.
 Experimental reuse of this changed body requires a unique cached-feed hook,
 the exact feed markers, stable getter, null branch to the sole return, original
 parameter register, class hierarchy and an exception-free entry.
+For CAPTCHA, 47.1.3 renames the callback type and adds a five-argument
+`SecApiImpl.popCaptchaV2` implementation behind the old four-argument wrapper.
+The hook follows the unique risk-info implementation, derives its callback
+type from the selected method, and checks that the callback's `LIZJ()V` is
+a public, one-register, no-op method before accepting the experimental entry.
 
 The initial fixture remains TikTok global 46.7.3, SHA-256
 `b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`.

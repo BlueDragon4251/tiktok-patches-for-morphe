@@ -234,7 +234,8 @@ internal object HookEvidence {
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
-            mode = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
+            mode = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
+                source.parameterTypes.getOrNull(2)?.toString()?.let { originals[it] })
         }
         validated += key
         validationMode[key] = mode

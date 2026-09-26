@@ -425,6 +425,57 @@ class HookContractsTest {
         }
     }
 
+    @Test fun captchaEntryFollowsCallbackTypeAndRejectsChangedCallback() {
+        val sec = "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;"
+        val acceptedKey = "$sec->popCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V"
+        fun callback(type: String, noop: Boolean = true): ImmutableClassDef {
+            val b = MethodImplementationBuilder(1)
+            if (!noop) b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 0))
+            b.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            val method = ImmutableMethod(type, "LIZJ", emptyList(), "V", AccessFlags.PUBLIC.value,
+                emptySet(), emptySet(), b.methodImplementation)
+            return ImmutableClassDef(type, AccessFlags.PUBLIC.value, "Ljava/lang/Object;",
+                emptyList(), null, emptySet(), emptyList(), listOf(method))
+        }
+        fun popup(type: String, extra: Boolean, marker: String = "popCaptchaV2 - riskInfo = "): MutableMethod {
+            val b = MethodImplementationBuilder(if (extra) 14 else 8)
+            b.addInstruction(BuilderInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0,
+                ImmutableMethodReference("LX/123;", "LIZ", emptyList(), "Ljava/lang/StringBuilder;")))
+            b.addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0))
+            b.addInstruction(BuilderInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference(marker)))
+            b.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            val params = listOf("Landroid/app/Activity;", "Ljava/lang/String;", type,
+                "Landroidx/fragment/app/Fragment;") + if (extra) listOf("Ljava/lang/String;") else emptyList()
+            return MutableMethod(ImmutableMethod(sec, "popCaptchaV2",
+                params.map { ImmutableMethodParameter(it, emptySet(), null) }, "V",
+                AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+                emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod) = ImmutableClassDef(sec,
+            AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, "Ljava/lang/Object;",
+            listOf("Lcom/ss/android/ugc/aweme/secapi/ISecApi;"), null,
+            emptySet(), emptyList(), listOf(method))
+        val baseline = popup("LX/17qC;", false)
+        val candidate = popup("LX/1BeZ;", true)
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(baseline)),
+            mapOf(sec to FixtureContracts.portableClassSignature(owner(baseline))))
+        assertTrue(FixtureContracts.captchaEntryBoundary(owner(baseline), baseline, callback("LX/17qC;"), true))
+        assertEquals("experimental-captcha-entry", FixtureContracts.requirePortableMatch(
+            candidate, owner(candidate), acceptedKey, reviewed, callback("LX/1BeZ;")))
+        assertFalse(FixtureContracts.captchaEntryBoundary(owner(candidate), candidate, callback("LX/1BeZ;", false), true))
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate), acceptedKey,
+                reviewed, callback("LX/1BeZ;", false))
+        }
+        val wrongMarker = popup("LX/1BeZ;", true, "other feature")
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(wrongMarker, owner(wrongMarker), acceptedKey,
+                reviewed, callback("LX/1BeZ;"))
+        }
+    }
+
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
         fun payload(values: List<Number>): MutableMethod {
             val b = MethodImplementationBuilder(2)

@@ -135,6 +135,10 @@ internal object FixtureContracts {
         "LX/04Ju;->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V"
     private const val FEED_ITEMS_GETTER =
         "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;->getItems()Ljava/util/List;"
+    private const val CAPTCHA_V2 = "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptchaV2(" +
+        "Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V"
+    private const val CAPTCHA_LEGACY = "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptcha(" +
+        "Landroid/app/Activity;ILX/17qC;)V"
 
     /** The entry parameter is a FeedItemList; the return register has become an Iterator. */
     fun cachedFeedEntryBoundary(owner: ClassDef, method: Method): Boolean {
@@ -159,6 +163,43 @@ internal object FixtureContracts {
             result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as? OneRegisterInstruction)?.registerA == 0 &&
             insns.lastOrNull()?.opcode == Opcode.RETURN_VOID && insns.count { it.opcode == Opcode.RETURN_VOID } == 1 &&
             "fetchFeeds, filter by is ad" in strings && "fetchFeeds, filter by is duplicate" in strings
+    }
+
+    /** Both CAPTCHA methods call this callback only on the suppressed path. */
+    fun captchaEntryBoundary(owner: ClassDef, method: Method, callback: ClassDef?, v2: Boolean): Boolean {
+        val body = method.implementation ?: return false
+        val p = method.parameterTypes.map(CharSequence::toString)
+        val callbackType = p.getOrNull(2) ?: return false
+        val callbackOwner = callback ?: return false
+        val callbackMethod = callbackOwner.methods.singleOrNull {
+            it.name == "LIZJ" && it.parameterTypes.none() && it.returnType == "V"
+        } ?: return false
+        val callbackBody = callbackMethod.implementation ?: return false
+        val marker = if (v2) "popCaptchaV2 - riskInfo = " else "popCaptcha - errorcode = "
+        val strings = body.instructions.mapNotNull { (it as? ReferenceInstruction)?.reference as? StringReference }
+            .map { it.string }.toSet()
+        return owner.type == method.definingClass &&
+            owner.type == "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;" &&
+            owner.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) &&
+            owner.superclass == "Ljava/lang/Object;" &&
+            owner.interfaces.toList() == listOf("Lcom/ss/android/ugc/aweme/secapi/ISecApi;") &&
+            method.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) &&
+            method.name == (if (v2) "popCaptchaV2" else "popCaptcha") &&
+            method.returnType == "V" &&
+            (if (v2) p.size in 4..5 else p.size == 3) &&
+            p[0] == "Landroid/app/Activity;" && p[1] == (if (v2) "Ljava/lang/String;" else "I") &&
+            callbackType.startsWith("LX/") && callbackType.endsWith(";") &&
+            (!v2 || (p[3] == "Landroidx/fragment/app/Fragment;" &&
+                (p.size == 4 || p[4] == "Ljava/lang/String;"))) &&
+            body.registerCount > p.size + 1 && body.tryBlocks.none() &&
+            body.instructions.firstOrNull()?.opcode == Opcode.INVOKE_STATIC &&
+            body.instructions.lastOrNull()?.opcode == Opcode.RETURN_VOID &&
+            body.instructions.count { it.opcode == Opcode.RETURN_VOID } == 1 && marker in strings &&
+            callbackOwner.type == callbackType && callbackOwner.accessFlags == AccessFlags.PUBLIC.value &&
+            callbackOwner.superclass == "Ljava/lang/Object;" && callbackOwner.interfaces.none() && callbackOwner.fields.none() &&
+            callbackMethod.accessFlags == AccessFlags.PUBLIC.value &&
+            callbackBody.registerCount == 1 && callbackBody.tryBlocks.none() &&
+            callbackBody.instructions.map { it.opcode }.toList() == listOf(Opcode.RETURN_VOID)
     }
 
     fun entrySignature(owner: ClassDef, method: Method): String {
@@ -269,7 +310,8 @@ internal object FixtureContracts {
     }
 
     /** A relocated hook needs the accepted hook identity and the complete portable contract. */
-    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed): String {
+    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed,
+                             callback: ClassDef? = null): String {
         if (method.definingClass != owner.type)
             throw PatchException("Portable hook owner mismatch for $method")
         val oldOwner = acceptedMethod.substringBefore("->")
@@ -304,8 +346,11 @@ internal object FixtureContracts {
         val feedEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == CACHED_FEED_ENTRY &&
             HookEvidence.normalizedType(oldOwner) == HookEvidence.normalizedType(owner.type) &&
             cachedFeedEntryBoundary(owner, method)
+        val captchaEntryMatch = (!fullClassMatches || !methodMatches) &&
+            acceptedMethod in setOf(CAPTCHA_V2, CAPTCHA_LEGACY) && oldOwner == owner.type &&
+            captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
         val classMatches = fullClassMatches || scopedMatch
-        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch) {
+        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch && !captchaEntryMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -316,6 +361,7 @@ internal object FixtureContracts {
             memberRenameMatch -> "experimental-member-rename"
             entryMatch -> "experimental-entry-contract"
             feedEntryMatch -> "experimental-feed-entry"
+            captchaEntryMatch -> "experimental-captcha-entry"
             scopedMatch -> "experimental-method-scope"
             else -> "experimental-semantic-contract"
         }
