@@ -333,6 +333,46 @@ class HookContractsTest {
             owner(candidate, extra = true, fieldType = "Ljava/util/Set;"), acceptedKey, reviewed) }
     }
 
+    @Test fun entryContractPermitsLaterBodyChangesButPinsContextBoundary() {
+        val ownerName = "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;"
+        val acceptedKey = "$ownerName->run(Landroid/content/Context;)V"
+        fun task(tail: Int, entryRegister: Int = 0): MutableMethod {
+            val b = MethodImplementationBuilder(5)
+            val afterGuard = b.getLabel("afterGuard")
+            b.addInstruction(BuilderInstruction22x(Opcode.MOVE_OBJECT_FROM16, entryRegister, 4))
+            b.addInstruction(BuilderInstruction21t(Opcode.IF_NEZ, entryRegister, afterGuard))
+            b.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            b.addLabel("afterGuard")
+            b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, tail))
+            b.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            return MutableMethod(ImmutableMethod(ownerName, "run",
+                listOf(ImmutableMethodParameter("Landroid/content/Context;", emptySet(), null)), "V",
+                AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+                emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod, superclass: String = "Ljava/lang/Object;") =
+            ImmutableClassDef(ownerName, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+                superclass, emptyList(), null, emptySet(), emptyList(), listOf(method))
+        val accepted = task(1)
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(accepted)),
+            mapOf(ownerName to FixtureContracts.portableClassSignature(owner(accepted))),
+            entryMethods = mapOf(acceptedKey to FixtureContracts.entrySignature(owner(accepted), accepted)))
+        val changedLater = task(2)
+        assertEquals("experimental-entry-contract", FixtureContracts.requirePortableMatch(
+            changedLater, owner(changedLater), acceptedKey, reviewed))
+        val changedEntry = task(2, entryRegister = 1)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(changedEntry, owner(changedEntry), acceptedKey, reviewed)
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(changedLater,
+                owner(changedLater, superclass = "Ljava/lang/Number;"), acceptedKey, reviewed)
+        }
+        assertEquals(FixtureContracts.entryHooks(), FixtureContracts.load("46.7.3").entryMethods.keys)
+    }
+
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
         fun payload(values: List<Number>): MutableMethod {
             val b = MethodImplementationBuilder(2)

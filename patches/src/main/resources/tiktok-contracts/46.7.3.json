@@ -770,5 +770,8 @@
   },
   "memberRenameScopes": {
     "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;-\u003eLIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;": "4d628b02a0b3b428a50f9a419aae57cc0cfa8eafcf522f73c684a7084ee83404"
+  },
+  "entryMethods": {
+    "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;-\u003erun(Landroid/content/Context;)V": "82d272b57b040f34094c502442839926d5347e47ec53e115747fbc8565dc9f83"
   }
 }

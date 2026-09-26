@@ -80,7 +80,7 @@ jobs:
           reviewed = json.loads(Path('patches/src/main/resources/tiktok-contracts/46.7.3.json').read_text())
           for field in ('sha256', 'methods', 'classes', 'allSiteFrameworkCalls',
                         'portableMethods', 'portableClasses', 'hookMethods', 'scopedMethods',
-                        'memberRenameMethods', 'memberRenameScopes'):
+                        'memberRenameMethods', 'memberRenameScopes', 'entryMethods'):
               if captured[field] != reviewed[field]:
                   raise SystemExit('Original accepted contract changed: ' + field)
           report = json.loads(Path('reports/global-46.7.3/tiktok-hook-report.json').read_text())
@@ -90,6 +90,7 @@ jobs:
               set(captured['scopedMethods']) != set(reviewed['scopedMethods']) or
               set(captured['memberRenameMethods']) != set(reviewed['memberRenameMethods']) or
               set(captured['memberRenameScopes']) != set(reviewed['memberRenameMethods']) or
+              set(captured['entryMethods']) != set(reviewed['entryMethods']) or
               set(captured['hookMethods']) != hook_ids or
               not set(captured['hookMethods'].values()) <= set(captured['methods'])):
               raise SystemExit('Incomplete portable contract capture')

@@ -123,6 +123,46 @@ internal object FixtureContracts {
         "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
     )
 
+    /** Context is p1; this hook inserts before the original first instruction. */
+    fun entryHooks(): Set<String> = setOf(
+        "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;->run(Landroid/content/Context;)V",
+    )
+
+    fun entrySignature(owner: ClassDef, method: Method): String {
+        val body = method.implementation
+            ?: throw PatchException("No original entry body for $method")
+        if (owner.type != method.definingClass || body.instructions.count() < 3 ||
+            body.instructions.take(3).any { it.opcode == com.android.tools.smali.dexlib2.Opcode.NOP })
+            throw PatchException("Invalid reviewed entry boundary for $method")
+        val tokens = HookEvidence.tokens(method).drop(1)
+        return HookEvidence.sha256(buildString {
+            append("owner:").append(owner.type).append('\n')
+            append("access:").append(owner.accessFlags).append('\n')
+            append("super:").append(HookEvidence.normalizedType(owner.superclass ?: "")).append('\n')
+            owner.interfaces.map { HookEvidence.normalizedType(it) }.sorted().forEach {
+                append("interface:").append(it).append('\n')
+            }
+            owner.fields.map {
+                "field:" + HookEvidence.normalizedType(it.type) + ":" + it.accessFlags + ":" +
+                    (it.initialValue?.let(DexFormatter.INSTANCE::getEncodedValue) ?: "null")
+            }.sorted().forEach { append(it).append('\n') }
+            append("method:").append(HookEvidence.normalizedType(
+                method.parameterTypes.joinToString("") + ")" + method.returnType)).append('\n')
+            append("flags:").append(method.accessFlags).append('\n')
+            append("registers:").append(body.registerCount).append('\n')
+            append("try-at-entry:").append(body.tryBlocks.any { it.startCodeAddress == 0 }).append('\n')
+            body.instructions.take(3).forEachIndexed { index, instruction ->
+                append(tokens[index])
+                if (instruction is OneRegisterInstruction) append(" a=").append(instruction.registerA)
+                if (instruction is TwoRegisterInstruction) append(" b=").append(instruction.registerB)
+                if (instruction is ThreeRegisterInstruction) append(" c=").append(instruction.registerC)
+                if (instruction is WideLiteralInstruction) append(" literal=").append(instruction.wideLiteral)
+                if (instruction is OffsetInstruction) append(" offset=").append(instruction.codeOffset)
+                append('\n')
+            }
+        })
+    }
+
     /** The target body is pinned separately. This pins its class hierarchy and fields it reads. */
     fun portableScopeSignature(owner: ClassDef, method: Method): String =
         portableScopeSignature(owner, method, allowSelfCalls = false)
@@ -161,7 +201,8 @@ internal object FixtureContracts {
                         val hookMethods: Map<String, String> = emptyMap(),
                         val scopedMethods: Map<String, String> = emptyMap(),
                         val memberRenameMethods: Map<String, String> = emptyMap(),
-                        val memberRenameScopes: Map<String, String> = emptyMap())
+                        val memberRenameScopes: Map<String, String> = emptyMap(),
+                        val entryMethods: Map<String, String> = emptyMap())
 
     data class Selection(val contracts: Reviewed, val experimental: Boolean)
 
@@ -222,8 +263,13 @@ internal object FixtureContracts {
             } == true && contracts.memberRenameScopes[acceptedMethod]?.let {
                 portableReturnScopeSignature(owner, method) == it
             } == true
+        val entryMatch = !methodMatches && acceptedMethod in entryHooks() && oldOwner == owner.type &&
+            method.returnType == "V" && method.parameterTypes.map(CharSequence::toString) ==
+                listOf("Landroid/content/Context;") && contracts.entryMethods[acceptedMethod]?.let {
+                    entrySignature(owner, method) == it
+                } == true
         val classMatches = fullClassMatches || scopedMatch
-        if ((!classMatches || !methodMatches) && !memberRenameMatch) {
+        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -232,6 +278,7 @@ internal object FixtureContracts {
         }
         return when {
             memberRenameMatch -> "experimental-member-rename"
+            entryMatch -> "experimental-entry-contract"
             scopedMatch -> "experimental-method-scope"
             else -> "experimental-semantic-contract"
         }
@@ -250,7 +297,8 @@ internal object FixtureContracts {
             if (root.has("hookMethods")) entries("hookMethods") else emptyMap(),
             if (root.has("scopedMethods")) entries("scopedMethods") else emptyMap(),
             if (root.has("memberRenameMethods")) entries("memberRenameMethods") else emptyMap(),
-            if (root.has("memberRenameScopes")) entries("memberRenameScopes") else emptyMap())
+            if (root.has("memberRenameScopes")) entries("memberRenameScopes") else emptyMap(),
+            if (root.has("entryMethods")) entries("entryMethods") else emptyMap())
     }
 
     fun load(version: String): Reviewed = loadOrNull(version)

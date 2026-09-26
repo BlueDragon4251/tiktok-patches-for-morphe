@@ -54,6 +54,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         TreeMap<String,String> scopedMethods = new TreeMap<>();
         TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
+        TreeMap<String,String> entryMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
         MultiDexContainer<?> container = DexFileFactory.loadDexContainer(apk.toFile(), Opcodes.getDefault());
         for (String dex : container.getDexEntryNames()) {
@@ -90,6 +91,8 @@ class CaptureFixtureContracts {
                             memberRenameMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMemberSignature(method));
                             memberRenameScopes.putIfAbsent(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
                         }
+                        if (FixtureContracts.INSTANCE.entryHooks().contains(key))
+                            entryMethods.putIfAbsent(key, FixtureContracts.INSTANCE.entrySignature(owner, method));
                     }
                 }
             }
@@ -101,6 +104,8 @@ class CaptureFixtureContracts {
         if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
             !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))
             throw new IllegalArgumentException("Missing member-rename baseline hooks: " + memberRenameMethods.keySet());
+        if (!entryMethods.keySet().equals(FixtureContracts.INSTANCE.entryHooks()))
+            throw new IllegalArgumentException("Missing entry baseline hooks: " + entryMethods.keySet());
         JsonObject reviewed = new JsonObject();
         reviewed.addProperty("schema", 1);
         reviewed.addProperty("package", report.get("package").getAsString());
@@ -117,6 +122,7 @@ class CaptureFixtureContracts {
         reviewed.add("scopedMethods", new Gson().toJsonTree(scopedMethods));
         reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
         reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
+        reviewed.add("entryMethods", new Gson().toJsonTree(entryMethods));
         Files.createDirectories(output.getParent());
         Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(reviewed));
         System.out.println("Captured " + methods.size() + " original methods, " + classes.size() + " classes, " + allSite.size() + " screen capture callers; SHA " + actualSha);

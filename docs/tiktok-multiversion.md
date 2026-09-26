@@ -131,6 +131,11 @@ site must survive, as must its complete register, literal, reference type,
 branch, switch and exception layout. That contract permits renamed app
 callee names only for this method. It preserves Android and Java API names,
 constructor calls, class hierarchy and the fields used by the method.
+`JatoInitTask.run(Context)` uses a separate entry contract: the accepted
+declaring hierarchy, method flags and registers, first three original
+instructions and whether the entry lies in a try block must match. Its
+extension context call is injected at index zero, so later changes to its
+method body do not certify or invalidate that specific entry boundary.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.
