@@ -17,6 +17,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -371,6 +372,57 @@ class HookContractsTest {
                 owner(changedLater, superclass = "Ljava/lang/Number;"), acceptedKey, reviewed)
         }
         assertEquals(FixtureContracts.entryHooks(), FixtureContracts.load("46.7.3").entryMethods.keys)
+    }
+
+    @Test fun cachedFeedEntryPinsOriginalParameterAndNullBranchAcrossBodyChanges() {
+        val acceptedKey = "LX/04Ju;->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V"
+        fun method(owner: String, registers: Int, extra: Boolean = false,
+                   wrongBranch: Boolean = false, wrongParameter: Boolean = false): MutableMethod {
+            val b = MethodImplementationBuilder(registers)
+            val end = b.getLabel("end")
+            val other = b.getLabel("other")
+            val p0 = registers - 1
+            b.addInstruction(BuilderInstruction21t(Opcode.IF_EQZ,
+                if (wrongParameter) p0 - 1 else p0, if (wrongBranch) other else end))
+            b.addLabel("other")
+            b.addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, p0, 0, 0, 0, 0,
+                ImmutableMethodReference("Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+                    "getItems", emptyList(), "Ljava/util/List;")))
+            b.addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0))
+            for (marker in listOf("fetchFeeds, filter by is ad", "fetchFeeds, filter by is duplicate"))
+                b.addInstruction(BuilderInstruction21c(Opcode.CONST_STRING, 0, ImmutableStringReference(marker)))
+            if (extra) b.addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 1))
+            b.addLabel("end")
+            b.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            return MutableMethod(ImmutableMethod(owner, "LIZIZ",
+                listOf(ImmutableMethodParameter("Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;", emptySet(), null)),
+                "V", AccessFlags.PUBLIC.value or AccessFlags.STATIC.value,
+                emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod, superclass: String = "Ljava/lang/Object;") = ImmutableClassDef(
+            method.definingClass, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+            superclass, emptyList(), null, emptySet(), emptyList(), listOf(method))
+        val original = method("LX/04Ju;", 8)
+        val candidate = method("LX/04iE;", 10, extra = true)
+        assertTrue(FixtureContracts.cachedFeedEntryBoundary(owner(original), original))
+        assertTrue(FixtureContracts.cachedFeedEntryBoundary(owner(candidate), candidate))
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(original)),
+            mapOf(original.definingClass to FixtureContracts.portableClassSignature(owner(original))))
+        assertEquals("experimental-feed-entry", FixtureContracts.requirePortableMatch(
+            candidate, owner(candidate), acceptedKey, reviewed))
+        for (changed in listOf(method("LX/04iE;", 10, wrongBranch = true),
+            method("LX/04iE;", 10, wrongParameter = true))) {
+            assertFalse(FixtureContracts.cachedFeedEntryBoundary(owner(changed), changed))
+            assertThrows(PatchException::class.java) {
+                FixtureContracts.requirePortableMatch(changed, owner(changed), acceptedKey, reviewed)
+            }
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate, superclass = "Ljava/lang/Number;"),
+                acceptedKey, reviewed)
+        }
     }
 
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {

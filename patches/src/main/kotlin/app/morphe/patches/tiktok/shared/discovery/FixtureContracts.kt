@@ -1,6 +1,8 @@
 package app.morphe.patches.tiktok.shared.discovery
 
 import app.morphe.patcher.patch.PatchException
+import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.formatter.DexFormatter
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
@@ -8,6 +10,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.*
 import com.android.tools.smali.dexlib2.iface.instruction.formats.ArrayPayload
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.google.gson.JsonParser
 
 /** Reviewed patch-time contracts for native assumptions not yet generalized. */
@@ -127,6 +130,36 @@ internal object FixtureContracts {
     fun entryHooks(): Set<String> = setOf(
         "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;->run(Landroid/content/Context;)V",
     )
+
+    private const val CACHED_FEED_ENTRY =
+        "LX/04Ju;->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V"
+    private const val FEED_ITEMS_GETTER =
+        "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;->getItems()Ljava/util/List;"
+
+    /** The entry parameter is a FeedItemList; the return register has become an Iterator. */
+    fun cachedFeedEntryBoundary(owner: ClassDef, method: Method): Boolean {
+        val body = method.implementation ?: return false
+        val insns = body.instructions.toList()
+        val first = insns.firstOrNull() as? OffsetInstruction ?: return false
+        val getItems = insns.getOrNull(1)
+        val result = insns.getOrNull(2)
+        val param = body.registerCount - 1
+        val strings = insns.mapNotNull { (it as? ReferenceInstruction)?.reference as? StringReference }
+            .map { it.string }.toSet()
+        return owner.type == method.definingClass && owner.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) &&
+            owner.superclass == "Ljava/lang/Object;" && owner.interfaces.none() &&
+            method.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.STATIC.value) &&
+            method.parameterTypes.map(CharSequence::toString) == listOf("Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;") &&
+            method.returnType == "V" && body.registerCount >= 2 && body.tryBlocks.none() &&
+            first.opcode == Opcode.IF_EQZ && (first as? OneRegisterInstruction)?.registerA == param &&
+            first.codeOffset == insns.dropLast(1).sumOf { it.codeUnits } &&
+            getItems?.opcode == Opcode.INVOKE_VIRTUAL &&
+            (getItems as? ReferenceInstruction)?.reference?.toString() == FEED_ITEMS_GETTER &&
+            (getItems as? FiveRegisterInstruction)?.let { it.registerCount == 1 && it.registerC == param } == true &&
+            result?.opcode == Opcode.MOVE_RESULT_OBJECT && (result as? OneRegisterInstruction)?.registerA == 0 &&
+            insns.lastOrNull()?.opcode == Opcode.RETURN_VOID && insns.count { it.opcode == Opcode.RETURN_VOID } == 1 &&
+            "fetchFeeds, filter by is ad" in strings && "fetchFeeds, filter by is duplicate" in strings
+    }
 
     fun entrySignature(owner: ClassDef, method: Method): String {
         val body = method.implementation
@@ -268,8 +301,11 @@ internal object FixtureContracts {
                 listOf("Landroid/content/Context;") && contracts.entryMethods[acceptedMethod]?.let {
                     entrySignature(owner, method) == it
                 } == true
+        val feedEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == CACHED_FEED_ENTRY &&
+            HookEvidence.normalizedType(oldOwner) == HookEvidence.normalizedType(owner.type) &&
+            cachedFeedEntryBoundary(owner, method)
         val classMatches = fullClassMatches || scopedMatch
-        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch) {
+        if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -279,6 +315,7 @@ internal object FixtureContracts {
         return when {
             memberRenameMatch -> "experimental-member-rename"
             entryMatch -> "experimental-entry-contract"
+            feedEntryMatch -> "experimental-feed-entry"
             scopedMatch -> "experimental-method-scope"
             else -> "experimental-semantic-contract"
         }

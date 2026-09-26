@@ -59,22 +59,15 @@ val feedFilterPatch = bytecodePatch(
             }
         }
 
-        // TikTok 46.4.3 has a separate cached For You fetch path which does not have to
-        // pass through FeedApi.LIZIZ(...). Its own fetchFeeds routine already removes
-        // native ads/LIVE/story entries, so it is an exact feed-only anchor. Re-run the
-        // complete BlueIT filter after TikTok finishes mutating that cached list.
+        // This cached FYP path overwrites its only parameter register with an Iterator
+        // before returning. Mark/filter the original FeedItemList at entry, while p0
+        // still has its declared type. Later getItems reads and the final UI handoff
+        // below re-filter it after TikTok's own mutations.
         ForYouCachedFeedFilterFingerprint.uniqueMethod.let { method ->
-            val returnIndices = method.implementation!!.instructions.withIndex()
-                .filter { it.value.opcode == Opcode.RETURN_VOID }
-                .map { it.index }
-                .toList()
-
-            returnIndices.asReversed().forEach { returnIndex ->
-                method.addInstructions(
-                    returnIndex,
-                    "invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
-                )
-            }
+            method.addInstructions(
+                0,
+                "invoke-static/range {p0 .. p0}, $FOR_YOU_GUARD_CLASS_DESCRIPTOR->markAndFilter($FEED_ITEM_LIST_DESCRIPTOR)V",
+            )
         }
 
         // `tryUseCache` can also return the cached FYP list directly. Mark/filter every

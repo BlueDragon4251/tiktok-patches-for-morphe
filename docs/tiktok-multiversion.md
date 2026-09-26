@@ -82,6 +82,13 @@ qualification verifier; later versions must provide per-version artifacts.
 The old `SettingNewVersionFragment` fallback is optional and absent from both
 46.7.3 and the 47.1.3 candidate. Its two reflected row types are resolved only
 when that legacy insertion point exists; they are not required baseline hooks.
+The cached For You filter overwrites its `FeedItemList` parameter register with
+an iterator before returning in both APKs. Its injection now runs at the
+validated entry, where the parameter still has its declared type; subsequent
+list reads and the UI commit hook reapply the filter after TikTok mutations.
+Experimental reuse of this changed body requires a unique cached-feed hook,
+the exact feed markers, stable getter, null branch to the sole return, original
+parameter register, class hierarchy and an exception-free entry.
 
 The initial fixture remains TikTok global 46.7.3, SHA-256
 `b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`.
