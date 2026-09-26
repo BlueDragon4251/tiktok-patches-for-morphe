@@ -69,6 +69,8 @@ jobs:
           PY
       - name: Capture baseline portable contracts from accepted original APK
         if: matrix.id == 'global-46.7.3'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew :patches:captureTikTokContracts --no-daemon --args="$(realpath fixture.apk) $(realpath reports/${{ matrix.id }}/tiktok-hook-report.json) $(realpath reports/${{ matrix.id }}/captured-contracts.json)"
           python3 - <<'PY'
