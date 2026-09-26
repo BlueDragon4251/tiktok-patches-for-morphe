@@ -52,6 +52,7 @@ class CaptureFixtureContracts {
         }
         TreeMap<String,String> methods = new TreeMap<>(), classes = new TreeMap<>();
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
+        TreeMap<String,String> scopedMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
         MultiDexContainer<?> container = DexFileFactory.loadDexContainer(apk.toFile(), Opcodes.getDefault());
         for (String dex : container.getDexEntryNames()) {
@@ -82,12 +83,16 @@ class CaptureFixtureContracts {
                         classes.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.classSignature(owner));
                         portableMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableSignature(method));
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
+                        if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
+                            scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableScopeSignature(owner, method));
                     }
                 }
             }
         }
         wanted.removeAll(methods.keySet());
         if (!wanted.isEmpty()) throw new IllegalArgumentException("Missing original hooks: " + wanted);
+        if (!scopedMethods.keySet().equals(FixtureContracts.INSTANCE.methodScopedHooks()))
+            throw new IllegalArgumentException("Missing method-scoped baseline hooks: " + scopedMethods.keySet());
         JsonObject reviewed = new JsonObject();
         reviewed.addProperty("schema", 1);
         reviewed.addProperty("package", report.get("package").getAsString());
@@ -101,6 +106,7 @@ class CaptureFixtureContracts {
         reviewed.add("portableMethods", new Gson().toJsonTree(portableMethods));
         reviewed.add("portableClasses", new Gson().toJsonTree(portableClasses));
         reviewed.add("hookMethods", new Gson().toJsonTree(hookMethods));
+        reviewed.add("scopedMethods", new Gson().toJsonTree(scopedMethods));
         Files.createDirectories(output.getParent());
         Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(reviewed));
         System.out.println("Captured " + methods.size() + " original methods, " + classes.size() + " classes, " + allSite.size() + " screen capture callers; SHA " + actualSha);

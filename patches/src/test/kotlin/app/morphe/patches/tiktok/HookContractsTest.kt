@@ -16,6 +16,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableClassDef
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -220,6 +221,55 @@ class HookContractsTest {
         }
         assertNotEquals(FixtureContracts.portableSignature(caught("Ljava/lang/Exception;")),
             FixtureContracts.portableSignature(caught("Ljava/lang/Error;")))
+    }
+
+    @Test fun methodScopeAllowsUnrelatedClassGrowthButPinsHierarchyAndReferencedFields() {
+        val className = "Lcom/ss/ttvideoengine/TTVideoEngine;"
+        val acceptedKey = "$className->setLooping(Z)V"
+        fun target(): MutableMethod {
+            val body = MethodImplementationBuilder(2)
+            body.addInstruction(BuilderInstruction21c(Opcode.SGET, 0,
+                ImmutableFieldReference(className, "state", "I")))
+            body.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            return MutableMethod(ImmutableMethod(className, "setLooping",
+                listOf(ImmutableMethodParameter("Z", emptySet(), null)), "V", AccessFlags.PUBLIC.value,
+                emptySet(), emptySet(), body.methodImplementation))
+        }
+        fun owner(method: MutableMethod, extra: Boolean = false, superclass: String = "Ljava/lang/Object;",
+                  fieldType: String = "I") = ImmutableClassDef(className, AccessFlags.PUBLIC.value,
+            superclass, emptyList(), null, emptySet(),
+            listOf(ImmutableField(className, "state", fieldType, AccessFlags.PUBLIC.value,
+                null, emptySet(), emptySet())) + if (extra) listOf(ImmutableField(className,
+                "unrelated", "J", AccessFlags.PUBLIC.value, null, emptySet(), emptySet())) else emptyList(),
+            listOf(method))
+        val accepted = target()
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(accepted)),
+            mapOf(className to FixtureContracts.portableClassSignature(owner(accepted))),
+            scopedMethods = mapOf(acceptedKey to FixtureContracts.portableScopeSignature(owner(accepted), accepted)))
+        val candidate = target()
+        assertTrue(FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true), acceptedKey, reviewed))
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true,
+                superclass = "Ljava/lang/Number;"), acceptedKey, reviewed)
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true,
+                fieldType = "J"), acceptedKey, reviewed)
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(candidate, owner(candidate, extra = true),
+                "LX/Other;->setLooping(Z)V", reviewed)
+        }
+        val changed = MutableMethod(ImmutableMethod(className, "setLooping",
+            listOf(ImmutableMethodParameter("Z", emptySet(), null)), "V", AccessFlags.PUBLIC.value,
+            emptySet(), emptySet(), MethodImplementationBuilder(2).apply {
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            }.methodImplementation))
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(changed, owner(changed, extra = true), acceptedKey, reviewed)
+        }
     }
 
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {

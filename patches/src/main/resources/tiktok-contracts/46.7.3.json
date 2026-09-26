@@ -758,5 +758,9 @@
     "native-injection:Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;": "Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;",
     "native-injection:Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
     "offline.native-options-provider": "LX/0AIU;-\u003eLJFF()Ljava/util/List;"
+  },
+  "scopedMethods": {
+    "Lcom/ss/android/ugc/aweme/main/MainActivity;-\u003eonCreate(Landroid/os/Bundle;)V": "f130794ef03b0d1ceb3646ebbf18de212a96ced1cb6e39a07b9c84e97df5936e",
+    "Lcom/ss/ttvideoengine/TTVideoEngine;-\u003esetLooping(Z)V": "35592f66dd803db0c476b08825d53cdb6975479f8fe41707e2b627405f37f4d9"
   }
 }

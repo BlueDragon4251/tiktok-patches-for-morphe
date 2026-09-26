@@ -226,8 +226,8 @@ internal object HookEvidence {
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
-            FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
-            mode = "experimental-semantic-contract"
+            val scoped = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts)
+            mode = if (scoped) "experimental-method-scope" else "experimental-semantic-contract"
         }
         validated += key
         validationMode[key] = mode

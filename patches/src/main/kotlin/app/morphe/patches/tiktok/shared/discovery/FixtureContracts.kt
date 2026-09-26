@@ -6,6 +6,8 @@ import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.instruction.*
 import com.android.tools.smali.dexlib2.iface.instruction.formats.ArrayPayload
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.google.gson.JsonParser
 
 /** Reviewed patch-time contracts for native assumptions not yet generalized. */
@@ -95,11 +97,42 @@ internal object FixtureContracts {
                 "method:" + HookEvidence.normalizedMember(owner.type, it.name) + ":" + portableSignature(it)
             }.sorted()).joinToString("\n"))
 
+    /** Only these reviewed entry hooks may survive unrelated changes to their declaring class. */
+    fun methodScopedHooks(): Set<String> = setOf(
+        "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
+        "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
+    )
+
+    /** The target body is pinned separately. This pins its class hierarchy and fields it reads. */
+    fun portableScopeSignature(owner: ClassDef, method: Method): String {
+        if (method.definingClass != owner.type || method.implementation == null)
+            throw PatchException("No original method body in scoped owner ${owner.type}")
+        val fields = method.implementation!!.instructions.mapNotNull { instruction ->
+            (instruction as? ReferenceInstruction)?.reference as? FieldReference
+        }.filter { it.definingClass == owner.type }.map { reference ->
+            val field = owner.fields.singleOrNull { it.name == reference.name && it.type == reference.type }
+                ?: throw PatchException("Unresolved scoped field $reference in ${owner.type}")
+            "field:" + HookEvidence.normalizedMember(owner.type, field.name) + ":" +
+                HookEvidence.normalizedType(field.type) + ":" + field.accessFlags + ":" +
+                (field.initialValue?.let(DexFormatter.INSTANCE::getEncodedValue) ?: "null")
+        }.sorted()
+        if (method.implementation!!.instructions.any { instruction ->
+                ((instruction as? ReferenceInstruction)?.reference as? MethodReference)
+                    ?.let { it.definingClass == owner.type && it.name != method.name } == true
+            }) throw PatchException("Scoped hook calls another method on ${owner.type}")
+        return HookEvidence.sha256((listOf(
+            "access:" + owner.accessFlags,
+            "super:" + HookEvidence.normalizedType(owner.superclass ?: ""),
+        ) + owner.interfaces.map { "interface:" + HookEvidence.normalizedType(it) }.sorted() + fields)
+            .joinToString("\n"))
+    }
+
     data class Reviewed(val packageName: String, val versionCode: Long, val apkSha256: String,
                         val methods: Map<String, String>, val classes: Map<String, String>,
                         val portableMethods: Map<String, String> = emptyMap(),
                         val portableClasses: Map<String, String> = emptyMap(),
-                        val hookMethods: Map<String, String> = emptyMap())
+                        val hookMethods: Map<String, String> = emptyMap(),
+                        val scopedMethods: Map<String, String> = emptyMap())
 
     data class Selection(val contracts: Reviewed, val experimental: Boolean)
 
@@ -133,7 +166,7 @@ internal object FixtureContracts {
     }
 
     /** A relocated hook needs the accepted hook identity and the complete portable contract. */
-    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed) {
+    fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed): Boolean {
         if (method.definingClass != owner.type)
             throw PatchException("Portable hook owner mismatch for $method")
         val oldOwner = acceptedMethod.substringBefore("->")
@@ -141,8 +174,13 @@ internal object FixtureContracts {
             ?: throw PatchException("Missing accepted portable class contract for $oldOwner")
         val expectedMethod = contracts.portableMethods[acceptedMethod]
             ?: throw PatchException("Missing accepted portable method contract for $acceptedMethod")
-        val classMatches = portableClassSignature(owner) == expectedClass
+        val fullClassMatches = portableClassSignature(owner) == expectedClass
         val methodMatches = portableSignature(method) == expectedMethod
+        val scopedMatch = !fullClassMatches && methodMatches && acceptedMethod in methodScopedHooks() &&
+            oldOwner == owner.type && contracts.scopedMethods[acceptedMethod]?.let {
+                portableScopeSignature(owner, method) == it
+            } == true
+        val classMatches = fullClassMatches || scopedMatch
         if (!classMatches || !methodMatches) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
@@ -150,6 +188,7 @@ internal object FixtureContracts {
             }
             throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused")
         }
+        return scopedMatch
     }
 
     fun loadOrNull(version: String): Reviewed? {
@@ -162,7 +201,8 @@ internal object FixtureContracts {
             root.get("sha256").asString, entries("methods"), entries("classes"),
             if (root.has("portableMethods")) entries("portableMethods") else emptyMap(),
             if (root.has("portableClasses")) entries("portableClasses") else emptyMap(),
-            if (root.has("hookMethods")) entries("hookMethods") else emptyMap())
+            if (root.has("hookMethods")) entries("hookMethods") else emptyMap(),
+            if (root.has("scopedMethods")) entries("scopedMethods") else emptyMap())
     }
 
     fun load(version: String): Reviewed = loadOrNull(version)
