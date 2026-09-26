@@ -108,7 +108,15 @@ internal object FixtureContracts {
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
         "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
+        "LX/0AIU;->LJFF()Ljava/util/List;",
     )
+
+    private val relocatedMethodScopes = setOf("LX/0AIU;->LJFF()Ljava/util/List;")
+
+    /** The offline provider is found by its caller and may move to another obfuscated class. */
+    fun portableMethodScopeSignature(owner: ClassDef, method: Method, acceptedMethod: String): String =
+        if (acceptedMethod in relocatedMethodScopes) portableReturnScopeSignature(owner, method)
+        else portableScopeSignature(owner, method)
 
     /** The FYP response has unique feed markers but renamed app method references in 47.1.3. */
     fun memberRenameHooks(): Set<String> = setOf(
@@ -197,9 +205,12 @@ internal object FixtureContracts {
             ?: throw PatchException("Missing accepted portable method contract for $acceptedMethod")
         val fullClassMatches = portableClassSignature(owner) == expectedClass
         val methodMatches = portableSignature(method) == expectedMethod
+        val scopedOwnerMatches = oldOwner == owner.type ||
+            (acceptedMethod in relocatedMethodScopes && HookEvidence.normalizedType(oldOwner) ==
+                HookEvidence.normalizedType(owner.type))
         val scopedMatch = !fullClassMatches && methodMatches && acceptedMethod in methodScopedHooks() &&
-            oldOwner == owner.type && contracts.scopedMethods[acceptedMethod]?.let {
-                portableScopeSignature(owner, method) == it
+            scopedOwnerMatches && contracts.scopedMethods[acceptedMethod]?.let {
+                portableMethodScopeSignature(owner, method, acceptedMethod) == it
             } == true
         val memberRenameMatch = !methodMatches && acceptedMethod in memberRenameHooks() &&
             oldOwner == owner.type && method.returnType == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;" &&

@@ -300,6 +300,39 @@ class HookContractsTest {
         }
     }
 
+    @Test fun relocatedOfflineProviderKeepsMethodAndReferencedFieldContracts() {
+        val acceptedKey = "LX/0AIU;->LJFF()Ljava/util/List;"
+        fun provider(ownerName: String): MutableMethod {
+            val b = MethodImplementationBuilder(2)
+            b.addInstruction(BuilderInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0,
+                ImmutableMethodReference(ownerName, "LIZIZ", emptyList(), "Z")))
+            b.addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT, 0))
+            b.addInstruction(BuilderInstruction21c(Opcode.SGET_OBJECT, 0,
+                ImmutableFieldReference(ownerName, "LLL", "Ljava/util/List;")))
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+            return MutableMethod(ImmutableMethod(ownerName, "LJFF", emptyList(), "Ljava/util/List;",
+                AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod, extra: Boolean = false, fieldType: String = "Ljava/util/List;") =
+            ImmutableClassDef(method.definingClass, AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+                "Ljava/lang/Object;", emptyList(), null, emptySet(),
+                listOf(ImmutableField(method.definingClass, "LLL", fieldType, AccessFlags.PUBLIC.value,
+                    null, emptySet(), emptySet())) + if (extra) listOf(ImmutableField(method.definingClass,
+                    "unrelated", "I", AccessFlags.PUBLIC.value, null, emptySet(), emptySet())) else emptyList(),
+                listOf(method))
+        val accepted = provider("LX/0AIU;")
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(accepted)),
+            mapOf(accepted.definingClass to FixtureContracts.portableClassSignature(owner(accepted))),
+            scopedMethods = mapOf(acceptedKey to FixtureContracts.portableMethodScopeSignature(owner(accepted), accepted, acceptedKey)))
+        val candidate = provider("LX/09zC;")
+        assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(candidate,
+            owner(candidate, extra = true), acceptedKey, reviewed))
+        assertThrows(PatchException::class.java) { FixtureContracts.requirePortableMatch(candidate,
+            owner(candidate, extra = true, fieldType = "Ljava/util/Set;"), acceptedKey, reviewed) }
+    }
+
     @Test fun arrayPayloadChangesAndUnreviewedMutationBoundariesFail() {
         fun payload(values: List<Number>): MutableMethod {
             val b = MethodImplementationBuilder(2)

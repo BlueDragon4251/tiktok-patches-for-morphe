@@ -85,7 +85,7 @@ class CaptureFixtureContracts {
                         portableMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableSignature(method));
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                         if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
-                            scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableScopeSignature(owner, method));
+                            scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMethodScopeSignature(owner, method, key));
                         if (FixtureContracts.INSTANCE.memberRenameHooks().contains(key)) {
                             memberRenameMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMemberSignature(method));
                             memberRenameScopes.putIfAbsent(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
