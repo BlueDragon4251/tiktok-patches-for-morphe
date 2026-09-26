@@ -158,6 +158,9 @@ contracts. When those change, its reviewed entry contract checks the original
 register layout, first field read, owner fields and interface, callback methods
 and the exception boundary before allowing an entry-only injection. Other
 changed or ambiguous OEC shapes remain blocked.
+The LIVE host callback descriptor is read from the uniquely selected original
+method; its abstract `LIZJ()V` interface method must exist before injection.
+The enclosing LIVE host method still needs its full portable contract.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.

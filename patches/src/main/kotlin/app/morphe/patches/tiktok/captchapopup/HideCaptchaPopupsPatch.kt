@@ -7,6 +7,7 @@ package app.morphe.patches.tiktok.captchapopup
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.FixtureContracts
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -14,7 +15,6 @@ import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import com.android.tools.smali.dexlib2.AccessFlags
 
 private const val FEATURE_CONTROLS_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/featurecontrols/FeatureControls;"
-private const val LIVE_CAPTCHA_CALLBACK_DESCRIPTOR = "LX/1NRi;"
 
 private object CaptchaPopupFingerprint : Fingerprint(
     definingClass = "/sec/SecApiImpl;",
@@ -59,12 +59,14 @@ private object LiveHostCaptchaPopupFingerprint : Fingerprint(
     definingClass = "/live/livehostimpl/LiveHostUser;",
     name = "popCaptchaV2",
     returnType = "V",
-    parameters = listOf(
-        "Landroid/app/Activity;",
-        "Ljava/lang/String;",
-        LIVE_CAPTCHA_CALLBACK_DESCRIPTOR,
-        "Landroidx/fragment/app/Fragment;",
-    ),
+    custom = { method, _ ->
+        val parameters = method.parameterTypes.map(CharSequence::toString)
+        method.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) &&
+            parameters.size == 4 && parameters[0] == "Landroid/app/Activity;" &&
+            parameters[1] == "Ljava/lang/String;" &&
+            parameters[2].startsWith("LX/") && parameters[2].endsWith(";") &&
+            parameters[3] == "Landroidx/fragment/app/Fragment;"
+    },
 )
 
 @Suppress("unused")
@@ -133,19 +135,23 @@ val hideCaptchaPopupsPatch = bytecodePatch(
             """,
         )
 
-        LiveHostCaptchaPopupFingerprint.uniqueMethod.addInstructions(
-            0,
-            """
-                invoke-static {p1, p2}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z
-                move-result v0
-                if-eqz v0, :morphe_show_live_captcha_popup
-                if-eqz p3, :morphe_hide_live_captcha_popup_return
-                invoke-interface {p3}, $LIVE_CAPTCHA_CALLBACK_DESCRIPTOR->LIZJ()V
-                :morphe_hide_live_captcha_popup_return
-                return-void
-                :morphe_show_live_captcha_popup
-                nop
-            """,
-        )
+        LiveHostCaptchaPopupFingerprint.uniqueMethod.let { method ->
+            val callback = method.parameterTypes[2].toString()
+            FixtureContracts.requireLiveCaptchaCallback(classDefByOrNull(callback), callback)
+            method.addInstructions(
+                0,
+                """
+                    invoke-static {p1, p2}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->shouldHideCaptchaPopup(Landroid/app/Activity;Ljava/lang/String;)Z
+                    move-result v0
+                    if-eqz v0, :morphe_show_live_captcha_popup
+                    if-eqz p3, :morphe_hide_live_captcha_popup_return
+                    invoke-interface {p3}, $callback->LIZJ()V
+                    :morphe_hide_live_captcha_popup_return
+                    return-void
+                    :morphe_show_live_captcha_popup
+                    nop
+                """,
+            )
+        }
     }
 }

@@ -280,6 +280,26 @@ class HookContractsTest {
             callback(callbackMethods.dropLast(1))))
     }
 
+    @Test fun liveCallbackMustExposeTheExactAbstractCompletionMethod() {
+        val descriptor = "LX/1Uqs;"
+        fun callback(name: String, flags: Int) = ImmutableClassDef(descriptor,
+            AccessFlags.PUBLIC.value or AccessFlags.INTERFACE.value or AccessFlags.ABSTRACT.value,
+            "Ljava/lang/Object;", emptyList(), null, emptySet(), emptyList(), listOf(
+                ImmutableMethod(descriptor, name, emptyList(), "V", flags,
+                    emptySet(), emptySet(), null)))
+        val abstractFlags = AccessFlags.PUBLIC.value or AccessFlags.ABSTRACT.value
+        FixtureContracts.requireLiveCaptchaCallback(callback("LIZJ", abstractFlags), descriptor)
+        for (invalid in listOf(callback("LIZ", abstractFlags),
+                               callback("LIZJ", AccessFlags.PUBLIC.value))) {
+            assertThrows(PatchException::class.java) {
+                FixtureContracts.requireLiveCaptchaCallback(invalid, descriptor)
+            }
+        }
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requireLiveCaptchaCallback(null, descriptor)
+        }
+    }
+
     @Test fun portableSignatureProtectsBranchesSwitchCasesAndExceptionHandlers() {
         fun branched(change: Boolean): MutableMethod {
             val b = MethodImplementationBuilder(2)

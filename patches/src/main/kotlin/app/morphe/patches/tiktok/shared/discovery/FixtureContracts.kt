@@ -251,6 +251,16 @@ internal object FixtureContracts {
             (first[2] as? WideLiteralInstruction)?.wideLiteral == 1L
     }
 
+    /** The LIVE suppression path calls this callback before returning from the entry. */
+    fun requireLiveCaptchaCallback(callback: ClassDef?, descriptor: String) {
+        if (callback == null || callback.type != descriptor ||
+            callback.accessFlags and AccessFlags.INTERFACE.value == 0 ||
+            callback.methods.count { it.name == "LIZJ" && it.parameterTypes.none() &&
+                it.returnType == "V" && it.accessFlags and AccessFlags.ABSTRACT.value != 0 &&
+                it.implementation == null } != 1)
+            throw PatchException("Changed LIVE CAPTCHA callback contract for $descriptor; injection refused")
+    }
+
     fun entrySignature(owner: ClassDef, method: Method): String {
         val body = method.implementation
             ?: throw PatchException("No original entry body for $method")
