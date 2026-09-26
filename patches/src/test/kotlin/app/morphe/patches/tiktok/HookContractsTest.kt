@@ -176,9 +176,12 @@ class HookContractsTest {
             hooked("LX/0BBB;", "LJII", constant = 2),
             hooked("LX/0BBB;", "LJII", superclass = "Ljava/lang/Number;"),
             hooked("LX/0BBB;", "LJII", classFlags = AccessFlags.PUBLIC.value or AccessFlags.FINAL.value))) {
-            assertThrows(PatchException::class.java) {
+            val error = assertThrows(PatchException::class.java) {
                 FixtureContracts.requirePortableMatch(method, owner, accepted.toString(), reviewed)
             }
+            assertTrue(error.message!!.contains("class ("))
+            assertEquals(FixtureContracts.portableSignature(method) != FixtureContracts.portableSignature(accepted),
+                error.message!!.contains("method ("))
         }
         assertThrows(PatchException::class.java) {
             FixtureContracts.requirePortableMatch(renamed, newOwner, "LX/other;->LIZ()I", reviewed)

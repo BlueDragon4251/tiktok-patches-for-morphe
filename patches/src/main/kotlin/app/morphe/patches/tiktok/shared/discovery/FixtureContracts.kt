@@ -141,10 +141,15 @@ internal object FixtureContracts {
             ?: throw PatchException("Missing accepted portable class contract for $oldOwner")
         val expectedMethod = contracts.portableMethods[acceptedMethod]
             ?: throw PatchException("Missing accepted portable method contract for $acceptedMethod")
-        if (portableClassSignature(owner) != expectedClass)
-            throw PatchException("Changed portable class contract for $method: field types, inheritance or member structure changed")
-        if (portableSignature(method) != expectedMethod)
-            throw PatchException("Changed portable method contract for $method: registers, literals, references, branches, switch or exception paths changed")
+        val classMatches = portableClassSignature(owner) == expectedClass
+        val methodMatches = portableSignature(method) == expectedMethod
+        if (!classMatches || !methodMatches) {
+            val changed = buildList {
+                if (!classMatches) add("class (field types, inheritance or member structure)")
+                if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
+            }
+            throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused")
+        }
     }
 
     fun loadOrNull(version: String): Reviewed? {

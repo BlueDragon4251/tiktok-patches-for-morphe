@@ -100,7 +100,13 @@ def read_result(path):
 def patch_failures(log):
     """Retain actionable patch failures even if Morphe fails to serialize its JSON."""
     failures = re.findall(r'^Caused by: [^\n]*PatchException: ([^\r\n]+)', log, re.MULTILINE)
-    failures += re.findall(r'^SEVERE: FAILED: ([^\r\n]+)', log, re.MULTILINE)
+    for match in re.finditer(r'^SEVERE: FAILED: ([^\r\n]+)\r?\n(.*?)(?=^SEVERE: FAILED: |\Z)',
+                             log, re.MULTILINE | re.DOTALL):
+        name, block = match.groups()
+        before_stack = block.split('\n\tat', 1)[0]
+        details = re.findall(r'^app\.morphe\.patcher\.patch\.PatchException: ([^\r\n]+)',
+                             before_stack, re.MULTILINE)
+        failures.append(f'{name}: {details[-1]}' if details else name)
     return list(dict.fromkeys(failures))
 
 

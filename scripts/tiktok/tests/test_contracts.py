@@ -76,6 +76,12 @@ class QualificationTests(unittest.TestCase):
                    'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n'
                    'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n')
             self.assertEqual(['Changed class contract', 'Feed patch'], patch_failures(log))
+            nested = ('SEVERE: FAILED: Feed filter\n'
+                      'app.morphe.patcher.patch.PatchException: The patch depends on another patch:\n'
+                      'app.morphe.patcher.patch.PatchException: Changed portable contract for FeedApi: class and method; injection refused\n'
+                      '\tat app.morphe.patcher.Patcher.execute(Patcher.kt:1)\n')
+            self.assertEqual(['Feed filter: Changed portable contract for FeedApi: class and method; injection refused'],
+                             patch_failures(nested))
             metadata = {'patches': [{'name': 'A', 'compatiblePackages': {'p': ['v']}}]}
             identity = {'package': 'p', 'version': 'v', 'versionCode': 1, 'sha256': 'h'}
             failures = blockers(metadata, result, {'fingerprints': [], 'injections': []}, ['A'], identity)
