@@ -161,6 +161,8 @@ remains in the output directory only after all 37 patches, rebuilding and all
 required hook and injection contracts pass. Any failure removes it. A successful
 experimental result still needs separate hash-bound acceptance, discovery and
 runtime testing before official support.
+`observedAppliedPatches` is diagnostic evidence even when Morphe truncates its
+result JSON after that array; it never counts as a successful catalog result.
 
 The first probe (run 36153094965) actually downloaded the 47.1.3 APK,
 `com.zhiliaoapp.musically`, version code 2024701030, 472304867 bytes, SHA-256

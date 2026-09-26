@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fixtures import fixtures, generated, select, verify
 from rediscover_hooks import classify, normalized_member, normalized_type, normalized_opcode
 from portable_baseline import extract
-from run_experimental import blockers, main as experimental_main, patch_failures, read_result
+from run_experimental import blockers, main as experimental_main, observed_applied, patch_failures, read_result
 from probe_latest import candidate_status
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
@@ -68,10 +68,13 @@ class QualificationTests(unittest.TestCase):
     def test_morphe_serialization_failure_retains_patch_diagnostics(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'result.json'
-            path.write_text('{"appliedPatches":[{"name":"A"}],"failedPatches":[')
+            path.write_text('{"appliedPatches":[{"name":"A"},{"name":"B"}],"failedPatches":[')
             result, error = read_result(path)
             self.assertIsNone(result)
             self.assertIn('incomplete or invalid JSON', error)
+            self.assertEqual(['A', 'B'], observed_applied(path, result))
+            path.write_text('{"appliedPatches":[{"name":"A"},')
+            self.assertEqual([], observed_applied(path, None))
             log = ('SEVERE: FAILED: Feed patch\n'
                    'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n'
                    'Caused by: app.morphe.patcher.patch.PatchException: Changed class contract\n')
@@ -162,12 +165,14 @@ class QualificationTests(unittest.TestCase):
                 self.assertFalse(success['qualified'])
                 self.assertEqual(identity['sha256'],success['candidate']['sha256'])
                 self.assertEqual(64,len(success['patchedApk']['sha256']))
+                self.assertEqual(names, success['observedAppliedPatches'])
                 failing=True
                 experimental_main()
                 self.assertFalse((out/'patched.apk').exists())
                 blocked=json.loads((out/'experimental-result.json').read_text())
                 self.assertEqual('blocked',blocked['status'])
                 self.assertIsNone(blocked['patchedApk'])
+                self.assertEqual(names, blocked['observedAppliedPatches'])
 
     def test_same_version_different_sha_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

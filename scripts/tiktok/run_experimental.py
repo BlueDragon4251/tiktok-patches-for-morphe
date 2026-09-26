@@ -97,6 +97,29 @@ def read_result(path):
         return None, f'Morphe result is incomplete or invalid JSON: {error}'
 
 
+def observed_applied(path, result):
+    """Recover an early, complete applied-patch array for diagnosis only.
+
+    Morphe can stop serializing halfway through the later failed-patches array.
+    This observation is never passed to blockers() as a successful result.
+    """
+    if result is not None:
+        entries = result.get('appliedPatches')
+    elif path.is_file():
+        try:
+            raw = path.read_text()
+            match = re.search(r'"appliedPatches"\s*:\s*', raw)
+            entries = json.JSONDecoder().raw_decode(raw, match.end())[0] if match else None
+        except (UnicodeError, json.JSONDecodeError):
+            return []
+    else:
+        return []
+    if not isinstance(entries, list) or any(not isinstance(p, dict) or
+                                           not isinstance(p.get('name'), str) for p in entries):
+        return []
+    return [p['name'] for p in entries]
+
+
 def patch_failures(log):
     """Retain actionable patch failures even if Morphe fails to serialize its JSON."""
     failures = re.findall(r'^Caused by: [^\n]*PatchException: ([^\r\n]+)', log, re.MULTILINE)
@@ -148,6 +171,7 @@ def main():
                 process = None
                 problems.append(f'Could not run Morphe: {error}')
         result, result_error = read_result(result_path)
+        applied_observation = observed_applied(result_path, result)
         report, report_error = read_result(report_path)
         problems = blockers(metadata, result, report, expected, identity, a.head)
         for error in (result_error, report_error):
@@ -171,7 +195,8 @@ def main():
     (out / 'experimental-result.json').write_text(json.dumps({
         'schema': 1, 'head': a.head, 'candidate': identity, 'qualified': False,
         'status': 'blocked' if problems else 'experimental-catalog-passed',
-        'blockers': problems, 'expectedPatchCount': len(expected), 'patchedApk': rebuilt,
+        'blockers': problems, 'expectedPatchCount': len(expected),
+        'observedAppliedPatches': applied_observation, 'patchedApk': rebuilt,
     }, indent=2) + '\n')
     print(f"Experimental catalog: {len(expected)} patches; {len(problems)} blockers; never qualified")
 
