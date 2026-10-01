@@ -73419,7 +73419,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/FixtureContracts.kt",
-      "sha256": "5bc850af2d86f27d61fd16d997b3cc6aae24eb4c9ae8d15d86f6b56f5be563b2",
+      "sha256": "e1c44f0b82a6154f6417e1bfff608eee076e3ae4e462ed78696449d6e6b1541b",
       "patches": [],
       "findings": [
         {
@@ -75079,458 +75079,536 @@
           "category": "structural-or-semantic-evidence"
         },
         {
-          "kind": "literal",
-          "line": 315,
-          "text": "\"No original method body in scoped owner ${owner.type}\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
           "kind": "member",
           "line": 318,
-          "text": "definingClass == owner.type }.map { reference ->",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 319,
-          "text": "singleOrNull { it.name == reference.name && it.type == reference.type }",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 319,
-          "text": "name == reference.name && it.type == reference.type }",
+          "text": "definingClass == owner.type && it.toString() != method.toString() }",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
           "line": 320,
-          "text": "\"Unresolved scoped field $reference in ${owner.type}\"",
+          "text": "\"No same-owner callee in ${owner.type}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
-          "kind": "literal",
-          "line": 321,
-          "text": "\":\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 321,
-          "text": "\"field:\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
+          "kind": "instruction-selection",
           "line": 322,
-          "text": "\":\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 322,
-          "text": "\":\"",
+          "text": "singleOrNull { it.toString() == reference.toString() }",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 323,
-          "text": "\"null\"",
+          "text": "\"Missing scoped callee $reference\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 324,
+          "text": "\"No scoped callee body $reference\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
           "line": 327,
-          "text": "definingClass == owner.type && it.name != method.name } == true",
+          "text": "definingClass == owner.type && it.toString() != callee.toString() } == true",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
           "line": 328,
-          "text": "\"Scoped hook calls another method on ${owner.type}\"",
+          "text": "\"Nested same-owner call in $reference\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 330,
-          "text": "\"access:\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 331,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
+          "line": 330,
+          "text": "\")\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 330,
+          "text": "parameterTypes.joinToString(\"\") + \")\" + callee.returnType)",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
           "line": 331,
-          "text": "\"super:\"",
+          "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 332,
-          "text": "\"interface:\"",
+          "line": 331,
+          "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 333,
+          "line": 334,
           "text": "\"\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
+          "line": 339,
+          "text": "\"No original method body in scoped owner ${owner.type}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 342,
+          "text": "definingClass == owner.type }.map { reference ->",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 343,
+          "text": "singleOrNull { it.name == reference.name && it.type == reference.type }",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 343,
+          "text": "name == reference.name && it.type == reference.type }",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 344,
+          "text": "\"Unresolved scoped field $reference in ${owner.type}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 345,
+          "text": "\":\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 345,
+          "text": "\"field:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 346,
+          "text": "\":\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 346,
+          "text": "\":\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 347,
+          "text": "\"null\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 351,
+          "text": "definingClass == owner.type && it.name != method.name } == true",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 352,
+          "text": "\"Scoped hook calls another method on ${owner.type}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
           "line": 354,
-          "text": "\"Expected global TikTok ${baseline.packageName}, got $packageName\"",
+          "text": "\"access:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 355,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 355,
+          "text": "\"super:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 356,
+          "text": "\"interface:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 357,
-          "text": "\"Fixture version code changed: expected ${exact.versionCode}, got $versionCode\"",
+          "text": "\"\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 361,
-          "text": "\"Unreviewed TikTok APK SHA-256: $actualSha256. Use TIKTOK_EXPERIMENTAL_PORTABLE=1 only for explicitly experimental patching\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 366,
-          "text": "\"Missing reviewed fixture contract for $method; run discovery and review before enabling this APK\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 368,
-          "text": "\"Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 373,
-          "text": "\" else \"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 373,
-          "text": "\"Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) \"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 373,
-          "text": "\"}\"",
+          "line": 378,
+          "text": "\"Expected global TikTok ${baseline.packageName}, got $packageName\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 381,
+          "text": "\"Fixture version code changed: expected ${exact.versionCode}, got $versionCode\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 385,
+          "text": "\"Unreviewed TikTok APK SHA-256: $actualSha256. Use TIKTOK_EXPERIMENTAL_PORTABLE=1 only for explicitly experimental patching\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 390,
+          "text": "\"Missing reviewed fixture contract for $method; run discovery and review before enabling this APK\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 392,
+          "text": "\"Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 397,
+          "text": "\" else \"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 397,
+          "text": "\"Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) \"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 397,
+          "text": "\"}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 405,
           "text": "\"Portable hook owner mismatch for $method\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 382,
+          "line": 406,
           "text": "\"->\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 384,
+          "line": 408,
           "text": "\"Missing accepted portable class contract for $oldOwner\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 386,
+          "line": 410,
           "text": "\"Missing accepted portable method contract for $acceptedMethod\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 397,
+          "line": 421,
           "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 397,
+          "line": 421,
           "text": "returnType == \"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\" &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 397,
+          "line": 421,
           "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 398,
+          "line": 422,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 399,
+          "line": 423,
           "text": "\"first_feed_duration\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 399,
+          "line": 423,
           "text": "\"fyp\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 400,
+          "line": 424,
           "text": "\"s:$marker\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 407,
+          "line": 431,
           "text": "\"V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 407,
+          "line": 431,
           "text": "returnType == \"V\" && method.parameterTypes.map(CharSequence::toString) ==",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 407,
+          "line": 431,
           "text": "parameterTypes.map(CharSequence::toString) ==",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 408,
+          "line": 432,
           "text": "\"Landroid/content/Context;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 408,
+          "line": 432,
           "text": "Landroid/content/Context;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 423,
+          "line": 447,
           "text": "\"class (field types, inheritance or member structure)\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 424,
+          "line": 448,
           "text": "\"method (registers, literals, references, branches, switch or exception paths)\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 426,
+          "line": 450,
           "text": "\")}; injection refused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 426,
+          "line": 450,
           "text": "\"Changed portable contract for $method: ${changed.joinToString(\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 429,
+          "line": 453,
           "text": "\"experimental-member-rename\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 430,
+          "line": 454,
           "text": "\"experimental-entry-contract\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 431,
+          "line": 455,
           "text": "\"experimental-feed-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 432,
+          "line": 456,
           "text": "\"experimental-captcha-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 433,
+          "line": 457,
           "text": "\"experimental-oec-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 434,
+          "line": 458,
           "text": "\"experimental-method-scope\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 435,
+          "line": 459,
           "text": "\"experimental-semantic-contract\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 440,
+          "line": 464,
           "text": "\"/tiktok-contracts/$version.json\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 442,
+          "line": 466,
           "text": "\"schema\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 442,
+          "line": 466,
           "text": "\"version\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 443,
+          "line": 467,
           "text": "\"Invalid reviewed fixture contract for TikTok $version\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 445,
+          "line": 469,
           "text": "\"package\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 445,
+          "line": 469,
           "text": "\"versionCode\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 446,
+          "line": 470,
           "text": "\"classes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 446,
+          "line": 470,
           "text": "\"methods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 446,
+          "line": 470,
           "text": "\"sha256\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 447,
+          "line": 471,
           "text": "\"portableMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 447,
+          "line": 471,
           "text": "\"portableMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 448,
+          "line": 472,
           "text": "\"portableClasses\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 448,
+          "line": 472,
           "text": "\"portableClasses\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 449,
+          "line": 473,
           "text": "\"hookMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 449,
+          "line": 473,
           "text": "\"hookMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 450,
+          "line": 474,
           "text": "\"scopedMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 450,
+          "line": 474,
           "text": "\"scopedMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 451,
+          "line": 475,
           "text": "\"memberRenameMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 451,
+          "line": 475,
           "text": "\"memberRenameMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 452,
+          "line": 476,
           "text": "\"memberRenameScopes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 452,
+          "line": 476,
           "text": "\"memberRenameScopes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 453,
+          "line": 477,
           "text": "\"entryMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 453,
+          "line": 477,
           "text": "\"entryMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 457,
+          "line": 481,
           "text": "\"No reviewed injection contracts for TikTok $version\"",
           "category": "structural-or-semantic-evidence"
         }

@@ -428,6 +428,37 @@ class HookContractsTest {
         }
     }
 
+    @Test fun callScopePinsTheDirectSiblingBody() {
+        val type = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;"
+        fun owner(value: Int, unrelated: Boolean = false): ImmutableClassDef {
+            val entry = MethodImplementationBuilder(2).apply {
+                addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, 1, 0, 0, 0, 0,
+                    ImmutableMethodReference(type, "prepare", emptyList(), "V")))
+                addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+            }
+            val sibling = MethodImplementationBuilder(2).apply {
+                addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, value))
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            }
+            fun member(name: String, result: String, body: MethodImplementationBuilder) =
+                ImmutableMethod(type, name, emptyList(), result, AccessFlags.PUBLIC.value,
+                    emptySet(), emptySet(), body.methodImplementation)
+            return ImmutableClassDef(type, AccessFlags.PUBLIC.value, "Ljava/lang/Object;",
+                emptyList(), null, emptySet(), emptyList(), listOf(
+                    member("tabs", "Ljava/util/List;", entry), member("prepare", "V", sibling)) +
+                    if (unrelated) listOf(member("unrelated", "V", sibling)) else emptyList())
+        }
+        val original = owner(1)
+        val method = original.methods.single { it.name == "tabs" }
+        val digest = FixtureContracts.portableCallScopeSignature(original, method)
+        val grown = owner(1, unrelated = true)
+        assertEquals(digest, FixtureContracts.portableCallScopeSignature(
+            grown, grown.methods.single { it.name == "tabs" }))
+        val changed = owner(2, unrelated = true)
+        assertNotEquals(digest, FixtureContracts.portableCallScopeSignature(
+            changed, changed.methods.single { it.name == "tabs" }))
+    }
+
     @Test fun memberRenameContractIgnoresOnlyAppCalleeNames() {
         val reviewed = FixtureContracts.load("46.7.3")
         assertEquals(FixtureContracts.memberRenameHooks(), reviewed.memberRenameMethods.keys)

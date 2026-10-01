@@ -95,7 +95,7 @@ class CaptureFixtureContracts {
                             try {
                                 String scope = key.equals(APP_AB_INT)
                                     ? FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method)
-                                    : FixtureContracts.INSTANCE.portableScopeSignature(owner, method);
+                                    : FixtureContracts.INSTANCE.portableCallScopeSignature(owner, method);
                                 methodScopeCandidates.put(key, scope);
                             } catch (Exception error) {
                                 // Kotlin does not expose checked throws to javac. Keep
