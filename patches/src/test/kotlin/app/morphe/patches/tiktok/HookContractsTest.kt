@@ -472,6 +472,7 @@ class HookContractsTest {
         assertEquals(3, originalTrace.size)
         assertEquals(originalTrace.take(2), changedTrace.take(2))
         assertNotEquals(originalTrace.last(), changedTrace.last())
+        assertTrue(FixtureContracts.portableCallScopeDetails(original, method).isEmpty())
         val accepted = "$type->M9()Ljava/util/List;"
         val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
             "accepted", emptyMap(), emptyMap(),

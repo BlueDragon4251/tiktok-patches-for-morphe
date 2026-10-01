@@ -323,7 +323,15 @@ internal object FixtureContracts {
             "$index:${HookEvidence.sha256(body)}"
         }
 
-    private fun portableCallScopeBodies(owner: ClassDef, method: Method): List<String> {
+    /** Bounded evidence for the two changed nodes in the Top-Tab call closure. */
+    fun portableCallScopeDetails(owner: ClassDef, method: Method): List<String> {
+        val details = mutableListOf<String>()
+        portableCallScopeBodies(owner, method, details)
+        return details
+    }
+
+    private fun portableCallScopeBodies(owner: ClassDef, method: Method,
+                                       details: MutableList<String>? = null): List<String> {
         val visited = mutableSetOf<String>()
         val bodies = mutableListOf<String>()
         fun visit(current: Method) {
@@ -333,6 +341,22 @@ internal object FixtureContracts {
             val descriptor = HookEvidence.normalizedType(
                 current.parameterTypes.joinToString("") + ")" + current.returnType)
             bodies += descriptor + ":" + portableSignature(current) + ":" + scope
+            val index = bodies.lastIndex
+            if (details != null && index in 3..4) {
+                val instructions = current.implementation!!.instructions.toList()
+                details += "$index:$current registers=${current.implementation!!.registerCount} " +
+                    "scope=$scope instructions=${instructions.size} " +
+                    instructions.take(120).map { instruction ->
+                        buildString {
+                            append(instruction.opcode.name)
+                            if (instruction is OneRegisterInstruction) append(" a=").append(instruction.registerA)
+                            if (instruction is TwoRegisterInstruction) append(" b=").append(instruction.registerB)
+                            if (instruction is WideLiteralInstruction) append(" literal=").append(instruction.wideLiteral)
+                            if (instruction is ReferenceInstruction) append(" ref=").append(instruction.reference)
+                            if (instruction is OffsetInstruction) append(" offset=").append(instruction.codeOffset)
+                        }
+                    }
+            }
             current.implementation!!.instructions.mapNotNull { instruction ->
                 (instruction as? ReferenceInstruction)?.reference as? MethodReference
             }.filter { it.definingClass == owner.type }.distinctBy { it.toString() }.forEach { reference ->
@@ -462,7 +486,8 @@ internal object FixtureContracts {
             }
             val trace = if (acceptedMethod ==
                 "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;" &&
-                methodMatches && !classMatches) "; callScopeTrace=${portableCallScopeTrace(owner, method)}"
+                methodMatches && !classMatches) "; callScopeTrace=${portableCallScopeTrace(owner, method)}" +
+                "; callScopeDetails=${portableCallScopeDetails(owner, method)}"
                 else ""
             throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused$trace")
         }
