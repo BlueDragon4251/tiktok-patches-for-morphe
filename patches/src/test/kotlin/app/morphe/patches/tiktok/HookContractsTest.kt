@@ -487,6 +487,49 @@ class HookContractsTest {
             owner(candidate, extra = true, fieldType = "Ljava/util/Set;"), acceptedKey, reviewed) }
     }
 
+    @Test fun relocatedAppAbReturnHookPinsBodyAndReferencedOwnerState() {
+        val acceptedKey = "LX/02z2;->LJFF(IILjava/lang/String;Z)I"
+        fun getter(ownerName: String, registers: Int = 6, branch: Boolean = false): MutableMethod {
+            val b = MethodImplementationBuilder(registers)
+            if (branch) b.addInstruction(BuilderInstruction21t(Opcode.IF_EQZ, 0, b.getLabel("end")))
+            b.addInstruction(BuilderInstruction21c(Opcode.SGET, 0,
+                ImmutableFieldReference(ownerName, "LIZ", "I")))
+            b.addLabel("end")
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            return MutableMethod(ImmutableMethod(ownerName, "LJFF",
+                listOf("I", "I", "Ljava/lang/String;", "Z").map {
+                    ImmutableMethodParameter(it, emptySet(), null)
+                }, "I", AccessFlags.PUBLIC.value, emptySet(), emptySet(), b.methodImplementation))
+        }
+        fun owner(method: MutableMethod, extra: Boolean = false, fieldType: String = "I",
+                  superclass: String = "Ljava/lang/Object;") = ImmutableClassDef(method.definingClass,
+            AccessFlags.PUBLIC.value, superclass, emptyList(), null, emptySet(),
+            listOf(ImmutableField(method.definingClass, "LIZ", fieldType,
+                AccessFlags.PUBLIC.value or AccessFlags.STATIC.value,
+                null, emptySet(), emptySet())) + if (extra) listOf(ImmutableField(method.definingClass,
+                "other", "J", AccessFlags.PUBLIC.value, null, emptySet(), emptySet())) else emptyList(),
+            listOf(method))
+        val accepted = getter("LX/02z2;")
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(acceptedKey to FixtureContracts.portableSignature(accepted)),
+            mapOf(accepted.definingClass to FixtureContracts.portableClassSignature(owner(accepted))),
+            scopedMethods = mapOf(acceptedKey to FixtureContracts.portableMethodScopeSignature(
+                owner(accepted), accepted, acceptedKey)))
+        val relocated = getter("LX/02yB;")
+        assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(
+            relocated, owner(relocated, extra = true), acceptedKey, reviewed))
+        for ((method, classDef) in listOf(
+            getter("LX/02yB;", registers = 7).let { it to owner(it, extra = true) },
+            getter("LX/02yB;", branch = true).let { it to owner(it, extra = true) },
+            relocated to owner(relocated, extra = true, fieldType = "J"),
+            relocated to owner(relocated, extra = true, superclass = "Ljava/lang/Number;"))) {
+            assertThrows(PatchException::class.java) {
+                FixtureContracts.requirePortableMatch(method, classDef, acceptedKey, reviewed)
+            }
+        }
+    }
+
     @Test fun entryContractPermitsLaterBodyChangesButPinsContextBoundary() {
         val ownerName = "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;"
         val acceptedKey = "$ownerName->run(Landroid/content/Context;)V"

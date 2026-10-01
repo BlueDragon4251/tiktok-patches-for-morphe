@@ -135,14 +135,16 @@ unique portable baseline match. The latter preserves registers, references,
 literals, branches, switch payloads and exception paths, while normalizing
 obfuscated names. Relocated classes still need the complete class contract.
 For the reviewed `MainActivity.onCreate`, `TTVideoEngine.setLooping`,
-`OfflineModeSheetPageAssem.<clinit>`, offline options provider and LIVE host
-CAPTCHA hooks only,
+`OfflineModeSheetPageAssem.<clinit>`, offline options provider, LIVE host
+CAPTCHA and the App-AB integer getter hooks only,
 an unchanged target method can survive unrelated changes to its declaring
 class when the hash-bound class access, superclass, interfaces and fields read
 by that method also match. The baseline capture
-records these five method scopes from the original 46.7.3 APK. The offline
-provider may move between obfuscated owners only when the caller finds it
-uniquely and the same scoped contract holds. Changes to the
+records these six method scopes from the original 46.7.3 APK. The offline
+provider and App-AB getter may move between obfuscated owners only when their
+fingerprints find them uniquely and the same scoped contract holds. The
+Top-Tab hook is still blocked on a changed class because its target calls
+another method in the same class. Changes to the
 method, its relevant fields, or its class hierarchy still block injection.
 The canonical For You `FeedApi` response has a separate reviewed contract:
 its unique `fyp` and `first_feed_duration` markers, return type and return

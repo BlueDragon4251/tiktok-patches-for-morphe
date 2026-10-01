@@ -108,6 +108,7 @@ internal object FixtureContracts {
 
     /** Only these reviewed entry hooks may survive unrelated changes to their declaring class. */
     fun methodScopedHooks(): Set<String> = setOf(
+        "LX/02z2;->LJFF(IILjava/lang/String;Z)I",
         "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(" +
             "Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
@@ -116,7 +117,10 @@ internal object FixtureContracts {
         "LX/0AIU;->LJFF()Ljava/util/List;",
     )
 
-    private val relocatedMethodScopes = setOf("LX/0AIU;->LJFF()Ljava/util/List;")
+    private val relocatedMethodScopes = setOf(
+        "LX/02z2;->LJFF(IILjava/lang/String;Z)I",
+        "LX/0AIU;->LJFF()Ljava/util/List;",
+    )
 
     /** The offline provider is found by its caller and may move to another obfuscated class. */
     fun portableMethodScopeSignature(owner: ClassDef, method: Method, acceptedMethod: String): String =
