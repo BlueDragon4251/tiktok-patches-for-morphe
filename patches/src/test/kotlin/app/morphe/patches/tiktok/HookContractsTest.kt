@@ -430,7 +430,7 @@ class HookContractsTest {
 
     @Test fun callScopePinsNestedSiblingBodiesAndHandlesCycles() {
         val type = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;"
-        fun owner(value: Int, unrelated: Boolean = false): ImmutableClassDef {
+        fun owner(value: Int, unrelated: Boolean = false, renamed: Boolean = false): ImmutableClassDef {
             val entry = MethodImplementationBuilder(2).apply {
                 addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, 1, 0, 0, 0, 0,
                     ImmutableMethodReference(type, "prepare", emptyList(), "V")))
@@ -452,19 +452,34 @@ class HookContractsTest {
                     emptySet(), emptySet(), body.methodImplementation)
             return ImmutableClassDef(type, AccessFlags.PUBLIC.value, "Ljava/lang/Object;",
                 emptyList(), null, emptySet(), emptyList(), listOf(
-                    member("tabs", "Ljava/util/List;", entry), member("prepare", "V", sibling),
+                    member(if (renamed) "R9" else "M9", "Ljava/util/List;", entry),
+                    member("prepare", "V", sibling),
                     member("finish", "V", nested)) +
                     if (unrelated) listOf(member("unrelated", "V", sibling)) else emptyList())
         }
         val original = owner(1)
-        val method = original.methods.single { it.name == "tabs" }
+        val method = original.methods.single { it.name == "M9" }
         val digest = FixtureContracts.portableCallScopeSignature(original, method)
         val grown = owner(1, unrelated = true)
         assertEquals(digest, FixtureContracts.portableCallScopeSignature(
-            grown, grown.methods.single { it.name == "tabs" }))
+            grown, grown.methods.single { it.name == "M9" }))
         val changed = owner(2, unrelated = true)
         assertNotEquals(digest, FixtureContracts.portableCallScopeSignature(
-            changed, changed.methods.single { it.name == "tabs" }))
+            changed, changed.methods.single { it.name == "M9" }))
+        val accepted = "$type->M9()Ljava/util/List;"
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(accepted to FixtureContracts.portableSignature(method)),
+            mapOf(type to FixtureContracts.portableClassSignature(original)),
+            scopedMethods = mapOf(accepted to digest))
+        val candidate = owner(1, unrelated = true, renamed = true)
+        assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(
+            candidate.methods.single { it.name == "R9" }, candidate, accepted, reviewed))
+        val altered = owner(2, unrelated = true, renamed = true)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(
+                altered.methods.single { it.name == "R9" }, altered, accepted, reviewed)
+        }
     }
 
     @Test fun memberRenameContractIgnoresOnlyAppCalleeNames() {

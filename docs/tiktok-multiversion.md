@@ -136,15 +136,16 @@ literals, branches, switch payloads and exception paths, while normalizing
 obfuscated names. Relocated classes still need the complete class contract.
 For the reviewed `MainActivity.onCreate`, `TTVideoEngine.setLooping`,
 `OfflineModeSheetPageAssem.<clinit>`, offline options provider, LIVE host
-CAPTCHA and the App-AB integer getter hooks only,
+CAPTCHA, the App-AB integer getter and the Top-Tab list hooks only,
 an unchanged target method can survive unrelated changes to its declaring
 class when the hash-bound class access, superclass, interfaces and fields read
 by that method also match. The baseline capture
-records these six method scopes from the original 46.7.3 APK. The offline
+records these seven method scopes from the original 46.7.3 APK. The offline
 provider and App-AB getter may move between obfuscated owners only when their
 fingerprints find them uniquely and the same scoped contract holds. The
-Top-Tab hook is still blocked on a changed class because its target calls
-another method in the same class. Changes to the
+Top-Tab hook additionally pins every reachable same-owner callee, including
+cycles, before accepting unrelated class changes. The Bottom-Tab hook remains
+blocked until its own scope is captured and reviewed. Changes to the
 method, its relevant fields, or its class hierarchy still block injection.
 The canonical For You `FeedApi` response has a separate reviewed contract:
 its unique `fyp` and `first_feed_duration` markers, return type and return
@@ -205,7 +206,7 @@ observed 8/37 on each 47.1.x candidate after the App-AB integer return hook
 passed its reviewed method and owner scope. The 46.7.3 acceptance and discovery
 matrices passed 37/37 on the same head. Both 47.1.x full catalogs remain
 blocked without an output APK. The next diagnostic capture pins the Top-Tab
-method's direct same-owner callee before considering any scoped injection.
+method's transitive same-owner call graph before considering any scoped injection.
 
 ## Review order
 

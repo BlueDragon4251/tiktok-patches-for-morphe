@@ -20,6 +20,7 @@ class CaptureFixtureContracts {
     static final String SCREEN_CAPTURE_REGISTER = "Landroid/app/Activity;->registerScreenCaptureCallback(Ljava/util/concurrent/Executor;Landroid/app/Activity$ScreenCaptureCallback;)V";
     static final String SCREEN_CAPTURE_UNREGISTER = "Landroid/app/Activity;->unregisterScreenCaptureCallback(Landroid/app/Activity$ScreenCaptureCallback;)V";
     static final String TOP_TABS = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;";
+    static final String BOTTOM_TABS = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->QB()Ljava/util/List;";
     static final String APP_AB_INT = "LX/02z2;->LJFF(IILjava/lang/String;Z)I";
     static String digest(Path file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -91,7 +92,7 @@ class CaptureFixtureContracts {
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                         if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
                             scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMethodScopeSignature(owner, method, key));
-                        if (key.equals(TOP_TABS) || key.equals(APP_AB_INT)) {
+                        if (key.equals(TOP_TABS) || key.equals(BOTTOM_TABS) || key.equals(APP_AB_INT)) {
                             try {
                                 String scope = key.equals(APP_AB_INT)
                                     ? FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method)
@@ -121,7 +122,7 @@ class CaptureFixtureContracts {
             throw new IllegalArgumentException("Missing method-scoped baseline hooks: " + scopedMethods.keySet());
         Set<String> candidateKeys = new HashSet<>(methodScopeCandidates.keySet());
         candidateKeys.addAll(methodScopeCandidateErrors.keySet());
-        if (!candidateKeys.equals(Set.of(TOP_TABS, APP_AB_INT)))
+        if (!candidateKeys.equals(Set.of(TOP_TABS, BOTTOM_TABS, APP_AB_INT)))
             throw new IllegalArgumentException("Missing focused method scope candidates: " + candidateKeys);
         if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
             !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))

@@ -112,6 +112,7 @@ internal object FixtureContracts {
         "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(" +
             "Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
+        "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;",
         "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
         "LX/0AIU;->LJFF()Ljava/util/List;",
@@ -125,6 +126,8 @@ internal object FixtureContracts {
     /** The offline provider is found by its caller and may move to another obfuscated class. */
     fun portableMethodScopeSignature(owner: ClassDef, method: Method, acceptedMethod: String): String =
         if (acceptedMethod in relocatedMethodScopes) portableReturnScopeSignature(owner, method)
+        else if (acceptedMethod == "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;")
+            portableCallScopeSignature(owner, method)
         else portableScopeSignature(owner, method)
 
     /** The FYP response has unique feed markers but renamed app method references in 47.1.3. */
