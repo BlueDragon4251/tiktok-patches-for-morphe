@@ -428,7 +428,7 @@ class HookContractsTest {
         }
     }
 
-    @Test fun callScopePinsTheDirectSiblingBody() {
+    @Test fun callScopePinsNestedSiblingBodiesAndHandlesCycles() {
         val type = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;"
         fun owner(value: Int, unrelated: Boolean = false): ImmutableClassDef {
             val entry = MethodImplementationBuilder(2).apply {
@@ -437,7 +437,14 @@ class HookContractsTest {
                 addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
             }
             val sibling = MethodImplementationBuilder(2).apply {
+                addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, 1, 0, 0, 0, 0,
+                    ImmutableMethodReference(type, "finish", emptyList(), "V")))
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            }
+            val nested = MethodImplementationBuilder(2).apply {
                 addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, value))
+                addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, 1, 0, 0, 0, 0,
+                    ImmutableMethodReference(type, "prepare", emptyList(), "V")))
                 addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
             }
             fun member(name: String, result: String, body: MethodImplementationBuilder) =
@@ -445,7 +452,8 @@ class HookContractsTest {
                     emptySet(), emptySet(), body.methodImplementation)
             return ImmutableClassDef(type, AccessFlags.PUBLIC.value, "Ljava/lang/Object;",
                 emptyList(), null, emptySet(), emptyList(), listOf(
-                    member("tabs", "Ljava/util/List;", entry), member("prepare", "V", sibling)) +
+                    member("tabs", "Ljava/util/List;", entry), member("prepare", "V", sibling),
+                    member("finish", "V", nested)) +
                     if (unrelated) listOf(member("unrelated", "V", sibling)) else emptyList())
         }
         val original = owner(1)

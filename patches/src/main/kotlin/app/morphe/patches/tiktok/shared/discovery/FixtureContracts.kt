@@ -310,28 +310,29 @@ internal object FixtureContracts {
     fun portableReturnScopeSignature(owner: ClassDef, method: Method): String =
         portableScopeSignature(owner, method, allowSelfCalls = true)
 
-    /** Pin direct same-owner callees as well as the return hook's field and class boundary. */
+    /** Pin the same-owner call closure as well as the return hook's field and class boundary. */
     fun portableCallScopeSignature(owner: ClassDef, method: Method): String {
-        val scope = portableScopeSignature(owner, method, allowSelfCalls = true)
-        val calls = method.implementation!!.instructions.mapNotNull { instruction ->
-            (instruction as? ReferenceInstruction)?.reference as? MethodReference
-        }.filter { it.definingClass == owner.type && it.toString() != method.toString() }
-            .distinctBy { it.toString() }
-        if (calls.isEmpty()) throw PatchException("No same-owner callee in ${owner.type}")
-        val callees = calls.map { reference ->
-            val callee = owner.methods.singleOrNull { it.toString() == reference.toString() }
-                ?: throw PatchException("Missing scoped callee $reference")
-            if (callee.implementation == null) throw PatchException("No scoped callee body $reference")
-            if (callee.implementation!!.instructions.any { instruction ->
-                    ((instruction as? ReferenceInstruction)?.reference as? MethodReference)
-                        ?.let { it.definingClass == owner.type && it.toString() != callee.toString() } == true
-                }) throw PatchException("Nested same-owner call in $reference")
+        val visited = mutableSetOf<String>()
+        val bodies = mutableListOf<String>()
+        fun visit(current: Method) {
+            if (!visited.add(current.toString())) return
+            if (visited.size > 64) throw PatchException("Scoped call closure too large in ${owner.type}")
+            val scope = portableScopeSignature(owner, current, allowSelfCalls = true)
             val descriptor = HookEvidence.normalizedType(
-                callee.parameterTypes.joinToString("") + ")" + callee.returnType)
-            descriptor + ":" + portableSignature(callee) + ":" +
-                portableScopeSignature(owner, callee)
-        }.sorted()
-        return HookEvidence.sha256((listOf(scope) + callees).joinToString("\n"))
+                current.parameterTypes.joinToString("") + ")" + current.returnType)
+            bodies += descriptor + ":" + portableSignature(current) + ":" + scope
+            current.implementation!!.instructions.mapNotNull { instruction ->
+                (instruction as? ReferenceInstruction)?.reference as? MethodReference
+            }.filter { it.definingClass == owner.type }.distinctBy { it.toString() }.forEach { reference ->
+                val callee = owner.methods.singleOrNull { it.toString() == reference.toString() }
+                    ?: throw PatchException("Missing scoped callee $reference")
+                if (callee.implementation == null) throw PatchException("No scoped callee body $reference")
+                visit(callee)
+            }
+        }
+        visit(method)
+        if (visited.size < 2) throw PatchException("No same-owner callee in ${owner.type}")
+        return HookEvidence.sha256(bodies.joinToString("\n"))
     }
 
     private fun portableScopeSignature(owner: ClassDef, method: Method, allowSelfCalls: Boolean): String {
