@@ -136,6 +136,20 @@ internal object HookEvidence {
             "contractMode" to if (source == null) "extension" else validationMode[method.toString()]
                 ?: if (experimental) "experimental-unvalidated" else "fixture-locked",
             "tokens" to signature, "structuralSha256" to signature?.let { sha256(it.joinToString("\n")) },
+            "nativeInstructions" to source?.implementation?.instructions?.take(256)?.map { instruction ->
+                buildString {
+                    append(instruction.opcode.name)
+                    if (instruction is OneRegisterInstruction) append(" a=").append(instruction.registerA)
+                    if (instruction is TwoRegisterInstruction) append(" b=").append(instruction.registerB)
+                    if (instruction is ThreeRegisterInstruction) append(" c=").append(instruction.registerC)
+                    if (instruction is FiveRegisterInstruction || instruction is RegisterRangeInstruction)
+                        append(" args=").append(instruction.argumentRegisters())
+                    if (instruction is WideLiteralInstruction) append(" literal=").append(instruction.wideLiteral)
+                    if (instruction is ReferenceInstruction) append(" ref=").append(instruction.reference)
+                    if (instruction is OffsetInstruction) append(" offset=").append(instruction.codeOffset)
+                }
+            },
+            "nativeInstructionCount" to source?.implementation?.instructions?.count(),
             "literals" to source?.implementation?.instructions?.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral },
             "exceptionHandlers" to source?.implementation?.tryBlocks?.flatMap { it.exceptionHandlers }
                 ?.map { mapOf("type" to it.exceptionType, "address" to it.handlerCodeAddress) },
@@ -227,7 +241,10 @@ internal object HookEvidence {
         // validate the native injection contract if any caller attempts to edit it.
         rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
             it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
-            .forEach { it["contractMode"] = "experimental-read-only-discovery" }
+            .forEach {
+                it["contractMode"] = "experimental-read-only-discovery"
+                it["readOnlyDiscoveryValidated"] = true
+            }
     }
 
     fun requireReviewed(method: Method) {

@@ -52,7 +52,9 @@ def blockers(metadata, result, report, expected, identity, head=None):
         for hook in report.get('fingerprints', []):
             if hook.get('required') and (hook.get('status') != 'resolved' or
                   (hook.get('selection') == 'unique' and hook.get('candidateCount') != 1) or
-                  (hook.get('origin') == 'apk' and hook.get('portableContractValidated') is not True)):
+                  (hook.get('origin') == 'apk' and hook.get('portableContractValidated') is not True and
+                   not (hook.get('readOnlyDiscoveryValidated') is True and
+                        hook.get('contractMode') == 'experimental-read-only-discovery'))):
                 problems.append('Unresolved native hook: ' + hook['hook'])
         validated = {
             hook['owner'] + '->' + hook['name'] + '(' + ''.join(hook['parameters']) + ')' + hook['returns']

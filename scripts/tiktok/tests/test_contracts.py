@@ -120,6 +120,17 @@ class QualificationTests(unittest.TestCase):
         result['appliedPatches'].append({'name':'B'})
         hook['portableContractValidated']=False
         self.assertTrue(blockers(meta,result,report,['A','B'],apk))
+        hook['readOnlyDiscoveryValidated']=True
+        hook['contractMode']='experimental-read-only-discovery'
+        # A read-only discovery contract cannot validate an injection into that method.
+        self.assertTrue(any('Injection has no validated hook' in p for p in blockers(meta,result,report,['A','B'],apk)))
+        native=copy.deepcopy(hook)
+        native.update(hook='edited',name='edited',portableContractValidated=True)
+        report['fingerprints'].append(native)
+        report['injections'][0]['method']='LX/New;->edited()V'
+        self.assertEqual([],blockers(meta,result,report,['A','B'],apk))
+        hook['contractMode']='unreviewed'
+        self.assertTrue(blockers(meta,result,report,['A','B'],apk))
         hook['portableContractValidated']=True
         report['experimental']=False
         self.assertTrue(blockers(meta,result,report,['A','B'],apk))
