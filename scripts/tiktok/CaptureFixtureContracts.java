@@ -97,7 +97,11 @@ class CaptureFixtureContracts {
                                     ? FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method)
                                     : FixtureContracts.INSTANCE.portableScopeSignature(owner, method);
                                 methodScopeCandidates.put(key, scope);
-                            } catch (PatchException error) {
+                            } catch (Exception error) {
+                                // Kotlin does not expose checked throws to javac. Keep
+                                // unexpected capture failures fatal, while recording a
+                                // deliberately rejected method scope as diagnostic evidence.
+                                if (!(error instanceof PatchException)) throw error;
                                 methodScopeCandidateErrors.put(key, error.getMessage());
                             }
                         }
