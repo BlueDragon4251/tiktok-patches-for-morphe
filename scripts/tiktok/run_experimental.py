@@ -160,6 +160,7 @@ def main():
         command += ['-e', name]
     command += ['-o', str(patched), str(a.apk.resolve())]
     problems = []
+    launch_error = None
     rebuilt = None
     try:
         with log_path.open('w') as log:
@@ -169,11 +170,13 @@ def main():
                                                   TIKTOK_FEATURE_HEAD=a.head))
             except OSError as error:
                 process = None
-                problems.append(f'Could not run Morphe: {error}')
+                launch_error = f'Could not run Morphe: {error}'
         result, result_error = read_result(result_path)
         applied_observation = observed_applied(result_path, result)
         report, report_error = read_result(report_path)
         problems = blockers(metadata, result, report, expected, identity, a.head)
+        if launch_error:
+            problems.append(launch_error)
         for error in (result_error, report_error):
             if error:
                 problems.append(error)

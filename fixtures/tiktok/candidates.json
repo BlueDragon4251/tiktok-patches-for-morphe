@@ -18,6 +18,24 @@
         "missing": 45
       },
       "selectable": false
+    },
+    {
+      "id": "global-47.1.4-apkpure-2026-10-01",
+      "package": "com.zhiliaoapp.musically",
+      "version": "47.1.4",
+      "versionCode": 2024701040,
+      "sha256": "4226ed5d3031b68208c29f62d80ac421b281fc74201bc4163d98e442d0991a40",
+      "sizeBytes": 472239331,
+      "source": "https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest",
+      "provenance": "APKPure global-package APK downloaded by GitHub Actions run 36819335462 on 2026-10-01. The APK manifest and downloaded bytes supplied the package, version, version code, size and SHA-256. The rolling URL resolved to versionCode 2024701040 for this download; the signing certificate has not been compared with the accepted baseline.",
+      "discoveryHead": "e445ae1eb262ed2c47cd30d3e42047fa603aa51e",
+      "discovery": {
+        "resolved": 19,
+        "relocated": 35,
+        "contract-changed": 83,
+        "missing": 43
+      },
+      "selectable": false
     }
   ]
 }

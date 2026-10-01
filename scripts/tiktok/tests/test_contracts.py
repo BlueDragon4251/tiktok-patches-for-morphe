@@ -173,6 +173,13 @@ class QualificationTests(unittest.TestCase):
                 self.assertEqual('blocked',blocked['status'])
                 self.assertIsNone(blocked['patchedApk'])
                 self.assertEqual(names, blocked['observedAppliedPatches'])
+                with patch('run_experimental.subprocess.run', side_effect=OSError('java unavailable')):
+                    experimental_main()
+                blocked=json.loads((out/'experimental-result.json').read_text())
+                self.assertEqual('blocked',blocked['status'])
+                self.assertIsNone(blocked['patchedApk'])
+                self.assertTrue(any('Could not run Morphe: java unavailable' in item
+                                    for item in blocked['blockers']))
 
     def test_same_version_different_sha_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

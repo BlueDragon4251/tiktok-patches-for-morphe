@@ -34,9 +34,24 @@ permissions:
 
 jobs:
   latest:
+    name: probe (${{ matrix.id }})
     if: github.event_name == 'pull_request' && github.head_ref == 'agent/tiktok-multiversion-contracts'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: latest
+            apk_url: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+            expected_sha: ''
+          # Recorded in fixtures/tiktok/candidates.json; this probe never enables compatibility.
+          - id: global-47.1.3
+            apk_url: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024701030
+            expected_sha: 8b5569f592a5534652ae460ef1d9e7f7394b5b7fdde44ae64f106d76767e2622
+          - id: global-47.1.4
+            apk_url: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024701040
+            expected_sha: 4226ed5d3031b68208c29f62d80ac421b281fc74201bc4163d98e442d0991a40
     steps:
       - uses: actions/checkout@v5
         with:
@@ -45,17 +60,29 @@ jobs:
         with:
           python-version: '3.12'
       - run: python3 -m pip install -r scripts/tiktok/requirements.txt
-      - name: Download the current global APK candidate
+      - name: Download and verify global APK candidate
         env:
-          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+          SOURCE_URL: ${{ matrix.apk_url }}
+          EXPECTED_SHA: ${{ matrix.expected_sha }}
         run: |
           curl --fail --location --silent --show-error --proto '=https' --proto-redir '=https' \
             --retry 3 --retry-all-errors --connect-timeout 30 --max-time 900 \
             "$SOURCE_URL" --output candidate.apk
-          python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL"
+          if [[ -n "$EXPECTED_SHA" ]]; then
+            python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL" --expected-sha "$EXPECTED_SHA"
+          else
+            python3 scripts/tiktok/probe_latest.py candidate.apk --source "$SOURCE_URL"
+          fi
+          python3 - <<'PY'
+          import json, os
+          if os.environ['EXPECTED_SHA']:
+              identity = json.load(open('candidate-identity.json'))
+              if identity.get('candidateStatus') != 'same-candidate-hash':
+                  raise SystemExit('Pinned candidate differs from fixtures/tiktok/candidates.json')
+          PY
       - uses: actions/upload-artifact@v4
         with:
-          name: tiktok-candidate-identity-${{ github.event.pull_request.head.sha }}
+          name: tiktok-candidate-identity-${{ matrix.id }}-${{ github.event.pull_request.head.sha }}
           path: candidate-identity.json
           retention-days: 30
       - name: Rediscover baseline hooks in candidate APK
@@ -80,7 +107,9 @@ jobs:
       - name: Attempt full catalog with patch-time contracts
         env:
           FEATURE_HEAD: ${{ github.event.pull_request.head.sha }}
-          SOURCE_URL: https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?version=latest
+          SOURCE_URL: ${{ matrix.apk_url }}
+          EXPECTED_SHA: ${{ matrix.expected_sha }}
+          PROBE_ID: ${{ matrix.id }}
         run: |
           python3 scripts/tiktok/toolchain.py
           python3 - <<'PY'
@@ -89,22 +118,25 @@ jobs:
                      if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
           if len(bundles) != 1:
               raise SystemExit(f'Expected one bundle, got {bundles}')
-          subprocess.run(['python3', 'scripts/tiktok/run_experimental.py',
+          command = ['python3', 'scripts/tiktok/run_experimental.py',
                           '--apk', 'candidate.apk', '--bundle', str(bundles[0]),
                           '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'],
-                          '--source', os.environ['SOURCE_URL'], '--output', 'reports/latest'], check=True)
+                          '--source', os.environ['SOURCE_URL'], '--output', 'reports/' + os.environ['PROBE_ID']]
+          if os.environ['EXPECTED_SHA']:
+              command += ['--expected-sha', os.environ['EXPECTED_SHA']]
+          subprocess.run(command, check=True)
           PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tiktok-latest-candidate-${{ github.event.pull_request.head.sha }}
+          name: tiktok-${{ matrix.id }}-candidate-${{ github.event.pull_request.head.sha }}
           path: |
             candidate-identity.json
             candidate-oec-evidence.json
             tiktok-hook-migration.json
             tiktok-hook-migration.md
-            reports/latest/*.json
-            reports/latest/*.log
+            reports/${{ matrix.id }}/*.json
+            reports/${{ matrix.id }}/*.log
           retention-days: 30
           if-no-files-found: warn
   compare:

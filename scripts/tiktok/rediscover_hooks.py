@@ -136,6 +136,7 @@ def main():
     with zipfile.ZipFile(a.apk) as archive:
         for name in sorted(archive.namelist()):
             if not re.fullmatch(r'classes\d*\.dex',name):continue
+            print(f'Discovering hooks in {name}', flush=True)
             dex=DEX(archive.read(name))
             for owner in dex.get_classes():
                 if schema==2:return_shapes[owner.get_name()]=digest(field_shape_parts(owner))
@@ -149,6 +150,7 @@ def main():
                     if key in wanted:found[key].append(candidate)
                     if anchor in anchors:anchored[anchor].append(candidate)
             del dex
+            print(f'Finished {name}', flush=True)
     for candidates in list(found.values())+list(anchored.values()):
         for candidate in candidates:
             candidate['returnTypeShapeSha256']=return_shapes.get(candidate['descriptor'].split(')',1)[1])

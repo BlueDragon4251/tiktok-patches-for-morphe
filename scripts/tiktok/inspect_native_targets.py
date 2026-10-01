@@ -20,6 +20,7 @@ def inspect(apk, targets, related_prefix):
         for dex_name in sorted(archive.namelist()):
             if not re.fullmatch(r'classes\d*\.dex', dex_name):
                 continue
+            print(f'Inspecting native targets in {dex_name}', flush=True)
             dex = DEX(archive.read(dex_name))
             for owner in dex.get_classes():
                 name = owner.get_name()
@@ -62,6 +63,7 @@ def inspect(apk, targets, related_prefix):
                                 'instruction': instruction.get_name() + ' ' + output,
                             })
             del dex
+            print(f'Finished {dex_name}', flush=True)
     result['relatedClasses'].sort(key=lambda item: item['type'])
     result['references'].sort(key=lambda item: (item['caller'], item['instruction']))
     return result
