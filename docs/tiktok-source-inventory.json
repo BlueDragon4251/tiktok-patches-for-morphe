@@ -73419,7 +73419,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/FixtureContracts.kt",
-      "sha256": "25739da4dda621753d472eb2d779693fcf9bfc8fd455ee2a7d3bdb1954d7597a",
+      "sha256": "e52ce590d0882a9598e9543535b2bab80991b1ae57d8ba1e5e8ad9e0f93c0464",
       "patches": [],
       "findings": [
         {
@@ -73737,283 +73737,283 @@
         {
           "kind": "literal",
           "line": 111,
-          "text": "\"Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V\"",
+          "text": "\"Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
           "line": 111,
-          "text": "->onCreate(Landroid/os/Bundle;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 111,
-          "text": "Landroid/os/Bundle;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 111,
-          "text": "Lcom/ss/android/ugc/aweme/main/MainActivity;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 112,
-          "text": "\"Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 112,
-          "text": "-><clinit>()V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 112,
-          "text": "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 113,
-          "text": "\"Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 113,
-          "text": "->setLooping(Z)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 113,
-          "text": "Lcom/ss/ttvideoengine/TTVideoEngine;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 114,
-          "text": "\"LX/0AIU;->LJFF()Ljava/util/List;\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 114,
-          "text": "->LJFF()Ljava/util/List;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 114,
-          "text": "LX/0AIU;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 114,
-          "text": "Ljava/util/List;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 117,
-          "text": "\"LX/0AIU;->LJFF()Ljava/util/List;\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 117,
-          "text": "->LJFF()Ljava/util/List;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 117,
-          "text": "LX/0AIU;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 117,
-          "text": "Ljava/util/List;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "version",
-          "line": 124,
-          "text": "47.1.3",
-          "category": "version-specific"
-        },
-        {
-          "kind": "literal",
-          "line": 126,
-          "text": "\"Lcom/ss/android/ugc/aweme/feed/api/FeedApi;->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 126,
-          "text": "->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 126,
-          "text": "LX/06F0;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 126,
-          "text": "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 126,
-          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 129,
-          "text": "p1",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "literal",
-          "line": 131,
-          "text": "\"Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;->run(Landroid/content/Context;)V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 131,
-          "text": "->run(Landroid/content/Context;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 131,
-          "text": "Landroid/content/Context;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 131,
-          "text": "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 135,
-          "text": "\"LX/04Ju;->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 135,
-          "text": "->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 135,
-          "text": "LX/04Ju;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 135,
-          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 137,
-          "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;->getItems()Ljava/util/List;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 137,
-          "text": "->getItems()Ljava/util/List;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 137,
-          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 137,
-          "text": "Ljava/util/List;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 138,
-          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptchaV2(\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 138,
           "text": "->popCaptchaV2(",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 138,
-          "text": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+          "line": 111,
+          "text": "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 139,
-          "text": "\"Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V\"",
+          "line": 112,
+          "text": "\"Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V\"",
           "category": "hard-coded"
         },
         {
           "kind": "native-type",
-          "line": 139,
-          "text": "LX/17qC;",
+          "line": 112,
+          "text": "LX/1NRi;",
           "category": "hard-coded"
         },
         {
           "kind": "native-type",
-          "line": 139,
+          "line": 112,
           "text": "Landroid/app/Activity;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 139,
+          "line": 112,
           "text": "Landroidx/fragment/app/Fragment;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 139,
+          "line": 112,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
+          "line": 113,
+          "text": "\"Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 113,
+          "text": "->onCreate(Landroid/os/Bundle;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 113,
+          "text": "Landroid/os/Bundle;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 113,
+          "text": "Lcom/ss/android/ugc/aweme/main/MainActivity;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 114,
+          "text": "\"Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 114,
+          "text": "-><clinit>()V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 114,
+          "text": "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 115,
+          "text": "\"Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 115,
+          "text": "->setLooping(Z)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 115,
+          "text": "Lcom/ss/ttvideoengine/TTVideoEngine;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 116,
+          "text": "\"LX/0AIU;->LJFF()Ljava/util/List;\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 116,
+          "text": "->LJFF()Ljava/util/List;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 116,
+          "text": "LX/0AIU;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 116,
+          "text": "Ljava/util/List;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 119,
+          "text": "\"LX/0AIU;->LJFF()Ljava/util/List;\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 119,
+          "text": "->LJFF()Ljava/util/List;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 119,
+          "text": "LX/0AIU;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 119,
+          "text": "Ljava/util/List;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "version",
+          "line": 126,
+          "text": "47.1.3",
+          "category": "version-specific"
+        },
+        {
+          "kind": "literal",
+          "line": 128,
+          "text": "\"Lcom/ss/android/ugc/aweme/feed/api/FeedApi;->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 128,
+          "text": "->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 128,
+          "text": "LX/06F0;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 128,
+          "text": "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 128,
+          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 131,
+          "text": "p1",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "literal",
+          "line": 133,
+          "text": "\"Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;->run(Landroid/content/Context;)V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 133,
+          "text": "->run(Landroid/content/Context;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 133,
+          "text": "Landroid/content/Context;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 133,
+          "text": "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 137,
+          "text": "\"LX/04Ju;->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 137,
+          "text": "->LIZIZ(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 137,
+          "text": "LX/04Ju;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 137,
+          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 139,
+          "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;->getItems()Ljava/util/List;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 139,
+          "text": "->getItems()Ljava/util/List;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 139,
+          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 139,
+          "text": "Ljava/util/List;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
           "line": 140,
-          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptcha(\"",
+          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptchaV2(\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
           "line": 140,
-          "text": "->popCaptcha(",
+          "text": "->popCaptchaV2(",
           "category": "stable-named-anchor"
         },
         {
@@ -74025,7 +74025,7 @@
         {
           "kind": "literal",
           "line": 141,
-          "text": "\"Landroid/app/Activity;ILX/17qC;)V\"",
+          "text": "\"Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V\"",
           "category": "hard-coded"
         },
         {
@@ -74041,292 +74041,322 @@
           "category": "stable-named-anchor"
         },
         {
+          "kind": "native-type",
+          "line": 141,
+          "text": "Landroidx/fragment/app/Fragment;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 141,
+          "text": "Ljava/lang/String;",
+          "category": "stable-named-anchor"
+        },
+        {
           "kind": "literal",
           "line": 142,
-          "text": "\"Lcom/tts/oecverify/verify/RiskControlService;->execute(\"",
+          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;->popCaptcha(\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
           "line": 142,
-          "text": "->execute(",
+          "text": "->popCaptcha(",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
           "line": 142,
-          "text": "Lcom/tts/oecverify/verify/RiskControlService;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 143,
-          "text": "\"LX/16eW;Lcom/tts/oecverify/BdTuringCallback;)Z\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 143,
-          "text": "LX/16eW;",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "native-type",
-          "line": 143,
-          "text": "Lcom/tts/oecverify/BdTuringCallback;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 149,
-          "text": "firstOrNull() as? OffsetInstruction ?: return false",
-          "category": "requires-cardinality-or-dataflow-review"
-        },
-        {
-          "kind": "register",
-          "line": 152,
-          "text": "registerCount - 1",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 156,
-          "text": "\"Ljava/lang/Object;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "native-type",
-          "line": 156,
-          "text": "Ljava/lang/Object;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 158,
-          "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "native-type",
-          "line": 158,
-          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 158,
-          "text": "parameterTypes.map(CharSequence::toString) == listOf(\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\") &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 159,
-          "text": "tryBlocks",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 159,
-          "text": "\"V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 159,
-          "text": "returnType == \"V\" && body.registerCount >= 2 && body.tryBlocks.none() &&",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 159,
-          "text": "registerCount >= 2 && body.tryBlocks.none() &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 160,
-          "text": "IF_EQZ",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 160,
-          "text": "registerA == param &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 164,
-          "text": "registerCount == 1 && it.registerC == param } == true &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 165,
-          "text": "registerA == 0 &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 166,
-          "text": "RETURN_VOID",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 166,
-          "text": "RETURN_VOID",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 166,
-          "text": "lastOrNull()?.opcode == Opcode.RETURN_VOID && insns.count { it.opcode == Opcode.RETURN_VOID } == 1 &&",
-          "category": "requires-cardinality-or-dataflow-review"
-        },
-        {
-          "kind": "literal",
-          "line": 167,
-          "text": "\"fetchFeeds, filter by is ad\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 167,
-          "text": "\"fetchFeeds, filter by is duplicate\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 171,
-          "text": "v2",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "register",
-          "line": 173,
-          "text": "parameterTypes.map(CharSequence::toString)",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 176,
-          "text": "singleOrNull {",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 177,
-          "text": "\"LIZJ\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 177,
-          "text": "\"V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 177,
-          "text": "name == \"LIZJ\" && it.parameterTypes.none() && it.returnType == \"V\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "register",
-          "line": 177,
-          "text": "parameterTypes.none() && it.returnType == \"V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 180,
-          "text": "\"popCaptcha - errorcode = \"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 180,
-          "text": "\"popCaptchaV2 - riskInfo = \"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 180,
-          "text": "v2",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "literal",
-          "line": 184,
-          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "native-type",
-          "line": 184,
           "text": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 186,
+          "line": 143,
+          "text": "\"Landroid/app/Activity;ILX/17qC;)V\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 143,
+          "text": "LX/17qC;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 143,
+          "text": "Landroid/app/Activity;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 144,
+          "text": "\"Lcom/tts/oecverify/verify/RiskControlService;->execute(\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 144,
+          "text": "->execute(",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 144,
+          "text": "Lcom/tts/oecverify/verify/RiskControlService;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 145,
+          "text": "\"LX/16eW;Lcom/tts/oecverify/BdTuringCallback;)Z\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 145,
+          "text": "LX/16eW;",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "native-type",
+          "line": 145,
+          "text": "Lcom/tts/oecverify/BdTuringCallback;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 151,
+          "text": "firstOrNull() as? OffsetInstruction ?: return false",
+          "category": "requires-cardinality-or-dataflow-review"
+        },
+        {
+          "kind": "register",
+          "line": 154,
+          "text": "registerCount - 1",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 158,
           "text": "\"Ljava/lang/Object;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 186,
+          "line": 158,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 187,
-          "text": "\"Lcom/ss/android/ugc/aweme/secapi/ISecApi;\"",
+          "line": 160,
+          "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 187,
-          "text": "Lcom/ss/android/ugc/aweme/secapi/ISecApi;",
+          "line": 160,
+          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
           "category": "stable-named-anchor"
         },
         {
-          "kind": "literal",
-          "line": 189,
-          "text": "\"popCaptcha\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 189,
-          "text": "\"popCaptchaV2\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 189,
-          "text": "name == (if (v2) \"popCaptchaV2\" else \"popCaptcha\") &&",
-          "category": "hard-coded"
-        },
-        {
           "kind": "register",
-          "line": 189,
-          "text": "v2",
-          "category": "hard-coded"
+          "line": 160,
+          "text": "parameterTypes.map(CharSequence::toString) == listOf(\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\") &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 161,
+          "text": "tryBlocks",
+          "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 190,
+          "line": 161,
           "text": "\"V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 190,
-          "text": "returnType == \"V\" &&",
+          "line": 161,
+          "text": "returnType == \"V\" && body.registerCount >= 2 && body.tryBlocks.none() &&",
           "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 161,
+          "text": "registerCount >= 2 && body.tryBlocks.none() &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 162,
+          "text": "IF_EQZ",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 162,
+          "text": "registerA == param &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 166,
+          "text": "registerCount == 1 && it.registerC == param } == true &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 167,
+          "text": "registerA == 0 &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 168,
+          "text": "RETURN_VOID",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 168,
+          "text": "RETURN_VOID",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 168,
+          "text": "lastOrNull()?.opcode == Opcode.RETURN_VOID && insns.count { it.opcode == Opcode.RETURN_VOID } == 1 &&",
+          "category": "requires-cardinality-or-dataflow-review"
+        },
+        {
+          "kind": "literal",
+          "line": 169,
+          "text": "\"fetchFeeds, filter by is ad\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 169,
+          "text": "\"fetchFeeds, filter by is duplicate\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 173,
+          "text": "v2",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 175,
+          "text": "parameterTypes.map(CharSequence::toString)",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 178,
+          "text": "singleOrNull {",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 179,
+          "text": "\"LIZJ\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 179,
+          "text": "\"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 179,
+          "text": "name == \"LIZJ\" && it.parameterTypes.none() && it.returnType == \"V\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 179,
+          "text": "parameterTypes.none() && it.returnType == \"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 182,
+          "text": "\"popCaptcha - errorcode = \"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 182,
+          "text": "\"popCaptchaV2 - riskInfo = \"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 182,
+          "text": "v2",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "literal",
+          "line": 186,
+          "text": "\"Lcom/ss/android/ugc/aweme/sec/SecApiImpl;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "native-type",
+          "line": 186,
+          "text": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 188,
+          "text": "\"Ljava/lang/Object;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "native-type",
+          "line": 188,
+          "text": "Ljava/lang/Object;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 189,
+          "text": "\"Lcom/ss/android/ugc/aweme/secapi/ISecApi;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "native-type",
+          "line": 189,
+          "text": "Lcom/ss/android/ugc/aweme/secapi/ISecApi;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 191,
+          "text": "\"popCaptcha\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 191,
+          "text": "\"popCaptchaV2\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 191,
+          "text": "name == (if (v2) \"popCaptchaV2\" else \"popCaptcha\") &&",
+          "category": "hard-coded"
         },
         {
           "kind": "register",
@@ -74337,1104 +74367,1122 @@
         {
           "kind": "literal",
           "line": 192,
+          "text": "\"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 192,
+          "text": "returnType == \"V\" &&",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 193,
+          "text": "v2",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "literal",
+          "line": 194,
           "text": "\"I\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 192,
+          "line": 194,
           "text": "\"Landroid/app/Activity;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 192,
+          "line": 194,
           "text": "\"Ljava/lang/String;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 192,
+          "line": 194,
           "text": "Landroid/app/Activity;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 192,
+          "line": 194,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 192,
+          "line": 194,
           "text": "v2",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 193,
+          "line": 195,
           "text": "\";\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 193,
+          "line": 195,
           "text": "\"LX/\"",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 194,
+          "line": 196,
           "text": "\"Landroidx/fragment/app/Fragment;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 194,
+          "line": 196,
           "text": "Landroidx/fragment/app/Fragment;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 194,
+          "line": 196,
           "text": "v2",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 195,
+          "line": 197,
           "text": "\"Ljava/lang/String;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 195,
+          "line": 197,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 196,
+          "line": 198,
           "text": "tryBlocks",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 196,
+          "line": 198,
           "text": "registerCount > p.size + 1 && body.tryBlocks.none() &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 197,
+          "line": 199,
           "text": "firstOrNull()?.opcode == Opcode.INVOKE_STATIC &&",
           "category": "requires-cardinality-or-dataflow-review"
         },
         {
           "kind": "control-flow",
-          "line": 198,
+          "line": 200,
           "text": "RETURN_VOID",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 198,
+          "line": 200,
           "text": "lastOrNull()?.opcode == Opcode.RETURN_VOID &&",
           "category": "requires-cardinality-or-dataflow-review"
         },
         {
           "kind": "control-flow",
-          "line": 199,
+          "line": 201,
           "text": "RETURN_VOID",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 201,
+          "line": 203,
           "text": "\"Ljava/lang/Object;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 201,
+          "line": 203,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 203,
+          "line": 205,
           "text": "tryBlocks",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 203,
+          "line": 205,
           "text": "registerCount == 1 && callbackBody.tryBlocks.none() &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "control-flow",
-          "line": 204,
+          "line": 206,
           "text": "RETURN_VOID",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 211,
+          "line": 213,
           "text": "parameters = method.parameterTypes.map(CharSequence::toString)",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 211,
+          "line": 213,
           "text": "parameters = method.parameterTypes.map(CharSequence::toString)",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 216,
+          "line": 218,
           "text": "\"Lcom/tts/oecverify/verify/RiskControlService;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 216,
+          "line": 218,
           "text": "Lcom/tts/oecverify/verify/RiskControlService;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 217,
+          "line": 219,
           "text": "definingClass == owner.type && owner.accessFlags ==",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 219,
+          "line": 221,
           "text": "\"Ljava/lang/Object;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 219,
+          "line": 221,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "instruction-selection",
-          "line": 220,
+          "line": 222,
           "text": "single().startsWith(\"LX/\") &&",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 220,
+          "line": 222,
           "text": "\"LX/\"",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 222,
+          "line": 224,
           "text": "\";\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 222,
+          "line": 224,
           "text": "\"LX/\"",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 222,
+          "line": 224,
           "text": "\"mDialogShowing\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 223,
+          "line": 225,
           "text": "\"Z\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 223,
+          "line": 225,
           "text": "\"mForceFetchSettings\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 224,
+          "line": 226,
           "text": "\"Ljava/lang/String;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 224,
+          "line": 226,
           "text": "\"mShowingRequestPath\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 224,
+          "line": 226,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 225,
+          "line": 227,
           "text": "\"Z\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 225,
+          "line": 227,
           "text": "\"mSyncSettings\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 226,
+          "line": 228,
           "text": "\"execute\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 226,
+          "line": 228,
           "text": "name == \"execute\" && method.accessFlags == AccessFlags.PUBLIC.value &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 227,
+          "line": 229,
           "text": "\"Z\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 227,
+          "line": 229,
           "text": "returnType == \"Z\" && parameters.size == 2 &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 227,
+          "line": 229,
           "text": "parameters.size == 2 &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 228,
+          "line": 230,
           "text": "\";\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 228,
+          "line": 230,
           "text": "\"LX/\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 228,
+          "line": 230,
           "text": "parameters[0].startsWith(\"LX/\") && parameters[0].endsWith(\";\") &&",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 229,
+          "line": 231,
           "text": "parameters[1] == callbackOwner.type &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 230,
+          "line": 232,
           "text": "\"Lcom/tts/oecverify/BdTuringCallback;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 230,
+          "line": 232,
           "text": "Lcom/tts/oecverify/BdTuringCallback;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 233,
+          "line": 235,
           "text": "\"Ljava/lang/Object;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 233,
+          "line": 235,
           "text": "Ljava/lang/Object;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 235,
+          "line": 237,
           "text": "\"onFail\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 235,
+          "line": 237,
           "text": "\"onSuccess\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 236,
+          "line": 238,
           "text": "parameterTypes.map(CharSequence::toString) ==",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 237,
+          "line": 239,
           "text": "\"I\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 237,
+          "line": 239,
           "text": "\"Lorg/json/JSONObject;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 237,
+          "line": 239,
           "text": "\"V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 237,
+          "line": 239,
           "text": "returnType == \"V\" &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 240,
+          "line": 242,
           "text": "tryBlocks",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 240,
+          "line": 242,
           "text": "registerCount == 19 && body.tryBlocks.none { it.startCodeAddress == 0 } &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 243,
+          "line": 245,
           "text": "registerA == 3 && it.registerB == body.registerCount - 3",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 246,
+          "line": 248,
           "text": "registerA == 2 && it.registerB == 3",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 247,
+          "line": 249,
           "text": "definingClass == owner.type &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 248,
+          "line": 250,
           "text": "\"Ljava/lang/String;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 248,
+          "line": 250,
           "text": "\"mShowingRequestPath\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 248,
+          "line": 250,
           "text": "name == \"mShowingRequestPath\" && it.type == \"Ljava/lang/String;\" } == true &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 248,
+          "line": 250,
           "text": "Ljava/lang/String;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 250,
+          "line": 252,
           "text": "registerA == 0 &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 258,
+          "line": 260,
           "text": "\"LIZJ\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 258,
+          "line": 260,
           "text": "name == \"LIZJ\" && it.parameterTypes.none() &&",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 258,
+          "line": 260,
           "text": "parameterTypes.none() &&",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 259,
+          "line": 261,
           "text": "\"V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 259,
+          "line": 261,
           "text": "returnType == \"V\" && it.accessFlags and AccessFlags.ABSTRACT.value != 0 &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 261,
+          "line": 263,
           "text": "\"Changed LIVE CAPTCHA callback contract for $descriptor; injection refused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 266,
+          "line": 268,
           "text": "\"No original entry body for $method\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 269,
+          "line": 271,
           "text": "\"Invalid reviewed entry boundary for $method\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 272,
+          "line": 274,
           "text": "\"owner:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 273,
+          "line": 275,
           "text": "\"access:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 274,
+          "line": 276,
           "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 274,
-          "text": "\"super:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 276,
+          "text": "\"super:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 278,
           "text": "\"interface:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 279,
+          "line": 281,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 279,
+          "line": 281,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 279,
+          "line": 281,
           "text": "\"field:\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 280,
-          "text": "\"null\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 282,
-          "text": "\"method:\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 283,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 283,
-          "text": "\")\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 283,
-          "text": "parameterTypes.joinToString(\"\") + \")\" + method.returnType)).append('\\n')",
+          "text": "\"null\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 284,
+          "text": "\"method:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 285,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 285,
+          "text": "\")\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 285,
+          "text": "parameterTypes.joinToString(\"\") + \")\" + method.returnType)).append('\\n')",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 286,
           "text": "\"flags:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 285,
+          "line": 287,
           "text": "\"registers:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 285,
+          "line": 287,
           "text": "registerCount).append('\\n')",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "control-flow",
-          "line": 286,
+          "line": 288,
           "text": "tryBlocks",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 286,
+          "line": 288,
           "text": "\"try-at-entry:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 289,
+          "line": 291,
           "text": "\" a=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 289,
+          "line": 291,
           "text": "registerA)",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 290,
+          "line": 292,
           "text": "\" b=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 290,
+          "line": 292,
           "text": "registerB)",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 291,
+          "line": 293,
           "text": "\" c=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 291,
+          "line": 293,
           "text": "registerC)",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 292,
+          "line": 294,
           "text": "\" literal=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 293,
+          "line": 295,
           "text": "\" offset=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "control-flow",
-          "line": 303,
+          "line": 305,
           "text": "return-site",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 309,
+          "line": 311,
           "text": "\"No original method body in scoped owner ${owner.type}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 312,
+          "line": 314,
           "text": "definingClass == owner.type }.map { reference ->",
           "category": "stable-named-anchor"
         },
         {
           "kind": "instruction-selection",
-          "line": 313,
+          "line": 315,
           "text": "singleOrNull { it.name == reference.name && it.type == reference.type }",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 313,
+          "line": 315,
           "text": "name == reference.name && it.type == reference.type }",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 314,
+          "line": 316,
           "text": "\"Unresolved scoped field $reference in ${owner.type}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 315,
-          "text": "\":\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 315,
-          "text": "\"field:\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 316,
-          "text": "\":\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 316,
+          "line": 317,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 317,
+          "text": "\"field:\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 318,
+          "text": "\":\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 318,
+          "text": "\":\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 319,
           "text": "\"null\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 321,
+          "line": 323,
           "text": "definingClass == owner.type && it.name != method.name } == true",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 322,
+          "line": 324,
           "text": "\"Scoped hook calls another method on ${owner.type}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 324,
+          "line": 326,
           "text": "\"access:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 325,
+          "line": 327,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 325,
+          "line": 327,
           "text": "\"super:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 326,
+          "line": 328,
           "text": "\"interface:\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 327,
+          "line": 329,
           "text": "\"\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 348,
+          "line": 350,
           "text": "\"Expected global TikTok ${baseline.packageName}, got $packageName\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 351,
+          "line": 353,
           "text": "\"Fixture version code changed: expected ${exact.versionCode}, got $versionCode\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 355,
+          "line": 357,
           "text": "\"Unreviewed TikTok APK SHA-256: $actualSha256. Use TIKTOK_EXPERIMENTAL_PORTABLE=1 only for explicitly experimental patching\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 360,
+          "line": 362,
           "text": "\"Missing reviewed fixture contract for $method; run discovery and review before enabling this APK\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 362,
+          "line": 364,
           "text": "\"Changed fixture contract for $method: expected $expected, got $actual. Register, reference, literal or control-flow layout changed; injection refused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 367,
+          "line": 369,
           "text": "\" else \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 367,
+          "line": 369,
           "text": "\"Changed class contract for ${owner.type}: inheritance, fields or method set changed${if (experimental) \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 367,
+          "line": 369,
           "text": "\"}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 375,
+          "line": 377,
           "text": "\"Portable hook owner mismatch for $method\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 376,
+          "line": 378,
           "text": "\"->\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 378,
+          "line": 380,
           "text": "\"Missing accepted portable class contract for $oldOwner\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 380,
+          "line": 382,
           "text": "\"Missing accepted portable method contract for $acceptedMethod\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 391,
+          "line": 393,
           "text": "\"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 391,
+          "line": 393,
           "text": "returnType == \"Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;\" &&",
           "category": "stable-named-anchor"
         },
         {
           "kind": "native-type",
-          "line": 391,
+          "line": 393,
           "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "control-flow",
-          "line": 392,
+          "line": 394,
           "text": "RETURN_OBJECT",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 395,
           "text": "\"first_feed_duration\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 395,
           "text": "\"fyp\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 394,
+          "line": 396,
           "text": "\"s:$marker\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 401,
+          "line": 403,
           "text": "\"V\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 401,
+          "line": 403,
           "text": "returnType == \"V\" && method.parameterTypes.map(CharSequence::toString) ==",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 401,
+          "line": 403,
           "text": "parameterTypes.map(CharSequence::toString) ==",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 402,
+          "line": 404,
           "text": "\"Landroid/content/Context;\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "native-type",
-          "line": 402,
+          "line": 404,
           "text": "Landroid/content/Context;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 417,
+          "line": 419,
           "text": "\"class (field types, inheritance or member structure)\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 418,
+          "line": 420,
           "text": "\"method (registers, literals, references, branches, switch or exception paths)\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 420,
+          "line": 422,
           "text": "\")}; injection refused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 420,
+          "line": 422,
           "text": "\"Changed portable contract for $method: ${changed.joinToString(\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 423,
+          "line": 425,
           "text": "\"experimental-member-rename\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 424,
+          "line": 426,
           "text": "\"experimental-entry-contract\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 425,
+          "line": 427,
           "text": "\"experimental-feed-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 426,
+          "line": 428,
           "text": "\"experimental-captcha-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 427,
+          "line": 429,
           "text": "\"experimental-oec-entry\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 428,
+          "line": 430,
           "text": "\"experimental-method-scope\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 429,
+          "line": 431,
           "text": "\"experimental-semantic-contract\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 434,
+          "line": 436,
           "text": "\"/tiktok-contracts/$version.json\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 436,
+          "line": 438,
           "text": "\"schema\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 436,
+          "line": 438,
           "text": "\"version\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 437,
+          "line": 439,
           "text": "\"Invalid reviewed fixture contract for TikTok $version\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 439,
+          "line": 441,
           "text": "\"package\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 439,
+          "line": 441,
           "text": "\"versionCode\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 440,
+          "line": 442,
           "text": "\"classes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 440,
+          "line": 442,
           "text": "\"methods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 440,
+          "line": 442,
           "text": "\"sha256\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 441,
+          "line": 443,
           "text": "\"portableMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 441,
+          "line": 443,
           "text": "\"portableMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 442,
+          "line": 444,
           "text": "\"portableClasses\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 442,
+          "line": 444,
           "text": "\"portableClasses\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 443,
+          "line": 445,
           "text": "\"hookMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 443,
+          "line": 445,
           "text": "\"hookMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 444,
+          "line": 446,
           "text": "\"scopedMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 444,
+          "line": 446,
           "text": "\"scopedMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 445,
+          "line": 447,
           "text": "\"memberRenameMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 445,
+          "line": 447,
           "text": "\"memberRenameMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 446,
+          "line": 448,
           "text": "\"memberRenameScopes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 446,
+          "line": 448,
           "text": "\"memberRenameScopes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 447,
+          "line": 449,
           "text": "\"entryMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 447,
+          "line": 449,
           "text": "\"entryMethods\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 451,
+          "line": 453,
           "text": "\"No reviewed injection contracts for TikTok $version\"",
           "category": "structural-or-semantic-evidence"
         }

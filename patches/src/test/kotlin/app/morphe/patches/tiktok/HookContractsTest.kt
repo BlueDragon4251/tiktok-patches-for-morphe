@@ -300,6 +300,49 @@ class HookContractsTest {
         }
     }
 
+    @Test fun liveCaptchaMethodScopePinsCallbackBranchAndOwnerHierarchy() {
+        val type = "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;"
+        val accepted = "$type->popCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V"
+        fun popup(callback: String, branch: Opcode = Opcode.IF_EQZ): MutableMethod {
+            val body = MethodImplementationBuilder(7)
+            val skip = body.getLabel("skip")
+            body.addInstruction(BuilderInstruction21t(branch, 5, skip))
+            body.addInstruction(BuilderInstruction35c(Opcode.INVOKE_INTERFACE, 1, 5, 0, 0, 0, 0,
+                ImmutableMethodReference(callback, "LIZJ", emptyList(), "V")))
+            body.addLabel("skip")
+            body.addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            return MutableMethod(ImmutableMethod(type, "popCaptchaV2", listOf(
+                "Landroid/app/Activity;", "Ljava/lang/String;", callback,
+                "Landroidx/fragment/app/Fragment;"
+            ).map { ImmutableMethodParameter(it, emptySet(), null) }, "V",
+                AccessFlags.PUBLIC.value or AccessFlags.FINAL.value,
+                emptySet(), emptySet(), body.methodImplementation))
+        }
+        fun owner(method: MutableMethod, sibling: Boolean = false,
+                  parent: String = "Ljava/lang/Object;") = ImmutableClassDef(type,
+            AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, parent,
+            emptyList(), null, emptySet(), emptyList(), listOf(method) +
+                if (sibling) listOf(ImmutableMethod(type, "unrelated", emptyList(), "V",
+                    AccessFlags.PUBLIC.value, emptySet(), emptySet(), null)) else emptyList())
+        val original = popup("LX/1NRi;")
+        val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
+            "accepted", emptyMap(), emptyMap(),
+            mapOf(accepted to FixtureContracts.portableSignature(original)),
+            mapOf(type to FixtureContracts.portableClassSignature(owner(original))),
+            scopedMethods = mapOf(accepted to FixtureContracts.portableScopeSignature(owner(original), original)))
+        val relocated = popup("LX/1Uqs;")
+        assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(
+            relocated, owner(relocated, sibling = true), accepted, reviewed))
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(relocated, owner(relocated, sibling = true,
+                parent = "Ljava/lang/Number;"), accepted, reviewed)
+        }
+        val changed = popup("LX/1Uqs;", Opcode.IF_NEZ)
+        assertThrows(PatchException::class.java) {
+            FixtureContracts.requirePortableMatch(changed, owner(changed, sibling = true), accepted, reviewed)
+        }
+    }
+
     @Test fun portableSignatureProtectsBranchesSwitchCasesAndExceptionHandlers() {
         fun branched(change: Boolean): MutableMethod {
             val b = MethodImplementationBuilder(2)

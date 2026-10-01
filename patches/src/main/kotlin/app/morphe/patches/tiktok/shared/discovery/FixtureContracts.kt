@@ -108,6 +108,8 @@ internal object FixtureContracts {
 
     /** Only these reviewed entry hooks may survive unrelated changes to their declaring class. */
     fun methodScopedHooks(): Set<String> = setOf(
+        "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(" +
+            "Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
         "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
