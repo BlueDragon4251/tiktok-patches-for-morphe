@@ -200,6 +200,13 @@ Discovery summaries were respectively 19 resolved / 35 relocated / 81
 contract-changed / 45 missing, and 19 / 35 / 83 / 43. Neither version is
 officially supported or runtime-qualified.
 
+On head `9cd7a22c82affc051a702172266060af56da6c92`, SHA-pinned probes
+observed 8/37 on each 47.1.x candidate after the App-AB integer return hook
+passed its reviewed method and owner scope. The 46.7.3 acceptance and discovery
+matrices passed 37/37 on the same head. Both 47.1.x full catalogs remain
+blocked without an output APK. The next diagnostic capture pins the Top-Tab
+method's direct same-owner callee before considering any scoped injection.
+
 ## Review order
 
 Inventory and qualification manifest; shared resolution/injection contracts;
