@@ -20,6 +20,7 @@ internal object HookEvidence {
     private val originals = linkedMapOf<String, ClassDef>()
     private val rows = linkedMapOf<String, MutableMap<String, Any?>>()
     private val sites = mutableListOf<Map<String, Any?>>()
+    private val diagnostics = linkedMapOf<String, Map<String, Any?>>()
     private val validated = hashSetOf<String>()
     private val validationMode = hashMapOf<String, String>()
     private var reviewed: FixtureContracts.Reviewed? = null
@@ -33,6 +34,7 @@ internal object HookEvidence {
         shapes.clear()
         rows.clear()
         sites.clear()
+        diagnostics.clear()
         validated.clear()
         validationMode.clear()
         reviewed = null
@@ -131,6 +133,9 @@ internal object HookEvidence {
                 "ownerShapeSha256" to originals[method.definingClass]?.let(::ownerShape),
                 "returnTypeShapeSha256" to originals[method.returnType]?.let(::fieldShape)),
             "fixtureContractSha256" to source?.let(FixtureContracts::signature),
+            "returnScopeCandidate" to source?.let { native -> originals[native.definingClass]?.let { owner ->
+                runCatching { FixtureContracts.portableReturnScopeSignature(owner, native) }.getOrNull()
+            } },
             "fixtureContractValidated" to (!experimental && method.toString() in validated),
             "portableContractValidated" to (experimental && method.toString() in validated),
             "contractMode" to if (source == null) "extension" else validationMode[method.toString()]
@@ -156,6 +161,26 @@ internal object HookEvidence {
         )
     }
 
+    /** Observations never enter the validated set or authorize a mutation. */
+    fun diagnostic(role: String, method: Method?) {
+        diagnostics[role] = if (method == null) mapOf("role" to role, "status" to "absent")
+            else evidence(role, method).also { it["role"] = role }
+    }
+
+    fun diagnosticCandidates(role: String, markers: Set<String>) {
+        val matches = originals.values.flatMap { owner -> owner.methods.filter { method ->
+            method.implementation?.instructions?.mapNotNull {
+                ((it as? ReferenceInstruction)?.reference as? StringReference)?.string
+            }?.toSet()?.containsAll(markers) == true
+        } }
+        diagnostics[role] = mapOf("role" to role, "candidateCount" to matches.size,
+            "candidates" to matches.take(16).map { evidence(role, it) }, "truncated" to (matches.size > 16))
+    }
+
+    fun diagnosticFailure(role: String, error: Throwable) {
+        diagnostics[role] = mapOf("role" to role, "status" to "discovery-failed", "error" to error.message)
+    }
+
     fun resolution(fingerprint: TikTokFingerprint, matches: List<Match>, required: Boolean, multiple: Boolean = false) {
         val id = fingerprint.hookId
         val previousRequired = rows[id]?.get("required") == true
@@ -179,7 +204,15 @@ internal object HookEvidence {
     }
 
     fun touch(method: Method, contract: String = "native-injection", index: Int? = null, code: String? = null) {
-        if (context == null) throw PatchException("Hook evidence session was not initialized before $method")
+        val current = context ?: throw PatchException("Hook evidence session was not initialized before $method")
+        selectContracts(current)
+        val key = "$contract:$method"
+        val matching = rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
+            it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
+        if (matching.isEmpty()) {
+            // Preserve the original DEX evidence even when this explicit site's validation fails.
+            rows[key] = evidence(key, method).also { it["selection"] = "explicit-site" }
+        } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         if (validationMode[method.toString()] == "experimental-boolean-replacement" &&
             !FixtureContracts.booleanReplacementInjection(index, code))
@@ -187,11 +220,6 @@ internal object HookEvidence {
         if (validationMode[method.toString()] == "experimental-typed-return" &&
             !FixtureContracts.typedReturnInjection(method, index, code))
             throw PatchException("Typed return contract allows only the reviewed null-safe filter before return-object in $method")
-        val key = "$contract:$method"
-        if (rows.values.none { it["owner"] == method.definingClass && it["name"] == method.name &&
-                it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }) {
-            rows[key] = evidence(key, method).also { it["selection"] = "explicit-site" }
-        }
     }
 
     private fun selectContracts(current: BytecodePatchContext): FixtureContracts.Reviewed = reviewed ?: run {
@@ -302,7 +330,8 @@ internal object HookEvidence {
         val report = mapOf("schema" to 2, "normalization" to 2, "experimental" to experimental,
             "package" to metadata.packageName, "version" to metadata.versionName,
             "versionCode" to metadata.versionCode, "fixtureSha256" to (apkSha256 ?: inputApkSha256(current)), "featureHead" to System.getenv("TIKTOK_FEATURE_HEAD"),
-            "fingerprints" to rows.toSortedMap().values, "injections" to sites)
+            "fingerprints" to rows.toSortedMap().values, "injections" to sites,
+            "nativeDiagnostics" to diagnostics.toSortedMap().values)
         File("tiktok-hook-report.json").writeText(GsonBuilder().setPrettyPrinting().create().toJson(report))
         val failed = rows.values.filter { it["required"] == true && it["status"] != "resolved" }
         if (failed.isNotEmpty()) throw PatchException("Unresolved mandatory hook contracts: ${failed.map { it["hook"] }}")

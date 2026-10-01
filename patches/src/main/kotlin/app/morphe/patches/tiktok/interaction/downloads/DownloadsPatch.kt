@@ -74,6 +74,7 @@ val downloadsPatch = bytecodePatch(
             }
         }
 
+        HookEvidence.diagnosticCandidates("downloads.commentImage", setOf("image/jpeg", "is_pending"))
         CommentImageWatermarkFingerprint.uniqueMethod.apply {
             val drawBitmapIndex = uniqueInstructionIndex("Comment watermark bitmap draw") { instruction ->
                 instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction is ReferenceInstruction &&

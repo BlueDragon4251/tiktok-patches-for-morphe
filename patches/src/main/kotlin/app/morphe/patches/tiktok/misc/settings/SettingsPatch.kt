@@ -8,6 +8,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
@@ -290,6 +291,22 @@ val settingsPatch = bytecodePatch(
 
             return true
         }
+
+        // Observe the complete settings chain before its first refused injection so
+        // one candidate run exposes every downstream site for review.
+        fun diagnose(role: String, resolve: () -> SmaliMethod?) {
+            runCatching(resolve).fold(
+                onSuccess = { HookEvidence.diagnostic(role, it) },
+                onFailure = { HookEvidence.diagnosticFailure(role, it) },
+            )
+        }
+        diagnose("settings.composeTitle") { composeMutable }
+        diagnose("settings.clickWrapper") { resolveClickWrapperMethod() }
+        diagnose("settings.function2") { resolveOpenDebugFunction2Method() }
+        diagnose("settings.visibleRows") { SettingsComposeRowsFingerprint.uniqueMatchOrNull()?.originalMethod }
+        diagnose("settings.supportGroup") { SupportGroupDefaultStateFingerprint.uniqueMatch().originalMethod }
+        diagnose("settings.activityCreate") { AdPersonalizationActivityOnCreateFingerprint.uniqueMatch().originalMethod }
+        diagnose("settings.activityBack") { AdPersonalizationActivityOnBackPressedFingerprint.uniqueMatch().originalMethod }
 
         if (!addOpenDebugToVisibleSettingsList()) {
             SupportGroupDefaultStateFingerprint.uniqueMethod.apply {

@@ -102,7 +102,11 @@ open class TikTokFingerprint(
     context(BytecodePatchContext)
     val uniqueMethod get() = uniqueMatch().also { HookEvidence.requireReviewed(it.originalMethod) }.method
     context(BytecodePatchContext)
-    val optionalMethod get() = uniqueMatchOrNull()?.also { HookEvidence.requireReviewed(it.originalMethod) }?.method
+    val optionalMethod get() = uniqueMatchOrNull()?.also {
+        // Absence is optional; an existing site selected for editing must be reviewed.
+        HookEvidence.resolution(this, listOf(it), required = true)
+        HookEvidence.requireReviewed(it.originalMethod)
+    }?.method
     context(BytecodePatchContext)
     val uniqueOriginalMethod get() = uniqueMatch().originalMethod.also(HookEvidence::requireReviewed)
     /** A narrowly reviewed discovery helper; this never authorizes editing its bytecode. */
