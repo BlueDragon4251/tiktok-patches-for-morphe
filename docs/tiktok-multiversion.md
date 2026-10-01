@@ -100,10 +100,13 @@ The initial fixture remains TikTok global 46.7.3, SHA-256
 No additional version is claimed. New source still needs its own matrix result even
 though that original baseline was already accepted on a device.
 
-## Latest candidate probe (2026-09-25)
+## Candidate probes (2026-10-01)
 
 The feature branch PR runs `TikTok candidate hook discovery` against the current
-global APK downloaded on a GitHub runner. `probe_latest.py` reads its package,
+global APK and the recorded 47.1.3 and 47.1.4 candidates on GitHub runners.
+The two recorded downloads use fixed version-code URLs and must match their
+SHA-256 entries in `fixtures/tiktok/candidates.json` before any scan or patch.
+`probe_latest.py` reads each package,
 version, version code, size and SHA-256 from the downloaded bytes; it rejects a
 wrong package and writes the actual identity to a per-head artifact. This probe
 does not publish the APK, add a fixture, extend Morphe compatibility or approve
@@ -132,11 +135,12 @@ unique portable baseline match. The latter preserves registers, references,
 literals, branches, switch payloads and exception paths, while normalizing
 obfuscated names. Relocated classes still need the complete class contract.
 For the reviewed `MainActivity.onCreate`, `TTVideoEngine.setLooping`,
-`OfflineModeSheetPageAssem.<clinit>` and offline options provider hooks only,
+`OfflineModeSheetPageAssem.<clinit>`, offline options provider and LIVE host
+CAPTCHA hooks only,
 an unchanged target method can survive unrelated changes to its declaring
 class when the hash-bound class access, superclass, interfaces and fields read
 by that method also match. The baseline capture
-records these four method scopes from the original 46.7.3 APK. The offline
+records these five method scopes from the original 46.7.3 APK. The offline
 provider may move between obfuscated owners only when the caller finds it
 uniquely and the same scoped contract holds. Changes to the
 method, its relevant fields, or its class hierarchy still block injection.
@@ -160,7 +164,8 @@ and the exception boundary before allowing an entry-only injection. Other
 changed or ambiguous OEC shapes remain blocked.
 The LIVE host callback descriptor is read from the uniquely selected original
 method; its abstract `LIZJ()V` interface method must exist before injection.
-The enclosing LIVE host method still needs its full portable contract.
+The enclosing LIVE host method still needs its full portable contract and
+the reviewed declaring-class access, superclass, interfaces and referenced fields.
 The report marks `portableContractValidated` separately and leaves
 `fixtureContractValidated` false, so experimental results cannot enter Morphe's
 supported-version list.
@@ -182,6 +187,16 @@ reported 19 resolved, 35 relocated, 81 contract-changed and 45 missing rows.
 The exact download provenance lives in `fixtures/tiktok/candidates.json`,
 separate from the selectable-fixture matrix. Later probes distinguish the
 same-version/different-SHA case and keep candidate qualification false.
+
+The 2026-10-01 SHA-pinned full-catalog probes on feature head
+`45e230984a18094e7a9c16a62a2b2cd48a116ec5` observed 7/37 applied patches
+for both 47.1.3 (`8b5569f592a5534652ae460ef1d9e7f7394b5b7fdde44ae64f106d76767e2622`)
+and 47.1.4 (`4226ed5d3031b68208c29f62d80ac421b281fc74201bc4163d98e442d0991a40`).
+The LIVE CAPTCHA method was uniquely validated and its patch applied; 30
+patches failed on each APK. Both results are blocked and retain no patched APK.
+Discovery summaries were respectively 19 resolved / 35 relocated / 81
+contract-changed / 45 missing, and 19 / 35 / 83 / 43. Neither version is
+officially supported or runtime-qualified.
 
 ## Review order
 

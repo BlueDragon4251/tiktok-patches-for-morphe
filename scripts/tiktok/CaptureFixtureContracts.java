@@ -1,6 +1,7 @@
 // Run only on a SHA-verified fixture and a successful full catalog report.
 // java -Xmx6g --class-path "<compiled patches>:<morphe API>:<gson>:<Kotlin stdlib>" scripts/tiktok/CaptureFixtureContracts.java APK REPORT OUTPUT
 import app.morphe.patches.tiktok.shared.discovery.FixtureContracts;
+import app.morphe.patcher.patch.PatchException;
 import com.android.tools.smali.dexlib2.DexFileFactory;
 import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.iface.ClassDef;
@@ -18,6 +19,8 @@ import java.util.*;
 class CaptureFixtureContracts {
     static final String SCREEN_CAPTURE_REGISTER = "Landroid/app/Activity;->registerScreenCaptureCallback(Ljava/util/concurrent/Executor;Landroid/app/Activity$ScreenCaptureCallback;)V";
     static final String SCREEN_CAPTURE_UNREGISTER = "Landroid/app/Activity;->unregisterScreenCaptureCallback(Landroid/app/Activity$ScreenCaptureCallback;)V";
+    static final String TOP_TABS = "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;";
+    static final String APP_AB_INT = "LX/02z2;->LJFF(IILjava/lang/String;Z)I";
     static String digest(Path file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (InputStream in = new DigestInputStream(Files.newInputStream(file), digest)) {
@@ -53,6 +56,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> methods = new TreeMap<>(), classes = new TreeMap<>();
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         TreeMap<String,String> scopedMethods = new TreeMap<>();
+        TreeMap<String,String> methodScopeCandidates = new TreeMap<>(), methodScopeCandidateErrors = new TreeMap<>();
         TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
         TreeMap<String,String> entryMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
@@ -87,6 +91,16 @@ class CaptureFixtureContracts {
                         portableClasses.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.portableClassSignature(owner));
                         if (FixtureContracts.INSTANCE.methodScopedHooks().contains(key))
                             scopedMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMethodScopeSignature(owner, method, key));
+                        if (key.equals(TOP_TABS) || key.equals(APP_AB_INT)) {
+                            try {
+                                String scope = key.equals(APP_AB_INT)
+                                    ? FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method)
+                                    : FixtureContracts.INSTANCE.portableScopeSignature(owner, method);
+                                methodScopeCandidates.put(key, scope);
+                            } catch (PatchException error) {
+                                methodScopeCandidateErrors.put(key, error.getMessage());
+                            }
+                        }
                         if (FixtureContracts.INSTANCE.memberRenameHooks().contains(key)) {
                             memberRenameMethods.putIfAbsent(key, FixtureContracts.INSTANCE.portableMemberSignature(method));
                             memberRenameScopes.putIfAbsent(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
@@ -101,6 +115,10 @@ class CaptureFixtureContracts {
         if (!wanted.isEmpty()) throw new IllegalArgumentException("Missing original hooks: " + wanted);
         if (!scopedMethods.keySet().equals(FixtureContracts.INSTANCE.methodScopedHooks()))
             throw new IllegalArgumentException("Missing method-scoped baseline hooks: " + scopedMethods.keySet());
+        Set<String> candidateKeys = new HashSet<>(methodScopeCandidates.keySet());
+        candidateKeys.addAll(methodScopeCandidateErrors.keySet());
+        if (!candidateKeys.equals(Set.of(TOP_TABS, APP_AB_INT)))
+            throw new IllegalArgumentException("Missing focused method scope candidates: " + candidateKeys);
         if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
             !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))
             throw new IllegalArgumentException("Missing member-rename baseline hooks: " + memberRenameMethods.keySet());
@@ -120,6 +138,9 @@ class CaptureFixtureContracts {
         reviewed.add("portableClasses", new Gson().toJsonTree(portableClasses));
         reviewed.add("hookMethods", new Gson().toJsonTree(hookMethods));
         reviewed.add("scopedMethods", new Gson().toJsonTree(scopedMethods));
+        // Diagnostic evidence only; the patcher never loads these entries without explicit review.
+        reviewed.add("methodScopeCandidates", new Gson().toJsonTree(methodScopeCandidates));
+        reviewed.add("methodScopeCandidateErrors", new Gson().toJsonTree(methodScopeCandidateErrors));
         reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
         reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
         reviewed.add("entryMethods", new Gson().toJsonTree(entryMethods));
