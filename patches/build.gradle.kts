@@ -3,7 +3,7 @@ group = "app.morphe"
 patches {
     about {
         name = "BlueIT TikTok Patches"
-        description = "BlueIT Service patches for TikTok 46.4.3, built for Morphe."
+        description = "BlueIT Service patches for verified TikTok global versions, built for Morphe."
         source = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
         author = "BlueIT"
         contact = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/issues"
@@ -27,7 +27,24 @@ dependencies {
     compileOnly(project(":patches:stub"))
 }
 
+// Compile the one-off fixture capture tool separately; it is not part of the patch bundle.
+val contractCapture = sourceSets.create("contractCapture") {
+    java.srcDir("../scripts/tiktok")
+    compileClasspath += sourceSets["main"].output + sourceSets["main"].compileClasspath
+    runtimeClasspath += output + compileClasspath + sourceSets["main"].runtimeClasspath
+}
+tasks.named<JavaCompile>(contractCapture.compileJavaTaskName) {
+    options.release.set(17)
+}
+
 tasks {
+    register<JavaExec>("captureTikTokContracts") {
+        description = "Capture portable and exact TikTok hook contracts from an accepted APK"
+        dependsOn(contractCapture.classesTaskName)
+        classpath = contractCapture.runtimeClasspath
+        mainClass.set("CaptureFixtureContracts")
+        jvmArgs("-Xmx6g")
+    }
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 

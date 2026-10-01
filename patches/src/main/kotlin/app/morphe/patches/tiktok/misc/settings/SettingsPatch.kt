@@ -5,12 +5,14 @@
 package app.morphe.patches.tiktok.misc.settings
 
 import app.morphe.patches.shared.compat.AppCompatibilities
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
+import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -19,6 +21,7 @@ import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method as SmaliMethod
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -43,12 +46,12 @@ private data class OpenDebugTargets(
 @Suppress("unused")
 val settingsPatch = bytecodePatch(
     name = "BlueIT Service",
-    description = "Adds the BlueIT Service settings menu to TikTok. Supports TikTok 46.4.3.",
+    description = "Adds the BlueIT Service settings menu to supported TikTok builds.",
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
 
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
         addLegacySettingsEntryFallback()
@@ -73,11 +76,15 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugTargets(): OpenDebugTargets {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.method
-            val stateClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
-                if (insn.opcode != Opcode.NEW_INSTANCE) return@firstNotNullOfOrNull null
-                ((insn as? ReferenceInstruction)?.reference as? TypeReference)?.type
-            } ?: throw PatchException("Enable Open Debug: could not resolve OpenDebug state class from defaultState().")
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueReadOnlyOriginalMethod
+            val returningRegisters = defaultState.implementation?.instructions?.filter { it.opcode == Opcode.RETURN_OBJECT }
+                ?.map { (it as OneRegisterInstruction).registerA }?.distinct()
+                ?.singleOrThrow("OpenDebug default state return register")
+                ?: throw PatchException("OpenDebug defaultState has no implementation")
+            val stateClass = defaultState.implementation!!.instructions.mapNotNull { insn ->
+                if (insn.opcode != Opcode.NEW_INSTANCE || (insn as? OneRegisterInstruction)?.registerA != returningRegisters) null
+                else ((insn as? ReferenceInstruction)?.reference as? TypeReference)?.type
+            }.distinct().singleOrThrow("OpenDebug state class returned from defaultState")
 
             val composeMethods = mutableListOf<Pair<ClassDef, SmaliMethod>>()
             classDefForEach { classDef ->
@@ -135,16 +142,15 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveClickWrapperMethod(): MutableMethod {
-            var wrapperInvokeName: String? = null
             val composeInstructions = composeMutable.implementation!!.instructions.toList()
-            val wrapperClass = composeInstructions.withIndex().firstNotNullOfOrNull { (index, insn) ->
-                if (insn.opcode != Opcode.INVOKE_DIRECT) return@firstNotNullOfOrNull null
-                val instruction = insn as? Instruction35c ?: return@firstNotNullOfOrNull null
+            val (wrapperClass, wrapperInvokeName) = composeInstructions.withIndex().mapNotNull { (index, insn) ->
+                if (insn.opcode != Opcode.INVOKE_DIRECT) return@mapNotNull null
+                val instruction = insn as? Instruction35c ?: return@mapNotNull null
                 val ref = instruction.reference as? MethodReference
-                    ?: return@firstNotNullOfOrNull null
-                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@firstNotNullOfOrNull null
+                    ?: return@mapNotNull null
+                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@mapNotNull null
                 if (ref.parameterTypes != listOf(openDebugStateClass, "Landroid/content/Context;", "I")) {
-                    return@firstNotNullOfOrNull null
+                    return@mapNotNull null
                 }
 
                 val discriminatorRegister = when (instruction.registerCount) {
@@ -165,11 +171,8 @@ val settingsPatch = bytecodePatch(
                     } ?: throw PatchException(
                     "Enable Open Debug: could not resolve click wrapper discriminator.",
                 )
-                wrapperInvokeName = "invoke\$$discriminator"
-                ref.definingClass
-            } ?: throw PatchException(
-                "Enable Open Debug: could not resolve OpenDebug click wrapper class from compose method.",
-            )
+                ref.definingClass to "invoke\$$discriminator"
+            }.distinct().singleOrThrow("OpenDebug click wrapper and constructor discriminator")
 
             val matches = mutableListOf<MutableMethod>()
             classDefForEach { classDef ->
@@ -192,18 +195,17 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugFunction2Method(): MutableMethod {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.method
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueReadOnlyOriginalMethod
             val openDebugVmClass = defaultState.definingClass
-            val lambdaClass = defaultState.implementation?.instructions?.firstNotNullOfOrNull { insn ->
-                if (insn.opcode != Opcode.INVOKE_DIRECT) return@firstNotNullOfOrNull null
+            val lambdaClass = defaultState.implementation?.instructions?.mapNotNull { insn ->
+                if (insn.opcode != Opcode.INVOKE_DIRECT) return@mapNotNull null
                 val ref = (insn as? ReferenceInstruction)?.reference as? MethodReference
-                    ?: return@firstNotNullOfOrNull null
-                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@firstNotNullOfOrNull null
-                if (ref.parameterTypes.firstOrNull() != openDebugVmClass) return@firstNotNullOfOrNull null
+                    ?: return@mapNotNull null
+                if (!ref.definingClass.startsWith("Lkotlin/jvm/internal/AwS")) return@mapNotNull null
+                if (ref.parameterTypes.firstOrNull() != openDebugVmClass) return@mapNotNull null
                 ref.definingClass
-            } ?: throw PatchException(
-                "Enable Open Debug: could not resolve OpenDebug Function2 lambda class.",
-            )
+            }?.distinct()?.singleOrThrow("OpenDebug Function2 lambda class")
+                ?: throw PatchException("Enable Open Debug: could not resolve OpenDebug Function2 lambda class.")
 
             val matches = mutableListOf<MutableMethod>()
             classDefForEach { classDef ->
@@ -253,8 +255,8 @@ val settingsPatch = bytecodePatch(
         }
 
         fun addOpenDebugToVisibleSettingsList(): Boolean {
-            val composeRowsMethod = SettingsComposeRowsFingerprint.methodOrNull ?: return false
-            val openDebugField = SupportGroupDefaultStateFingerprint.method.implementation?.instructions
+            val composeRowsMethod = SettingsComposeRowsFingerprint.optionalMethod ?: return false
+            val openDebugField = SupportGroupDefaultStateFingerprint.uniqueMethod.implementation?.instructions
                 ?.firstNotNullOfOrNull { instruction ->
                     if (instruction.opcode != Opcode.SGET_OBJECT) return@firstNotNullOfOrNull null
                     val field = (instruction as? ReferenceInstruction)?.reference as? FieldReference
@@ -291,13 +293,32 @@ val settingsPatch = bytecodePatch(
             return true
         }
 
+        // Observe the complete settings chain before its first refused injection so
+        // one candidate run exposes every downstream site for review.
+        fun diagnose(role: String, resolve: () -> SmaliMethod?) {
+            runCatching(resolve).fold(
+                onSuccess = { HookEvidence.diagnostic(role, it) },
+                onFailure = { HookEvidence.diagnosticFailure(role, it) },
+            )
+        }
+        diagnose("settings.composeTitle") { composeMutable }
+        diagnose("settings.clickWrapper") { resolveClickWrapperMethod() }
+        diagnose("settings.function2") { resolveOpenDebugFunction2Method() }
+        diagnose("settings.visibleRows") { SettingsComposeRowsFingerprint.uniqueMatchOrNull()?.originalMethod }
+        diagnose("settings.supportGroup") { SupportGroupDefaultStateFingerprint.uniqueMatch().originalMethod }
+        diagnose("settings.activityCreate") { AdPersonalizationActivityOnCreateFingerprint.uniqueMatch().originalMethod }
+        diagnose("settings.activityBack") { AdPersonalizationActivityOnBackPressedFingerprint.uniqueMatch().originalMethod }
+
         if (!addOpenDebugToVisibleSettingsList()) {
-            SupportGroupDefaultStateFingerprint.method.apply {
+            SupportGroupDefaultStateFingerprint.uniqueMethod.apply {
                 val sectionHeaderSgetIndex = indexOfFirstInstructionOrThrow {
                     opcode == Opcode.SGET_OBJECT && getReference<FieldReference>()?.name == "SECTION_HEADER"
                 }
 
                 val sectionHeaderField = getInstruction<ReferenceInstruction>(sectionHeaderSgetIndex).reference as FieldReference
+                val openDebugEnum = classDefByOrNull(sectionHeaderField.definingClass)?.fields?.singleOrNull {
+                    it.name == "OPEN_DEBUG" && it.type == sectionHeaderField.type && AccessFlags.STATIC.isSet(it.accessFlags)
+                } ?: throw PatchException("OpenDebug settings enum entry missing in ${sectionHeaderField.definingClass}")
                 val addInstruction = getInstruction<Instruction35c>(sectionHeaderSgetIndex + 1)
                 val addReference = addInstruction.reference as MethodReference
                 val listRegister = addInstruction.registerC
@@ -306,14 +327,14 @@ val settingsPatch = bytecodePatch(
                 addInstructions(
                     sectionHeaderSgetIndex + 2,
                     """
-                        sget-object v$itemRegister, ${sectionHeaderField.definingClass}->OPEN_DEBUG:${sectionHeaderField.type}
+                        sget-object v$itemRegister, $openDebugEnum
                         invoke-virtual { v$listRegister, v$itemRegister }, $addReference
                     """,
                 )
             }
         }
 
-        AdPersonalizationActivityOnCreateFingerprint.method.apply {
+        AdPersonalizationActivityOnCreateFingerprint.uniqueMethod.apply {
             val initializeSettingsIndex = implementation!!.instructions.indexOfFirst { it.opcode == Opcode.INVOKE_SUPER } + 1
             val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
             val usableRegister = implementation!!.registerCount - parameters.size - 2
@@ -330,7 +351,7 @@ val settingsPatch = bytecodePatch(
             )
         }
 
-        AdPersonalizationActivityOnBackPressedFingerprint.method.apply {
+        AdPersonalizationActivityOnBackPressedFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """

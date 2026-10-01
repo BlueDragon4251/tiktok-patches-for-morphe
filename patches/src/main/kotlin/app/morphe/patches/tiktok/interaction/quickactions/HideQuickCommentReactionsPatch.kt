@@ -4,9 +4,9 @@
  */
 package app.morphe.patches.tiktok.interaction.quickactions
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -23,17 +23,17 @@ val hideQuickCommentReactionsPatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableHideCommentQuickReactions()V",
         )
 
-        val legacyMethod = QuickCommentReactionGateLegacyFingerprint.methodOrNull
-        val gateMethod = legacyMethod ?: QuickCommentReactionGateBooleanFingerprint.method
+        val legacyMethod = QuickCommentReactionGateLegacyFingerprint.optionalMethod
+        val gateMethod = legacyMethod ?: QuickCommentReactionGateBooleanFingerprint.uniqueMethod
 
         gateMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()

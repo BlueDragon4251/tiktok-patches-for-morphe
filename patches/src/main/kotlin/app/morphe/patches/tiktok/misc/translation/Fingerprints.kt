@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok.misc.translation
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 import app.morphe.util.getReference
+import app.morphe.patches.tiktok.shared.discovery.calls
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
@@ -209,16 +210,12 @@ internal object CommentListLoadedFingerprint : Fingerprint(
     },
 )
 
-/**
- * Native multi-comment translation completion callback.
- *
- * The unique task marker survives TikTok 46.7.3, while the callback parameter
- * descriptor changed. The BlueIT hook only consumes p0 (the callback object),
- * so pinning the unstable parameter type is unnecessary.
- */
+/** Preserve the accepted audio-text completion path. The plain-text task has
+ * the same log marker, but updates a different Comment state. */
 internal object MultiCommentTranslationCompleteFingerprint : Fingerprint(
-    returnType = "V",
+    returnType = "V", parameters = emptyList(), name = "run",
     strings = listOf("MultiCommentTranslationTask startTranslate onComplete "),
+    custom = { method, _ -> method.calls("Lcom/ss/android/ugc/aweme/comment/model/Comment;", "setAudioTextIsTranslated", listOf("Z"), "V") },
 )
 
 internal object MultiCommentTranslationCacheCopyFingerprint : Fingerprint(

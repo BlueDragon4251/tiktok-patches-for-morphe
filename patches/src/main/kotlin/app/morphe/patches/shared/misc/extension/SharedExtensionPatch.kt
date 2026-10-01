@@ -98,10 +98,11 @@ open class ExtensionHook(
     internal val fingerprint: Fingerprint,
     private val insertIndexResolver: BytecodePatchContext.(Method) -> Int = { 0 },
     private val contextRegisterResolver: BytecodePatchContext.(Method) -> String = { "p0" },
+    private val methodResolver: (BytecodePatchContext.() -> app.morphe.patcher.util.proxy.mutableTypes.MutableMethod)? = null,
 ) {
     context(BytecodePatchContext)
     operator fun invoke(extensionClassDescriptor: String) {
-        fingerprint.method.apply {
+        (methodResolver?.invoke(this@BytecodePatchContext) ?: fingerprint.method).apply {
             val insertIndex = insertIndexResolver(this)
             val contextRegister = contextRegisterResolver(this)
 

@@ -1,6 +1,7 @@
 package app.morphe.patches.tiktok.layout.theme
 
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.insertAtTarget
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.AccessFlags
@@ -63,7 +64,15 @@ class NativeReturnHooksTest {
     @Test fun replacementProtectsBranchSwitchAndHandlerEntriesAndPreservesReturns() {
         paths.forEach { path ->
             val method = fixture(path)
-            method.hookNativeReturns("sidebar")
+            // Exercise the labeled insertion and verifier without bypassing the
+            // production rule that a native method needs a real reviewed APK.
+            method.implementation!!.instructions.withIndex()
+                .filter { it.value.opcode == Opcode.RETURN_OBJECT }
+                .map { it.index to (it.value as OneRegisterInstruction).registerA }.toList()
+                .asReversed().forEach { (index, register) ->
+                    method.insertAtTarget(index,
+                        "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->sidebar(Landroid/view/View;)V")
+                }
             verifyNativeReturnHooks(method, "sidebar")
             val returns = method.implementation!!.instructions
                 .filter { it.opcode == Opcode.RETURN_OBJECT }

@@ -1,7 +1,6 @@
 package app.morphe.patches.tiktok.layout.theme
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.Opcode
@@ -17,10 +16,9 @@ internal fun MutableMethod.hookNativeReturns(hook: String) {
     implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_OBJECT }
         .map { it.index to (it.value as OneRegisterInstruction).registerA }.toList()
         .asReversed().forEach { (index, register) ->
-            // Keep the original return's MethodLocation: the normal sidebar path jumps
-            // directly here. Inserting before it lets that jump bypass registration.
-            replaceInstruction(index, "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->$hook(Landroid/view/View;)V")
-            addInstruction(index + 1, "return-object v$register")
+            // The shared injection adapter retains the return's labeled location
+            // as a NOP and moves the original return behind the hook.
+            addInstruction(index, "invoke-static/range {v$register .. v$register}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->$hook(Landroid/view/View;)V")
         }
     verifyNativeReturnHooks(this, hook)
 }

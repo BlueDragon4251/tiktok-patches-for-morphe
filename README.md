@@ -2,7 +2,7 @@
 
 **BlueIT Service is a Morphe patch source for TikTok.**
 
-It targets the global TikTok package `com.zhiliaoapp.musically` on **TikTok 46.4.3** and combines the maintained patch catalog with additional BlueIT features.
+It targets the global TikTok package `com.zhiliaoapp.musically` on **TikTok 46.7.3** and combines the maintained patch catalog with additional BlueIT features. Only the exact verified APK fixture is qualified; [see the multi-version migration and fixture requirements](docs/tiktok-multiversion.md).
 
 ## Available patches
 
@@ -48,9 +48,9 @@ Open the repository as a custom source in Morphe:
 ## Supported target
 
 - App: TikTok
-- Version: `46.4.3`
+- Version: `46.7.3` (global APK, version code `2024607030`)
 - Package: `com.zhiliaoapp.musically`
-- Exact acceptance APK SHA-256: `79062fb88d2eef8d6e11bbf766b4b40ee08d89cdc594ff26b549ccce7b50c4b2`
+- Exact acceptance APK SHA-256: `b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e`
 
 ## Building
 

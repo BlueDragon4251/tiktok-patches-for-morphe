@@ -41,15 +41,18 @@ internal object StoreRegionInitTaskRunFingerprint : Fingerprint(
 
 private val initHook = ExtensionHook(
     fingerprint = MainActivityOnCreateFingerprint,
+    methodResolver = { MainActivityOnCreateFingerprint.uniqueMethod },
 )
 
 private val jatoInitHook = ExtensionHook(
     fingerprint = JatoInitTaskRunFingerprint,
+    methodResolver = { JatoInitTaskRunFingerprint.uniqueMethod },
     contextRegisterResolver = { "p1" },
 )
 
 private val storeRegionInitHook = ExtensionHook(
     fingerprint = StoreRegionInitTaskRunFingerprint,
+    methodResolver = { StoreRegionInitTaskRunFingerprint.uniqueMethod },
     contextRegisterResolver = { "p1" },
 )
 
@@ -62,12 +65,9 @@ private val baseExtensionPatch = sharedExtensionPatch(
 )
 
 
-val sharedExtensionPatch = app.morphe.patcher.patch.bytecodePatch {
+val sharedExtensionPatch = app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch {
     dependsOn(baseExtensionPatch)
     execute {
         app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint.captureOriginalClasses()
-    }
-    finalize {
-        app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint.writeReport()
     }
 }

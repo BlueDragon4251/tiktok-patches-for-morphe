@@ -4,7 +4,7 @@
  */
 package app.morphe.patches.tiktok.misc.settings
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import com.android.tools.smali.dexlib2.Opcode
@@ -15,6 +15,10 @@ private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/set
 
 context(BytecodePatchContext)
 internal fun addLegacySettingsEntryFallback() {
+        // The legacy fragment is absent from the accepted 46.7.3 APK and from
+        // the 47.1.3 candidate. Only resolve its reflected row types if the
+        // old insertion point actually exists.
+        val addSettingsMethod = AddSettingsEntryFingerprint.optionalMethod ?: return
         val createSettingsEntryMethodDescriptor =
             "$EXTENSION_CLASS_DESCRIPTOR->createSettingsEntry(" +
                 "Ljava/lang/String;" +
@@ -23,19 +27,19 @@ internal fun addLegacySettingsEntryFallback() {
 
         fun String.toClassName(): String = substring(1, length - 1).replace("/", ".")
 
-        val settingsButtonClass = SettingsEntryFingerprint.originalClassDef.type.toClassName()
-        val settingsButtonInfoClass = SettingsEntryInfoFingerprint.originalClassDef.type.toClassName()
+        val settingsButtonClass = SettingsEntryFingerprint.uniqueOriginalClassDef.type.toClassName()
+        val settingsButtonInfoClass = SettingsEntryInfoFingerprint.uniqueOriginalClassDef.type.toClassName()
 
-        // If this optional secondary row fingerprint does not match, skip it instead of failing the patch run.
-        // If fingerprints don't match, skip instead of failing the whole patch run.
-        AddSettingsEntryFingerprint.methodOrNull?.let { addSettingsMethod ->
-            val implementation = addSettingsMethod.implementation ?: return@let
+        // The optional legacy path still requires a reviewed native insertion
+        // method and row types when it is present.
+        run {
+            val implementation = addSettingsMethod.implementation ?: return
             val markIndex = implementation.instructions.indexOfFirst {
                 it.opcode == Opcode.IGET_OBJECT &&
                     (it as? Instruction22c)?.reference?.let { ref -> ref is FieldReference && ref.name == "headerUnit" } == true
             }
 
-            if (markIndex < 0) return@let
+            if (markIndex < 0) return
 
             val getUnitManager = addSettingsMethod.getInstruction(markIndex + 2)
             val addEntry = addSettingsMethod.getInstruction(markIndex + 1)
@@ -49,7 +53,7 @@ internal fun addLegacySettingsEntryFallback() {
                     const-string v1, "$settingsButtonInfoClass"
                     invoke-static {v0, v1}, $createSettingsEntryMethodDescriptor
                     move-result-object v0
-                    check-cast v0, ${SettingsEntryFingerprint.originalClassDef.type}
+                    check-cast v0, ${SettingsEntryFingerprint.uniqueOriginalClassDef.type}
                 """,
             )
         }

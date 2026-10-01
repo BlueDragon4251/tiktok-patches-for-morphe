@@ -8,12 +8,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
 import app.morphe.patches.tiktok.shared.discovery.calls
 import app.morphe.patches.tiktok.shared.discovery.readsField
 import com.android.tools.smali.dexlib2.iface.ClassDef
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -228,7 +228,7 @@ val themeEnginePatch = bytecodePatch(
     default = false,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4673())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     val classicProfileLayout by booleanOption(
         key = "classicProfileLayout",
@@ -277,16 +277,16 @@ val themeEnginePatch = bytecodePatch(
             TuxSemanticColorResolverFingerprint, TuxStyledColorResolverFingerprint,
             InboxSessionBindFingerprint, MainBottomNavigationDividerFingerprint,
             ComposePaletteProviderFingerprint).forEach { fingerprint ->
-            val matches = fingerprint.matchAll(1..1)
+            val matches = fingerprint.allMatches(1..1)
             println("[BlueIT Hook Contract] ${fingerprint.javaClass.simpleName}: ${matches.single().originalMethod}")
         }
 
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableThemeEngine()V",
         )
 
-        TuxDirectColorResolverFingerprint.method.apply {
+        TuxDirectColorResolverFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """
@@ -300,7 +300,7 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
-        TuxGenericAttributeResolverFingerprint.method.apply {
+        TuxGenericAttributeResolverFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """
@@ -314,7 +314,7 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
-        TuxSemanticColorResolverFingerprint.method.apply {
+        TuxSemanticColorResolverFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """
@@ -328,7 +328,7 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
-        TuxStyledColorResolverFingerprint.method.apply {
+        TuxStyledColorResolverFingerprint.uniqueMethod.apply {
             addInstructionsWithLabels(
                 0,
                 """
@@ -342,7 +342,7 @@ val themeEnginePatch = bytecodePatch(
             )
         }
 
-        InboxSessionBindFingerprint.method.apply {
+        InboxSessionBindFingerprint.uniqueMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }
@@ -361,13 +361,13 @@ val themeEnginePatch = bytecodePatch(
 
         // Resolve actual native roots by lifecycle contracts, and use each return's real register.
         nativeRoots.forEach { (fingerprint, hook) ->
-            val method = fingerprint.matchAll(1..1).single().method
+            val method = fingerprint.allMatches(1..1).single().method
             method.hookNativeReturns(hook)
         }
 
         // Resolve the real home pager from the native View argument's cast, then its draw owner.
         // computeScroll can advance the pager after pre-draw, so correct before it draws children.
-        val pagerInit = HomePagerViewCreatedFingerprint.matchAll(1..1).single().originalMethod
+        val pagerInit = HomePagerViewCreatedFingerprint.allMatches(1..1).single().originalMethod
         val pagerInput = pagerInit.implementation!!.registerCount - 1
         val pagerType = pagerInit.implementation!!.instructions.mapNotNull { instruction ->
             if (instruction.opcode == Opcode.CHECK_CAST &&
@@ -386,13 +386,13 @@ val themeEnginePatch = bytecodePatch(
             pagerClass = classDefBy(parent)
         }
         nativePagerDrawOwner = pagerClass.type
-        val pagerDraw = NativePagerDrawFingerprint.matchAll(1..1).single().method
+        val pagerDraw = NativePagerDrawFingerprint.allMatches(1..1).single().method
         pagerDraw.addInstruction(0,
             "invoke-static/range {p0 .. p0}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->beforePagerDraw(Landroid/view/ViewGroup;)V")
         println("[BlueIT Pager Draw Contract] $pagerType -> ${pagerClass.type}->dispatchDraw")
 
         if (classicProfileLayout == true) {
-            val method = ProfileLeftAlignFingerprint.matchAll(1..1).single().method
+            val method = ProfileLeftAlignFingerprint.allMatches(1..1).single().method
             val (index, instruction) = method.implementation!!.instructions.withIndex().single {
                 it.value.opcode == Opcode.SPUT_BOOLEAN
             }
@@ -407,7 +407,7 @@ val themeEnginePatch = bytecodePatch(
 
         // sh()/rc() write the 0.5dp separator; showBottomTab() resolves the actual tab bar.
         val navigationClass = classDefBy(MAIN_PAGE_ASSEM)
-        val dividerMethod = MainBottomNavigationDividerFingerprint.originalMethod
+        val dividerMethod = MainBottomNavigationDividerFingerprint.uniqueOriginalMethod
         val dividerField = dividerMethod.implementation!!.instructions.mapNotNull {
             ((it as? ReferenceInstruction)?.reference as? FieldReference)?.takeIf { field ->
                 field.definingClass == MAIN_PAGE_ASSEM && field.type == "Landroid/view/View;"
@@ -456,7 +456,7 @@ val themeEnginePatch = bytecodePatch(
         // Exact discovery: onCreateView has 10 registers / 4 ins and returns its ComposeView in v5
         // on both normal and caught paths. The root style is kept for window/backdrop treatment;
         // actual Compose colors are mapped separately below.
-        SettingsComposeCreateViewFingerprint.method.apply {
+        SettingsComposeCreateViewFingerprint.uniqueMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -470,7 +470,7 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
-        SettingsComposeViewCreatedFingerprint.method.apply {
+        SettingsComposeViewCreatedFingerprint.uniqueMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }
@@ -487,7 +487,7 @@ val themeEnginePatch = bytecodePatch(
         // LX/0VTU.LIZIZ is the native Compose palette provider. The returned LX/05Pc object contains
         // the packed color longs used by Settings page/card/row composables. Remap the palette once
         // per object/preset; the extension snapshots native values and can restore TikTok default.
-        ComposePaletteProviderFingerprint.method.apply {
+        ComposePaletteProviderFingerprint.uniqueMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                 .map { it.index }
@@ -508,8 +508,8 @@ val themeEnginePatch = bytecodePatch(
 
         // Narrow renderer-level fallback for any palette value that bypasses the provider snapshot.
         listOf(
-            SettingsComposeGroupRendererFingerprint.method,
-            SettingsComposeScreenRendererFingerprint.method,
+            SettingsComposeGroupRendererFingerprint.uniqueMethod,
+            SettingsComposeScreenRendererFingerprint.uniqueMethod,
         ).forEach { method ->
             val paletteReads = method.implementation!!.instructions.withIndex().mapNotNull { (index, instruction) ->
                 if (instruction.opcode != Opcode.IGET_WIDE) return@mapNotNull null
@@ -531,7 +531,7 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
-        MainActivityOnCreateFingerprint.method.apply {
+        MainActivityOnCreateFingerprint.uniqueMethod.apply {
             val returnIndices = implementation!!.instructions.withIndex()
                 .filter { it.value.opcode == Opcode.RETURN_VOID }
                 .map { it.index }

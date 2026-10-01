@@ -4,10 +4,10 @@
  */
 package app.morphe.patches.tiktok.interaction.quickactions
 
-import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
-import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -28,10 +28,10 @@ val disableLongPressQuickSharePatch = bytecodePatch(
     default = true,
 ) {
     dependsOn(sharedExtensionPatch)
-    compatibleWith(*AppCompatibilities.tiktok4643())
+    compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        SettingsStatusLoadFingerprint.method.addInstruction(
+        SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
             "invoke-static {}, " +
                 "Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableDisableLongPressQuickShare()V",
@@ -40,7 +40,7 @@ val disableLongPressQuickSharePatch = bytecodePatch(
         // TikTok 46.7.3 moved the experiment from the old LX/0BJV scalar gate into
         // an Object provider. Override the raw int before TikTok boxes it with
         // Integer.valueOf(), preserving the provider's return contract.
-        val providerMethod = LongPressQuickShareProviderFingerprint.methodOrNull
+        val providerMethod = LongPressQuickShareProviderFingerprint.optionalMethod
         if (providerMethod != null) {
             providerMethod.apply {
                 val boxIndex = indexOfFirstInstructionOrThrow {
@@ -68,8 +68,8 @@ val disableLongPressQuickSharePatch = bytecodePatch(
             }
         } else {
             // Retain the legacy layouts as a fallback for structurally compatible builds.
-            val legacyMethod = LongPressQuickShareGateLegacyFingerprint.methodOrNull
-            val gateMethod = legacyMethod ?: LongPressQuickShareGateBooleanFingerprint.method
+            val legacyMethod = LongPressQuickShareGateLegacyFingerprint.optionalMethod
+            val gateMethod = legacyMethod ?: LongPressQuickShareGateBooleanFingerprint.uniqueMethod
 
             gateMethod.apply {
                 val returnIndex = indexOfFirstInstructionOrThrow {
