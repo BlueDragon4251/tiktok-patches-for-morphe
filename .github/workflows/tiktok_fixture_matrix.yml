@@ -65,7 +65,7 @@ jobs:
           bundles = [p for p in pathlib.Path('patches/build/libs').glob('*.mpp') if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
           if len(bundles) != 1:
               raise SystemExit(f'Expected exactly one runtime bundle: {bundles}')
-          subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture', '${{ matrix.id }}', '--apk', 'fixture.apk', '--bundle', str(bundles[0]), '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'], '--output', 'reports/${{ matrix.id }}'], check=True)
+          subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture', '${{ matrix.id }}', '--apk', 'fixture.apk', '--bundle', str(bundles[0]), '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'], '--output', 'reports/${{ matrix.id }}', '--phase', 'catalog'], check=True)
           PY
       - name: Capture baseline portable contracts from accepted original APK
         if: matrix.id == 'global-46.7.3'
@@ -98,6 +98,24 @@ jobs:
                    for method, signature in captured['portableMethods'].items()}
           if len(pairs) != len(captured['portableMethods']):
               raise SystemExit('Ambiguous accepted portable class/method contract')
+          PY
+      - name: Upload catalog and captured contracts before DEX comparison
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-${{ matrix.id }}-${{ inputs.kind }}-catalog-${{ env.FEATURE_HEAD }}
+          path: |
+            reports/**/*.json
+            reports/**/*.log
+          retention-days: 30
+          if-no-files-found: error
+      - name: Compare baseline DEX and complete qualification
+        run: |
+          python3 - <<'PY'
+          import pathlib, os, subprocess
+          bundles = [p for p in pathlib.Path('patches/build/libs').glob('*.mpp') if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          if len(bundles) != 1:
+              raise SystemExit(f'Expected exactly one runtime bundle: {bundles}')
+          subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture', '${{ matrix.id }}', '--apk', 'fixture.apk', '--bundle', str(bundles[0]), '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'], '--output', 'reports/${{ matrix.id }}', '--phase', 'discovery'], check=True)
           PY
       - name: Upload per-version evidence
         if: always()

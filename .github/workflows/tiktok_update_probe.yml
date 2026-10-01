@@ -85,17 +85,6 @@ jobs:
           name: tiktok-candidate-identity-${{ matrix.id }}-${{ github.event.pull_request.head.sha }}
           path: candidate-identity.json
           retention-days: 30
-      - name: Rediscover baseline hooks in candidate APK
-        run: |
-          python3 scripts/tiktok/rediscover_hooks.py \
-            fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
-      - name: Inspect changed OEC CAPTCHA signatures
-        run: |
-          python3 scripts/tiktok/inspect_native_targets.py candidate.apk \
-            --target 'Lcom/tts/oecverify/verify/RiskControlService;' \
-            --target 'Lcom/tts/oecverify/BdTuringCallback;' \
-            --related-prefix 'Lcom/tts/oecverify/' \
-            --output candidate-oec-evidence.json
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -126,6 +115,24 @@ jobs:
               command += ['--expected-sha', os.environ['EXPECTED_SHA']]
           subprocess.run(command, check=True)
           PY
+      - name: Upload full catalog result before diagnostic DEX scans
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-${{ matrix.id }}-catalog-${{ github.event.pull_request.head.sha }}
+          path: reports/${{ matrix.id }}/*.json
+          retention-days: 30
+          if-no-files-found: error
+      - name: Rediscover baseline hooks in candidate APK
+        run: |
+          python3 scripts/tiktok/rediscover_hooks.py \
+            fixtures/tiktok/46.7.3/portable-hooks.json candidate.apk
+      - name: Inspect changed OEC CAPTCHA signatures
+        run: |
+          python3 scripts/tiktok/inspect_native_targets.py candidate.apk \
+            --target 'Lcom/tts/oecverify/verify/RiskControlService;' \
+            --target 'Lcom/tts/oecverify/BdTuringCallback;' \
+            --related-prefix 'Lcom/tts/oecverify/' \
+            --output candidate-oec-evidence.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
