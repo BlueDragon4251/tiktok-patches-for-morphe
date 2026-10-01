@@ -21,6 +21,7 @@ import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.Method as SmaliMethod
+import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -315,6 +316,9 @@ val settingsPatch = bytecodePatch(
                 }
 
                 val sectionHeaderField = getInstruction<ReferenceInstruction>(sectionHeaderSgetIndex).reference as FieldReference
+                val openDebugEnum = classDefByOrNull(sectionHeaderField.definingClass)?.fields?.singleOrNull {
+                    it.name == "OPEN_DEBUG" && it.type == sectionHeaderField.type && AccessFlags.STATIC.isSet(it.accessFlags)
+                } ?: throw PatchException("OpenDebug settings enum entry missing in ${sectionHeaderField.definingClass}")
                 val addInstruction = getInstruction<Instruction35c>(sectionHeaderSgetIndex + 1)
                 val addReference = addInstruction.reference as MethodReference
                 val listRegister = addInstruction.registerC
@@ -323,7 +327,7 @@ val settingsPatch = bytecodePatch(
                 addInstructions(
                     sectionHeaderSgetIndex + 2,
                     """
-                        sget-object v$itemRegister, ${sectionHeaderField.definingClass}->OPEN_DEBUG:${sectionHeaderField.type}
+                        sget-object v$itemRegister, $openDebugEnum
                         invoke-virtual { v$listRegister, v$itemRegister }, $addReference
                     """,
                 )

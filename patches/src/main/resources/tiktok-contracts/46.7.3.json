@@ -757,6 +757,7 @@
     "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;-\u003eM9()Ljava/util/List;": "71e7c7c4d3ef5f19d720d33e93906ee4258911ee1efbf4ac575945c20754d398",
     "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;-\u003eQB()Ljava/util/List;": "71e7c7c4d3ef5f19d720d33e93906ee4258911ee1efbf4ac575945c20754d398",
     "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-\u003e<clinit>()V": "d43c6de45600375e5994519519b519c024b1fc7124cba2ec108a2ca9b554b0b2",
+    "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;-\u003edefaultState()LX/06Ty;": "2050c8aa2a82fbaeceb98a4d8ac38a2d865a10ea15faace4418f4a9ea6d3efb1",
     "Lcom/ss/ttvideoengine/TTVideoEngine;-\u003esetLooping(Z)V": "35592f66dd803db0c476b08825d53cdb6975479f8fe41707e2b627405f37f4d9"
   },
   "memberRenameMethods": {

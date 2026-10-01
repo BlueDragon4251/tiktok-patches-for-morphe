@@ -214,10 +214,13 @@ internal object HookEvidence {
             rows[key] = evidence(key, method).also { it["selection"] = "explicit-site" }
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
-        if (validationMode[method.toString()] == "experimental-boolean-replacement" &&
+        val mode = validationMode[method.toString()]
+        if (mode in SiteContracts.modes && !SiteContracts.mutationAllowed(mode!!, method, index, code))
+            throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
+        if (mode == "experimental-boolean-replacement" &&
             !FixtureContracts.booleanReplacementInjection(index, code))
             throw PatchException("Boolean replacement contract allows only constant false at entry in $method")
-        if (validationMode[method.toString()] == "experimental-typed-return" &&
+        if (mode == "experimental-typed-return" &&
             !FixtureContracts.typedReturnInjection(method, index, code))
             throw PatchException("Typed return contract allows only the reviewed null-safe filter before return-object in $method")
     }

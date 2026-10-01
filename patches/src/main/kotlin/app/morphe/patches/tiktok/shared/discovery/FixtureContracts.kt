@@ -115,6 +115,7 @@ internal object FixtureContracts {
         "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;",
         "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->QB()Ljava/util/List;",
         "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
+        "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;->defaultState()LX/06Ty;",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
         "LX/0AIU;->LJFF()Ljava/util/List;",
     )
@@ -572,11 +573,12 @@ internal object FixtureContracts {
             captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
+        val siteMode = SiteContracts.mode(method, acceptedMethod)
         val typedReturnMatch = typedReturnBoundary(method, acceptedMethod)
         val booleanReplacementMatch = booleanReplacementBoundary(method, acceptedMethod)
         val classMatches = fullClassMatches || scopedMatch
         if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch &&
-            !captchaEntryMatch && !oecEntryMatch && !booleanReplacementMatch && !typedReturnMatch) {
+            !captchaEntryMatch && !oecEntryMatch && !booleanReplacementMatch && !typedReturnMatch && siteMode == null) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -589,6 +591,7 @@ internal object FixtureContracts {
             throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused$trace")
         }
         return when {
+            siteMode != null -> siteMode
             typedReturnMatch -> "experimental-typed-return"
             booleanReplacementMatch -> "experimental-boolean-replacement"
             memberRenameMatch -> "experimental-member-rename"

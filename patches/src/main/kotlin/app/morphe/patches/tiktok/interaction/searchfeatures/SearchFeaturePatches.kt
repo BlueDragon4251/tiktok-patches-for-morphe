@@ -34,7 +34,7 @@ private fun BytecodePatchContext.patchBooleanGate(
                 addInstructions(
                     returnIndex,
                     """
-                        invoke-static {v$register}, $FEATURE_CONTROLS_DESCRIPTOR->$extensionMethod(Z)Z
+                        invoke-static/range {v$register .. v$register}, $FEATURE_CONTROLS_DESCRIPTOR->$extensionMethod(Z)Z
                         move-result v$register
                     """,
                 )
