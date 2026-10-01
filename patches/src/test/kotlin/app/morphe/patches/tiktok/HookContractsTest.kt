@@ -466,6 +466,12 @@ class HookContractsTest {
         val changed = owner(2, unrelated = true)
         assertNotEquals(digest, FixtureContracts.portableCallScopeSignature(
             changed, changed.methods.single { it.name == "M9" }))
+        val originalTrace = FixtureContracts.portableCallScopeTrace(original, method)
+        val changedTrace = FixtureContracts.portableCallScopeTrace(
+            changed, changed.methods.single { it.name == "M9" })
+        assertEquals(3, originalTrace.size)
+        assertEquals(originalTrace.take(2), changedTrace.take(2))
+        assertNotEquals(originalTrace.last(), changedTrace.last())
         val accepted = "$type->M9()Ljava/util/List;"
         val reviewed = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030,
             "accepted", emptyMap(), emptyMap(),

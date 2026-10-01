@@ -314,7 +314,16 @@ internal object FixtureContracts {
         portableScopeSignature(owner, method, allowSelfCalls = true)
 
     /** Pin the same-owner call closure as well as the return hook's field and class boundary. */
-    fun portableCallScopeSignature(owner: ClassDef, method: Method): String {
+    fun portableCallScopeSignature(owner: ClassDef, method: Method): String =
+        HookEvidence.sha256(portableCallScopeBodies(owner, method).joinToString("\n"))
+
+    /** Diagnostic hashes in call traversal order; no unreviewed bytes are accepted from these. */
+    fun portableCallScopeTrace(owner: ClassDef, method: Method): List<String> =
+        portableCallScopeBodies(owner, method).mapIndexed { index, body ->
+            "$index:${HookEvidence.sha256(body)}"
+        }
+
+    private fun portableCallScopeBodies(owner: ClassDef, method: Method): List<String> {
         val visited = mutableSetOf<String>()
         val bodies = mutableListOf<String>()
         fun visit(current: Method) {
@@ -335,7 +344,7 @@ internal object FixtureContracts {
         }
         visit(method)
         if (visited.size < 2) throw PatchException("No same-owner callee in ${owner.type}")
-        return HookEvidence.sha256(bodies.joinToString("\n"))
+        return bodies
     }
 
     private fun portableScopeSignature(owner: ClassDef, method: Method, allowSelfCalls: Boolean): String {
@@ -451,7 +460,11 @@ internal object FixtureContracts {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
             }
-            throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused")
+            val trace = if (acceptedMethod ==
+                "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;" &&
+                methodMatches && !classMatches) "; callScopeTrace=${portableCallScopeTrace(owner, method)}"
+                else ""
+            throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused$trace")
         }
         return when {
             memberRenameMatch -> "experimental-member-rename"

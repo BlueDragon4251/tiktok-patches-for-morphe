@@ -58,6 +58,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> portableMethods = new TreeMap<>(), portableClasses = new TreeMap<>();
         TreeMap<String,String> scopedMethods = new TreeMap<>();
         TreeMap<String,String> methodScopeCandidates = new TreeMap<>(), methodScopeCandidateErrors = new TreeMap<>();
+        TreeMap<String,List<String>> methodScopeTraces = new TreeMap<>();
         TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
         TreeMap<String,String> entryMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
@@ -98,6 +99,8 @@ class CaptureFixtureContracts {
                                     ? FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method)
                                     : FixtureContracts.INSTANCE.portableCallScopeSignature(owner, method);
                                 methodScopeCandidates.put(key, scope);
+                                if (key.equals(TOP_TABS) || key.equals(BOTTOM_TABS))
+                                    methodScopeTraces.put(key, FixtureContracts.INSTANCE.portableCallScopeTrace(owner, method));
                             } catch (Exception error) {
                                 // Kotlin does not expose checked throws to javac. Keep
                                 // unexpected capture failures fatal, while recording a
@@ -146,6 +149,7 @@ class CaptureFixtureContracts {
         // Diagnostic evidence only; the patcher never loads these entries without explicit review.
         reviewed.add("methodScopeCandidates", new Gson().toJsonTree(methodScopeCandidates));
         reviewed.add("methodScopeCandidateErrors", new Gson().toJsonTree(methodScopeCandidateErrors));
+        reviewed.add("methodScopeTraces", new Gson().toJsonTree(methodScopeTraces));
         reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
         reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
         reviewed.add("entryMethods", new Gson().toJsonTree(entryMethods));
