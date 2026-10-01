@@ -60,6 +60,7 @@ class CaptureFixtureContracts {
         TreeMap<String,String> methodScopeCandidates = new TreeMap<>(), methodScopeCandidateErrors = new TreeMap<>();
         TreeMap<String,List<String>> methodScopeTraces = new TreeMap<>();
         TreeMap<String,List<String>> methodScopeDetails = new TreeMap<>();
+        TreeMap<String,String> returnScopeCandidates = new TreeMap<>();
         TreeMap<String,String> memberRenameMethods = new TreeMap<>(), memberRenameScopes = new TreeMap<>();
         TreeMap<String,String> entryMethods = new TreeMap<>();
         Set<String> allSite = new TreeSet<>();
@@ -87,6 +88,8 @@ class CaptureFixtureContracts {
                     }
                     if (selected) {
                         String key = method.toString();
+                        if (key.equals(TOP_TABS) || key.equals(BOTTOM_TABS))
+                            returnScopeCandidates.put(key, FixtureContracts.INSTANCE.portableReturnScopeSignature(owner, method));
                         if (methods.putIfAbsent(key, FixtureContracts.INSTANCE.signature(method)) != null)
                             throw new IllegalArgumentException("Duplicate original method " + key);
                         classes.putIfAbsent(owner.getType(), FixtureContracts.INSTANCE.classSignature(owner));
@@ -130,6 +133,8 @@ class CaptureFixtureContracts {
         candidateKeys.addAll(methodScopeCandidateErrors.keySet());
         if (!candidateKeys.equals(Set.of(TOP_TABS, BOTTOM_TABS, APP_AB_INT)))
             throw new IllegalArgumentException("Missing focused method scope candidates: " + candidateKeys);
+        if (!returnScopeCandidates.keySet().equals(Set.of(TOP_TABS, BOTTOM_TABS)))
+            throw new IllegalArgumentException("Missing tab return scope candidates: " + returnScopeCandidates.keySet());
         if (!memberRenameMethods.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()) ||
             !memberRenameScopes.keySet().equals(FixtureContracts.INSTANCE.memberRenameHooks()))
             throw new IllegalArgumentException("Missing member-rename baseline hooks: " + memberRenameMethods.keySet());
@@ -154,6 +159,8 @@ class CaptureFixtureContracts {
         reviewed.add("methodScopeCandidateErrors", new Gson().toJsonTree(methodScopeCandidateErrors));
         reviewed.add("methodScopeTraces", new Gson().toJsonTree(methodScopeTraces));
         reviewed.add("methodScopeDetails", new Gson().toJsonTree(methodScopeDetails));
+        // Return-site filters preserve the original calls and only transform the returned List.
+        reviewed.add("returnScopeCandidates", new Gson().toJsonTree(returnScopeCandidates));
         reviewed.add("memberRenameMethods", new Gson().toJsonTree(memberRenameMethods));
         reviewed.add("memberRenameScopes", new Gson().toJsonTree(memberRenameScopes));
         reviewed.add("entryMethods", new Gson().toJsonTree(entryMethods));
