@@ -213,6 +213,23 @@ internal object HookEvidence {
         }
     }
 
+    fun requireReadOnlyDiscovery(method: Method) {
+        val current = context ?: throw PatchException("Hook evidence session missing before $method")
+        selectContracts(current)
+        if (!experimental) {
+            requireReviewed(method)
+            return
+        }
+        val source = original(method) ?: throw PatchException("No original APK method for $method")
+        if (!FixtureContracts.openDebugDiscoveryBoundary(source))
+            throw PatchException("Changed read-only OpenDebug discovery boundary for $method")
+        // Deliberately do not put this method in validated: touch() must independently
+        // validate the native injection contract if any caller attempts to edit it.
+        rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
+            it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }
+            .forEach { it["contractMode"] = "experimental-read-only-discovery" }
+    }
+
     fun requireReviewed(method: Method) {
         if (method.definingClass.startsWith("Lapp/morphe/")) return
         val current = context ?: throw PatchException("Hook evidence session missing before $method")

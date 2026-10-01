@@ -130,6 +130,29 @@ internal object FixtureContracts {
             portableCallScopeSignature(owner, method)
         else portableScopeSignature(owner, method)
 
+    /** Discover the state and callback types without changing this resource-bearing helper. */
+    fun openDebugDiscoveryBoundary(method: Method): Boolean {
+        val owner = "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
+        val body = method.implementation ?: return false
+        val instructions = body.instructions.toList()
+        if (method.definingClass != owner || method.name != "defaultState" ||
+            method.parameterTypes.isNotEmpty() || !method.returnType.startsWith("LX/") ||
+            method.accessFlags and AccessFlags.STATIC.value != 0 || body.tryBlocks.any()) return false
+        val returns = instructions.filter { it.opcode == Opcode.RETURN_OBJECT }
+        val register = (returns.singleOrNull() as? OneRegisterInstruction)?.registerA ?: return false
+        if (instructions.lastOrNull() != returns.single()) return false
+        val states = instructions.filter { it.opcode == Opcode.NEW_INSTANCE &&
+            (it as? OneRegisterInstruction)?.registerA == register }
+        if (states.size != 1 || (states.single() as? ReferenceInstruction)?.reference?.toString() != method.returnType)
+            return false
+        val calls = instructions.filter { it.opcode == Opcode.INVOKE_DIRECT }.mapNotNull {
+            (it as? ReferenceInstruction)?.reference as? MethodReference
+        }
+        return calls.count { it.definingClass == method.returnType && it.name == "<init>" } == 1 &&
+            calls.count { it.definingClass.startsWith("Lkotlin/jvm/internal/AwS") && it.name == "<init>" &&
+                it.parameterTypes.map(CharSequence::toString) == listOf(owner, "I") } == 1
+    }
+
     /** The FYP response has unique feed markers but renamed app method references in 47.1.3. */
     fun memberRenameHooks(): Set<String> = setOf(
         "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;->LIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",

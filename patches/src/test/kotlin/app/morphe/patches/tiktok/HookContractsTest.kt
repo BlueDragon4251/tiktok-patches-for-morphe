@@ -17,6 +17,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethodParameter
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference
+import com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableStringReference
 import org.junit.Assert.*
 import org.junit.Test
@@ -25,6 +26,27 @@ class HookContractsTest {
     private fun method(b: MethodImplementationBuilder, params: List<String> = emptyList()) = MutableMethod(
         ImmutableMethod("LX/Fixture;", "renamed", params.map { ImmutableMethodParameter(it, emptySet(), null) }, "I",
             AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
+
+    @Test fun readOnlyOpenDebugDiscoveryPinsReturnedStateAndBoundCallback() {
+        val owner = "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
+        fun helper(state: String = "LX/State;", bound: String = owner, literal: Int = 1) =
+            ImmutableMethod(owner, "defaultState", emptyList(), "LX/State;", AccessFlags.PUBLIC.value,
+                emptySet(), emptySet(), MethodImplementationBuilder(6).apply {
+                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 0, ImmutableTypeReference(state)))
+                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 1,
+                        ImmutableTypeReference("Lkotlin/jvm/internal/AwSFixture;")))
+                    addInstruction(BuilderInstruction11n(Opcode.CONST_4, 2, literal))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 3, 1, 5, 2, 0, 0,
+                        ImmutableMethodReference("Lkotlin/jvm/internal/AwSFixture;", "<init>", listOf(bound, "I"), "V")))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 2, 0, 1, 0, 0, 0,
+                        ImmutableMethodReference(state, "<init>", listOf("Lkotlin/jvm/internal/AwSFixture;"), "V")))
+                    addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+                }.methodImplementation)
+        assertTrue(FixtureContracts.openDebugDiscoveryBoundary(helper()))
+        assertTrue(FixtureContracts.openDebugDiscoveryBoundary(helper(literal = 2)))
+        assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(state = "LX/Other;")))
+        assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(bound = "LX/Other;")))
+    }
 
     @Test fun missingAndAmbiguousCandidatesFail() {
         assertThrows(PatchException::class.java) { emptyList<String>().singleOrThrow("missing") }

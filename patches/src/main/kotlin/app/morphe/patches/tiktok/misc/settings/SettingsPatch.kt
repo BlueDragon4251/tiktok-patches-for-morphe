@@ -74,7 +74,7 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugTargets(): OpenDebugTargets {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueReadOnlyOriginalMethod
             val returningRegisters = defaultState.implementation?.instructions?.filter { it.opcode == Opcode.RETURN_OBJECT }
                 ?.map { (it as OneRegisterInstruction).registerA }?.distinct()
                 ?.singleOrThrow("OpenDebug default state return register")
@@ -193,7 +193,7 @@ val settingsPatch = bytecodePatch(
         }
 
         fun resolveOpenDebugFunction2Method(): MutableMethod {
-            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueMethod
+            val defaultState = OpenDebugCellVmDefaultStateFingerprint.uniqueReadOnlyOriginalMethod
             val openDebugVmClass = defaultState.definingClass
             val lambdaClass = defaultState.implementation?.instructions?.mapNotNull { insn ->
                 if (insn.opcode != Opcode.INVOKE_DIRECT) return@mapNotNull null
