@@ -91,7 +91,7 @@ internal object ContractInstructions {
     private fun MutableMethod.inject(index: Int, code: String, labels: Array<out ExternalLabel>? = null) {
         val body = implementation ?: throw PatchException("Injection contract: no body: $this")
         if (index !in 0..body.instructions.size) throw PatchException("Injection contract: invalid index $index in $this")
-        HookEvidence.touch(this)
+        HookEvidence.touch(this, index = index, code = code)
         try {
             val target = body.instructions.getOrNull(index)
             if (target != null) insertAtTarget(index, code, labels)

@@ -69,7 +69,7 @@ val downloadsPatch = bytecodePatch(
             val register = getInstruction<OneRegisterInstruction>(returnIndex).registerA
             addInstructions(
                 returnIndex,
-                "invoke-static {v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V",
+                "invoke-static/range {v$register .. v$register}, $EXTENSION_CLASS_DESCRIPTOR->patchVideoObject(Lcom/ss/android/ugc/aweme/feed/model/Video;)V",
             )
             }
         }

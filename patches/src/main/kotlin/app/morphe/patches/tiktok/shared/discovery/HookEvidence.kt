@@ -178,9 +178,15 @@ internal object HookEvidence {
         }
     }
 
-    fun touch(method: Method, contract: String = "native-injection") {
+    fun touch(method: Method, contract: String = "native-injection", index: Int? = null, code: String? = null) {
         if (context == null) throw PatchException("Hook evidence session was not initialized before $method")
         requireReviewed(method)
+        if (validationMode[method.toString()] == "experimental-boolean-replacement" &&
+            !FixtureContracts.booleanReplacementInjection(index, code))
+            throw PatchException("Boolean replacement contract allows only constant false at entry in $method")
+        if (validationMode[method.toString()] == "experimental-typed-return" &&
+            !FixtureContracts.typedReturnInjection(method, index, code))
+            throw PatchException("Typed return contract allows only the reviewed null-safe filter before return-object in $method")
         val key = "$contract:$method"
         if (rows.values.none { it["owner"] == method.definingClass && it["name"] == method.name &&
                 it["parameters"] == method.parameterTypes.map(CharSequence::toString) && it["returns"] == method.returnType }) {

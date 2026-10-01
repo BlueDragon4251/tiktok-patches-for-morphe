@@ -27,25 +27,72 @@ class HookContractsTest {
         ImmutableMethod("LX/Fixture;", "renamed", params.map { ImmutableMethodParameter(it, emptySet(), null) }, "I",
             AccessFlags.PUBLIC.value or AccessFlags.STATIC.value, emptySet(), emptySet(), b.methodImplementation))
 
-    @Test fun readOnlyOpenDebugDiscoveryPinsReturnedStateAndBoundCallback() {
+    @Test fun typedReturnContractsPermitOnlyTheReviewedCallAtTheActualReturn() {
+        val type = "Lcom/ss/android/ugc/aweme/feed/model/Aweme;"
+        val video = "Lcom/ss/android/ugc/aweme/feed/model/Video;"
+        val accepted = "$type->getVideo()$video"
+        fun getter(result: String = video) = ImmutableMethod(type, "getVideo", emptyList(), result,
+            AccessFlags.PUBLIC.value, emptySet(), emptySet(), MethodImplementationBuilder(18).apply {
+                addInstruction(BuilderInstruction21s(Opcode.CONST_16, 16, 0))
+                addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 16))
+            }.methodImplementation)
+        val method = getter()
+        val call = "invoke-static/range {v16 .. v16}, Lapp/morphe/extension/tiktok/download/DownloadsPatch;->patchVideoObject($video)V"
+        assertTrue(FixtureContracts.typedReturnBoundary(method, accepted))
+        assertFalse(FixtureContracts.typedReturnBoundary(getter("Ljava/lang/Object;"), accepted))
+        assertTrue(FixtureContracts.typedReturnInjection(method, 1, call))
+        assertFalse(FixtureContracts.typedReturnInjection(method, 0, call))
+        assertFalse(FixtureContracts.typedReturnInjection(method, 1, call.replace("v16", "v0")))
+        assertFalse(FixtureContracts.typedReturnInjection(method, 1, call + "\nconst/4 v0, 0x1"))
+    }
+
+    @Test fun booleanReplacementPinsNamedSignatureAndOnlyPermitsFalseAtEntry() {
+        val type = "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;"
+        val accepted = "$type->enableForcedLogin(Z)Z"
+        fun predicate(name: String = "enableForcedLogin", flags: Int = AccessFlags.PUBLIC.value,
+                      result: String = "Z") = ImmutableMethod(type, name,
+            listOf(ImmutableMethodParameter("Z", emptySet(), null)), result, flags,
+            emptySet(), emptySet(), MethodImplementationBuilder(2).apply {
+                addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            }.methodImplementation)
+        assertTrue(FixtureContracts.booleanReplacementBoundary(predicate(), accepted))
+        assertFalse(FixtureContracts.booleanReplacementBoundary(predicate(name = "other"), accepted))
+        assertFalse(FixtureContracts.booleanReplacementBoundary(predicate(result = "I"), accepted))
+        assertFalse(FixtureContracts.booleanReplacementBoundary(
+            predicate(flags = AccessFlags.PUBLIC.value or AccessFlags.STATIC.value), accepted))
+        assertTrue(FixtureContracts.booleanReplacementInjection(0, "const/4 v0, 0x0\nreturn v0"))
+        assertFalse(FixtureContracts.booleanReplacementInjection(1, "const/4 v0, 0x0\nreturn v0"))
+        assertFalse(FixtureContracts.booleanReplacementInjection(0, "const/4 v0, 0x1\nreturn v0"))
+        assertFalse(FixtureContracts.booleanReplacementInjection(null, null))
+    }
+
+    @Test fun readOnlyOpenDebugDiscoveryPinsConcreteStateAndBoundCallback() {
         val owner = "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
-        fun helper(state: String = "LX/State;", bound: String = owner, literal: Int = 1) =
-            ImmutableMethod(owner, "defaultState", emptyList(), "LX/State;", AccessFlags.PUBLIC.value,
-                emptySet(), emptySet(), MethodImplementationBuilder(6).apply {
-                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 0, ImmutableTypeReference(state)))
-                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 1,
-                        ImmutableTypeReference("Lkotlin/jvm/internal/AwSFixture;")))
-                    addInstruction(BuilderInstruction11n(Opcode.CONST_4, 2, literal))
-                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 3, 1, 5, 2, 0, 0,
+        fun helper(bound: String = owner, resource: Int = 0x7f010001, returned: Int = 4) =
+            ImmutableMethod(owner, "defaultState", emptyList(), "LX/StateInterface;",
+                AccessFlags.PUBLIC.value or AccessFlags.FINAL.value, emptySet(), emptySet(),
+                MethodImplementationBuilder(6).apply {
+                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 4, ImmutableTypeReference("LX/State;")))
+                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 3, ImmutableTypeReference("LX/Wrapper;")))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 2, 3, 5, 0, 0, 0,
+                        ImmutableMethodReference("LX/Wrapper;", "<init>", listOf("Ljava/lang/Object;"), "V")))
+                    addInstruction(BuilderInstruction31i(Opcode.CONST, 0, resource))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0,
+                        ImmutableMethodReference("Ljava/lang/Integer;", "valueOf", listOf("I"), "Ljava/lang/Integer;")))
+                    addInstruction(BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 2))
+                    addInstruction(BuilderInstruction21c(Opcode.NEW_INSTANCE, 1, ImmutableTypeReference("Lkotlin/jvm/internal/AwSFixture;")))
+                    addInstruction(BuilderInstruction21s(Opcode.CONST_16, 0, 258))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 3, 1, 5, 0, 0, 0,
                         ImmutableMethodReference("Lkotlin/jvm/internal/AwSFixture;", "<init>", listOf(bound, "I"), "V")))
-                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 2, 0, 1, 0, 0, 0,
-                        ImmutableMethodReference(state, "<init>", listOf("Lkotlin/jvm/internal/AwSFixture;"), "V")))
-                    addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_DIRECT, 4, 4, 2, 3, 1, 0,
+                        ImmutableMethodReference("LX/State;", "<init>", listOf("Ljava/lang/Integer;", "LX/Wrapper;", "Lkotlin/jvm/internal/AwSFixture;"), "V")))
+                    addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, returned))
                 }.methodImplementation)
         assertTrue(FixtureContracts.openDebugDiscoveryBoundary(helper()))
-        assertTrue(FixtureContracts.openDebugDiscoveryBoundary(helper(literal = 2)))
-        assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(state = "LX/Other;")))
+        assertTrue(FixtureContracts.openDebugDiscoveryBoundary(helper(resource = 0x7f020002)))
+        assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(resource = 2)))
         assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(bound = "LX/Other;")))
+        assertFalse(FixtureContracts.openDebugDiscoveryBoundary(helper(returned = 1)))
     }
 
     @Test fun missingAndAmbiguousCandidatesFail() {
@@ -500,14 +547,19 @@ class HookContractsTest {
             "accepted", emptyMap(), emptyMap(),
             mapOf(accepted to FixtureContracts.portableSignature(method)),
             mapOf(type to FixtureContracts.portableClassSignature(original)),
-            scopedMethods = mapOf(accepted to digest))
+            scopedMethods = mapOf(accepted to FixtureContracts.portableReturnScopeSignature(original, method)))
         val candidate = owner(1, unrelated = true, renamed = true)
         assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(
             candidate.methods.single { it.name == "R9" }, candidate, accepted, reviewed))
         val altered = owner(2, unrelated = true, renamed = true)
+        assertEquals("experimental-method-scope", FixtureContracts.requirePortableMatch(
+            altered.methods.single { it.name == "R9" }, altered, accepted, reviewed))
+        val alteredGetter = ImmutableMethod(type, "R9", emptyList(), "Ljava/util/List;",
+            AccessFlags.PUBLIC.value, emptySet(), emptySet(), MethodImplementationBuilder(3).apply {
+                addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+            }.methodImplementation)
         assertThrows(PatchException::class.java) {
-            FixtureContracts.requirePortableMatch(
-                altered.methods.single { it.name == "R9" }, altered, accepted, reviewed)
+            FixtureContracts.requirePortableMatch(alteredGetter, altered, accepted, reviewed)
         }
     }
 

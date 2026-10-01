@@ -754,7 +754,8 @@
     "LX/0AIU;-\u003eLJFF()Ljava/util/List;": "af6ff965901be4706e5d3e673c62fa7d5a9a855ffae6392803e1a6e7c7841ff7",
     "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;-\u003epopCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V": "0c6edcf623597e8affc34fabc8d0e03d6aac768154c3b63f60e894917f8b2f1a",
     "Lcom/ss/android/ugc/aweme/main/MainActivity;-\u003eonCreate(Landroid/os/Bundle;)V": "f130794ef03b0d1ceb3646ebbf18de212a96ced1cb6e39a07b9c84e97df5936e",
-    "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;-\u003eM9()Ljava/util/List;": "a2a9be559659ef8e11b99608b701f006cd22cb23c9e8d906969c54a15b4f87ca",
+    "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;-\u003eM9()Ljava/util/List;": "71e7c7c4d3ef5f19d720d33e93906ee4258911ee1efbf4ac575945c20754d398",
+    "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;-\u003eQB()Ljava/util/List;": "71e7c7c4d3ef5f19d720d33e93906ee4258911ee1efbf4ac575945c20754d398",
     "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-\u003e<clinit>()V": "d43c6de45600375e5994519519b519c024b1fc7124cba2ec108a2ca9b554b0b2",
     "Lcom/ss/ttvideoengine/TTVideoEngine;-\u003esetLooping(Z)V": "35592f66dd803db0c476b08825d53cdb6975479f8fe41707e2b627405f37f4d9"
   },

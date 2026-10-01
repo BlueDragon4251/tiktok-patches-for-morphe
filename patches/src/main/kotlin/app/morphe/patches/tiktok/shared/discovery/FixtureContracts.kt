@@ -113,6 +113,7 @@ internal object FixtureContracts {
             "Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
         "Lcom/ss/android/ugc/aweme/main/MainActivity;->onCreate(Landroid/os/Bundle;)V",
         "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;",
+        "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->QB()Ljava/util/List;",
         "Lcom/ss/android/ugc/aweme/offlinemode/ui/sheet/OfflineModeSheetPageAssem;-><clinit>()V",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
         "LX/0AIU;->LJFF()Ljava/util/List;",
@@ -123,34 +124,105 @@ internal object FixtureContracts {
         "LX/0AIU;->LJFF()Ljava/util/List;",
     )
 
+    // These filters transform only the returned List. Pin the complete getter body
+    // and its owner/field boundary; the untouched native callees are not injection sites.
+    private val tabReturnScopes = setOf(
+        "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;",
+        "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->QB()Ljava/util/List;",
+    )
+
     /** The offline provider is found by its caller and may move to another obfuscated class. */
     fun portableMethodScopeSignature(owner: ClassDef, method: Method, acceptedMethod: String): String =
         if (acceptedMethod in relocatedMethodScopes) portableReturnScopeSignature(owner, method)
-        else if (acceptedMethod == "Lcom/ss/android/ugc/aweme/main/assems/tabs/TabAbilityAssem;->M9()Ljava/util/List;")
-            portableCallScopeSignature(owner, method)
+        else if (acceptedMethod in tabReturnScopes) portableReturnScopeSignature(owner, method)
         else portableScopeSignature(owner, method)
 
-    /** Discover the state and callback types without changing this resource-bearing helper. */
+    private const val AWEME_VIDEO_GETTER =
+        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;->getVideo()Lcom/ss/android/ugc/aweme/feed/model/Video;"
+    private const val CACHED_FEED_READ =
+        "LX/04Ju;->LJIJJ()Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;"
+
+    /** Reviewed nullable object-return hooks: no native instructions or scratch registers are changed. */
+    fun typedReturnBoundary(method: Method, acceptedMethod: String): Boolean {
+        val body = method.implementation ?: return false
+        val returns = body.instructions.filter { it.opcode == Opcode.RETURN_OBJECT }.toList()
+        if (returns.isEmpty() || returns.any { (it as OneRegisterInstruction).registerA >= body.registerCount })
+            return false
+        return when (acceptedMethod) {
+            AWEME_VIDEO_GETTER -> method.toString() == acceptedMethod && method.accessFlags == AccessFlags.PUBLIC.value
+            CACHED_FEED_READ -> method.definingClass.startsWith("LX/") && method.parameterTypes.isEmpty() &&
+                method.returnType == "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;" &&
+                method.accessFlags == (AccessFlags.PUBLIC.value or AccessFlags.STATIC.value) &&
+                body.instructions.mapNotNull { (it as? ReferenceInstruction)?.reference as? StringReference }
+                    .map { it.string }.toSet().containsAll(setOf("feed_use_cache_size", "tryUseCache list size "))
+            else -> false
+        }
+    }
+
+    fun typedReturnInjection(method: Method, index: Int?, code: String?): Boolean {
+        val instruction = index?.let { method.implementation?.instructions?.elementAtOrNull(it) }
+            ?: return false
+        if (instruction.opcode != Opcode.RETURN_OBJECT) return false
+        val register = (instruction as OneRegisterInstruction).registerA
+        val call = when (method.returnType) {
+            "Lcom/ss/android/ugc/aweme/feed/model/Video;" ->
+                "Lapp/morphe/extension/tiktok/download/DownloadsPatch;->patchVideoObject(${method.returnType})V"
+            "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;" ->
+                "Lapp/morphe/extension/tiktok/feedfilter/ForYouFeedGuard;->markAndFilter(${method.returnType})V"
+            else -> return false
+        }
+        return code?.trim() == "invoke-static/range {v$register .. v$register}, $call"
+    }
+
+    private val booleanReplacementHooks = mapOf(
+        "Lcom/bytedance/lobby/google/GoogleAuth;->isAvailable()Z" to
+            (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value),
+        "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;->enableForcedLogin(Z)Z" to AccessFlags.PUBLIC.value,
+        "Lcom/ss/android/ugc/aweme/services/MandatoryLoginService;->shouldShowForcedLogin(Z)Z" to AccessFlags.PUBLIC.value,
+    )
+
+    /** These named predicates are replaced by a constant false at entry, with no native reads. */
+    fun booleanReplacementBoundary(method: Method, acceptedMethod: String): Boolean =
+        booleanReplacementHooks[acceptedMethod]?.let { flags ->
+            method.toString() == acceptedMethod && method.accessFlags == flags &&
+                method.returnType == "Z" && (method.implementation?.registerCount ?: 0) >= 1 &&
+                method.implementation?.instructions?.firstOrNull() != null
+        } == true
+
+    fun booleanReplacementInjection(index: Int?, code: String?): Boolean =
+        index == 0 && code?.trim()?.lines()?.map(String::trim)?.filter(String::isNotEmpty) ==
+            listOf("const/4 v0, 0x0", "return v0")
+
+    /** The declared result is a state interface; NEW_INSTANCE reveals its concrete implementation. */
     fun openDebugDiscoveryBoundary(method: Method): Boolean {
         val owner = "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
         val body = method.implementation ?: return false
-        val instructions = body.instructions.toList()
+        val insns = body.instructions.toList()
         if (method.definingClass != owner || method.name != "defaultState" ||
             method.parameterTypes.isNotEmpty() || !method.returnType.startsWith("LX/") ||
-            method.accessFlags and AccessFlags.STATIC.value != 0 || body.tryBlocks.any()) return false
-        val returns = instructions.filter { it.opcode == Opcode.RETURN_OBJECT }
-        val register = (returns.singleOrNull() as? OneRegisterInstruction)?.registerA ?: return false
-        if (instructions.lastOrNull() != returns.single()) return false
-        val states = instructions.filter { it.opcode == Opcode.NEW_INSTANCE &&
-            (it as? OneRegisterInstruction)?.registerA == register }
-        if (states.size != 1 || (states.single() as? ReferenceInstruction)?.reference?.toString() != method.returnType)
-            return false
-        val calls = instructions.filter { it.opcode == Opcode.INVOKE_DIRECT }.mapNotNull {
-            (it as? ReferenceInstruction)?.reference as? MethodReference
-        }
-        return calls.count { it.definingClass == method.returnType && it.name == "<init>" } == 1 &&
-            calls.count { it.definingClass.startsWith("Lkotlin/jvm/internal/AwS") && it.name == "<init>" &&
-                it.parameterTypes.map(CharSequence::toString) == listOf(owner, "I") } == 1
+            method.accessFlags != (AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) ||
+            body.registerCount != 6 || body.tryBlocks.any() || insns.map { it.opcode } != listOf(
+                Opcode.NEW_INSTANCE, Opcode.NEW_INSTANCE, Opcode.INVOKE_DIRECT, Opcode.CONST,
+                Opcode.INVOKE_STATIC, Opcode.MOVE_RESULT_OBJECT, Opcode.NEW_INSTANCE, Opcode.CONST_16,
+                Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT, Opcode.RETURN_OBJECT)) return false
+        fun type(index: Int) = (insns[index] as? ReferenceInstruction)?.reference?.toString()
+        fun reg(index: Int) = (insns[index] as? OneRegisterInstruction)?.registerA
+        fun call(index: Int, target: String, args: List<Int>) =
+            (insns[index] as? ReferenceInstruction)?.reference?.toString() == target &&
+                insns[index].argumentRegisters() == args
+        val state = type(0) ?: return false
+        val wrapper = type(1) ?: return false
+        val lambda = type(6) ?: return false
+        val titleId = (insns[3] as? WideLiteralInstruction)?.wideLiteral ?: return false
+        val discriminator = (insns[7] as? WideLiteralInstruction)?.wideLiteral ?: return false
+        return state.startsWith("LX/") && wrapper.startsWith("LX/") &&
+            lambda.startsWith("Lkotlin/jvm/internal/AwS") && titleId in 0x7f000000L..0x7fffffffL &&
+            discriminator in 0L..32767L && reg(0) == 4 && reg(1) == 3 && reg(3) == 0 &&
+            reg(5) == 2 && reg(6) == 1 && reg(7) == 0 && reg(10) == 4 &&
+            call(2, "$wrapper-><init>(Ljava/lang/Object;)V", listOf(3, 5)) &&
+            call(4, "Ljava/lang/Integer;->valueOf(I)Ljava/lang/Integer;", listOf(0)) &&
+            call(8, "$lambda-><init>(${owner}I)V", listOf(1, 5, 0)) &&
+            call(9, "$state-><init>(Ljava/lang/Integer;$wrapper$lambda)V", listOf(4, 2, 3, 1))
     }
 
     /** The FYP response has unique feed markers but renamed app method references in 47.1.3. */
@@ -500,9 +572,11 @@ internal object FixtureContracts {
             captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
+        val typedReturnMatch = typedReturnBoundary(method, acceptedMethod)
+        val booleanReplacementMatch = booleanReplacementBoundary(method, acceptedMethod)
         val classMatches = fullClassMatches || scopedMatch
         if ((!classMatches || !methodMatches) && !memberRenameMatch && !entryMatch && !feedEntryMatch &&
-            !captchaEntryMatch && !oecEntryMatch) {
+            !captchaEntryMatch && !oecEntryMatch && !booleanReplacementMatch && !typedReturnMatch) {
             val changed = buildList {
                 if (!classMatches) add("class (field types, inheritance or member structure)")
                 if (!methodMatches) add("method (registers, literals, references, branches, switch or exception paths)")
@@ -515,6 +589,8 @@ internal object FixtureContracts {
             throw PatchException("Changed portable contract for $method: ${changed.joinToString(" and ")}; injection refused$trace")
         }
         return when {
+            typedReturnMatch -> "experimental-typed-return"
+            booleanReplacementMatch -> "experimental-boolean-replacement"
             memberRenameMatch -> "experimental-member-rename"
             entryMatch -> "experimental-entry-contract"
             feedEntryMatch -> "experimental-feed-entry"
