@@ -138,6 +138,19 @@ field scopes must still equal the accepted baseline. A global search for an
 identical Kotlin stub is insufficient because several callbacks share that
 body. These are experimental contracts, not new compatibility or qualification.
 
+The 47.1.3 comment watermark moves from `X/0Xtt.LIZ(Bitmap)` to
+`X/0paZ.LIZ(Bitmap)`. The latter still builds the `[tiktok_logo]` text bitmap,
+scales it, and draws it on the copied image; saving moved into its
+`X/0VO6.LIZIZ(Context, Bitmap):Uri` callee, which retains `image/jpeg` and
+`is_pending`. Those storage strings no longer select the draw hook. The new
+selector requires the unique logo/Bitmap/Canvas/Layout pipeline, and its
+mutation contract allows only replacing the one five-word draw invocation.
+The wrapper receives the original Canvas, Bitmap, both float coordinates and
+Paint, and preserves the native draw when removal is disabled. It changes no
+native register value, branch target, save/restore operation or cleanup path.
+Direct original-DEX checks find one target in each pinned APK, at instruction
+202 for 46.7.3 and 218 for 47.1.3; runtime and full catalog CI remain required.
+
 Use `python3 scripts/tiktok/run_experimental.py --apk input.apk --bundle patches/build/libs/<bundle>.mpp --cli morphe-desktop.jar --head <feature-commit-sha> --source <input-url> --expected-sha <input-sha256> --output reports/experimental`.
 The helper sets `TIKTOK_EXPERIMENTAL_PORTABLE=1` and Morphe `--force` for the
 full 37-patch catalog. The SHA flag is optional for a local APK, but useful to

@@ -11,6 +11,7 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.removeInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
@@ -76,30 +77,7 @@ val downloadsPatch = bytecodePatch(
 
         HookEvidence.diagnosticCandidates("downloads.commentImage", setOf("image/jpeg", "is_pending"))
         CommentImageWatermarkFingerprint.uniqueMethod.apply {
-            val drawBitmapIndex = uniqueInstructionIndex("Comment watermark bitmap draw") { instruction ->
-                instruction.opcode == Opcode.INVOKE_VIRTUAL && instruction is ReferenceInstruction &&
-                    instruction.reference.toString() == "Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V"
-            }
-            val drawInstr = getInstruction(drawBitmapIndex) as? FiveRegisterInstruction
-                ?: throw PatchException("Comment watermark draw register contract changed in $this")
-            val canvasReg = drawInstr.registerC
-            val bitmapReg = drawInstr.registerD
-            val xReg = drawInstr.registerE
-            val yReg = drawInstr.registerF
-            val paintReg = drawInstr.registerG
-            removeInstructions(drawBitmapIndex, 1)
-            addInstructionsWithLabels(
-                drawBitmapIndex,
-                """
-                    invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->shouldRemoveWatermark()Z
-                    move-result v$xReg
-                    if-nez v$xReg, :skip_watermark
-                    const/4 v$xReg, 0x0
-                    invoke-virtual {v$canvasReg, v$bitmapReg, v$xReg, v$yReg, v$paintReg}, Landroid/graphics/Canvas;->drawBitmap(Landroid/graphics/Bitmap;FFLandroid/graphics/Paint;)V
-                    :skip_watermark
-                    nop
-                """,
-            )
+            replaceInstruction(CommentWatermarkContracts.drawIndex(this), CommentWatermarkContracts.replacement(this))
         }
 
         StickerPreviewBinderFingerprint.uniqueMethod.apply {

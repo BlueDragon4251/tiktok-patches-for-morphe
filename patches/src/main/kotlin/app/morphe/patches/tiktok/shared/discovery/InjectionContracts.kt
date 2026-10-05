@@ -116,7 +116,7 @@ internal object ContractInstructions {
     fun MutableMethod.replaceInstruction(index: Int, code: String) {
         val target = implementation?.instructions?.getOrNull(index)
             ?: throw PatchException("Replacement contract: invalid index $index in $this")
-        HookEvidence.touch(this)
+        HookEvidence.touch(this, index = index, code = code, operation = "replace")
         try {
             rawReplaceInstruction(index, code)
             HookEvidence.injection(this, index, "replace ${target.opcode}: $code")
@@ -133,7 +133,7 @@ internal object ContractInstructions {
             throw PatchException("Removal contract: a branch, handler, switch or try boundary enters removed instructions in $this")
         if (body.instructions.getOrNull(index + count)?.opcode in setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT))
             throw PatchException("Removal contract: would orphan move-result in $this")
-        HookEvidence.touch(this)
+        HookEvidence.touch(this, index = index, code = "remove $count instructions", operation = "remove")
         rawRemoveInstructions(index, count)
         HookEvidence.injection(this, index, "remove $count instructions")
     }

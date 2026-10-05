@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.interaction.downloads
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
+import app.morphe.patches.tiktok.shared.discovery.CommentWatermarkContracts
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -49,9 +50,10 @@ internal object AwemeGetVideoFingerprint : Fingerprint(
 )
 
 internal object CommentImageWatermarkFingerprint : Fingerprint(
-    strings = listOf("[tiktok_logo]", "image/jpeg", "is_pending"),
+    exactStrings = listOf("[tiktok_logo]"),
     parameters = listOf("Landroid/graphics/Bitmap;"),
     returnType = "V",
+    custom = { method, _ -> CommentWatermarkContracts.boundary(method) },
 )
 
 internal object StickerPreviewBinderFingerprint : Fingerprint(

@@ -582,6 +582,10 @@ internal object FixtureContracts {
                 owner.superclass == SettingsContracts.BASE ||
                     acceptedMethod == SettingsContracts.acceptedTargets.getValue("settings.composeTitle")
             }
+            ?: CommentWatermarkContracts.MODE.takeIf {
+                acceptedMethod == CommentWatermarkContracts.ACCEPTED && owner.superclass == "Ljava/lang/Object;" &&
+                    CommentWatermarkContracts.boundary(method)
+            }
         val typedReturnMatch = typedReturnBoundary(method, acceptedMethod)
         val booleanReplacementMatch = booleanReplacementBoundary(method, acceptedMethod)
         val classMatches = fullClassMatches || scopedMatch

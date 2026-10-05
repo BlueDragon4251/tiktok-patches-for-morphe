@@ -205,7 +205,8 @@ internal object HookEvidence {
         }
     }
 
-    fun touch(method: Method, contract: String = "native-injection", index: Int? = null, code: String? = null) {
+    fun touch(method: Method, contract: String = "native-injection", index: Int? = null, code: String? = null,
+              operation: String = "insert") {
         val current = context ?: throw PatchException("Hook evidence session was not initialized before $method")
         selectContracts(current)
         val key = "$contract:$method"
@@ -217,10 +218,13 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
-        if (mode in SiteContracts.modes && !SiteContracts.mutationAllowed(mode!!, method, index, code))
+        if (mode in SiteContracts.modes && (operation != "insert" || !SiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
-        if (mode in SettingsContracts.modes && !SettingsContracts.mutationAllowed(mode!!, method, index, code))
+        if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
+        if (mode == CommentWatermarkContracts.MODE &&
+            !CommentWatermarkContracts.mutationAllowed(method, index, code, operation))
+            throw PatchException("Comment watermark contract permits only the typed draw replacement in $method")
         if (mode == "experimental-boolean-replacement" &&
             !FixtureContracts.booleanReplacementInjection(index, code))
             throw PatchException("Boolean replacement contract allows only constant false at entry in $method")
