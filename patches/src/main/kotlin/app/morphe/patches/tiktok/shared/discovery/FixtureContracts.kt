@@ -537,7 +537,7 @@ internal object FixtureContracts {
 
     /** A relocated hook needs the accepted hook identity and the complete portable contract. */
     fun requirePortableMatch(method: Method, owner: ClassDef, acceptedMethod: String, contracts: Reviewed,
-                             callback: ClassDef? = null): String {
+                             callback: ClassDef? = null, nativeClasses: Map<String, ClassDef> = emptyMap()): String {
         if (method.definingClass != owner.type)
             throw PatchException("Portable hook owner mismatch for $method")
         val oldOwner = acceptedMethod.substringBefore("->")
@@ -577,7 +577,8 @@ internal object FixtureContracts {
             captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
-        val siteMode = PublishDateContracts.mode(method, owner, acceptedMethod)
+        val siteMode = DownloadSuccessContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
+            ?: PublishDateContracts.mode(method, owner, acceptedMethod)
             ?: TakoContracts.mode(method, owner, acceptedMethod)
             ?: ReturnSiteContracts.mode(method, owner, acceptedMethod)
             ?: SiteContracts.mode(method, acceptedMethod)

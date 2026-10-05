@@ -98,33 +98,7 @@ val downloadsPatch = bytecodePatch(
         }
 
         DownloadSuccessCoroutineFingerprint.uniqueMethod.apply {
-            val fieldReferences = implementation!!.instructions.mapNotNull { it.getReference<FieldReference>() }
-            val body = implementation!!.instructions
-            val pathField = body.withIndex().mapNotNull { (index, instruction) ->
-                val ref = instruction.getReference<MethodReference>()
-                if (ref?.name != "<init>" || ref.parameterTypes != listOf("Ljava/lang/String;")) return@mapNotNull null
-                val owner = classDefByOrNull(ref.definingClass)
-                if (ref.definingClass != "Ljava/io/File;" && owner?.superclass != "Ljava/io/File;") return@mapNotNull null
-                val read = body.getOrNull(index - 1)
-                val field = read?.getReference<FieldReference>()
-                field?.takeIf { it.definingClass == definingClass && it.type == "Ljava/lang/String;" &&
-                    read.opcode == Opcode.IGET_OBJECT && (read as OneRegisterInstruction).registerA == instruction.argumentRegisters().last() }
-            }.distinctBy { it.toString() }.singleOrThrow("Download success path field")
-            val awemeField = fieldReferences.filter { it.definingClass == definingClass && it.type == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;" }
-                .distinctBy { it.toString() }.singleOrThrow("Download success Aweme field")
-            requireLocals(2)
-
-            addInstructions(
-                0,
-                """
-                    iget-object v0, p0, $pathField
-                    iget-object v1, p0, $awemeField
-                    invoke-static {v0, v1}, $FILENAME_FORMATTER_CLASS_DESCRIPTOR->renameDownloadedMedia(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/String;
-                    move-result-object v0
-                    iput-object v0, p0, $pathField
-                    invoke-static {v0, v1}, $ORIGINAL_PHOTO_DOWNLOADER_DESCRIPTOR->onTikTokDownloadCompleted(Ljava/lang/String;Lcom/ss/android/ugc/aweme/feed/model/Aweme;)V
-                """,
-            )
+            addInstructions(0, DownloadSuccessContracts.code(this) { classDefByOrNull(it) })
         }
 
         DownloadUriFingerprint.uniqueMethod.apply {

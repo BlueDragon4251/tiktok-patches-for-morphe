@@ -220,6 +220,8 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == DownloadSuccessContracts.MODE && (operation != "insert" || !DownloadSuccessContracts.mutationAllowed(method, index, code, originals::get)))
+            throw PatchException("Download-success contract permits only the proven native path/Aweme fields at entry")
         if (mode in SiteContracts.modes && (operation != "insert" || !SiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
         if (mode == PublishDateContracts.MODE && (operation != "insert" || !PublishDateContracts.mutationAllowed(method, index, code)))
@@ -369,7 +371,7 @@ internal object HookEvidence {
             else if (stickerSourceTargets[key]?.let { StickerSourceContracts.boundary(source, it) } == true)
                 StickerSourceContracts.MODE
             else FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
-                source.parameterTypes.getOrNull(callbackIndex)?.toString()?.let { originals[it] })
+                source.parameterTypes.getOrNull(callbackIndex)?.toString()?.let { originals[it] }, originals)
         }
         validated += key
         validationMode[key] = mode
