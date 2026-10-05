@@ -223,6 +223,13 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode in ThemeSurfaceContracts.modes && (operation != (if (mode in setOf(ThemeSurfaceContracts.NAV_MODE, ThemeSurfaceContracts.RENDER_MODE)) "insert-after" else "insert") ||
+                !ThemeSurfaceContracts.mutationAllowed(mode!!, method, originals.getValue(method.definingClass), index, code, originals::get)))
+            throw PatchException("Theme surface contract refuses a changed role, register, or insertion point")
+        if (mode == ThemeContracts.PROVIDER_MODE && (operation != "insert" || !ThemeContracts.paletteMutationAllowed(method, index, code)))
+            throw PatchException("Compose palette contract permits only the actual typed palette return")
+        if (mode == ThemeContracts.STYLED_MODE && (operation != "insert" || !ThemeContracts.mutationAllowed(method, index, code)))
+            throw PatchException("Styled TUX contract permits only its typed entry gate with proven scratch and a reviewed preset")
         if (mode in TranslationContracts.modes && (operation != "insert" || !TranslationContracts.mutationAllowed(mode!!, method,
                 originals.getValue(method.definingClass), index, code, originals::get)))
             throw PatchException("Translation contract refuses a changed native observer, response, or completion input")
@@ -345,7 +352,8 @@ internal object HookEvidence {
             return
         }
         val source = original(method) ?: throw PatchException("No original APK method for $method")
-        if (!FixtureContracts.openDebugDiscoveryBoundary(source) && !CommentCopyContracts.helperBoundary(source, originals[source.definingClass]))
+        if (!FixtureContracts.openDebugDiscoveryBoundary(source) && !CommentCopyContracts.helperBoundary(source, originals[source.definingClass]) &&
+            !ThemeSurfaceContracts.homeBoundary(source, originals::get))
             throw PatchException("Changed read-only native discovery boundary for $method")
         // Deliberately do not put this method in validated: touch() must independently
         // validate the native injection contract if any caller attempts to edit it.
@@ -373,12 +381,14 @@ internal object HookEvidence {
             val hooks = rows.values.filter { row ->
                 row["owner"] == method.definingClass && row["name"] == method.name &&
                     row["parameters"] == method.parameterTypes.map(CharSequence::toString) &&
-                    row["returns"] == method.returnType && row["selection"] == "unique" &&
+                    row["returns"] == method.returnType && row["selection"] in setOf("unique", "all-sites") &&
                     row["candidateCount"] == 1 && row["required"] == true
-            }.mapNotNull { contracts.hookMethods[it["hook"]] }.let { hooks ->
+            }.mapNotNull { row -> AcceptedHooks.target(contracts.hookMethods, row["hook"] as String, source.toString(),
+                row["selection"] as? String, (row["candidateCount"] as? Number)?.toInt() ?: 0) }.let { hooks ->
                 (hooks + listOfNotNull(settingsTargets[key]) +
                     ReviewedMethodScopes.candidates(owner, source, contracts) +
-                    listOfNotNull(ReturnSiteContracts.explicitTarget(source), CommentCopyContracts.explicitTarget(source, owner, originals::get))).distinct()
+                    listOfNotNull(ReturnSiteContracts.explicitTarget(source), CommentCopyContracts.explicitTarget(source, owner, originals::get),
+                        ThemeSurfaceContracts.explicitTarget(source, owner, originals::get))).distinct()
             }
             val frameworkSite = hooks.isEmpty() && rows.values.any { row ->
                 row["owner"] == method.definingClass && row["name"] == method.name &&

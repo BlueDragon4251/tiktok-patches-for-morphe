@@ -584,6 +584,7 @@ internal object FixtureContracts {
             ?: PlaybackSpeedContracts.mode(method, acceptedMethod, nativeClasses::get)
             ?: CommentCopyContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
             ?: TranslationContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
+            ?: ThemeContracts.mode(method, owner, acceptedMethod, contracts, nativeClasses::get)
             ?: PromotionContracts.mode(method, owner, acceptedMethod)
             ?: DownloadPathContracts.mode(method, owner, acceptedMethod)
             ?: PublishDateContracts.mode(method, owner, acceptedMethod)

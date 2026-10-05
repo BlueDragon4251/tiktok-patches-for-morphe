@@ -86,6 +86,17 @@ internal fun MutableMethod.insertAtTarget(index: Int, code: String, labels: Arra
     else rawAddWithLabels(original.location.index, code, *labels)
 }
 
+/** Retain continuation labels: a branch that skips the native producer also skips its hook. */
+internal fun MutableMethod.insertAfterNative(index: Int, code: String) {
+    val body = implementation ?: throw PatchException("Missing after-producer body")
+    val producer = body.instructions.getOrNull(index) ?: throw PatchException("Missing native producer")
+    val ref = (producer as? ReferenceInstruction)?.reference as? MethodReference
+    if (producer.opcode != Opcode.IPUT_OBJECT && producer.opcode != Opcode.IGET_WIDE &&
+        !(producer.opcode.name.startsWith("invoke-") && ref?.returnType == "V"))
+        throw PatchException("After-producer injection requires a native View write, packed color read or void call")
+    rawAddInstructions(index + 1, code)
+}
+
 internal fun MutableMethod.checkReplacementBlock(index: Int, count: Int) {
         val body = implementation ?: throw PatchException("Replacement block has no body")
         if (count < 1 || index < 0 || index + count > body.instructions.size)
@@ -120,6 +131,12 @@ internal object ContractInstructions {
         } catch (error: Exception) {
             throw PatchException("Injection contract failed at $index in $this: ${error.message}")
         }
+    }
+
+    fun MutableMethod.addAfterInstruction(index: Int, code: String) {
+        HookEvidence.touch(this, index = index, code = code, operation = "insert-after")
+        insertAfterNative(index, code)
+        HookEvidence.injection(this, index, "after-native\n$code")
     }
 
     fun MutableMethod.addInstructions(index: Int, code: String) = inject(index, code)

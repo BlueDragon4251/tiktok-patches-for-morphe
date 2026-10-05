@@ -750,6 +750,8 @@
     "offline.native-options-provider": "LX/0AIU;-\u003eLJFF()Ljava/util/List;"
   },
   "scopedMethods": {
+    "LX/0C0Y;-\u003e<clinit\u003e()V": "8848d285cb01391dceb23cb365e84648d0926f89fc3b780df9a8eb59a87adb34",
+    "LX/05nh;-\u003edispatchDraw(Landroid/graphics/Canvas;)V": "3101b8c4905d2b389b36a6dbe85e7b3c78c37a138c2887ea757bb24a40c9d8d9",
     "LX/0HK0;-\u003eLJ(Ljava/util/List;LX/0Hea;Z)V": "f95761d390bac31d5629346ea7183925b2244dd9ee43c37d55b50011e57f4a62",
     "LX/02z2;-\u003eLJFF(IILjava/lang/String;Z)I": "34515f7ae697b3225aed7189e26b50926d5a87a8f77246e15b20e7d8071fb64a",
     "LX/0AIU;-\u003eLJFF()Ljava/util/List;": "af6ff965901be4706e5d3e673c62fa7d5a9a855ffae6392803e1a6e7c7841ff7",

@@ -9,6 +9,8 @@ import com.android.tools.smali.dexlib2.iface.Method
  */
 internal object ReviewedMethodScopes {
     val hooks = setOf(
+        "LX/0C0Y;-><clinit>()V",
+        "LX/05nh;->dispatchDraw(Landroid/graphics/Canvas;)V",
         "LX/0HK0;->LJ(Ljava/util/List;LX/0Hea;Z)V",
         "Lcom/ss/android/ugc/aweme/video/simplayer/PlayerSettingServiceImpl;->get(Ljava/lang/String;Ljava/lang/reflect/Type;Ljava/lang/Object;ZZ)Ljava/lang/Object;",
         "LX/02z2;->LIZ(ILjava/lang/String;ZZ)Z",
