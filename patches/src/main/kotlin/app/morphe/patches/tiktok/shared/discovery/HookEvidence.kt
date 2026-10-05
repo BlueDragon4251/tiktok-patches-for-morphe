@@ -222,6 +222,9 @@ internal object HookEvidence {
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
         if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
+        if (mode == FrameworkCallContracts.MODE &&
+            !FrameworkCallContracts.mutationAllowed(method, index, code, operation))
+            throw PatchException("Framework contract permits only typed SIM results or exact screen capture calls in $method")
         if (mode == CommentWatermarkContracts.MODE &&
             !CommentWatermarkContracts.mutationAllowed(method, index, code, operation))
             throw PatchException("Comment watermark contract permits only the typed draw replacement in $method")
@@ -324,11 +327,16 @@ internal object HookEvidence {
                 (hooks + listOfNotNull(settingsTargets[key]) +
                     ReviewedMethodScopes.candidates(owner, source, contracts)).distinct()
             }
-            if (hooks.size != 1)
+            val frameworkSite = hooks.isEmpty() && rows.values.any { row ->
+                row["owner"] == method.definingClass && row["name"] == method.name &&
+                    row["parameters"] == method.parameterTypes.map(CharSequence::toString) &&
+                    row["returns"] == method.returnType && row["selection"] == "explicit-site"
+            } && FrameworkCallContracts.boundary(source)
+            if (hooks.size != 1 && !frameworkSite)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
-            val callbackIndex = if (hooks.single().startsWith(
-                    "Lcom/tts/oecverify/verify/RiskControlService;->execute(")) 1 else 2
-            mode = FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
+            val callbackIndex = if (hooks.singleOrNull()?.startsWith(
+                    "Lcom/tts/oecverify/verify/RiskControlService;->execute(") == true) 1 else 2
+            mode = if (frameworkSite) FrameworkCallContracts.MODE else FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
                 source.parameterTypes.getOrNull(callbackIndex)?.toString()?.let { originals[it] })
         }
         validated += key

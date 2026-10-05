@@ -7,20 +7,15 @@ package app.morphe.patches.tiktok.misc.spoof.sim
 
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.misc.settings.settingsPatch
 import app.morphe.util.findMutableMethodOf
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.Method
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.patcher.patch.PatchException
+import app.morphe.patches.tiktok.shared.discovery.FrameworkCallContracts
 
-private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/morphe/extension/tiktok/spoof/sim/SpoofSimPatch;"
 
 @Suppress("unused")
 val simSpoofPatch = bytecodePatch(
@@ -36,48 +31,19 @@ val simSpoofPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
-        val replacements = mapOf(
-            "getSimCountryIso" to "getCountryIso",
-            "getNetworkCountryIso" to "getCountryIso",
-            "getSimOperator" to "getOperator",
-            "getNetworkOperator" to "getOperator",
-            "getSimOperatorName" to "getOperatorName",
-            "getNetworkOperatorName" to "getOperatorName",
-        )
-
-        val patchesByMethod = linkedMapOf<Method, ArrayDeque<Pair<Int, String>>>()
-        classDefForEach { classDef ->
-            for (method in classDef.methods) {
-                val implementation = method.implementation ?: continue
-                implementation.instructions.forEachIndexed { index, instruction ->
-                    if (instruction.opcode != Opcode.INVOKE_VIRTUAL) return@forEachIndexed
-
-                    val methodReference = (instruction as Instruction35c).reference as MethodReference
-                    if (methodReference.definingClass != "Landroid/telephony/TelephonyManager;") {
-                        return@forEachIndexed
-                    }
-
-                    val replacement = replacements[methodReference.name] ?: return@forEachIndexed
-                    patchesByMethod.getOrPut(method) { ArrayDeque() }.add(index to replacement)
+        var siteCount = 0
+        classDefForEach { owner ->
+            owner.methods.forEach { source ->
+                val sites = FrameworkCallContracts.simSites(source)
+                if (sites.isNotEmpty()) {
+                    val method = mutableClassDefBy(owner).findMutableMethodOf(source)
+                    sites.asReversed().forEach { site -> method.addInstructions(site.index, site.code) }
+                    siteCount += sites.size
                 }
             }
         }
-
-        patchesByMethod.forEach { (method, patches) ->
-            val mutableMethod = mutableClassDefBy(method.definingClass).findMutableMethodOf(method)
-            while (patches.isNotEmpty()) {
-                val (index, replacement) = patches.removeLast()
-                val resultRegister = mutableMethod.getInstruction<OneRegisterInstruction>(index + 1).registerA
-
-                mutableMethod.addInstructions(
-                    index + 2,
-                    """
-                        invoke-static { v$resultRegister }, $EXTENSION_CLASS_DESCRIPTOR->$replacement(Ljava/lang/String;)Ljava/lang/String;
-                        move-result-object v$resultRegister
-                    """,
-                )
-            }
-        }
+        if (siteCount == 0) throw PatchException("No typed Android telephony results for SIM spoof")
+        println("[BlueIT Framework Contract] SIM spoof: $siteCount typed results")
 
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,
