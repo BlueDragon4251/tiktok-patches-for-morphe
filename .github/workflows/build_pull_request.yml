@@ -13,12 +13,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Cache Gradle
         uses: burrunan/gradle-cache-action@v3
@@ -26,4 +28,16 @@ jobs:
       - name: Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :patches:buildAndroid --no-daemon
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
+
+      - name: Upload tested feature-head bundle for local reproduction
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-tested-bundle-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            patches/build/libs/*.mpp
+            patches-list.json
+            patches/build/test-results/**/*.xml
+            extensions/tiktok/build/test-results/**/*.xml
+          if-no-files-found: error
+          retention-days: 14
