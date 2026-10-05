@@ -251,3 +251,35 @@ Framework call contracts validate all six zero-argument Android TelephonyManager
 Sticker source association now requires a call to the already validated preview binder and an unmodified StickerItem parameter. `ScratchContracts` follows real code-unit offsets, both conditional paths, switch cases, and exception handlers before permitting two low local registers. Receiver/parameter words are never allocated. Mutation checks reconstruct the exact source/preview association and reject different registers or targets. Original scans prove all four association calls in both pinned APKs. Tests cover handler-only reads, protected overwrites, branch/switch paths, wide words, in-place arithmetic and wrong source/binder relationships.
 
 The Follow list getter accepts the reviewed public/public-final ABI; the 47.1.3 final flag is not treated as a missing hook. Final Follow postprocessing permits only filtering the preserved FollowFeedList parameter immediately before a native void return. The renamed Tako visibility gate requires v0 to be dead on every CFG/handler path; the view-created hook verifies the actual super receiver/View arguments and uses a range invocation. Native 47.1.3 probes confirm all three boundaries. The raw App-AB getter is selected by its reviewed complete body/field scope because 47.1.3 adds a second same-signature getter; equal or missing matches still fail. This selection evidence alone never enters the validated mutation set.
+
+
+## Theme port contracts
+
+The Theme engine retains all existing targets on both original APKs. The inbox
+and chat migrations prefer the already reviewed owner when both implementations
+coexist; their successor is selected only when the old owner is absent. Both
+choices still require their typed native contracts and unique method selection.
+
+The styled TUX resolver permits only the reviewed default style-attribute ID
+relocation (`0x7f060389` to `0x7f06038e`) when the entire remaining portable body
+matches the baseline. The actual native attribute instruction is preserved.
+The other three TUX resolvers retain whole-body and referenced-field scopes.
+
+Settings renderers are followed through the lambda created by the real Settings
+fragment and its screen-to-group call. The native five-instruction palette
+provider is distinct from the optional eight-instruction grouped provider;
+only the Settings provider's actual returned color table is remapped. Both
+pinned tables contain 527 long fields. The screen's direct packed-color read
+has a separate typed result hook; the group has no direct palette-field read
+in either original APK.
+
+Lifecycle roots use each original View return, including branch and exception
+paths. Settings post-initialization uses a View-input alias that survives all
+paths. Inbox and Activity scratch registers must be dead even on handler paths.
+Navigation/color-read hooks run after their native producer while preserving
+continuation labels: early returns that skip a writer also skip its hook. The
+profile master switch and pager draw method retain complete body/field scopes.
+
+These contracts and catalog/rebuild results are patch-time evidence. A candidate
+remains unqualified until the separately reviewed device regression evidence
+and explicit version approval are provided.

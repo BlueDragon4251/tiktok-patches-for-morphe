@@ -18,6 +18,15 @@ class ThemeSurfaceContractsTest {
         ImmutableMethod(owner, name, params.map { ImmutableMethodParameter(it, emptySet(), null) }, result, 17,
             emptySet(), emptySet(), body.methodImplementation)
     private fun owner(m: ImmutableMethod, parent: String) = ImmutableClassDef(m.definingClass, 1, parent, emptyList(), null, emptySet(), emptyList(), listOf(m))
+    @Test fun coexistingOwnersKeepTheReviewedBaselineInsteadOfCreatingTwoCandidates() {
+        fun native(type: String) = ImmutableClassDef(type, 1, "Ljava/lang/Object;", emptyList(), null, emptySet(), emptyList(), emptyList())
+        val owners = listOf(ThemeSurfaceContracts.OLD_INBOX, ThemeSurfaceContracts.INBOX, ThemeSurfaceContracts.OLD_CHAT, ThemeSurfaceContracts.CHAT).associateWith(::native)
+        assertEquals(ThemeSurfaceContracts.OLD_INBOX, ThemeSurfaceContracts.inboxOwner(owners::get))
+        assertEquals(ThemeSurfaceContracts.OLD_CHAT, ThemeSurfaceContracts.chatOwner(owners::get))
+        val current = owners.filterKeys { it in setOf(ThemeSurfaceContracts.INBOX, ThemeSurfaceContracts.CHAT) }
+        assertEquals(ThemeSurfaceContracts.INBOX, ThemeSurfaceContracts.inboxOwner(current::get))
+        assertEquals(ThemeSurfaceContracts.CHAT, ThemeSurfaceContracts.chatOwner(current::get))
+    }
     @Test fun aRootRequiresTheReviewedSurfaceAndActualFragmentHierarchy() {
         fun root(type: String) = method(type, "onCreateView", listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;"), view,
             MethodImplementationBuilder(5).apply { addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 0)); addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0)) })

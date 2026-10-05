@@ -42,6 +42,9 @@ internal object ThemeSurfaceContracts {
         }
         return false
     }
+    /** Keep the already reviewed implementation when both migration-era owners exist. */
+    fun inboxOwner(resolve: (String) -> ClassDef?): String = if (resolve(OLD_INBOX) != null) OLD_INBOX else INBOX
+    fun chatOwner(resolve: (String) -> ClassDef?): String = if (resolve(OLD_CHAT) != null) OLD_CHAT else CHAT
     fun rootBoundary(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): Boolean =
         owner.type in rootRoles && m.toString() == "${owner.type}->$CREATE" && m.accessFlags == 17 &&
             subtype(owner.type, "Landroidx/fragment/app/Fragment;", resolve) &&

@@ -44,7 +44,7 @@ private var composePaletteType = ""
 
 private class NativeRootFingerprint(owner: String) : Fingerprint(
     id = "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:$owner:onCreateView",
-    custom = { _, candidate -> candidate.type == owner || owner == ThemeSurfaceContracts.OLD_CHAT && candidate.type == ThemeSurfaceContracts.CHAT },
+    custom = { _, candidate -> candidate.type == if (owner == ThemeSurfaceContracts.OLD_CHAT) ThemeSurfaceContracts.chatOwner(HookEvidence::originalClass) else owner },
     name = "onCreateView", returnType = "Landroid/view/View;",
     parameters = listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;"),
 )
@@ -93,7 +93,8 @@ private object ProfileLeftAlignFingerprint : Fingerprint(
 
 /** Native inbox dispatcher after its actual row bind. */
 private object InboxSessionBindFingerprint : Fingerprint(
-    custom = { method, owner -> ThemeSurfaceContracts.inboxBoundary(method, owner) },
+    custom = { method, owner -> owner.type == ThemeSurfaceContracts.inboxOwner(HookEvidence::originalClass) &&
+        ThemeSurfaceContracts.inboxBoundary(method, owner) },
 )
 
 /** Resolve the family by framework behavior, not an obfuscated owner/name. */
