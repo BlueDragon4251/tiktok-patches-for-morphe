@@ -90,6 +90,14 @@ open class TikTokFingerprint(
         return matches.singleOrThrow("Hook $hookId")
     }
 
+    /** Retain the accepted all-sites identity while observing one site, without authorizing edits. */
+    context(BytecodePatchContext)
+    fun observeUniqueSite(): Match {
+        val matches = candidates()
+        HookEvidence.resolution(this, matches, required = true, multiple = true)
+        return matches.singleOrThrow("Hook $hookId")
+    }
+
     context(BytecodePatchContext)
     fun allMatches(range: IntRange = 1..Int.MAX_VALUE): List<Match> {
         val matches = candidates()

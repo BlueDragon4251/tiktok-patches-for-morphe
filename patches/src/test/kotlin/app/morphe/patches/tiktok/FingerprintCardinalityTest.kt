@@ -5,6 +5,7 @@ import app.morphe.patcher.PatcherConfig
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MethodImplementationBuilder
@@ -45,5 +46,22 @@ class FingerprintCardinalityTest {
         with(context("LX/Old;")) { assertEquals("LX/Old;", fp.uniqueMatch().originalMethod.definingClass) }
         with(context("LX/New;")) { assertEquals("LX/New;", fp.uniqueMatch().originalMethod.definingClass) }
         with(context()) { assertThrows(PatchException::class.java) { fp.uniqueMatch() } }
+    }
+    @Test fun observingOneSiteRetainsAllSitesIdentityWithoutAuthorizingMutation() {
+        val fp = TikTokFingerprint(returnType = "Ljava/lang/String;", exactStrings = listOf("stable-hook"))
+        with(context()) { assertThrows(PatchException::class.java) { fp.observeUniqueSite() } }
+        with(context("LX/A;", "LX/B;")) { assertThrows(PatchException::class.java) { fp.observeUniqueSite() } }
+        with(context("LX/One;")) {
+            val method = fp.observeUniqueSite().originalMethod
+            @Suppress("UNCHECKED_CAST")
+            val rows = HookEvidence::class.java.getDeclaredField("rows").apply { isAccessible = true }
+                .get(HookEvidence) as Map<String, Map<String, Any?>>
+            assertEquals(setOf("${fp.hookId}:$method"), rows.keys)
+            assertEquals("all-sites", rows.values.single()["selection"])
+            assertEquals(1, rows.values.single()["candidateCount"])
+            val validated = HookEvidence::class.java.getDeclaredField("validated").apply { isAccessible = true }
+                .get(HookEvidence) as Set<*>
+            assertFalse(method.toString() in validated)
+        }
     }
 }

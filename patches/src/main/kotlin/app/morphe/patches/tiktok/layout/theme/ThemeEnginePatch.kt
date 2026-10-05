@@ -240,7 +240,7 @@ val themeEnginePatch = bytecodePatch(
             TuxSemanticColorResolverFingerprint, TuxStyledColorResolverFingerprint,
             InboxSessionBindFingerprint, MainBottomNavigationDividerFingerprint,
             ComposePaletteProviderFingerprint).forEach { fingerprint ->
-            val match = fingerprint.uniqueMatch()
+            val match = fingerprint.observeUniqueSite()
             println("[BlueIT Hook Contract] ${fingerprint.javaClass.simpleName}: ${match.originalMethod}")
         }
 
@@ -268,7 +268,7 @@ val themeEnginePatch = bytecodePatch(
 
         // Resolve the real home pager from the native View argument's cast, then its draw owner.
         // computeScroll can advance the pager after pre-draw, so correct before it draws children.
-        val pagerInit = HomePagerViewCreatedFingerprint.uniqueMatch().originalMethod
+        val pagerInit = HomePagerViewCreatedFingerprint.observeUniqueSite().originalMethod
         HookEvidence.requireReadOnlyDiscovery(pagerInit)
         val pagerInput = pagerInit.implementation!!.registerCount - 1
         val pagerType = pagerInit.implementation!!.instructions.mapNotNull { instruction ->
@@ -308,6 +308,8 @@ val themeEnginePatch = bytecodePatch(
         }
 
         // Follow the native divider and showBottomTab getter fields, then hook only their writers.
+        // Preserve its separately accepted unique identity; writer edits are validated at touch().
+        MainBottomNavigationDividerFingerprint.uniqueMatch()
         val navigationClass = HookEvidence.originalClass(MAIN_PAGE_ASSEM)!!
         var writers = 0
         navigationClass.methods.forEach { original ->
