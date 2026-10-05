@@ -24,13 +24,13 @@ val rememberClearDisplayPatch = bytecodePatch(
         ClearModeLogStateFingerprint.optionalMethod?.returnEarly()
         ClearModeLogPlaytimeFingerprint.optionalMethod?.returnEarly()
 
-        val eventMatch = OnClearDisplayEventFingerprint.uniqueMatch()
         val event = OnClearDisplayEventFingerprint.uniqueMethod
-        val eventSite = ClearDisplayContracts.eventSite(event, eventMatch.originalClassDef)
+        val nativePanel = HookEvidence.originalClass(ClearDisplayContracts.PANEL)!!
+        val eventSite = ClearDisplayContracts.eventSite(event, nativePanel)
         event.addInstructions(eventSite.index, eventSite.code)
 
         val frame = OnRenderFirstFrameFingerprint.uniqueMethod
-        val restore = PlayerFrameContracts.restoreSite(frame, eventMatch.originalClassDef)
+        val restore = PlayerFrameContracts.restoreSite(frame, nativePanel)
         frame.addInstructions(restore.index, restore.code)
     }
 }

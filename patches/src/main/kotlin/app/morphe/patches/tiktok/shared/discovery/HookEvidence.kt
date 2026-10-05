@@ -103,6 +103,9 @@ internal object HookEvidence {
         throw PatchException("Could not verify original APK SHA-256 at patch time: ${error.message}")
     }
 
+    /** Immutable APK discovery only; callers still need independent mutation contracts. */
+    fun originalClass(type: String): ClassDef? = originals[type]
+
     private fun original(method: Method): Method? = originals[method.definingClass]?.methods
         ?.filter { it.name == method.name && it.parameterTypes.map(CharSequence::toString) ==
             method.parameterTypes.map(CharSequence::toString) && it.returnType == method.returnType }
@@ -220,6 +223,8 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == CommentCopyContracts.MODE && (operation != "insert" || !CommentCopyContracts.mutationAllowed(method, index, code, originals::get)))
+            throw PatchException("Comment-copy contract permits only the proven native comment/StringBuilder result")
         if (mode == PlaybackSpeedContracts.MODE && (operation != "insert" || !PlaybackSpeedContracts.mutationAllowed(method, index, code, originals::get)))
             throw PatchException("Playback-speed contract permits only the actual selected float before its native multiplier")
         if (mode in ClearDisplayContracts.modes && !ClearDisplayContracts.mutationAllowed(mode!!, method,
@@ -337,8 +342,8 @@ internal object HookEvidence {
             return
         }
         val source = original(method) ?: throw PatchException("No original APK method for $method")
-        if (!FixtureContracts.openDebugDiscoveryBoundary(source))
-            throw PatchException("Changed read-only OpenDebug discovery boundary for $method")
+        if (!FixtureContracts.openDebugDiscoveryBoundary(source) && !CommentCopyContracts.helperBoundary(source, originals[source.definingClass]))
+            throw PatchException("Changed read-only native discovery boundary for $method")
         // Deliberately do not put this method in validated: touch() must independently
         // validate the native injection contract if any caller attempts to edit it.
         rows.values.filter { it["owner"] == method.definingClass && it["name"] == method.name &&
@@ -370,7 +375,7 @@ internal object HookEvidence {
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.let { hooks ->
                 (hooks + listOfNotNull(settingsTargets[key]) +
                     ReviewedMethodScopes.candidates(owner, source, contracts) +
-                    listOfNotNull(ReturnSiteContracts.explicitTarget(source))).distinct()
+                    listOfNotNull(ReturnSiteContracts.explicitTarget(source), CommentCopyContracts.explicitTarget(source, owner, originals::get))).distinct()
             }
             val frameworkSite = hooks.isEmpty() && rows.values.any { row ->
                 row["owner"] == method.definingClass && row["name"] == method.name &&

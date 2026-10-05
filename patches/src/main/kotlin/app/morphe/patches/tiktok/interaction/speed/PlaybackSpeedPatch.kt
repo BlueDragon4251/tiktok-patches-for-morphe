@@ -23,11 +23,11 @@ val playbackSpeedPatch = bytecodePatch(
 
     execute {
         val selectedSpeed = GetSpeedFingerprint.uniqueMethod
-        val remember = PlaybackSpeedContracts.site(selectedSpeed) { classDefByOrNull(it) }
+        val remember = PlaybackSpeedContracts.site(selectedSpeed, HookEvidence::originalClass)
         selectedSpeed.addInstructions(remember.index, remember.code)
 
         val frame = OnRenderFirstFrameFingerprint.uniqueMethod
-        val restore = PlaybackSpeedContracts.frameSite(frame) { classDefByOrNull(it) }
+        val restore = PlaybackSpeedContracts.frameSite(frame, HookEvidence::originalClass)
         frame.addInstructions(restore.index, restore.code)
 
         // Keep the extension speed entry point available to TikTok callers.

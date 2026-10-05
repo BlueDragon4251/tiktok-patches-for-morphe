@@ -8,6 +8,7 @@ import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
 import app.morphe.patches.tiktok.shared.discovery.ClearDisplayContracts
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 
 private const val CONTROLLER =
     "Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;"
@@ -42,9 +43,8 @@ val automaticClearDisplayPatch = bytecodePatch(
             "invoke-static {}, $CONTROLLER->enablePatch()V",
         )
 
-        val resetMatch = ClearModePanelResetFingerprint.uniqueMatch()
         val reset = ClearModePanelResetFingerprint.uniqueMethod
-        val site = ClearDisplayContracts.resetSite(reset, resetMatch.originalClassDef)
+        val site = ClearDisplayContracts.resetSite(reset, HookEvidence.originalClass(ClearDisplayContracts.PANEL)!!)
         reset.addInstructions(site.index, site.code)
     }
 }

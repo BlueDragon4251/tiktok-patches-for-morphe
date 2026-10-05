@@ -2,6 +2,7 @@ package app.morphe.patches.tiktok
 
 import app.morphe.patches.tiktok.shared.discovery.*
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.MethodImplementationBuilder
 import com.android.tools.smali.dexlib2.builder.instruction.*
@@ -47,5 +48,15 @@ class ClearDisplayContractsTest {
         val m = event()
         assertNull(ClearDisplayContracts.mode(m, owner(m), ClearDisplayContracts.STATE))
         assertFalse(ClearDisplayContracts.mutationAllowed(ClearDisplayContracts.STATE_MODE, m, owner(m), 0, "return-void", "return-early"))
+    }
+    @Test fun aLaterPatchMustDiscoverTheEventFromTheImmutableApkSnapshot() {
+        val original = event()
+        val snapshot = owner(original)
+        val edited = MutableMethod(original)
+        val site = ClearDisplayContracts.eventSite(edited, snapshot)
+        edited.insertAtTarget(site.index, site.code)
+        // The next patch must use snapshot, rather than re-discovering through the edited method.
+        assertThrows(PatchException::class.java) { ClearDisplayContracts.eventSite(edited, snapshot) }
+        assertEquals("X.Event", ClearDisplayContracts.eventClass(snapshot))
     }
 }
