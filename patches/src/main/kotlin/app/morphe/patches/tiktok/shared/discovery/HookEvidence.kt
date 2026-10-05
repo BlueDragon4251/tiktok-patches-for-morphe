@@ -220,6 +220,8 @@ internal object HookEvidence {
         val mode = validationMode[method.toString()]
         if (mode in SiteContracts.modes && (operation != "insert" || !SiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
+        if (mode in ReturnSiteContracts.modes && (operation != "insert" || !ReturnSiteContracts.mutationAllowed(mode!!, method, index, code)))
+            throw PatchException("Return site contract $mode does not permit this mutation in $method at $index")
         if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
         if (mode == FrameworkCallContracts.MODE &&
@@ -325,7 +327,8 @@ internal object HookEvidence {
                     row["candidateCount"] == 1 && row["required"] == true
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.let { hooks ->
                 (hooks + listOfNotNull(settingsTargets[key]) +
-                    ReviewedMethodScopes.candidates(owner, source, contracts)).distinct()
+                    ReviewedMethodScopes.candidates(owner, source, contracts) +
+                    listOfNotNull(ReturnSiteContracts.explicitTarget(source))).distinct()
             }
             val frameworkSite = hooks.isEmpty() && rows.values.any { row ->
                 row["owner"] == method.definingClass && row["name"] == method.name &&

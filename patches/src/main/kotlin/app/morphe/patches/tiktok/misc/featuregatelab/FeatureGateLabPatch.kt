@@ -171,10 +171,9 @@ val featureGateLabPatch = bytecodePatch(
         val getSchema = activityCenter.methods.singleOrNull {
             it.name == "getSchema" &&
                 it.returnType == "Ljava/lang/String;" &&
-                it.parameterTypes == listOf(
-                    "Ljava/lang/String;",
-                    "Ljava/lang/String;",
-                    "Ljava/lang/String;",
+                it.parameterTypes.map(CharSequence::toString) in listOf(
+                    listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;"),
+                    listOf("Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Landroid/net/Uri;"),
                 )
         } ?: throw PatchException("Feature Gate Lab Activity Center schema boundary not found")
         getSchema.patchActivityCenterSchema()

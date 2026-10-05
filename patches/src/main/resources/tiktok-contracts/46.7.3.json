@@ -790,7 +790,8 @@
     "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;-\u003eonDisplayAdded(I)V": "4d51151dc4736b9251b29dbdedaae1caec7c2e2347fb9fa556195f0badc74aa2",
     "Lcom/ss/android/ugc/feed/platform/panel/clearmode/ClearModePanelComponent;-\u003eonDisplayRemoved(I)V": "4d51151dc4736b9251b29dbdedaae1caec7c2e2347fb9fa556195f0badc74aa2",
     "Lcom/ss/android/vesdk/VEConfigCenter;-\u003egetValue(Ljava/lang/String;F)F": "cc04a2320ab6e0c916c632a50886fa2d4c56a52a3e607249b1a62447655185eb",
-    "Lcom/ss/android/vesdk/VEConfigCenter;-\u003egetValue(Ljava/lang/String;J)J": "4b0d9bc19df80e0b81b273a9ad64f6ef54dd43f8a642a35bf24ebfa191c8391e"
+    "Lcom/ss/android/vesdk/VEConfigCenter;-\u003egetValue(Ljava/lang/String;J)J": "4b0d9bc19df80e0b81b273a9ad64f6ef54dd43f8a642a35bf24ebfa191c8391e",
+    "Lcom/ss/android/ugc/aweme/video/simplayer/PlayerSettingServiceImpl;-\u003eget(Ljava/lang/String;Ljava/lang/reflect/Type;Ljava/lang/Object;ZZ)Ljava/lang/Object;": "44451af1d52a73c193b675cc1b4ea270ef0388f5bfffd66cfebbbea8c61ccc9c"
   },
   "memberRenameMethods": {
     "Lcom/ss/android/ugc/aweme/feed/api/FeedApi;-\u003eLIZIZ(LX/06F0;)Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;": "28a8682127ad0eb279f9a0f1dbc2bae3d28d6843c5dab3ded68c2dc983075d41"
