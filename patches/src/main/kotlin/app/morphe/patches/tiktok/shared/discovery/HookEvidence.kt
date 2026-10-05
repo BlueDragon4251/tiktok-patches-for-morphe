@@ -222,6 +222,8 @@ internal object HookEvidence {
         val mode = validationMode[method.toString()]
         if (mode in SiteContracts.modes && (operation != "insert" || !SiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
+        if (mode == PublishDateContracts.MODE && (operation != "insert" || !PublishDateContracts.mutationAllowed(method, index, code)))
+            throw PatchException("Publish-date contract permits only the five typed native visibility results")
         if (mode in TakoContracts.modes && (operation != "insert" || !TakoContracts.mutationAllowed(mode!!, index, code)))
             throw PatchException("Tako contract permits only the reviewed visibility gate or view callback")
         if (mode in ReturnSiteContracts.modes && (operation != "insert" || !ReturnSiteContracts.mutationAllowed(mode!!, method, index, code)))

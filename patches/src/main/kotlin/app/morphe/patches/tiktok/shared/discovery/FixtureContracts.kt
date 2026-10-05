@@ -577,7 +577,8 @@ internal object FixtureContracts {
             captchaEntryBoundary(owner, method, callback, acceptedMethod == CAPTCHA_V2)
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
-        val siteMode = TakoContracts.mode(method, owner, acceptedMethod)
+        val siteMode = PublishDateContracts.mode(method, owner, acceptedMethod)
+            ?: TakoContracts.mode(method, owner, acceptedMethod)
             ?: ReturnSiteContracts.mode(method, owner, acceptedMethod)
             ?: SiteContracts.mode(method, acceptedMethod)
             ?: SettingsContracts.mode(method, acceptedMethod).takeIf {
