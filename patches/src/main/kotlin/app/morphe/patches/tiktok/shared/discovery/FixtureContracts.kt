@@ -107,7 +107,7 @@ internal object FixtureContracts {
             }.sorted()).joinToString("\n"))
 
     /** Only these reviewed entry hooks may survive unrelated changes to their declaring class. */
-    fun methodScopedHooks(): Set<String> = setOf(
+    fun methodScopedHooks(): Set<String> = ReviewedMethodScopes.hooks + setOf(
         "LX/02z2;->LJFF(IILjava/lang/String;Z)I",
         "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;->popCaptchaV2(" +
             "Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
@@ -138,7 +138,7 @@ internal object FixtureContracts {
 
     /** The offline provider is found by its caller and may move to another obfuscated class. */
     fun portableMethodScopeSignature(owner: ClassDef, method: Method, acceptedMethod: String): String =
-        if (acceptedMethod in relocatedMethodScopes) portableReturnScopeSignature(owner, method)
+        if (acceptedMethod in ReviewedMethodScopes.hooks || acceptedMethod in relocatedMethodScopes) portableReturnScopeSignature(owner, method)
         else if (acceptedMethod in tabReturnScopes) portableReturnScopeSignature(owner, method)
         else portableScopeSignature(owner, method)
 
@@ -548,7 +548,7 @@ internal object FixtureContracts {
         val fullClassMatches = portableClassSignature(owner) == expectedClass
         val methodMatches = portableSignature(method) == expectedMethod
         val scopedOwnerMatches = oldOwner == owner.type ||
-            (acceptedMethod in relocatedMethodScopes && HookEvidence.normalizedType(oldOwner) ==
+            ((acceptedMethod in relocatedMethodScopes || acceptedMethod in ReviewedMethodScopes.hooks) && HookEvidence.normalizedType(oldOwner) ==
                 HookEvidence.normalizedType(owner.type))
         val scopedMatch = !fullClassMatches && methodMatches && acceptedMethod in methodScopedHooks() &&
             scopedOwnerMatches && contracts.scopedMethods[acceptedMethod]?.let {

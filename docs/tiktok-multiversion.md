@@ -241,3 +241,5 @@ Inventory and qualification manifest; shared resolution/injection contracts;
 feed/download/gesture migrations; settings/theme and remaining catalog migrations;
 discovery/matrix and tests. Keep commits reviewable. Do not promote to dev or release
 from this branch without the user's later explicit green-head procedure.
+
+The original pinned APK comparison also reviewed unchanged App-AB getters, Live/ABMock settings getters, two unchanged VEConfig getters, three TUX color resolvers, and the two display callbacks. `ReviewedMethodScopes` requires the complete portable method digest and its referenced-field/class-hierarchy digest before providing an alias for an explicit site. Stable owners must retain the exact descriptor; relocated obfuscated owners require a single reviewed body/scope match. Changed VEConfig/TUX bodies remain blocked. Fixture capture recomputes every approved scope from the SHA-verified baseline.

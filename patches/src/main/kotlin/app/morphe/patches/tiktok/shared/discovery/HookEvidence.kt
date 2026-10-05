@@ -321,7 +321,8 @@ internal object HookEvidence {
                     row["returns"] == method.returnType && row["selection"] == "unique" &&
                     row["candidateCount"] == 1 && row["required"] == true
             }.mapNotNull { contracts.hookMethods[it["hook"]] }.let { hooks ->
-                (hooks + listOfNotNull(settingsTargets[key])).distinct()
+                (hooks + listOfNotNull(settingsTargets[key]) +
+                    ReviewedMethodScopes.candidates(owner, source, contracts)).distinct()
             }
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
