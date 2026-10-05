@@ -41,7 +41,7 @@ def build(root=ROOT):
     files += [root / 'patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt']
     records, patches = [], []
     for path in files:
-        source = path.read_text()
+        source = path.read_text(encoding='utf-8')
         relative = path.relative_to(root).as_posix()
         declared = [{'symbol': m[1], 'name': m[2]} for m in re.finditer(
             r'val\s+(\w+)\s*=\s*(?:bytecodePatch|resourcePatch)\s*\(\s*name\s*=\s*"([^"]+)"', source)]
@@ -67,10 +67,10 @@ def main():
     args = parser.parse_args()
     result = json.dumps(build(), indent=2, ensure_ascii=False) + '\n'
     if args.check:
-        if not args.output.exists() or args.output.read_text() != result:
+        if not args.output.exists() or args.output.read_text(encoding='utf-8') != result:
             raise SystemExit('Source inventory is stale; run scripts/tiktok/inventory.py')
     else:
-        args.output.write_text(result)
+        args.output.write_text(result, encoding='utf-8')
     print(f'Source inventory: {len(build()["patches"])} patches')
 
 

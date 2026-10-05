@@ -313,25 +313,6 @@
       "findings": []
     },
     {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/Utils.java",
-      "sha256": "2d4cc8b246aa9c570381660db8bd332e83d4941e269b322e2309145a02ace780",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 18,
-          "text": "\"-\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 30,
-          "text": "\"0-\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController.java",
       "sha256": "32068cc472ac31294a5283fcb54a225393d6cd4a4bc635dbf8f75975121d3a11",
       "patches": [],
@@ -35835,18 +35816,6 @@
       ]
     },
     {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/interaction/ResumeVideoAfterScrollPatch.java",
-      "sha256": "f938d498535b013df2dc5f1575577f40af4f2e033ff1726ac6130a7f4a55ea5c",
-      "patches": [],
-      "findings": []
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/interaction/StopVideoLoopingPatch.java",
-      "sha256": "0d28c090be490a4a7e3f71da425242185ec6de385f233fa720fa79d684eb5876",
-      "patches": [],
-      "findings": []
-    },
-    {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/interaction/gesture/GestureRemapper.java",
       "sha256": "cb93703bd62f0e5bd998e330d974fd6619e4ce0860ff25e021272b89d42aa497",
       "patches": [],
@@ -36062,6 +36031,18 @@
           "category": "structural-or-semantic-evidence"
         }
       ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/interaction/ResumeVideoAfterScrollPatch.java",
+      "sha256": "f938d498535b013df2dc5f1575577f40af4f2e033ff1726ac6130a7f4a55ea5c",
+      "patches": [],
+      "findings": []
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/interaction/StopVideoLoopingPatch.java",
+      "sha256": "0d28c090be490a4a7e3f71da425242185ec6de385f233fa720fa79d684eb5876",
+      "patches": [],
+      "findings": []
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/navigation/BottomNavigationTabOptions.java",
@@ -37328,511 +37309,6 @@
       ]
     },
     {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/Settings.java",
-      "sha256": "b480ffd7dfae8e42b81bfd5f3fd4ac6b6746b7a08b6c3664f70a8e7e9814acb7",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 21,
-          "text": "\"remove_ads\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 22,
-          "text": "\"hide_live\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 23,
-          "text": "\"hide_shop\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 24,
-          "text": "\"hide_story\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 25,
-          "text": "\"hide_image\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 26,
-          "text": "\"blueit_hide_seen_videos\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 28,
-          "text": "\"blueit_seen_video_retention_days\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 29,
-          "text": "\"30\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 34,
-          "text": "\"blueit_hide_promotional_music\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 36,
-          "text": "\"blueit_hide_live_replays\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 38,
-          "text": "\"blueit_hide_ai_generated_content\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 40,
-          "text": "\"blueit_max_views_per_like\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 41,
-          "text": "\"hide_captcha_popups\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 42,
-          "text": "\"hide_homepage_coin\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 43,
-          "text": "\"0-\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 43,
-          "text": "\"min_max_views\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 44,
-          "text": "\"0-\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 44,
-          "text": "\"min_max_likes\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 45,
-          "text": "\"feed_navigation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"feed_navigation_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 53,
-          "text": "\"feed_navigation_block_new_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 59,
-          "text": "\"feed_navigation_observed_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 65,
-          "text": "\"blueit_startup_feed_tab\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 66,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 69,
-          "text": "\"blueit_last_used_feed_tab\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 74,
-          "text": "\"bottom_navigation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 76,
-          "text": "\"bottom_navigation_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 82,
-          "text": "\"bottom_navigation_block_new_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 88,
-          "text": "\"bottom_navigation_observed_tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 93,
-          "text": "\"hide_tako_ai\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 94,
-          "text": "\"comment_batch_translation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 95,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 95,
-          "text": "\"comment_translation_excluded_languages\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 97,
-          "text": "\"hide_comment_quick_reactions\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 98,
-          "text": "\"DCIM/TikTok\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 98,
-          "text": "\"down_path\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 100,
-          "text": "\"download_video_filename_template\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 101,
-          "text": "\"{creator}_{date}_{video_id}\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 104,
-          "text": "\"download_photo_filename_template\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 105,
-          "text": "\"{creator}_{date}_{video_id}_{index}\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 108,
-          "text": "\"download_comment_media_filename_template\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 109,
-          "text": "\"comment_{date}_{media_id}\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 111,
-          "text": "\"down_watermark\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 113,
-          "text": "\"blueit_download_video_source\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 114,
-          "text": "\"auto\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 117,
-          "text": "\"blueit_download_video_quality\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 118,
-          "text": "\"auto\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 121,
-          "text": "\"blueit_download_original_photos\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 122,
-          "text": "\"custom_offline_videos\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 124,
-          "text": "\"custom_offline_video_limit\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 129,
-          "text": "\"show_seekbar\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 131,
-          "text": "\"show_seekbar_thumbnail\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 134,
-          "text": "\"stop_video_looping\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 136,
-          "text": "\"resume_video_after_scroll\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 140,
-          "text": "\"open_external_links\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 141,
-          "text": "\"always_show_publish_date\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 142,
-          "text": "\"clear_display\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 144,
-          "text": "\"blueit_automatic_clear_display\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 146,
-          "text": "\"blueit_automatic_clear_display_delay_ms\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 152,
-          "text": "\"blueit_gesture_single_tap_action\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 153,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 156,
-          "text": "\"blueit_gesture_double_tap_action\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 157,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 160,
-          "text": "\"blueit_gesture_double_tap_left_action\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 161,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 164,
-          "text": "\"blueit_gesture_double_tap_right_action\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 165,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 168,
-          "text": "\"blueit_gesture_long_press_action\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 169,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 171,
-          "text": "\"copy_comments_without_username\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 172,
-          "text": "\"REMEMBERED_SPEED\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 173,
-          "text": "\"enable_long_press_speed_lock\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 175,
-          "text": "\"disable_long_press_quick_share\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 177,
-          "text": "\"enable_non_personalized_search\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 179,
-          "text": "\"enable_live_search\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 180,
-          "text": "\"simspoof\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 181,
-          "text": "\"simspoof_iso\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 181,
-          "text": "\"us\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 182,
-          "text": "\"310260\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 182,
-          "text": "\"simspoof_mccmnc\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 183,
-          "text": "\"T-Mobile\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 183,
-          "text": "\"simspoof_op_name\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/SettingsStatus.java",
-      "sha256": "a51f111a69bfe981b3f0e9a27b0837e2614180de1d524d7a124ff105ef0eabc3",
-      "patches": [],
-      "findings": []
-    },
-    {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/BlueITCreditsPreference.java",
       "sha256": "90d687eb87e34d9651f2a3b0c397b2126b338b90a5babafed35639917f056e26",
       "patches": [],
@@ -38221,6 +37697,964 @@
           "kind": "literal",
           "line": 92,
           "text": "\"30\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/CommentsPreferenceCategory.java",
+      "sha256": "2da790575c7907e780c63d86b00b68d188804fa0275b573cd2da90bf206273a6",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 10,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 14,
+          "text": "\"Comments and translation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 29,
+          "text": "\"Auto translate comments\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 30,
+          "text": "\"Automatically translates loaded comment batches using TikTok's translation system.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 37,
+          "text": "\"Hide quick comment reactions\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 38,
+          "text": "\"Hide TikTok's exposed quick emoji row in supported comment inputs.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 45,
+          "text": "\"Copy comments without username\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 46,
+          "text": "\"Copy only the comment text when using TikTok's copy comment action.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/ConditionalPreferenceCategory.java",
+      "sha256": "dd3c930a54618ac778f5ff2ea4b332bec24fde54b653b898105905e9418b8645",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 15,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/DebugPreferenceCategory.java",
+      "sha256": "3cfe41fdbcc20118025f02504ddfdb555ea98fa21832dcadaac6ed2041eb5502",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 17,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 21,
+          "text": "\"Diagnostics\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 33,
+          "text": "\"Enable diagnostic logging\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 34,
+          "text": "\"Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 40,
+          "text": "\"Capture Java crashes locally\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 41,
+          "text": "\"Save the latest Java crash after TikTok starts.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 46,
+          "text": "\"Included diagnostics\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 50,
+          "text": "\"Export diagnostic report\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 51,
+          "text": "\"Copy a quick report or save the full report as a file.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 55,
+          "text": "\"Clear diagnostic data\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 56,
+          "text": "\"Clear buffered events and the saved Java crash.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/DownloadsPreferenceCategory.java",
+      "sha256": "f55b40e79225cee9d61afa6abebbe5e503da7080ec2bf4c73b902b9f9de170e7",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 20,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 24,
+          "text": "\"Downloads\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 36,
+          "text": "\"Download path\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 41,
+          "text": "\"Video filename\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 42,
+          "text": "\"Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 47,
+          "text": "\"Photo filename\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 48,
+          "text": "\"Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 53,
+          "text": "\"Comment media filename\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 54,
+          "text": "\"Tokens: {date}, {media_id}. Works for image and video stickers.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 59,
+          "text": "\"Remove watermark\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 60,
+          "text": "\"Apply to video downloads and image downloads.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 66,
+          "text": "\"Original Photo Mode downloads\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 67,
+          "text": "\"Save original CDN image bytes and remove TikTok's rendered copies only after all originals were saved successfully.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 77,
+          "text": "\"Custom offline videos\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 78,
+          "text": "\"Adds a custom option to TikTok's offline videos menu after restart.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 83,
+          "text": "\"Offline videos limit\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 84,
+          "text": "\"Choose 201-500 videos. Restart TikTok after saving.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/ExtensionPreferenceCategory.java",
+      "sha256": "7fa6d95ce8be926ec0c3eb48a78b7cf34a188d29fb14aadd90a1f915f933f812",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 18,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 22,
+          "text": "\"App behavior\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 34,
+          "text": "\"Sanitize sharing links\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 35,
+          "text": "\"Remove tracking parameters from shared links.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 35,
+          "text": "parameters from shared links.\",",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 41,
+          "text": "\"Open external links directly\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 42,
+          "text": "\"Open profile and story website links in your system browser instead of TikTok's in-app browser.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 49,
+          "text": "\"Show seekbar\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 50,
+          "text": "\"Show the native seekbar on videos where TikTok would normally hide it.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 56,
+          "text": "\"Show seekbar thumbnail\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 57,
+          "text": "\"Show a video preview thumbnail while dragging the seekbar.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 64,
+          "text": "\"Stop video looping\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 65,
+          "text": "\"Stop videos at the end instead of replaying them.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 72,
+          "text": "\"Resume videos after scrolling\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 73,
+          "text": "\"Continue supported videos from where you stopped when you scroll back to them.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 107,
+          "text": "\"Enable hold-and-slide 2x lock\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 108,
+          "text": "\"Use TikTok's native hold, slide down, and release gesture to lock 2x speed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 115,
+          "text": "\"Disable long-press quick share\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 116,
+          "text": "\"Keep long-pressing Share from opening TikTok's quick-share interaction.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 123,
+          "text": "\"Use non-personalized search\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 124,
+          "text": "\"Use TikTok's non-personalized search state instead of the saved account choice.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 131,
+          "text": "\"Show Live search\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 132,
+          "text": "\"Show TikTok's search entry in the Live drawer where supported.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeatureGateLabPreferenceCategory.java",
+      "sha256": "7e1fa88a1ebd1a12151602c8b834d86c3b890b9e5e610e8e72d691c72771b5bb",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 14,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 18,
+          "text": "\"Feature Gate Lab\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeedFilterPreferenceCategory.java",
+      "sha256": "d28f2fec5a4c4cf6e620d1da83d1b2601933737f5e4cf3f36d630e7e25719552",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 21,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 25,
+          "text": "\"Feed filter\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 37,
+          "text": "\"Remove ads from feed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 37,
+          "text": "\"Remove feed ads\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 42,
+          "text": "\"Hide TikTok Shop\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 42,
+          "text": "\"Hide TikTok shop from feed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 47,
+          "text": "\"Hide livestreams from feed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 47,
+          "text": "\"Hide livestreams\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 52,
+          "text": "\"Hide story from feed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 52,
+          "text": "\"Hide story\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 57,
+          "text": "\"Hide image video from feed.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 57,
+          "text": "\"Hide image video\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 63,
+          "text": "\"Hide already seen videos\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 64,
+          "text": "\"Filter locally remembered video ids when TikTok loads them again.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 76,
+          "text": "\"Hide promotional music\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 77,
+          "text": "\"Hide feed items TikTok marks as using promotional music.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 82,
+          "text": "\"Hide LIVE replays\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 83,
+          "text": "\"Hide replay items from previous TikTok LIVE streams.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 88,
+          "text": "\"Hide AI-generated content\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 89,
+          "text": "\"Hide feed items TikTok marks as AI-generated or AIGC.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 94,
+          "text": "\"Maximum views per like\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 95,
+          "text": "\"Hide videos with a worse like/view ratio. Example: 40 means at least about 1 like per 40 views. 0 disables the rule.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 99,
+          "text": "\"views/like\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 103,
+          "text": "\"Blocked keywords / hashtags\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 104,
+          "text": "\"Comma or line separated. Case-insensitive substring match against video text and available hashtag metadata.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 109,
+          "text": "\"Blocked creators\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 110,
+          "text": "\"Comma or line separated TikTok usernames or creator IDs. A leading @ is optional.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 115,
+          "text": "\"Blocked sounds\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 116,
+          "text": "\"Comma or line separated sound IDs, titles, or sound-author names.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 121,
+          "text": "\"Min/Max duration (seconds)\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 122,
+          "text": "\"Hide videos outside this duration range. Example: 5-120.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 128,
+          "text": "\"Min/Max views\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 128,
+          "text": "\"The minimum or maximum views of a video to show.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 133,
+          "text": "\"Min/Max likes\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 133,
+          "text": "\"The minimum or maximum likes of a video to show.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeedNavigationPreferenceCategory.java",
+      "sha256": "3f048eb104e69312eec8a32e4a514e41d765246b1f58de4ba5b84032523298e9",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 12,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 16,
+          "text": "\"Feed navigation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 29,
+          "text": "\"Filter feed tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 30,
+          "text": "\"Choose which loaded TikTok feed tabs should stay visible.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 39,
+          "text": "\"Block new TikTok tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 40,
+          "text": "\"Hide tabs TikTok adds later unless you allow them.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 45,
+          "text": "\"Filter bottom tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 46,
+          "text": "\"Choose which loaded TikTok bottom navigation tabs should stay visible.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 56,
+          "text": "\"Block new bottom tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 57,
+          "text": "\"Hide bottom tabs TikTok adds later unless you allow them.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 62,
+          "text": "\"Hide Tako AI\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 63,
+          "text": "\"Hide the Tako AI feed bubble above the profile button.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/InterfacePreferenceCategory.java",
+      "sha256": "a6fd053714631e7ed4b1fa685dd54ab744ffe2f3b1a335f6177a88b4c408cfde",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 18,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 22,
+          "text": "\"Interface\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 40,
+          "text": "\"Custom background\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 41,
+          "text": "\"Background color used by the Custom preset.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 47,
+          "text": "\"Custom surface\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 48,
+          "text": "\"Navigation and panel surface color used by the Custom preset.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 54,
+          "text": "\"Custom accent\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 55,
+          "text": "\"Accent color exposed by the Theme Engine for supported TikTok surfaces.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 61,
+          "text": "\"Custom text\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 62,
+          "text": "\"Text/contrast color exposed by the Theme Engine for supported surfaces.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 68,
+          "text": "\"Liquid Glass tint\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 69,
+          "text": "\"Tint and base transparency for the Liquid Glass preset.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 75,
+          "text": "\"Liquid Glass opacity\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 76,
+          "text": "\"Opacity of glass-like navigation and panel surfaces. Choose 10-95%.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 80,
+          "text": "\"%\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 84,
+          "text": "\"Liquid Glass corner radius\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 85,
+          "text": "\"Corner radius for glass-like surfaces. Choose 0-48 dp.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 89,
+          "text": "\"dp\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 96,
+          "text": "\"Automatic Clear Display\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 97,
+          "text": "\"Automatically hide TikTok's feed controls after a short delay on each new video.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 102,
+          "text": "\"Clear Display delay\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 103,
+          "text": "\"Delay in milliseconds before controls are hidden. Choose 250-15000 ms.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 107,
+          "text": "\"ms\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 113,
+          "text": "\"Hide floating promotions\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 114,
+          "text": "\"Hide floating promotion badges, coins, and timer banners on the homepage.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 121,
+          "text": "\"Hide CAPTCHA popups\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 122,
+          "text": "\"Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 129,
+          "text": "\"Always show publish date\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 130,
+          "text": "\"Always show the publish date in video author information. Requires restart.\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/SimSpoofPreferenceCategory.java",
+      "sha256": "6735cfeec25c88670d705b8b0dab5335d2346785b9969f8efa44e508d9acca70",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 17,
+          "text": "\"deprecation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 21,
+          "text": "\"Bypass regional restriction\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 33,
+          "text": "\"Fake sim card info\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 34,
+          "text": "\"Bypass regional restriction by fake sim card information.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 39,
+          "text": "\"Country ISO\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 39,
+          "text": "\"us, gb, jp, ...\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 44,
+          "text": "\"Example: 310260\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 44,
+          "text": "\"Operator MCC/MNC\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 49,
+          "text": "\"Example: T-Mobile\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 49,
+          "text": "\"Operator name\"",
           "category": "structural-or-semantic-evidence"
         }
       ]
@@ -41009,962 +41443,509 @@
       ]
     },
     {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/CommentsPreferenceCategory.java",
-      "sha256": "2da790575c7907e780c63d86b00b68d188804fa0275b573cd2da90bf206273a6",
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/Settings.java",
+      "sha256": "b480ffd7dfae8e42b81bfd5f3fd4ac6b6746b7a08b6c3664f70a8e7e9814acb7",
       "patches": [],
       "findings": [
-        {
-          "kind": "literal",
-          "line": 10,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 14,
-          "text": "\"Comments and translation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 29,
-          "text": "\"Auto translate comments\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 30,
-          "text": "\"Automatically translates loaded comment batches using TikTok's translation system.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 37,
-          "text": "\"Hide quick comment reactions\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 38,
-          "text": "\"Hide TikTok's exposed quick emoji row in supported comment inputs.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 45,
-          "text": "\"Copy comments without username\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 46,
-          "text": "\"Copy only the comment text when using TikTok's copy comment action.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/ConditionalPreferenceCategory.java",
-      "sha256": "dd3c930a54618ac778f5ff2ea4b332bec24fde54b653b898105905e9418b8645",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 15,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/DebugPreferenceCategory.java",
-      "sha256": "3cfe41fdbcc20118025f02504ddfdb555ea98fa21832dcadaac6ed2041eb5502",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 17,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
         {
           "kind": "literal",
           "line": 21,
-          "text": "\"Diagnostics\"",
+          "text": "\"remove_ads\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 33,
-          "text": "\"Enable diagnostic logging\"",
+          "line": 22,
+          "text": "\"hide_live\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 34,
-          "text": "\"Only enable when recording logs to report an issue. Leaving it on for too long can make TikTok feel laggy and may lead to crashes.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 40,
-          "text": "\"Capture Java crashes locally\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 41,
-          "text": "\"Save the latest Java crash after TikTok starts.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 46,
-          "text": "\"Included diagnostics\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 50,
-          "text": "\"Export diagnostic report\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 51,
-          "text": "\"Copy a quick report or save the full report as a file.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 55,
-          "text": "\"Clear diagnostic data\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 56,
-          "text": "\"Clear buffered events and the saved Java crash.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/DownloadsPreferenceCategory.java",
-      "sha256": "f55b40e79225cee9d61afa6abebbe5e503da7080ec2bf4c73b902b9f9de170e7",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 20,
-          "text": "\"deprecation\"",
+          "line": 23,
+          "text": "\"hide_shop\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 24,
-          "text": "\"Downloads\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 36,
-          "text": "\"Download path\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 41,
-          "text": "\"Video filename\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 42,
-          "text": "\"Tokens: {creator}, {date}, {video_id}. The file extension is kept automatically.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"Photo filename\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 48,
-          "text": "\"Tokens: {creator}, {date}, {video_id}, {index}. The file extension is kept automatically.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 53,
-          "text": "\"Comment media filename\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 54,
-          "text": "\"Tokens: {date}, {media_id}. Works for image and video stickers.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 59,
-          "text": "\"Remove watermark\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 60,
-          "text": "\"Apply to video downloads and image downloads.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 66,
-          "text": "\"Original Photo Mode downloads\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 67,
-          "text": "\"Save original CDN image bytes and remove TikTok's rendered copies only after all originals were saved successfully.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 77,
-          "text": "\"Custom offline videos\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 78,
-          "text": "\"Adds a custom option to TikTok's offline videos menu after restart.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 83,
-          "text": "\"Offline videos limit\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 84,
-          "text": "\"Choose 201-500 videos. Restart TikTok after saving.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/ExtensionPreferenceCategory.java",
-      "sha256": "7fa6d95ce8be926ec0c3eb48a78b7cf34a188d29fb14aadd90a1f915f933f812",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 18,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 22,
-          "text": "\"App behavior\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 34,
-          "text": "\"Sanitize sharing links\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 35,
-          "text": "\"Remove tracking parameters from shared links.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 35,
-          "text": "parameters from shared links.\",",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 41,
-          "text": "\"Open external links directly\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 42,
-          "text": "\"Open profile and story website links in your system browser instead of TikTok's in-app browser.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 49,
-          "text": "\"Show seekbar\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 50,
-          "text": "\"Show the native seekbar on videos where TikTok would normally hide it.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 56,
-          "text": "\"Show seekbar thumbnail\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 57,
-          "text": "\"Show a video preview thumbnail while dragging the seekbar.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 64,
-          "text": "\"Stop video looping\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 65,
-          "text": "\"Stop videos at the end instead of replaying them.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 72,
-          "text": "\"Resume videos after scrolling\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 73,
-          "text": "\"Continue supported videos from where you stopped when you scroll back to them.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 107,
-          "text": "\"Enable hold-and-slide 2x lock\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 108,
-          "text": "\"Use TikTok's native hold, slide down, and release gesture to lock 2x speed.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 115,
-          "text": "\"Disable long-press quick share\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 116,
-          "text": "\"Keep long-pressing Share from opening TikTok's quick-share interaction.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 123,
-          "text": "\"Use non-personalized search\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 124,
-          "text": "\"Use TikTok's non-personalized search state instead of the saved account choice.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 131,
-          "text": "\"Show Live search\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 132,
-          "text": "\"Show TikTok's search entry in the Live drawer where supported.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeatureGateLabPreferenceCategory.java",
-      "sha256": "7e1fa88a1ebd1a12151602c8b834d86c3b890b9e5e610e8e72d691c72771b5bb",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 14,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 18,
-          "text": "\"Feature Gate Lab\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeedFilterPreferenceCategory.java",
-      "sha256": "d28f2fec5a4c4cf6e620d1da83d1b2601933737f5e4cf3f36d630e7e25719552",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 21,
-          "text": "\"deprecation\"",
+          "text": "\"hide_story\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 25,
-          "text": "\"Feed filter\"",
+          "text": "\"hide_image\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 37,
-          "text": "\"Remove ads from feed.\"",
+          "line": 26,
+          "text": "\"blueit_hide_seen_videos\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 37,
-          "text": "\"Remove feed ads\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 42,
-          "text": "\"Hide TikTok Shop\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 42,
-          "text": "\"Hide TikTok shop from feed.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"Hide livestreams from feed.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"Hide livestreams\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 52,
-          "text": "\"Hide story from feed.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 52,
-          "text": "\"Hide story\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 57,
-          "text": "\"Hide image video from feed.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 57,
-          "text": "\"Hide image video\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 63,
-          "text": "\"Hide already seen videos\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 64,
-          "text": "\"Filter locally remembered video ids when TikTok loads them again.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 76,
-          "text": "\"Hide promotional music\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 77,
-          "text": "\"Hide feed items TikTok marks as using promotional music.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 82,
-          "text": "\"Hide LIVE replays\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 83,
-          "text": "\"Hide replay items from previous TikTok LIVE streams.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 88,
-          "text": "\"Hide AI-generated content\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 89,
-          "text": "\"Hide feed items TikTok marks as AI-generated or AIGC.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 94,
-          "text": "\"Maximum views per like\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 95,
-          "text": "\"Hide videos with a worse like/view ratio. Example: 40 means at least about 1 like per 40 views. 0 disables the rule.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 99,
-          "text": "\"views/like\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 103,
-          "text": "\"Blocked keywords / hashtags\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 104,
-          "text": "\"Comma or line separated. Case-insensitive substring match against video text and available hashtag metadata.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 109,
-          "text": "\"Blocked creators\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 110,
-          "text": "\"Comma or line separated TikTok usernames or creator IDs. A leading @ is optional.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 115,
-          "text": "\"Blocked sounds\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 116,
-          "text": "\"Comma or line separated sound IDs, titles, or sound-author names.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 121,
-          "text": "\"Min/Max duration (seconds)\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 122,
-          "text": "\"Hide videos outside this duration range. Example: 5-120.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 128,
-          "text": "\"Min/Max views\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 128,
-          "text": "\"The minimum or maximum views of a video to show.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 133,
-          "text": "\"Min/Max likes\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 133,
-          "text": "\"The minimum or maximum likes of a video to show.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/FeedNavigationPreferenceCategory.java",
-      "sha256": "3f048eb104e69312eec8a32e4a514e41d765246b1f58de4ba5b84032523298e9",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 12,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 16,
-          "text": "\"Feed navigation\"",
+          "line": 28,
+          "text": "\"blueit_seen_video_retention_days\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 29,
-          "text": "\"Filter feed tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 30,
-          "text": "\"Choose which loaded TikTok feed tabs should stay visible.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 39,
-          "text": "\"Block new TikTok tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 40,
-          "text": "\"Hide tabs TikTok adds later unless you allow them.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 45,
-          "text": "\"Filter bottom tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 46,
-          "text": "\"Choose which loaded TikTok bottom navigation tabs should stay visible.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 56,
-          "text": "\"Block new bottom tabs\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 57,
-          "text": "\"Hide bottom tabs TikTok adds later unless you allow them.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 62,
-          "text": "\"Hide Tako AI\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 63,
-          "text": "\"Hide the Tako AI feed bubble above the profile button.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/InterfacePreferenceCategory.java",
-      "sha256": "a6fd053714631e7ed4b1fa685dd54ab744ffe2f3b1a335f6177a88b4c408cfde",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 18,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 22,
-          "text": "\"Interface\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 40,
-          "text": "\"Custom background\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 41,
-          "text": "\"Background color used by the Custom preset.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"Custom surface\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 48,
-          "text": "\"Navigation and panel surface color used by the Custom preset.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 54,
-          "text": "\"Custom accent\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 55,
-          "text": "\"Accent color exposed by the Theme Engine for supported TikTok surfaces.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 61,
-          "text": "\"Custom text\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 62,
-          "text": "\"Text/contrast color exposed by the Theme Engine for supported surfaces.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 68,
-          "text": "\"Liquid Glass tint\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 69,
-          "text": "\"Tint and base transparency for the Liquid Glass preset.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 75,
-          "text": "\"Liquid Glass opacity\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 76,
-          "text": "\"Opacity of glass-like navigation and panel surfaces. Choose 10-95%.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 80,
-          "text": "\"%\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 84,
-          "text": "\"Liquid Glass corner radius\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 85,
-          "text": "\"Corner radius for glass-like surfaces. Choose 0-48 dp.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 89,
-          "text": "\"dp\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 96,
-          "text": "\"Automatic Clear Display\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 97,
-          "text": "\"Automatically hide TikTok's feed controls after a short delay on each new video.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 102,
-          "text": "\"Clear Display delay\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 103,
-          "text": "\"Delay in milliseconds before controls are hidden. Choose 250-15000 ms.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 107,
-          "text": "\"ms\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 113,
-          "text": "\"Hide floating promotions\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 114,
-          "text": "\"Hide floating promotion badges, coins, and timer banners on the homepage.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 121,
-          "text": "\"Hide CAPTCHA popups\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 122,
-          "text": "\"Hide browsing and LIVE puzzle dialogs. Login and account verification remain available.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 129,
-          "text": "\"Always show publish date\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 130,
-          "text": "\"Always show the publish date in video author information. Requires restart.\"",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/preference/categories/SimSpoofPreferenceCategory.java",
-      "sha256": "6735cfeec25c88670d705b8b0dab5335d2346785b9969f8efa44e508d9acca70",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 17,
-          "text": "\"deprecation\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 21,
-          "text": "\"Bypass regional restriction\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 33,
-          "text": "\"Fake sim card info\"",
+          "text": "\"30\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 34,
-          "text": "\"Bypass regional restriction by fake sim card information.\"",
+          "text": "\"blueit_hide_promotional_music\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 39,
-          "text": "\"Country ISO\"",
+          "line": 36,
+          "text": "\"blueit_hide_live_replays\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 39,
-          "text": "\"us, gb, jp, ...\"",
+          "line": 38,
+          "text": "\"blueit_hide_ai_generated_content\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 40,
+          "text": "\"blueit_max_views_per_like\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 41,
+          "text": "\"hide_captcha_popups\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 42,
+          "text": "\"hide_homepage_coin\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 43,
+          "text": "\"0-\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 43,
+          "text": "\"min_max_views\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 44,
-          "text": "\"Example: 310260\"",
+          "text": "\"0-\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 44,
-          "text": "\"Operator MCC/MNC\"",
+          "text": "\"min_max_likes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 49,
-          "text": "\"Example: T-Mobile\"",
+          "line": 45,
+          "text": "\"feed_navigation\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 49,
-          "text": "\"Operator name\"",
+          "line": 47,
+          "text": "\"feed_navigation_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 53,
+          "text": "\"feed_navigation_block_new_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 59,
+          "text": "\"feed_navigation_observed_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 65,
+          "text": "\"blueit_startup_feed_tab\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 66,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 69,
+          "text": "\"blueit_last_used_feed_tab\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 74,
+          "text": "\"bottom_navigation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 76,
+          "text": "\"bottom_navigation_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 82,
+          "text": "\"bottom_navigation_block_new_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 88,
+          "text": "\"bottom_navigation_observed_tabs\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 93,
+          "text": "\"hide_tako_ai\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 94,
+          "text": "\"comment_batch_translation\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 95,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 95,
+          "text": "\"comment_translation_excluded_languages\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 97,
+          "text": "\"hide_comment_quick_reactions\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 98,
+          "text": "\"DCIM/TikTok\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 98,
+          "text": "\"down_path\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 100,
+          "text": "\"download_video_filename_template\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 101,
+          "text": "\"{creator}_{date}_{video_id}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 104,
+          "text": "\"download_photo_filename_template\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 105,
+          "text": "\"{creator}_{date}_{video_id}_{index}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 108,
+          "text": "\"download_comment_media_filename_template\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 109,
+          "text": "\"comment_{date}_{media_id}\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 111,
+          "text": "\"down_watermark\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 113,
+          "text": "\"blueit_download_video_source\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 114,
+          "text": "\"auto\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 117,
+          "text": "\"blueit_download_video_quality\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 118,
+          "text": "\"auto\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 121,
+          "text": "\"blueit_download_original_photos\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 122,
+          "text": "\"custom_offline_videos\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 124,
+          "text": "\"custom_offline_video_limit\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 129,
+          "text": "\"show_seekbar\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 131,
+          "text": "\"show_seekbar_thumbnail\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 134,
+          "text": "\"stop_video_looping\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 136,
+          "text": "\"resume_video_after_scroll\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 140,
+          "text": "\"open_external_links\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 141,
+          "text": "\"always_show_publish_date\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 142,
+          "text": "\"clear_display\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 144,
+          "text": "\"blueit_automatic_clear_display\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 146,
+          "text": "\"blueit_automatic_clear_display_delay_ms\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 152,
+          "text": "\"blueit_gesture_single_tap_action\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 153,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 156,
+          "text": "\"blueit_gesture_double_tap_action\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 157,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 160,
+          "text": "\"blueit_gesture_double_tap_left_action\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 161,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 164,
+          "text": "\"blueit_gesture_double_tap_right_action\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 165,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 168,
+          "text": "\"blueit_gesture_long_press_action\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 169,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 171,
+          "text": "\"copy_comments_without_username\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 172,
+          "text": "\"REMEMBERED_SPEED\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 173,
+          "text": "\"enable_long_press_speed_lock\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 175,
+          "text": "\"disable_long_press_quick_share\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 177,
+          "text": "\"enable_non_personalized_search\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 179,
+          "text": "\"enable_live_search\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 180,
+          "text": "\"simspoof\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 181,
+          "text": "\"simspoof_iso\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 181,
+          "text": "\"us\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 182,
+          "text": "\"310260\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 182,
+          "text": "\"simspoof_mccmnc\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 183,
+          "text": "\"T-Mobile\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 183,
+          "text": "\"simspoof_op_name\"",
           "category": "structural-or-semantic-evidence"
         }
       ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/settings/SettingsStatus.java",
+      "sha256": "a51f111a69bfe981b3f0e9a27b0837e2614180de1d524d7a124ff105ef0eabc3",
+      "patches": [],
+      "findings": []
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/share/ShareUrlSanitizer.java",
@@ -47927,6 +47908,25 @@
       ]
     },
     {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/Utils.java",
+      "sha256": "2d4cc8b246aa9c570381660db8bd332e83d4941e269b322e2309145a02ace780",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 18,
+          "text": "\"-\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 30,
+          "text": "\"0-\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
       "source": "extensions/tiktok/stub/src/main/AndroidManifest.xml",
       "sha256": "35fd01bf7f20ab5c128b733ffa006c894691438c7a455526e9ed7af90a851674",
       "patches": [],
@@ -49080,6 +49080,240 @@
           "line": 153,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/feedfilter/advanced/AdvancedFeedFilterPatch.kt",
+      "sha256": "bf638baa94c6a66e89e41a32a783a1572dfb00bf10c581e5c67d3c7e60c388f9",
+      "patches": [
+        {
+          "symbol": "advancedFeedFilterPatch",
+          "name": "Advanced feed filter"
+        }
+      ],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 20,
+          "text": "\"Lapp/morphe/extension/tiktok/feedfilter/AdvancedFeedFilter;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 22,
+          "text": "\"unused\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 24,
+          "text": "\"Advanced feed filter\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 24,
+          "text": "name = \"Advanced feed filter\",",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 25,
+          "text": "\"Adds BlueIT feed rules for promotional music, LIVE replays, and minimum like/view ratio.\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "version",
+          "line": 30,
+          "text": "AppCompatibilities.tiktokVerified())",
+          "category": "version-specific"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 33,
+          "text": "addInstruction(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 35,
+          "text": "\"invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedFeedFilter()V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 35,
+          "text": "->enableAdvancedFeedFilter()V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "control-flow",
+          "line": 40,
+          "text": "RETURN_OBJECT",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 44,
+          "text": "registerA",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 45,
+          "text": "addInstructions(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 47,
+          "text": "\"invoke-static/range {v$register .. v$register}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 47,
+          "text": "->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 47,
+          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "control-flow",
+          "line": 54,
+          "text": "RETURN_OBJECT",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 58,
+          "text": "registerA",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 59,
+          "text": "addInstructions(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 61,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 62,
+          "text": "if-eqz",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 63,
+          "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 63,
+          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 66,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "control-flow",
+          "line": 73,
+          "text": "RETURN_OBJECT",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 77,
+          "text": "addInstructions(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 79,
+          "text": "\"invoke-static/range {p0 .. p0}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 79,
+          "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 79,
+          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 79,
+          "text": "p0",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 79,
+          "text": "p0",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "control-flow",
+          "line": 86,
+          "text": "RETURN_VOID",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 90,
+          "text": "addInstructions(",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 92,
+          "text": "\"invoke-static/range {p1 .. p1}, $EXTENSION_DESCRIPTOR->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "member",
+          "line": 92,
+          "text": "->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 92,
+          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 92,
+          "text": "p1",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 92,
+          "text": "p1",
+          "category": "hard-coded"
         }
       ]
     },
@@ -50413,240 +50647,6 @@
           "line": 142,
           "text": "parameters = listOf(\"Landroid/view/View;\"),",
           "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
-      "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/feedfilter/advanced/AdvancedFeedFilterPatch.kt",
-      "sha256": "bf638baa94c6a66e89e41a32a783a1572dfb00bf10c581e5c67d3c7e60c388f9",
-      "patches": [
-        {
-          "symbol": "advancedFeedFilterPatch",
-          "name": "Advanced feed filter"
-        }
-      ],
-      "findings": [
-        {
-          "kind": "literal",
-          "line": 20,
-          "text": "\"Lapp/morphe/extension/tiktok/feedfilter/AdvancedFeedFilter;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 22,
-          "text": "\"unused\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 24,
-          "text": "\"Advanced feed filter\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 24,
-          "text": "name = \"Advanced feed filter\",",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 25,
-          "text": "\"Adds BlueIT feed rules for promotional music, LIVE replays, and minimum like/view ratio.\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "version",
-          "line": 30,
-          "text": "AppCompatibilities.tiktokVerified())",
-          "category": "version-specific"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 33,
-          "text": "addInstruction(",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 35,
-          "text": "\"invoke-static {}, Lapp/morphe/extension/tiktok/settings/SettingsStatus;->enableAdvancedFeedFilter()V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 35,
-          "text": "->enableAdvancedFeedFilter()V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "control-flow",
-          "line": 40,
-          "text": "RETURN_OBJECT",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 44,
-          "text": "registerA",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 45,
-          "text": "addInstructions(",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 47,
-          "text": "\"invoke-static/range {v$register .. v$register}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 47,
-          "text": "->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 47,
-          "text": "Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "control-flow",
-          "line": 54,
-          "text": "RETURN_OBJECT",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 58,
-          "text": "registerA",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 59,
-          "text": "addInstructions(",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 61,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 62,
-          "text": "if-eqz",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 63,
-          "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 63,
-          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 66,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "control-flow",
-          "line": 73,
-          "text": "RETURN_OBJECT",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 77,
-          "text": "addInstructions(",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 79,
-          "text": "\"invoke-static/range {p0 .. p0}, $EXTENSION_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 79,
-          "text": "->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 79,
-          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 79,
-          "text": "p0",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "register",
-          "line": 79,
-          "text": "p0",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "control-flow",
-          "line": 86,
-          "text": "RETURN_VOID",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 90,
-          "text": "addInstructions(",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 92,
-          "text": "\"invoke-static/range {p1 .. p1}, $EXTENSION_DESCRIPTOR->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V\"",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "member",
-          "line": 92,
-          "text": "->filterFinal(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 92,
-          "text": "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 92,
-          "text": "p1",
-          "category": "hard-coded"
-        },
-        {
-          "kind": "register",
-          "line": 92,
-          "text": "p1",
-          "category": "hard-coded"
         }
       ]
     },
@@ -73351,145 +73351,6 @@
       ]
     },
     {
-      "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/Fingerprints.kt",
-      "sha256": "d8d3054b4553fd87043c66201fc73ce27ceb7431d0daae9f32ed71beba446415",
-      "patches": [],
-      "findings": [
-        {
-          "kind": "fingerprint",
-          "line": 10,
-          "text": "object GetEnterFromFingerprint",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 11,
-          "text": "\"Ljava/lang/String;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 11,
-          "text": "returnType = \"Ljava/lang/String;\",",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 11,
-          "text": "Ljava/lang/String;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 13,
-          "text": "\"Z\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 13,
-          "text": "parameters = listOf(\"Z\"),",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 13,
-          "text": "parameters = listOf(\"Z\"),",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 15,
-          "text": "\"/BaseListFragmentPanel;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 16,
-          "text": "\"Ljava/lang/String;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 16,
-          "text": "returnType == \"Ljava/lang/String;\" &&",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "native-type",
-          "line": 16,
-          "text": "Ljava/lang/String;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 17,
-          "text": "parameterTypes.size == 1 &&",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 18,
-          "text": "\"Z\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "register",
-          "line": 18,
-          "text": "parameterTypes[0] == \"Z\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "fingerprint",
-          "line": 22,
-          "text": "object OnRenderFirstFrameFingerprint",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 23,
-          "text": "\"V\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 23,
-          "text": "returnType = \"V\",",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 25,
-          "text": "\"Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "native-type",
-          "line": 25,
-          "text": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "literal",
-          "line": 26,
-          "text": "\"onRenderFirstFrame\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "member",
-          "line": 26,
-          "text": "name == \"onRenderFirstFrame\" &&",
-          "category": "stable-named-anchor"
-        },
-        {
-          "kind": "register",
-          "line": 27,
-          "text": "parameterTypes.size == 1",
-          "category": "structural-or-semantic-evidence"
-        }
-      ]
-    },
-    {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/DiscoveryPatch.kt",
       "sha256": "38f870e50379f0665b5ad1f0b0de60284177f0d262be3a805be7c4e94fac2c96",
       "patches": [],
@@ -79035,6 +78896,145 @@
           "kind": "literal",
           "line": 97,
           "text": "\"Hook $hookId: expected $range matches, found ${matches.size}\"",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/Fingerprints.kt",
+      "sha256": "d8d3054b4553fd87043c66201fc73ce27ceb7431d0daae9f32ed71beba446415",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "fingerprint",
+          "line": 10,
+          "text": "object GetEnterFromFingerprint",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 11,
+          "text": "\"Ljava/lang/String;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 11,
+          "text": "returnType = \"Ljava/lang/String;\",",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 11,
+          "text": "Ljava/lang/String;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 13,
+          "text": "\"Z\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 13,
+          "text": "parameters = listOf(\"Z\"),",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 13,
+          "text": "parameters = listOf(\"Z\"),",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 15,
+          "text": "\"/BaseListFragmentPanel;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 16,
+          "text": "\"Ljava/lang/String;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 16,
+          "text": "returnType == \"Ljava/lang/String;\" &&",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "native-type",
+          "line": 16,
+          "text": "Ljava/lang/String;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 17,
+          "text": "parameterTypes.size == 1 &&",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 18,
+          "text": "\"Z\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "register",
+          "line": 18,
+          "text": "parameterTypes[0] == \"Z\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "fingerprint",
+          "line": 22,
+          "text": "object OnRenderFirstFrameFingerprint",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 23,
+          "text": "\"V\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 23,
+          "text": "returnType = \"V\",",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 25,
+          "text": "\"Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "native-type",
+          "line": 25,
+          "text": "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "literal",
+          "line": 26,
+          "text": "\"onRenderFirstFrame\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "member",
+          "line": 26,
+          "text": "name == \"onRenderFirstFrame\" &&",
+          "category": "stable-named-anchor"
+        },
+        {
+          "kind": "register",
+          "line": 27,
+          "text": "parameterTypes.size == 1",
           "category": "structural-or-semantic-evidence"
         }
       ]
