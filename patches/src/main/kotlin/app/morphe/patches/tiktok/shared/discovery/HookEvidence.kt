@@ -24,6 +24,7 @@ internal object HookEvidence {
     private val validated = hashSetOf<String>()
     private val validationMode = hashMapOf<String, String>()
     private val settingsTargets = hashMapOf<String, String>()
+    private val stickerSourceTargets = hashMapOf<String, Method>()
     private var reviewed: FixtureContracts.Reviewed? = null
     private var apkSha256: String? = null
     private var experimental = false
@@ -39,6 +40,7 @@ internal object HookEvidence {
         validated.clear()
         validationMode.clear()
         settingsTargets.clear()
+        stickerSourceTargets.clear()
         reviewed = null
         apkSha256 = null
         experimental = false
@@ -224,6 +226,9 @@ internal object HookEvidence {
             throw PatchException("Return site contract $mode does not permit this mutation in $method at $index")
         if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
+        if (mode == StickerSourceContracts.MODE && (operation != "insert" ||
+            !StickerSourceContracts.mutationAllowed(method, stickerSourceTargets.getValue(method.toString()), index, code)))
+            throw PatchException("Sticker source contract refuses unproven registers or a changed association site")
         if (mode == FrameworkCallContracts.MODE &&
             !FrameworkCallContracts.mutationAllowed(method, index, code, operation))
             throw PatchException("Framework contract permits only typed SIM results or exact screen capture calls in $method")
@@ -246,6 +251,15 @@ internal object HookEvidence {
             ?: throw PatchException("Unknown settings target role $role")
         val previous = settingsTargets.putIfAbsent(method.toString(), accepted)
         if (previous != null && previous != accepted) throw PatchException("Conflicting settings target roles for $method")
+    }
+
+    /** Establish the caller relationship after the binder itself has been validated. */
+    fun stickerSourceTarget(method: Method, binder: Method) {
+        if (binder.toString() !in validated) throw PatchException("Sticker binder is not validated")
+        val source = original(method) ?: throw PatchException("No original sticker source")
+        val nativeBinder = original(binder) ?: throw PatchException("No original sticker binder")
+        if (!StickerSourceContracts.boundary(source, nativeBinder)) throw PatchException("Changed sticker source relationship")
+        stickerSourceTargets[method.toString()] = nativeBinder
     }
 
     private fun selectContracts(current: BytecodePatchContext): FixtureContracts.Reviewed = reviewed ?: run {
@@ -339,7 +353,10 @@ internal object HookEvidence {
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
             val callbackIndex = if (hooks.singleOrNull()?.startsWith(
                     "Lcom/tts/oecverify/verify/RiskControlService;->execute(") == true) 1 else 2
-            mode = if (frameworkSite) FrameworkCallContracts.MODE else FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
+            mode = if (frameworkSite) FrameworkCallContracts.MODE
+            else if (stickerSourceTargets[key]?.let { StickerSourceContracts.boundary(source, it) } == true)
+                StickerSourceContracts.MODE
+            else FixtureContracts.requirePortableMatch(source, owner, hooks.single(), contracts,
                 source.parameterTypes.getOrNull(callbackIndex)?.toString()?.let { originals[it] })
         }
         validated += key

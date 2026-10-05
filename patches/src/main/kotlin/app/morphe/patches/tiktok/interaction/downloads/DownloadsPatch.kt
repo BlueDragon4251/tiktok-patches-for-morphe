@@ -16,7 +16,6 @@ import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecod
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.util.findInstructionIndicesReversedOrThrow
-import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
 import app.morphe.patcher.patch.PatchException
@@ -90,47 +89,11 @@ val downloadsPatch = bytecodePatch(
         }
 
         val stickerPreviewBinderMethod = StickerPreviewBinderFingerprint.uniqueMethod
-        StickerPreviewSourceFingerprint.uniqueMethod.apply {
-            val bindCallIndices = implementation!!.instructions.withIndex()
-                .filter { (_, instruction) ->
-                    instruction.getReference<MethodReference>()?.let { reference ->
-                        reference.definingClass == stickerPreviewBinderMethod.definingClass &&
-                            reference.name == stickerPreviewBinderMethod.name &&
-                            reference.returnType == "V" &&
-                            reference.parameterTypes.size == 4 &&
-                            reference.parameterTypes[1] == "Z" &&
-                            reference.parameterTypes[2] == "Ljava/lang/String;" &&
-                            reference.parameterTypes[3] == "Ljava/util/Map;"
-                    } == true
-                }
-                .map { it.index }
-                .toList()
-
-            if (bindCallIndices.isEmpty()) {
-                throw app.morphe.patcher.patch.PatchException("Downloads: could not find resolved sticker preview bind calls.")
-            }
-
-            bindCallIndices.asReversed().forEach { bindCallIndex ->
-                val bindInstruction = implementation!!.instructions[bindCallIndex]
-                val previewRegister = when (bindInstruction) {
-                    is FiveRegisterInstruction -> bindInstruction.registerD
-                    is RegisterRangeInstruction -> bindInstruction.startRegister + 1
-                    else -> throw app.morphe.patcher.patch.PatchException("Downloads: unsupported sticker preview bind instruction.")
-                }
-                val registerProvider = getFreeRegisterProvider(bindCallIndex, 2, previewRegister)
-                val previewTempRegister = registerProvider.getFreeRegister()
-                val sourceTempRegister = registerProvider.getFreeRegister()
-                if (previewTempRegister > 15 || sourceTempRegister > 15) {
-                    throw app.morphe.patcher.patch.PatchException("Downloads: could not allocate low registers for sticker source association.")
-                }
-                addInstructions(
-                    bindCallIndex,
-                    """
-                        move-object/from16 v$previewTempRegister, v$previewRegister
-                        move-object/from16 v$sourceTempRegister, p2
-                        invoke-static {v$previewTempRegister, v$sourceTempRegister}, $STICKER_EXTENSION_CLASS_DESCRIPTOR->registerStickerSource(Ljava/lang/Object;Ljava/lang/Object;)V
-                    """,
-                )
+        val sourceMatch = StickerPreviewSourceFingerprint.uniqueMatch()
+        HookEvidence.stickerSourceTarget(sourceMatch.originalMethod, stickerPreviewBinderMethod)
+        sourceMatch.method.apply {
+            StickerSourceContracts.sites(this, stickerPreviewBinderMethod).asReversed().forEach { site ->
+                addInstructions(site.index, site.code)
             }
         }
 
