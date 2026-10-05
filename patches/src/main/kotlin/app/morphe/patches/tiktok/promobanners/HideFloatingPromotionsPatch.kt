@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.promobanners
 
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
+import app.morphe.patches.tiktok.shared.discovery.PromotionContracts
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstruction
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -49,20 +50,8 @@ val hideFloatingPromotionsPatch = bytecodePatch(
         )
 
         TouchPointPendantParserFingerprint.uniqueMethod.let { method ->
-            val parseIndex = method.indexOfFirstInstructionOrThrow {
-                getReference<MethodReference>()?.let { reference ->
-                    reference.parameterTypes == listOf("Ljava/lang/String;", "Ljava/lang/Class;") &&
-                        reference.returnType == "Ljava/lang/Object;"
-                } == true
-            }
-            val resultRegister = method.getInstruction<OneRegisterInstruction>(parseIndex + 1).registerA
-            method.addInstructions(
-                parseIndex + 2,
-                """
-                    invoke-static {v$resultRegister}, $FEATURE_CONTROLS_CLASS_DESCRIPTOR->filterNormalPendant(Ljava/lang/Object;)Ljava/lang/Object;
-                    move-result-object v$resultRegister
-                """,
-            )
+            val site = PromotionContracts.site(method)
+            method.addInstructions(site.index, site.code)
         }
     }
 }

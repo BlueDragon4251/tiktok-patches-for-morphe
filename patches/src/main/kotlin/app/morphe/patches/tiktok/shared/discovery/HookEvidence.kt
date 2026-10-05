@@ -220,6 +220,8 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == PromotionContracts.MODE && (operation != "insert" || !PromotionContracts.mutationAllowed(method, index, code)))
+            throw PatchException("Promotion contract permits only the actual typed pendant parse result")
         if (mode == DownloadPathContracts.MODE && (operation != "replace-block" || !DownloadPathContracts.mutationAllowed(method, index, code)))
             throw PatchException("Download-path contract permits only the two native directory builder replacements")
         if (mode == DownloadSuccessContracts.MODE && (operation != "insert" || !DownloadSuccessContracts.mutationAllowed(method, index, code, originals::get)))
