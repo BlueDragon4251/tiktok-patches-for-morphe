@@ -10,7 +10,7 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.removeInstructions
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.replaceInstruction
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
@@ -102,22 +102,8 @@ val downloadsPatch = bytecodePatch(
         }
 
         DownloadUriFingerprint.uniqueMethod.apply {
-            findInstructionIndicesReversedOrThrow {
-                getReference<FieldReference>().let { ref ->
-                    ref?.definingClass == "Landroid/os/Environment;" && ref.name.startsWith("DIRECTORY_")
-                }
-            }.forEach { fieldIndex ->
-                val pathRegister = getInstruction<OneRegisterInstruction>(fieldIndex).registerA
-                val builderRegister = getInstruction<FiveRegisterInstruction>(fieldIndex + 1).registerC
-                removeInstructions(fieldIndex, 4)
-                addInstructions(
-                    fieldIndex,
-                    """
-                        invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->getDownloadPath()Ljava/lang/String;
-                        move-result-object v$pathRegister
-                        invoke-virtual { v$builderRegister, v$pathRegister }, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-                    """,
-                )
+            DownloadPathContracts.sites(this).asReversed().forEach { site ->
+                replaceInstructions(site.index, 4, site.code)
             }
         }
     }

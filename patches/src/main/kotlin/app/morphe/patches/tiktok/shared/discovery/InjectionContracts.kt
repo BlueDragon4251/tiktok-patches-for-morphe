@@ -86,6 +86,23 @@ internal fun MutableMethod.insertAtTarget(index: Int, code: String, labels: Arra
     else rawAddWithLabels(original.location.index, code, *labels)
 }
 
+internal fun MutableMethod.checkReplacementBlock(index: Int, count: Int) {
+        val body = implementation ?: throw PatchException("Replacement block has no body")
+        if (count < 1 || index < 0 || index + count > body.instructions.size)
+            throw PatchException("Invalid replacement block")
+        if (body.instructions.subList(index + 1, index + count).any { it.location.labels.isNotEmpty() })
+            throw PatchException("A branch or handler enters the middle of the replacement block")
+        if (body.instructions.getOrNull(index + count)?.opcode in setOf(Opcode.MOVE_RESULT, Opcode.MOVE_RESULT_WIDE, Opcode.MOVE_RESULT_OBJECT))
+            throw PatchException("Replacement block would orphan move-result")
+}
+
+internal fun MutableMethod.replaceNativeBlock(index: Int, count: Int, code: String) {
+    checkReplacementBlock(index, count)
+    rawReplaceInstruction(index, "nop")
+    if (count > 1) rawRemoveInstructions(index + 1, count - 1)
+    insertAtTarget(index, code)
+}
+
 /** Shared adapters keep existing injection code readable while fixing return-label bypass. */
 internal object ContractInstructions {
     private fun MutableMethod.inject(index: Int, code: String, labels: Array<out ExternalLabel>? = null) {
@@ -136,6 +153,14 @@ internal object ContractInstructions {
         HookEvidence.touch(this, index = index, code = "remove $count instructions", operation = "remove")
         rawRemoveInstructions(index, count)
         HookEvidence.injection(this, index, "remove $count instructions")
+    }
+
+    /** Validate a complete native block before changing any instruction. */
+    fun MutableMethod.replaceInstructions(index: Int, count: Int, code: String) {
+        checkReplacementBlock(index, count)
+        HookEvidence.touch(this, index = index, code = "replace-block $count\n$code", operation = "replace-block")
+        replaceNativeBlock(index, count, code)
+        HookEvidence.injection(this, index, "replace-block $count\n$code")
     }
 
     fun MutableMethod.returnEarly() {
