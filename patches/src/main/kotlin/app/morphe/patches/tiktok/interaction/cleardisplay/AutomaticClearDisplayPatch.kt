@@ -7,7 +7,7 @@ import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
-import com.android.tools.smali.dexlib2.Opcode
+import app.morphe.patches.tiktok.shared.discovery.ClearDisplayContracts
 
 private const val CONTROLLER =
     "Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;"
@@ -42,31 +42,9 @@ val automaticClearDisplayPatch = bytecodePatch(
             "invoke-static {}, $CONTROLLER->enablePatch()V",
         )
 
-        val eventClassName = OnClearDisplayEventFingerprint.uniqueMethod.parameters[0].type
-            .removePrefix("L")
-            .removeSuffix(";")
-            .replace('/', '.')
-
-        // Exact 46.7.3 discovery:
-        // ClearModePanelComponent.vq(LX/06SG;Z)V contains TikTok's native "resetClearMode" path.
-        // Its final RETURN_VOID is reached after the current feed cell has been reset. Hook only that
-        // final return so ineligible-content early returns do not schedule an automatic request.
-        // vq has 8 registers / 3 ins, therefore v0 is a verified local and no parameter register is
-        // stolen. Only a String crosses the injected bytecode boundary; event/enum classes remain
-        // reflection-only inside extension code for ART verifier safety.
-        ClearModePanelResetFingerprint.uniqueMethod.apply {
-            val finalReturnIndex = implementation!!.instructions.withIndex()
-                .filter { it.value.opcode == Opcode.RETURN_VOID }
-                .map { it.index }
-                .last()
-
-            addInstructions(
-                finalReturnIndex,
-                """
-                    const-string v0, "$eventClassName"
-                    invoke-static {v0}, $CONTROLLER->onPanelReset(Ljava/lang/String;)V
-                """.trimIndent(),
-            )
-        }
+        val resetMatch = ClearModePanelResetFingerprint.uniqueMatch()
+        val reset = ClearModePanelResetFingerprint.uniqueMethod
+        val site = ClearDisplayContracts.resetSite(reset, resetMatch.originalClassDef)
+        reset.addInstructions(site.index, site.code)
     }
 }

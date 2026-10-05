@@ -220,6 +220,11 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode in ClearDisplayContracts.modes && !ClearDisplayContracts.mutationAllowed(mode!!, method,
+                originals.getValue(method.definingClass), index, code, operation))
+            throw PatchException("Clear-display contract refuses a changed event, return site, or telemetry role")
+        if (mode == PlayerFrameContracts.MODE && (operation != "insert" || !PlayerFrameContracts.mutationAllowed(method, index, code, originals::get)))
+            throw PatchException("Player first-frame contract refuses an unreviewed callback mutation")
         if (mode == ExternalBrowserContracts.MODE && (operation != "insert" || !ExternalBrowserContracts.mutationAllowed(method,
                 originals.getValue(method.definingClass), index, code, originals::get)))
             throw PatchException("External browser contract refuses a changed role, receiver, or scratch register")

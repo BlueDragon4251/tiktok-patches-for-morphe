@@ -165,7 +165,7 @@ internal object ContractInstructions {
 
     fun MutableMethod.returnEarly() {
         if (returnType != "V") throw PatchException("Early return contract: expected void in $this")
-        HookEvidence.touch(this)
+        HookEvidence.touch(this, index = 0, code = "return-void", operation = "return-early")
         rawReturnEarly()
         HookEvidence.injection(this, 0, "return-void")
     }

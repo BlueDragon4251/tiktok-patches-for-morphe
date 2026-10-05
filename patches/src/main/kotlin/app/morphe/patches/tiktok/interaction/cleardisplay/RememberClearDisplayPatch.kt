@@ -5,19 +5,11 @@
 package app.morphe.patches.tiktok.interaction.cleardisplay
 
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
-import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.morphe.patches.tiktok.shared.discovery.*
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patches.shared.compat.AppCompatibilities
 import app.morphe.patches.tiktok.shared.OnRenderFirstFrameFingerprint
-import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.returnEarly
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
-
-private const val AUTOMATIC_CONTROLLER =
-    "Lapp/morphe/extension/tiktok/cleardisplay/AutomaticClearDisplayController;"
-private const val REMEMBER_CONTROLLER =
-    "Lapp/morphe/extension/tiktok/cleardisplay/RememberClearDisplayPatch;"
 
 @Suppress("unused")
 val rememberClearDisplayPatch = bytecodePatch(
@@ -32,39 +24,13 @@ val rememberClearDisplayPatch = bytecodePatch(
         ClearModeLogStateFingerprint.optionalMethod?.returnEarly()
         ClearModeLogPlaytimeFingerprint.optionalMethod?.returnEarly()
 
-        OnClearDisplayEventFingerprint.uniqueMethod.let { method ->
-            val isEnabledIndex = method.indexOfFirstInstructionOrThrow(Opcode.IGET_BOOLEAN) + 1
-            val isEnabledRegister = method.getInstruction<TwoRegisterInstruction>(isEnabledIndex - 1).registerA
+        val eventMatch = OnClearDisplayEventFingerprint.uniqueMatch()
+        val event = OnClearDisplayEventFingerprint.uniqueMethod
+        val eventSite = ClearDisplayContracts.eventSite(event, eventMatch.originalClassDef)
+        event.addInstructions(eventSite.index, eventSite.code)
 
-            method.addInstructions(
-                isEnabledIndex,
-                "invoke-static {v$isEnabledRegister}, " +
-                    "$REMEMBER_CONTROLLER->rememberClearDisplayState(Z)V",
-            )
-
-            // The event class is known from TikTok's real onClearModeEvent signature, but it is no
-            // longer referenced as a type from the early player method. Pass only its Java class
-            // name as a String and let extension code construct/post the event reflectively.
-            val eventClassName = method.parameters[0].type
-                .removePrefix("L")
-                .removeSuffix(";")
-                .replace('/', '.')
-
-            OnRenderFirstFrameFingerprint.uniqueMethod.apply {
-                val returnIndex = implementation!!.instructions.withIndex()
-                    .filter { it.value.opcode == Opcode.RETURN_VOID }
-                    .map { it.index }
-                    .last()
-
-                addInstructions(
-                    returnIndex,
-                    """
-                        const-string v0, "$eventClassName"
-                        invoke-static {v0}, $AUTOMATIC_CONTROLLER->onRenderFirstFrame(Ljava/lang/String;)V
-                        invoke-static {v0}, $REMEMBER_CONTROLLER->restoreClearDisplayState(Ljava/lang/String;)V
-                    """.trimIndent(),
-                )
-            }
-        }
+        val frame = OnRenderFirstFrameFingerprint.uniqueMethod
+        val restore = PlayerFrameContracts.restoreSite(frame, eventMatch.originalClassDef)
+        frame.addInstructions(restore.index, restore.code)
     }
 }
