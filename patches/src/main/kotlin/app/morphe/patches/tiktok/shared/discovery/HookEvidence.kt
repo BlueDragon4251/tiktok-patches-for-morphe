@@ -220,6 +220,8 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == PlaybackSpeedContracts.MODE && (operation != "insert" || !PlaybackSpeedContracts.mutationAllowed(method, index, code, originals::get)))
+            throw PatchException("Playback-speed contract permits only the actual selected float before its native multiplier")
         if (mode in ClearDisplayContracts.modes && !ClearDisplayContracts.mutationAllowed(mode!!, method,
                 originals.getValue(method.definingClass), index, code, operation))
             throw PatchException("Clear-display contract refuses a changed event, return site, or telemetry role")

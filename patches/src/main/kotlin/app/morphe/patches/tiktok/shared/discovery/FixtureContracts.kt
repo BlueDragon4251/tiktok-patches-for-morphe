@@ -581,6 +581,7 @@ internal object FixtureContracts {
             ?: ExternalBrowserContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
             ?: ClearDisplayContracts.mode(method, owner, acceptedMethod)
             ?: PlayerFrameContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
+            ?: PlaybackSpeedContracts.mode(method, acceptedMethod, nativeClasses::get)
             ?: PromotionContracts.mode(method, owner, acceptedMethod)
             ?: DownloadPathContracts.mode(method, owner, acceptedMethod)
             ?: PublishDateContracts.mode(method, owner, acceptedMethod)

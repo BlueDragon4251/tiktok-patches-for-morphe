@@ -58,6 +58,9 @@ internal object PlayerFrameContracts {
         val enable = "invoke-static {}, ${ClearDisplayContracts.AUTOMATIC}->enablePatch()V"
         val site = restoreSite(method, resolve(ClearDisplayContracts.PANEL) ?: return false)
         (index == 0 && code?.filterNot(Char::isWhitespace) == enable.filterNot(Char::isWhitespace)) ||
-            (index == site.index && code?.filterNot(Char::isWhitespace) == site.code.filterNot(Char::isWhitespace))
+            (index == site.index && code?.filterNot(Char::isWhitespace) == site.code.filterNot(Char::isWhitespace)) ||
+            runCatching { PlaybackSpeedContracts.frameSite(method, resolve).let {
+                index == it.index && code?.filterNot(Char::isWhitespace) == it.code.filterNot(Char::isWhitespace)
+            } }.getOrDefault(false)
     }.getOrDefault(false)
 }
