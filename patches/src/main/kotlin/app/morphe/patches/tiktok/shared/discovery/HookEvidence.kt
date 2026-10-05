@@ -223,6 +223,9 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode in TranslationContracts.modes && (operation != "insert" || !TranslationContracts.mutationAllowed(mode!!, method,
+                originals.getValue(method.definingClass), index, code, originals::get)))
+            throw PatchException("Translation contract refuses a changed native observer, response, or completion input")
         if (mode == CommentCopyContracts.MODE && (operation != "insert" || !CommentCopyContracts.mutationAllowed(method, index, code, originals::get)))
             throw PatchException("Comment-copy contract permits only the proven native comment/StringBuilder result")
         if (mode == PlaybackSpeedContracts.MODE && (operation != "insert" || !PlaybackSpeedContracts.mutationAllowed(method, index, code, originals::get)))
