@@ -23,6 +23,7 @@ internal object HookEvidence {
     private val diagnostics = linkedMapOf<String, Map<String, Any?>>()
     private val validated = hashSetOf<String>()
     private val validationMode = hashMapOf<String, String>()
+    private val settingsTargets = hashMapOf<String, String>()
     private var reviewed: FixtureContracts.Reviewed? = null
     private var apkSha256: String? = null
     private var experimental = false
@@ -37,6 +38,7 @@ internal object HookEvidence {
         diagnostics.clear()
         validated.clear()
         validationMode.clear()
+        settingsTargets.clear()
         reviewed = null
         apkSha256 = null
         experimental = false
@@ -217,12 +219,24 @@ internal object HookEvidence {
         val mode = validationMode[method.toString()]
         if (mode in SiteContracts.modes && !SiteContracts.mutationAllowed(mode!!, method, index, code))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
+        if (mode in SettingsContracts.modes && !SettingsContracts.mutationAllowed(mode!!, method, index, code))
+            throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
         if (mode == "experimental-boolean-replacement" &&
             !FixtureContracts.booleanReplacementInjection(index, code))
             throw PatchException("Boolean replacement contract allows only constant false at entry in $method")
         if (mode == "experimental-typed-return" &&
             !FixtureContracts.typedReturnInjection(method, index, code))
             throw PatchException("Typed return contract allows only the reviewed null-safe filter before return-object in $method")
+    }
+
+    /** Called only after the complete OpenDebug state/constructor/discriminator chain
+     * has selected one native target. The alias itself never skips body/scope checks.
+     */
+    fun settingsTarget(role: String, method: Method) {
+        val accepted = SettingsContracts.acceptedTargets[role]
+            ?: throw PatchException("Unknown settings target role $role")
+        val previous = settingsTargets.putIfAbsent(method.toString(), accepted)
+        if (previous != null && previous != accepted) throw PatchException("Conflicting settings target roles for $method")
     }
 
     private fun selectContracts(current: BytecodePatchContext): FixtureContracts.Reviewed = reviewed ?: run {
@@ -302,7 +316,9 @@ internal object HookEvidence {
                     row["parameters"] == method.parameterTypes.map(CharSequence::toString) &&
                     row["returns"] == method.returnType && row["selection"] == "unique" &&
                     row["candidateCount"] == 1 && row["required"] == true
-            }.mapNotNull { contracts.hookMethods[it["hook"]] }.distinct()
+            }.mapNotNull { contracts.hookMethods[it["hook"]] }.let { hooks ->
+                (hooks + listOfNotNull(settingsTargets[key])).distinct()
+            }
             if (hooks.size != 1)
                 throw PatchException("No unique accepted portable hook for $method; ${exactFailure.message}")
             val callbackIndex = if (hooks.single().startsWith(

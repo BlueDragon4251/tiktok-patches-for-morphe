@@ -36,8 +36,9 @@ def classify(kind, text):
 
 
 def build(root=ROOT):
-    files = sorted(p for scope in SCOPES for p in (root / scope).rglob('*')
-                   if p.suffix in ('.kt', '.java', '.xml'))
+    files = sorted((p for scope in SCOPES for p in (root / scope).rglob('*')
+                    if p.suffix in ('.kt', '.java', '.xml')),
+                   key=lambda p: p.relative_to(root).as_posix())
     files += [root / 'patches/src/main/kotlin/app/morphe/patches/shared/compat/AppCompatibilities.kt']
     records, patches = [], []
     for path in files:

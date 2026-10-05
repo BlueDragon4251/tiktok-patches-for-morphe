@@ -124,6 +124,20 @@ Only full acceptance on a later version can establish supported status.
 
 ### Explicit experimental patching
 
+The settings activity now proves the unique `BaseActivity.onCreate(Bundle)`
+call and follows receiver/Bundle register copies, including `/range` calls.
+Its scratch value must be overwritten before any read on a short, unprotected
+straight-line path; an exception range at the insertion or overwrite rejects
+the hook. Both 46.7.3 and the pinned 47.1.3 original use index 11, receiver
+`v17`, and the immediate `v0` constant overwrite. The back hook separately
+checks the native personalization navigation anchors and the `v0` overwrite.
+Compose title changes are restricted to the unique `Context.getString(I)`
+result. The click and Function2 callbacks follow the actual OpenDebug state,
+constructor and discriminator chain; their complete portable bodies and read
+field scopes must still equal the accepted baseline. A global search for an
+identical Kotlin stub is insufficient because several callbacks share that
+body. These are experimental contracts, not new compatibility or qualification.
+
 Use `python3 scripts/tiktok/run_experimental.py --apk input.apk --bundle patches/build/libs/<bundle>.mpp --cli morphe-desktop.jar --head <feature-commit-sha> --source <input-url> --expected-sha <input-sha256> --output reports/experimental`.
 The helper sets `TIKTOK_EXPERIMENTAL_PORTABLE=1` and Morphe `--force` for the
 full 37-patch catalog. The SHA flag is optional for a local APK, but useful to

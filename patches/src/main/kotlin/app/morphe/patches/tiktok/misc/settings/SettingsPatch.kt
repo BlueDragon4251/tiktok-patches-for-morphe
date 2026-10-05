@@ -9,6 +9,7 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patches.tiktok.shared.discovery.HookEvidence
+import app.morphe.patches.tiktok.shared.discovery.SettingsContracts
 import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
@@ -55,11 +56,6 @@ val settingsPatch = bytecodePatch(
 
     execute {
         addLegacySettingsEntryFallback()
-
-        val initializeSettingsMethodDescriptor =
-            "$SETTINGS_EXTENSION_CLASS_DESCRIPTOR->initialize(" +
-                "Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;" +
-                ")Z"
 
         fun isOpenDebugRowCompose(method: SmaliMethod, stateClass: String): Boolean {
             val impl = method.implementation ?: return false
@@ -121,6 +117,7 @@ val settingsPatch = bytecodePatch(
         val targets = resolveOpenDebugTargets()
         val openDebugStateClass = targets.stateClass
         val composeMutable = targets.composeMutable
+        HookEvidence.settingsTarget("settings.composeTitle", composeMutable)
 
         fun clickLambdaScore(method: SmaliMethod, classType: String): Int {
             val impl = method.implementation ?: return 0
@@ -191,7 +188,7 @@ val settingsPatch = bytecodePatch(
                     "Enable Open Debug: expected one OpenDebug click handler in $wrapperClass, found ${matches.size}.",
                 )
             }
-            return matches.single()
+            return matches.single().also { HookEvidence.settingsTarget("settings.clickWrapper", it) }
         }
 
         fun resolveOpenDebugFunction2Method(): MutableMethod {
@@ -229,7 +226,7 @@ val settingsPatch = bytecodePatch(
                     "Enable Open Debug: expected one OpenDebug Function2 lambda, found ${matches.size}.",
                 )
             }
-            return matches.single()
+            return matches.single().also { HookEvidence.settingsTarget("settings.function2", it) }
         }
 
         fun MutableMethod.openBlueITServiceAtStart(contextRegister: String) {
@@ -335,44 +332,25 @@ val settingsPatch = bytecodePatch(
         }
 
         AdPersonalizationActivityOnCreateFingerprint.uniqueMethod.apply {
-            val initializeSettingsIndex = implementation!!.instructions.indexOfFirst { it.opcode == Opcode.INVOKE_SUPER } + 1
-            val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
-            val usableRegister = implementation!!.registerCount - parameters.size - 2
-
+            val site = SettingsContracts.activitySite(this, create = true)
             addInstructionsWithLabels(
-                initializeSettingsIndex,
-                """
-                    invoke-static {v$thisRegister}, $initializeSettingsMethodDescriptor
-                    move-result v$usableRegister
-                    if-eqz v$usableRegister, :do_not_open
-                    return-void
-                """,
-                ExternalLabel("do_not_open", getInstruction(initializeSettingsIndex)),
+                site.index,
+                SettingsContracts.activityCode(site, create = true),
+                ExternalLabel("do_not_open", getInstruction(site.index)),
             )
         }
 
         AdPersonalizationActivityOnBackPressedFingerprint.uniqueMethod.apply {
+            val site = SettingsContracts.activitySite(this, create = false)
             addInstructionsWithLabels(
-                0,
-                """
-                    invoke-static/range {p0 .. p0}, $SETTINGS_EXTENSION_CLASS_DESCRIPTOR->handleBackPressed(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
-                    move-result v0
-                    if-eqz v0, :blueit_service_settings_not_handled
-                    return-void
-                """,
-                ExternalLabel("blueit_service_settings_not_handled", getInstruction(0)),
+                site.index,
+                SettingsContracts.activityCode(site, create = false),
+                ExternalLabel("blueit_service_settings_not_handled", getInstruction(site.index)),
             )
         }
 
-        val compose: SmaliMethod = composeMutable
-        val getStringInvokeIndex = compose.indexOfFirstInstructionOrThrow {
-            opcode == Opcode.INVOKE_VIRTUAL &&
-                getReference<MethodReference>()?.toString() == ANDROID_CONTEXT_GET_STRING
-        }
-        val moveResultIndex = getStringInvokeIndex + 1
-        val titleStringRegister = compose.getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
-
-        composeMutable.addInstruction(moveResultIndex + 1, "const-string v$titleStringRegister, \"BlueIT Service\"")
+        val (titleIndex, titleStringRegister) = SettingsContracts.titleSite(composeMutable)
+        composeMutable.addInstruction(titleIndex, "const-string v$titleStringRegister, \"BlueIT Service\"")
 
         val clickWrapperMethod = resolveClickWrapperMethod()
         val openDebugClickWrapperClass = clickWrapperMethod.definingClass

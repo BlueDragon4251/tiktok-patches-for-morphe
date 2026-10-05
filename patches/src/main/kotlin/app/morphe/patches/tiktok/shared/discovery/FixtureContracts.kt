@@ -118,11 +118,15 @@ internal object FixtureContracts {
         "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/SupportGroupVM;->defaultState()LX/06Ty;",
         "Lcom/ss/ttvideoengine/TTVideoEngine;->setLooping(Z)V",
         "LX/0AIU;->LJFF()Ljava/util/List;",
+        SettingsContracts.acceptedTargets.getValue("settings.clickWrapper"),
+        SettingsContracts.acceptedTargets.getValue("settings.function2"),
     )
 
     private val relocatedMethodScopes = setOf(
         "LX/02z2;->LJFF(IILjava/lang/String;Z)I",
         "LX/0AIU;->LJFF()Ljava/util/List;",
+        SettingsContracts.acceptedTargets.getValue("settings.clickWrapper"),
+        SettingsContracts.acceptedTargets.getValue("settings.function2"),
     )
 
     // These filters transform only the returned List. Pin the complete getter body
@@ -574,6 +578,10 @@ internal object FixtureContracts {
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
         val siteMode = SiteContracts.mode(method, acceptedMethod)
+            ?: SettingsContracts.mode(method, acceptedMethod).takeIf {
+                owner.superclass == SettingsContracts.BASE ||
+                    acceptedMethod == SettingsContracts.acceptedTargets.getValue("settings.composeTitle")
+            }
         val typedReturnMatch = typedReturnBoundary(method, acceptedMethod)
         val booleanReplacementMatch = booleanReplacementBoundary(method, acceptedMethod)
         val classMatches = fullClassMatches || scopedMatch
