@@ -220,6 +220,9 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == ExternalBrowserContracts.MODE && (operation != "insert" || !ExternalBrowserContracts.mutationAllowed(method,
+                originals.getValue(method.definingClass), index, code, originals::get)))
+            throw PatchException("External browser contract refuses a changed role, receiver, or scratch register")
         if (mode == PromotionContracts.MODE && (operation != "insert" || !PromotionContracts.mutationAllowed(method, index, code)))
             throw PatchException("Promotion contract permits only the actual typed pendant parse result")
         if (mode == DownloadPathContracts.MODE && (operation != "replace-block" || !DownloadPathContracts.mutationAllowed(method, index, code)))

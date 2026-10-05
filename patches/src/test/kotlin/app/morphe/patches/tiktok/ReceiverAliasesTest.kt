@@ -9,6 +9,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ReceiverAliasesTest {
+    @Test fun anExplicitObjectInputCanBeTrackedInAStaticMethod() {
+        val b = MethodImplementationBuilder(3).apply {
+            addInstruction(BuilderInstruction12x(Opcode.MOVE_OBJECT, 0, 2))
+            addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+        }
+        val m = ImmutableMethod("LX/Inputs;", "body", listOf(ImmutableMethodParameter("Ljava/lang/Object;", emptySet(), null)), "V", 9, emptySet(), emptySet(), b.methodImplementation)
+        assertEquals(setOf(0, 2), ReceiverAliases.atEveryInstruction(m, 2).getValue(1))
+    }
     private fun method(b: MethodImplementationBuilder) = ImmutableMethod("LX/Receiver;", "body", emptyList(), "V", 1,
         emptySet(), emptySet(), b.methodImplementation)
     @Test fun anAliasCanBeReusedAfterItsLastNativeFieldRead() {

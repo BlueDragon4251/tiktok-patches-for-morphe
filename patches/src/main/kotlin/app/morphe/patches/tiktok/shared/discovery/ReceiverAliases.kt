@@ -8,8 +8,8 @@ import com.android.tools.smali.dexlib2.iface.instruction.*
 
 /** Receiver aliases that are valid on every incoming normal and exception path. */
 internal object ReceiverAliases {
-    fun atEveryInstruction(method: Method): Map<Int, Set<Int>> {
-        if (AccessFlags.STATIC.isSet(method.accessFlags)) throw PatchException("Static method has no receiver")
+    fun atEveryInstruction(method: Method, inputRegister: Int? = null): Map<Int, Set<Int>> {
+        if (inputRegister == null && AccessFlags.STATIC.isSet(method.accessFlags)) throw PatchException("Static method has no receiver")
         val body = method.implementation ?: throw PatchException("No receiver CFG")
         val insns = body.instructions.toList()
         val offsets = IntArray(insns.size)
@@ -17,7 +17,9 @@ internal object ReceiverAliases {
         insns.forEachIndexed { n, i -> offsets[n] = offset; offset += i.codeUnits }
         val byOffset = offsets.withIndex().associate { it.value to it.index }
         fun at(address: Int) = byOffset[address] ?: throw PatchException("Invalid receiver CFG address $address")
-        val states = hashMapOf(0 to setOf(body.registerCount - method.parameterTypes.sumOf { if (it == "J" || it == "D") 2 else 1 } - 1))
+        val initial = inputRegister ?: (body.registerCount - method.parameterTypes.sumOf { if (it == "J" || it == "D") 2 else 1 } - 1)
+        if (initial !in 0 until body.registerCount) throw PatchException("Invalid alias input register")
+        val states = hashMapOf(0 to setOf(initial))
         val pending = ArrayDeque<Int>().apply { add(0) }
         fun merge(index: Int, state: Set<Int>) {
             val old = states[index]
