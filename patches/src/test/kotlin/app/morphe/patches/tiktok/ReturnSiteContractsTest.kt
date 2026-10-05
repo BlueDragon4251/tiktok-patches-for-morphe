@@ -109,4 +109,37 @@ class ReturnSiteContractsTest {
         assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FINAL, m, 3, code.replace("p1", "p0")))
     }
 
+    @Test fun progressEntryReadsExactlyTheFiveOriginalParameterWords() {
+        val type = "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;"
+        val m = ImmutableMethod(type, "onPlayProgressChange",
+            listOf("Ljava/lang/String;", "J", "J").map { ImmutableMethodParameter(it, emptySet(), null) },
+            "V", 17, emptySet(), emptySet(), MethodImplementationBuilder(8).apply {
+                addInstruction(BuilderInstruction22c(Opcode.IPUT_WIDE, 4, 2, ImmutableFieldReference(type, "lastPosition", "J")))
+                addInstruction(BuilderInstruction3rc(Opcode.INVOKE_INTERFACE_RANGE, 2, 6,
+                    ImmutableMethodReference("Lcom/ss/android/ugc/aweme/player/sdk/api/OnUIPlayListener;", "onPlayProgressChange", listOf("Ljava/lang/String;", "J", "J"), "V")))
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            }.methodImplementation)
+        val owner = ImmutableClassDef(type, 1, "Lcom/ss/android/ugc/aweme/feed/controller/BaseController;", emptyList(), null, emptySet(), emptyList(), listOf(m))
+        assertEquals(ReturnSiteContracts.PROGRESS, ReturnSiteContracts.mode(m, owner, m.toString()))
+        val code = "invoke-static/range {p1 .. p5}, Lapp/morphe/extension/tiktok/seen/SeenVideoHistory;->onPlayProgressChange(Ljava/lang/String;JJ)V"
+        assertTrue(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.PROGRESS, m, 0, code))
+        assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.PROGRESS, m, 1, code))
+        assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.PROGRESS, m, 0, code.replace("p5", "p4")))
+    }
+    @Test fun theThreeFeedFeaturesKeepTheirExactReturnRegisterAndNullGuard() {
+        val follow = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
+        val m = ImmutableMethod("LX/Current;", "response", emptyList(), follow, 9,
+            emptySet(), emptySet(), MethodImplementationBuilder(16).apply {
+                addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 11))
+            }.methodImplementation)
+        for ((runtime, label) in listOf("FeedItemsFilter" to "morphe_skip_filter_",
+                "AdvancedFeedFilter" to "blueit_skip_advanced_filter_",
+                "SeenVideoFeedFilter" to "blueit_skip_seen_filter_")) {
+            val code = "if-eqz v11, :${label}0\ninvoke-static/range {v11 .. v11}, Lapp/morphe/extension/tiktok/feedfilter/$runtime;->filter($follow)V\n:${label}0\nnop"
+            assertTrue(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FOLLOW, m, 0, code))
+            assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FOLLOW, m, 0, code.replace("v11", "v10")))
+            assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FOLLOW, m, 0, code.replace("if-eqz", "if-nez")))
+            assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FOLLOW, m, 0, code.replace("$runtime;", "Unknown;")))
+        }
+    }
 }

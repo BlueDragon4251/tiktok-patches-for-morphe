@@ -17,7 +17,8 @@ internal object ReturnSiteContracts {
     const val VE = "experimental-ve-config-return"
     const val STICKER = "experimental-sticker-binder-return"
     const val SCHEMA = "experimental-activity-center-schema-return"
-    val modes = setOf(FOLLOW, FINAL, ITEMS, VE, STICKER, SCHEMA)
+    const val PROGRESS = "experimental-player-progress-entry"
+    val modes = setOf(FOLLOW, FINAL, ITEMS, VE, STICKER, SCHEMA, PROGRESS)
     private const val FOLLOW_LIST = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
     private const val VE_OWNER = "Lcom/ss/android/vesdk/VEConfigCenter;"
     private const val RUNTIME = "Lapp/morphe/extension/tiktok/featuregatelab/FeatureGateLabRuntime;"
@@ -53,6 +54,12 @@ internal object ReturnSiteContracts {
         val refs = calls(method)
         val insns = body.instructions.toList()
         val static = AccessFlags.STATIC.isSet(method.accessFlags)
+        val progress = "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;->onPlayProgressChange(Ljava/lang/String;JJ)V"
+        if (accepted == progress && method.toString() == progress && method.accessFlags == 17 &&
+            owner.superclass == "Lcom/ss/android/ugc/aweme/feed/controller/BaseController;" &&
+            insns.any { it.opcode == Opcode.IPUT_WIDE && (it as? ReferenceInstruction)?.reference?.toString() ==
+                "Lcom/ss/android/ugc/aweme/feed/controller/PlayerController;->lastPosition:J" } &&
+            refs.any { it.toString() == "Lcom/ss/android/ugc/aweme/player/sdk/api/OnUIPlayListener;->onPlayProgressChange(Ljava/lang/String;JJ)V" }) return PROGRESS
         if (accepted == "LX/1N7W;->LIZ(LX/0lqn;LX/04zA;)$FOLLOW_LIST" &&
             method.returnType == FOLLOW_LIST && method.accessFlags == 9 && method.parameterTypes.size == 2 &&
             method.parameterTypes.all { it.startsWith("LX/") } &&
@@ -109,6 +116,10 @@ internal object ReturnSiteContracts {
         val i = index?.let { method.implementation?.instructions?.elementAtOrNull(it) } ?: return false
         fun compact(value: String?) = value?.filterNot(Char::isWhitespace)
         val expected = when(mode) {
+            PROGRESS -> {
+                if (index != 0) return false
+                "invoke-static/range {p1 .. p5}, Lapp/morphe/extension/tiktok/seen/SeenVideoHistory;->onPlayProgressChange(Ljava/lang/String;JJ)V"
+            }
             FOLLOW -> {
                 if (i.opcode != Opcode.RETURN_OBJECT) return false
                 val r = (i as OneRegisterInstruction).registerA
@@ -141,6 +152,17 @@ internal object ReturnSiteContracts {
             }
             else -> return false
         }
-        return compact(code) == compact(expected)
+        if (mode !in setOf(FOLLOW, FINAL, ITEMS)) return compact(code) == compact(expected)
+        // The three independently configured feed features share the same native
+        // response boundary. Each still gets its exact typed hook and branch label.
+        val feed = "Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;"
+        val variants = listOf(
+            expected,
+            expected.replace(feed, "Lapp/morphe/extension/tiktok/feedfilter/AdvancedFeedFilter;")
+                .replace("morphe_skip_filter_", "blueit_skip_advanced_filter_"),
+            expected.replace(feed, "Lapp/morphe/extension/tiktok/feedfilter/SeenVideoFeedFilter;")
+                .replace("morphe_skip_filter_", "blueit_skip_seen_filter_"),
+        )
+        return variants.any { compact(code) == compact(it) }
     }
 }
