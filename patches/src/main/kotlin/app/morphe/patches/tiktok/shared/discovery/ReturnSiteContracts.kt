@@ -12,11 +12,12 @@ import com.android.tools.smali.dexlib2.iface.reference.*
  */
 internal object ReturnSiteContracts {
     const val FOLLOW = "experimental-follow-response-return"
+    const val FINAL = "experimental-follow-final-return"
     const val ITEMS = "experimental-follow-items-return"
     const val VE = "experimental-ve-config-return"
     const val STICKER = "experimental-sticker-binder-return"
     const val SCHEMA = "experimental-activity-center-schema-return"
-    val modes = setOf(FOLLOW, ITEMS, VE, STICKER, SCHEMA)
+    val modes = setOf(FOLLOW, FINAL, ITEMS, VE, STICKER, SCHEMA)
     private const val FOLLOW_LIST = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
     private const val VE_OWNER = "Lcom/ss/android/vesdk/VEConfigCenter;"
     private const val RUNTIME = "Lapp/morphe/extension/tiktok/featuregatelab/FeatureGateLabRuntime;"
@@ -58,6 +59,13 @@ internal object ReturnSiteContracts {
             refs.any { it.toString() == "$FOLLOW_LIST->getItems()Ljava/util/List;" } &&
             refs.any { it.toString() == "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeed;->setFromPreload(Z)V" } &&
             refs.count { it.returnType == FOLLOW_LIST } == 1 && insns.any { it.opcode == Opcode.RETURN_OBJECT }) return FOLLOW
+        if (accepted == "LX/1N7X;->LJIILL($FOLLOW_LIST)V" &&
+            method.accessFlags == 17 && method.returnType == "V" && method.parameterTypes.map(CharSequence::toString) == listOf(FOLLOW_LIST) &&
+            unchangedInput(method, method.parameterRegister(0, FOLLOW_LIST)) &&
+            refs.any { it.toString() == "Lcom/ss/android/ugc/aweme/feed/model/Aweme;->isAd()Z" } &&
+            refs.any { it.toString() == "$FOLLOW_LIST->setItems(Ljava/util/List;)V" } &&
+            refs.any { it.toString() == "$FOLLOW_LIST->setInsertedResults(Ljava/util/List;)V" } &&
+            insns.any { it.opcode == Opcode.RETURN_VOID }) return FINAL
         if (accepted == "$FOLLOW_LIST->getItems()Ljava/util/List;" && method.toString() == accepted &&
             owner.superclass == "Lcom/ss/android/ugc/aweme/base/api/BaseResponse;" &&
             method.accessFlags in setOf(1, 17) && body.registerCount == 2 && insns.size == 2 &&
@@ -105,6 +113,10 @@ internal object ReturnSiteContracts {
                 if (i.opcode != Opcode.RETURN_OBJECT) return false
                 val r = (i as OneRegisterInstruction).registerA
                 "if-eqz v$r, :morphe_skip_filter_$index\ninvoke-static/range {v$r .. v$r}, Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;->filter($FOLLOW_LIST)V\n:morphe_skip_filter_$index\nnop"
+            }
+            FINAL -> {
+                if (i.opcode != Opcode.RETURN_VOID) return false
+                "invoke-static/range {p1 .. p1}, Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;->filterFinal($FOLLOW_LIST)V"
             }
             ITEMS -> {
                 if (i.opcode != Opcode.RETURN_OBJECT) return false

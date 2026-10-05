@@ -5,6 +5,7 @@
 package app.morphe.patches.tiktok.misc.featuregatelab
 
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructions
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecodePatch
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
@@ -100,7 +101,9 @@ val featureGateLabPatch = bytecodePatch(
         val rawAbmock = mutableClassDefBy(appAbDescriptor)
         val rawGetter = rawAbmock.methods.singleOrNull {
             it.returnType == "Ljava/lang/Object;" &&
-                it.parameterTypes == listOf("Ljava/lang/String;", "Z")
+                it.parameterTypes == listOf("Ljava/lang/String;", "Z") &&
+                HookEvidence.matchesReviewedMethodScope(it,
+                    "LX/02z2;->LJIIJJI(Ljava/lang/String;Z)Ljava/lang/Object;")
         } ?: throw PatchException("Feature Gate Lab raw App AB boundary not found")
         rawGetter.patchRawAbBoundary()
 

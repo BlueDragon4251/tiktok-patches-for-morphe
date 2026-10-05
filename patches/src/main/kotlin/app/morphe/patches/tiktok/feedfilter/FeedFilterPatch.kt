@@ -223,7 +223,7 @@ val feedFilterPatch = bytecodePatch(
 
         TakoAiFeedButtonBindFingerprint.uniqueMethod.addInstructions(
             2,
-            "invoke-static {p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
+            "invoke-static/range {p1 .. p1}, $TAKO_AI_FILTER_CLASS_DESCRIPTOR->hideBoundFeedButtonView(Landroid/view/View;)V",
         )
     }
 }

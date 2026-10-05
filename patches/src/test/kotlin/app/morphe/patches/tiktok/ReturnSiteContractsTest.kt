@@ -87,4 +87,26 @@ class ReturnSiteContractsTest {
         assertNull(ReturnSiteContracts.explicitTarget(unrelated))
     }
 
+    @Test fun followFinalReturnRequiresTheOriginalResponseParameterToRemainLive() {
+        val follow = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;"
+        fun method(clobber: Boolean) = ImmutableMethod("LX/Current;", "renamed",
+            listOf(ImmutableMethodParameter(follow, emptySet(), null)), "V", 17, emptySet(), emptySet(),
+            MethodImplementationBuilder(4).apply {
+                addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 1, 0, 0, 0, 0, 0,
+                    ImmutableMethodReference("Lcom/ss/android/ugc/aweme/feed/model/Aweme;", "isAd", emptyList(), "Z")))
+                for (name in listOf("setItems", "setInsertedResults"))
+                    addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 2, 3, 0, 0, 0, 0,
+                        ImmutableMethodReference(follow, name, listOf("Ljava/util/List;"), "V")))
+                if (clobber) addInstruction(BuilderInstruction11n(Opcode.CONST_4, 3, 0))
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            }.methodImplementation)
+        val m = method(false)
+        val accepted = "LX/1N7X;->LJIILL($follow)V"
+        assertEquals(ReturnSiteContracts.FINAL, ReturnSiteContracts.mode(m, owner(m), accepted))
+        assertNull(ReturnSiteContracts.mode(method(true), owner(method(true)), accepted))
+        val code = "invoke-static/range {p1 .. p1}, Lapp/morphe/extension/tiktok/feedfilter/FeedItemsFilter;->filterFinal($follow)V"
+        assertTrue(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FINAL, m, 3, code))
+        assertFalse(ReturnSiteContracts.mutationAllowed(ReturnSiteContracts.FINAL, m, 3, code.replace("p1", "p0")))
+    }
+
 }

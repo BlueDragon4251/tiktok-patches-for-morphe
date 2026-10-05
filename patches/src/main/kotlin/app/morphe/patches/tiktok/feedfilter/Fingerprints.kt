@@ -89,9 +89,10 @@ internal object FollowFeedFingerprint : Fingerprint(
 internal object FollowFeedListGetItemsFingerprint : Fingerprint(
     definingClass = "Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;",
     name = "getItems",
-    accessFlags = listOf(AccessFlags.PUBLIC),
     returnType = "Ljava/util/List;",
     parameters = emptyList(),
+    custom = { method, _ -> method.accessFlags in setOf(AccessFlags.PUBLIC.value,
+        AccessFlags.PUBLIC.value or AccessFlags.FINAL.value) },
 )
 
 internal object TakoAiFeedButtonSetVisibleFingerprint : Fingerprint(

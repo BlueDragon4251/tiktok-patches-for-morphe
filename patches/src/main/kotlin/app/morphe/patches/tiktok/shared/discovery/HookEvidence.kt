@@ -222,6 +222,8 @@ internal object HookEvidence {
         val mode = validationMode[method.toString()]
         if (mode in SiteContracts.modes && (operation != "insert" || !SiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed site contract $mode does not permit this mutation in $method at $index")
+        if (mode in TakoContracts.modes && (operation != "insert" || !TakoContracts.mutationAllowed(mode!!, index, code)))
+            throw PatchException("Tako contract permits only the reviewed visibility gate or view callback")
         if (mode in ReturnSiteContracts.modes && (operation != "insert" || !ReturnSiteContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Return site contract $mode does not permit this mutation in $method at $index")
         if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
@@ -299,6 +301,14 @@ internal object HookEvidence {
             FixtureContracts.portableSignature(method) == expectedMethod &&
                 FixtureContracts.portableClassSignature(owner) == expectedClass
         }
+    }
+
+    /** Selection evidence only: the mutation still has to pass requireReviewed/touch. */
+    fun matchesReviewedMethodScope(method: Method, accepted: String): Boolean {
+        val current = context ?: throw PatchException("Missing scope selection context")
+        val source = original(method) ?: return false
+        val owner = originals[source.definingClass] ?: return false
+        return accepted in ReviewedMethodScopes.candidates(owner, source, selectContracts(current))
     }
 
     fun requireReadOnlyDiscovery(method: Method) {

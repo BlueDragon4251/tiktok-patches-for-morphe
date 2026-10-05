@@ -50,4 +50,35 @@ class ReviewedMethodScopesTest {
     @Test fun storedScopesContainExactlyTheReviewedHooks() {
         assertEquals(FixtureContracts.methodScopedHooks(), FixtureContracts.load("46.7.3").scopedMethods.keys)
     }
+    @Test fun sameSignatureRawGettersNeedAUniqueWholeBodyAndFieldScope() {
+        val accepted = "LX/02z2;->LJIIJJI(Ljava/lang/String;Z)Ljava/lang/Object;"
+        fun raw(type: String, name: String, changed: Boolean) = ImmutableMethod(type, name,
+            listOf("Ljava/lang/String;", "Z").map { ImmutableMethodParameter(it, emptySet(), null) },
+            "Ljava/lang/Object;", 17, emptySet(), emptySet(), MethodImplementationBuilder(4).apply {
+                if (changed) addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 0))
+                else addInstruction(BuilderInstruction21c(Opcode.SGET_OBJECT, 0,
+                    ImmutableFieldReference(type, "LIZ", "Ljava/lang/Object;")))
+                addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0))
+            }.methodImplementation)
+        fun owner(type: String, methods: List<ImmutableMethod>) = ImmutableClassDef(type, 17,
+            "Ljava/lang/Object;", emptyList(), null, emptySet(),
+            listOf(ImmutableField(type, "LIZ", "Ljava/lang/Object;", 9, null, emptySet(), emptySet())), methods)
+        val original = raw("LX/02z2;", "LJIIJJI", false)
+        val sourceOwner = owner(original.definingClass, listOf(original))
+        val contracts = FixtureContracts.Reviewed("com.zhiliaoapp.musically", 2024607030, "sha", emptyMap(), emptyMap(),
+            mapOf(accepted to FixtureContracts.portableSignature(original)),
+            mapOf(original.definingClass to FixtureContracts.portableClassSignature(sourceOwner)),
+            scopedMethods = mapOf(accepted to FixtureContracts.portableReturnScopeSignature(sourceOwner, original)))
+        val wanted = raw("LX/02yB;", "LJIIJJI", false)
+        val extra = raw("LX/02yB;", "LJIILIIL", true)
+        val current = owner(wanted.definingClass, listOf(wanted, extra))
+        val matches = listOf(wanted, extra).filter { accepted in ReviewedMethodScopes.candidates(current, it, contracts) }
+        assertEquals(listOf(wanted), matches)
+        val identicalDuplicate = raw("LX/02yB;", "LJIILIIL", false)
+        val ambiguous = owner(wanted.definingClass, listOf(wanted, identicalDuplicate))
+        assertNull(listOf(wanted, identicalDuplicate).filter {
+            accepted in ReviewedMethodScopes.candidates(ambiguous, it, contracts)
+        }.singleOrNull())
+    }
+
 }
