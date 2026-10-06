@@ -1,3 +1,16 @@
+# [1.3.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-10-06)
+
+
+### Bug Fixes
+
+* **tiktok:** retain selector flags across Patcher runtime versions ([38facb4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/38facb42dec2073c5a759a21491a415db09ba8a4))
+
+
+
+
+
+## 1.3.0-dev.2
+
 # [1.3.0-dev.1](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.2.0...v1.3.0-dev.1) (2026-10-06)
 
 
