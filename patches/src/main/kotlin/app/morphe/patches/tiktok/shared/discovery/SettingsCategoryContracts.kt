@@ -36,7 +36,7 @@ internal object SettingsCategoryContracts {
         val remember = ref(insns[at + 2]) as? MethodReference
         require(remember?.parameterTypes == listOf("Ljava/lang/Object;") && remember.returnType == "V" &&
             insns[at + 2].argumentRegisters().last() == r)
-        return ThemeContracts.Site(at + 1, "invoke-static/range {v$r .. v$r}, $EXTENSION->prepare(Ljava/util/List;)Ljava/util/List;\nmove-result-object v$r")
+        return ThemeContracts.Site(at + 2, "invoke-static/range {v$r .. v$r}, $EXTENSION->prepare(Ljava/util/List;)Ljava/util/List;\nmove-result-object v$r")
     }
     fun headerSite(m: Method): ThemeContracts.Site {
         require(m.accessFlags == 25 && m.returnType == "V" && m.parameterTypes.size == 5 &&
@@ -59,7 +59,7 @@ internal object SettingsCategoryContracts {
                 i.argumentRegisters().firstOrNull() == r
         }
         require(consumer != null)
-        return ThemeContracts.Site(at + 1, "invoke-static {v$p, v$r}, $EXTENSION->headerTitle(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;\nmove-result-object v$r")
+        return ThemeContracts.Site(at + 2, "invoke-static {v$p, v$r}, $EXTENSION->headerTitle(Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/String;\nmove-result-object v$r")
     }
     fun mode(m: Method, owner: ClassDef, accepted: String): String? = runCatching {
         when {

@@ -11,7 +11,6 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 import app.morphe.patches.tiktok.shared.discovery.SettingsContracts
 import app.morphe.patches.tiktok.shared.discovery.SettingsCategoryContracts
-import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addAfterInstruction
 import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
 import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
@@ -308,10 +307,10 @@ val settingsPatch = bytecodePatch(
                 "sget-object v0, $supportEnumType->OPEN_DEBUG:$supportEnumType\nreturn-object v0")
             SupportCategoryRendererFingerprint.uniqueMethod.apply {
                 val site = SettingsCategoryContracts.headerSite(this)
-                addAfterInstruction(site.index, site.code)
+                addInstructions(site.index, site.code)
             }
             val site = SettingsCategoryContracts.rowsSite(composeRowsMethod)
-            composeRowsMethod.addAfterInstruction(site.index, site.code)
+            composeRowsMethod.addInstructions(site.index, site.code)
             return true
         }
 
