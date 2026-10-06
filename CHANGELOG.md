@@ -1,3 +1,20 @@
+# [1.3.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.2...v1.3.0-dev.3) (2026-10-06)
+
+
+### Bug Fixes
+
+* **TikTok:** add native BlueIT category and block startup splash ads ([9f60889](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9f608897ff8940c9b6a287fc5099022bb97233cc))
+* **TikTok:** avoid placeholder account proxies in CAPTCHA login checks ([012aafe](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/012aafea84904552b21245c67a07f1d0dbee7db4))
+* **TikTok:** honor native settings palette and resolve CAPTCHA account service ([d30aac5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/d30aac567ad4339331298ae2656ec5483f3548d6))
+* **TikTok:** insert category transforms at typed object result boundaries ([2f9b746](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2f9b746b1ae885181bbe7b223d63bf34d7193187))
+* **tiktok:** stop download error toasts and preserve native gradients ([efd33e9](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/efd33e917a972af2189b32e36d485e104c6bc60a))
+
+
+
+
+
+## 1.3.0-dev.3
+
 # [1.3.0-dev.2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-10-06)
 
 
