@@ -18,6 +18,7 @@ import app.morphe.extension.shared.Logger;
 public final class ThemeNativeTargets {
     private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
+    private static final Map<ViewGroup, Target> PAGER_TEXTS = new WeakHashMap<>();
     private ThemeNativeTargets() {}
 
     public static void profilePage(View view) { register(view, PROFILE); }
@@ -31,6 +32,16 @@ public final class ThemeNativeTargets {
     public static void beforePagerDraw(ViewGroup pager) {
         if (pager == null) return;
         try {
+            Target textTarget = PAGER_TEXTS.get(pager);
+            if (!active(pager)) {
+                if (textTarget != null) textTarget.restoreTexts();
+            } else {
+                if (textTarget == null) {
+                    textTarget = new Target(pager, 0);
+                    PAGER_TEXTS.put(pager, textTarget);
+                }
+                repairPagerTextContrast(pager, textTarget);
+            }
             for (Map.Entry<View, Target> entry : TARGETS.entrySet()) {
                 View profile = entry.getKey();
                 if (entry.getValue().kind == PROFILE && profile != null
@@ -39,6 +50,47 @@ public final class ThemeNativeTargets {
                 }
             }
         } catch (Throwable ignored) { }
+    }
+
+    /** Fix dark native captions over an actual dark flat fill, never over guessed media colors. */
+    private static void repairPagerTextContrast(ViewGroup pager, Target target) {
+        ArrayDeque<View> queue = new ArrayDeque<>();
+        queue.add(pager);
+        int visited = 0;
+        while (!queue.isEmpty() && visited++ < 1200) {
+            View view = queue.removeFirst();
+            if (view.getVisibility() != View.VISIBLE || isOwned(view)) continue;
+            if (view instanceof TextView) {
+                TextView text = (TextView) view;
+                int current = text.getCurrentTextColor();
+                int r = Color.red(current), g = Color.green(current), b = Color.blue(current);
+                if (Color.alpha(current) > 0 && Math.max(r, Math.max(g, b)) < 90
+                        && Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) <= 34
+                        && hasDarkFlatBackdrop(text)) styleText(text, target);
+            }
+            if (view instanceof ViewGroup) {
+                ViewGroup group = (ViewGroup) view;
+                for (int i = 0; i < group.getChildCount(); i++) queue.add(group.getChildAt(i));
+            }
+        }
+    }
+
+    private static boolean hasDarkFlatBackdrop(View view) {
+        View current = view;
+        for (int i = 0; i < 16; i++) {
+            Drawable fill = current.getBackground();
+            if (fill instanceof ColorDrawable) {
+                int color = ((ColorDrawable) fill).getColor();
+                if (Color.alpha(color) == 255) {
+                    return Math.max(Color.red(color), Math.max(Color.green(color), Color.blue(color))) < 90;
+                }
+                if (Color.alpha(color) != 0) return false;
+            } else if (fill != null) return false;
+            android.view.ViewParent parent = current.getParent();
+            if (!(parent instanceof View)) return false;
+            current = (View) parent;
+        }
+        return false;
     }
 
     private static void register(View view, int kind) {
@@ -221,6 +273,14 @@ public final class ThemeNativeTargets {
             }
             clips.clear();
         }
+        void restoreTexts() {
+            for (Map.Entry<TextView, TextFill> entry : texts.entrySet()) {
+                if (entry.getKey().getTextColors() == entry.getValue().applied) {
+                    entry.getKey().setTextColor(entry.getValue().original);
+                }
+            }
+            texts.clear();
+        }
         void allowProfileUnderDrawer(View profile, View sidebar) {
             // Only the ancestry between the two native lifecycle roots. The shifted page's
             // clipping would otherwise cut off the corrected profile underneath the overlay.
@@ -273,12 +333,7 @@ public final class ThemeNativeTargets {
                 fills.clear();
             }
             if (!enabled && !texts.isEmpty()) {
-                for (Map.Entry<TextView, TextFill> entry : texts.entrySet()) {
-                    if (entry.getKey().getTextColors() == entry.getValue().applied) {
-                        entry.getKey().setTextColor(entry.getValue().original);
-                    }
-                }
-                texts.clear();
+                restoreTexts();
             }
         }
         @Override public boolean onPreDraw() { try { apply(); } catch (Throwable ignored) { } return true; }

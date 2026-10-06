@@ -124,6 +124,26 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void nativePagerRepairsDarkCaptionsOnlyOnConfirmedDarkBackground() {
+        host.setBackgroundColor(Color.BLACK);
+        TextView caption = new TextView(activity);
+        caption.setTextColor(Color.BLACK);
+        host.addView(caption);
+        TextView lightCard = new TextView(activity);
+        lightCard.setTextColor(Color.BLACK);
+        lightCard.setBackgroundColor(Color.WHITE);
+        host.addView(lightCard);
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(ThemeEngine.textColor(activity), caption.getCurrentTextColor());
+        assertEquals(Color.BLACK, lightCard.getCurrentTextColor());
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(ThemeEngine.textColor(activity), caption.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(Color.BLACK, caption.getCurrentTextColor());
+    }
+
+    @Test
     public void nativeProfileFollowsDrawerScrollWithoutMovingAnUnrelatedView() {
         FrameLayout unrelated = new FrameLayout(activity);
         host.addView(unrelated);
