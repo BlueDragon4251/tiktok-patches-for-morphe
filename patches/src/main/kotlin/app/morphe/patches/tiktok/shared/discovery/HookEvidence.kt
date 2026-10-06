@@ -206,7 +206,7 @@ internal object HookEvidence {
             row["candidateCount"] = if (multiple) matches.size else 1
             row["selector"] = mapOf("owner" to fingerprint.definingClass, "name" to fingerprint.name,
                 "parameters" to fingerprint.parameters, "returns" to fingerprint.returnType,
-                "strings" to fingerprint.strings, "exactStrings" to fingerprint.exactStrings, "accessFlags" to fingerprint.accessFlags)
+                "strings" to fingerprint.strings, "exactStrings" to fingerprint.exactStrings, "accessFlags" to fingerprint.declaredAccessFlags)
             rows[key] = row
         }
     }

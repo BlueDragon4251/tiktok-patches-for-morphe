@@ -69,3 +69,84 @@ jobs:
             extensions/tiktok/build/test-results/**/*.xml
           if-no-files-found: error
           retention-days: 14
+  manager-runtime:
+    name: Patcher 1.15.1 / TikTok ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['46.7.3', '47.1.3']
+    env:
+      FEATURE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      TIKTOK_VERSION: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: burrunan/gradle-cache-action@v3
+      - name: Build bundle and test regressions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-runtime-bundle-${{ matrix.version }}-${{ env.FEATURE_HEAD }}
+          path: |
+            patches/build/libs/*.mpp
+            patches-list.json
+            patches/build/test-results/**/*.xml
+            extensions/tiktok/build/test-results/**/*.xml
+          if-no-files-found: error
+      - run: python3 -m pip install -r scripts/tiktok/requirements.txt
+      - name: Fetch pinned CLI with Manager's Patcher 1.15.1
+        run: python3 scripts/tiktok/toolchain.py
+      - name: Patch all 37 targets and rebuild on the Manager runtime
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          version = os.environ['TIKTOK_VERSION']
+          if version == '46.7.3':
+              subprocess.run(['python3', 'scripts/tiktok/fixtures.py', 'fetch',
+                              '--fixture', 'global-46.7.3', '--apk', 'fixture.apk'], check=True)
+          else:
+              url = 'https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024701030'
+              subprocess.run(['curl', '--fail', '--location', '--silent', '--show-error',
+                              '--proto', '=https', '--proto-redir', '=https', '--retry', '3',
+                              '--max-time', '900', url, '--output', 'fixture.apk'], check=True)
+          bundles = [p for p in Path('patches/build/libs').glob('*.mpp')
+                     if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          assert len(bundles) == 1, bundles
+          common = ['--apk', 'fixture.apk', '--bundle', str(bundles[0]),
+                    '--cli', 'morphe-desktop.jar', '--head', os.environ['FEATURE_HEAD'],
+                    '--output', 'reports/' + version]
+          if version == '46.7.3':
+              subprocess.run(['python3', 'scripts/tiktok/run_fixture.py', '--fixture',
+                              'global-46.7.3', '--phase', 'catalog'] + common, check=True)
+          else:
+              subprocess.run(['python3', 'scripts/tiktok/run_experimental.py', '--source', url,
+                              '--expected-sha', '8b5569f592a5534652ae460ef1d9e7f7394b5b7fdde44ae64f106d76767e2622',
+                              '--development-bundle'] + common, check=True)
+              result = json.loads(Path('reports/47.1.3/experimental-result.json').read_text())
+              assert result['status'] == 'experimental-catalog-passed', result['blockers']
+              assert result['developmentBundleTest'] is True
+              assert len(result['observedAppliedPatches']) == 37
+              assert result['patchedApk'] and result['qualified'] is False
+          PY
+      - name: Upload patching and rebuild evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiktok-manager-runtime-${{ matrix.version }}-${{ env.FEATURE_HEAD }}
+          path: |
+            reports/**/*.json
+            reports/**/*.log
+          if-no-files-found: warn

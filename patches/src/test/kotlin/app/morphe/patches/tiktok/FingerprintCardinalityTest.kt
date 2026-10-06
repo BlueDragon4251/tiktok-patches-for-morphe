@@ -47,6 +47,27 @@ class FingerprintCardinalityTest {
         with(context("LX/New;")) { assertEquals("LX/New;", fp.uniqueMatch().originalMethod.definingClass) }
         with(context()) { assertThrows(PatchException::class.java) { fp.uniqueMatch() } }
     }
+    @Test fun selectorEvidenceRetainsDeclaredFlagsAndUnconstrainedNull() {
+        for (flags in listOf(null, emptyList(), listOf(AccessFlags.STATIC, AccessFlags.STATIC))) {
+            val fp = TikTokFingerprint(accessFlags = flags, returnType = "Ljava/lang/String;",
+                exactStrings = listOf("stable-hook"))
+            with(context("LX/One;")) {
+                if (flags?.isEmpty() == true) {
+                    assertNull(fp.uniqueMatchOrNull()) // Empty flags mean exactly zero, not unconstrained.
+                } else {
+                    fp.observeUniqueSite()
+                    @Suppress("UNCHECKED_CAST")
+                    val rows = HookEvidence::class.java.getDeclaredField("rows").apply { isAccessible = true }
+                        .get(HookEvidence) as Map<String, Map<String, Any?>>
+                    val selector = rows.values.single()["selector"] as Map<*, *>
+                    assertEquals(if (flags == null) null else AccessFlags.STATIC.value, selector["accessFlags"])
+                }
+            }
+        }
+        assertEquals(0, TikTokFingerprint(accessFlags = emptyList(), name = "zeroFlags").declaredAccessFlags)
+        assertEquals(AccessFlags.PUBLIC.value or AccessFlags.STATIC.value,
+            TikTokFingerprint(accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.STATIC)).declaredAccessFlags)
+    }
     @Test fun observingOneSiteRetainsAllSitesIdentityWithoutAuthorizingMutation() {
         val fp = TikTokFingerprint(returnType = "Ljava/lang/String;", exactStrings = listOf("stable-hook"))
         with(context()) { assertThrows(PatchException::class.java) { fp.observeUniqueSite() } }

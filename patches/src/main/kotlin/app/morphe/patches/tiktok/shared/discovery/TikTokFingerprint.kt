@@ -25,6 +25,8 @@ open class TikTokFingerprint(
     returnType = returnType, parameters = parameters, filters = filters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() }, custom = custom) {
     private val semanticFilters = filters
     private val selectorAccessFlags = accessFlags
+    // Retain the declared mask: newer patchers no longer expose Fingerprint.getAccessFlags().
+    internal val declaredAccessFlags = accessFlags?.fold(0) { mask, flag -> mask or flag.value }
     private val semanticCustom = custom
     private var session: BytecodePatchContext? = null
     private var selected: List<Match>? = null

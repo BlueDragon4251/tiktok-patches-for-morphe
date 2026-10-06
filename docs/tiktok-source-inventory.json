@@ -76706,7 +76706,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/HookEvidence.kt",
-      "sha256": "9129a4ef12f3a81936eeaea635ed135a0b7c784ddf6f8a1a1ae8887b49aa0fe4",
+      "sha256": "b1d5e681be6ae734455de6dd5d6d8180f59e5d22854edaf15ad128198c62f864",
       "patches": [],
       "findings": [
         {
@@ -87018,7 +87018,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/TikTokFingerprint.kt",
-      "sha256": "edee9654c00978e045f7b9af24e559765a4932a28a4f077d82b6650197817dcd",
+      "sha256": "2d3b37920c376d79429334e4b4fee6fc04971a6425c9745b0f436f648ffa51ab",
       "patches": [],
       "findings": [
         {
@@ -87053,133 +87053,133 @@
         },
         {
           "kind": "literal",
-          "line": 31,
+          "line": 33,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 31,
+          "line": 33,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 31,
+          "line": 33,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 32,
+          "line": 34,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 32,
+          "line": 34,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 32,
+          "line": 34,
           "text": "\":\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 32,
+          "line": 34,
           "text": "\"|\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "register",
-          "line": 32,
+          "line": 34,
           "text": "parameters ?: emptyList<String>()).joinToString(\"|\") else \"\")",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 45,
+          "line": 47,
           "text": "\";\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 45,
+          "line": 47,
           "text": "\"L\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 53,
+          "line": 55,
           "text": "\"*\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 53,
+          "line": 55,
           "text": "name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == \"*\" },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 55,
+          "line": 57,
           "text": "returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 56,
+          "line": 58,
           "text": "parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 56,
+          "line": 58,
           "text": "parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 82,
+          "line": 84,
           "text": "\"Ambiguous hook $hookId: ${matches.map { it.originalMethod }}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 83,
+          "line": 85,
           "text": "singleOrNull()",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 90,
+          "line": 92,
           "text": "singleOrThrow(\"Hook $hookId\")",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 90,
+          "line": 92,
           "text": "\"Hook $hookId\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 98,
+          "line": 100,
           "text": "singleOrThrow(\"Hook $hookId\")",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 98,
+          "line": 100,
           "text": "\"Hook $hookId\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 105,
+          "line": 107,
           "text": "\"Hook $hookId: expected $range matches, found ${matches.size}\"",
           "category": "structural-or-semantic-evidence"
         }
