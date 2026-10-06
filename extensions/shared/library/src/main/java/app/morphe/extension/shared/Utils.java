@@ -392,11 +392,16 @@ public class Utils {
     }
 
     public static Context getContext() {
-        if (context == null) {
-            Logger.printException(() -> "Context is not set by extension hook, returning null");
+        Context current = context;
+        if (current == null && missingContextLogged.compareAndSet(false, true)) {
+            Logger.printInfo(() -> "Context is not set by extension hook yet, returning null (once per process)");
         }
-        return context;
+        return current;
     }
+
+    // Native startup tasks can query resources concurrently before the first context hook runs.
+    private static final java.util.concurrent.atomic.AtomicBoolean missingContextLogged =
+            new java.util.concurrent.atomic.AtomicBoolean();
 
     public static void setContext(Context appContext) {
         // Intentionally use logger before context is set,

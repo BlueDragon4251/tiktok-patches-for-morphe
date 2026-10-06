@@ -224,6 +224,8 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode == AvatarGradientContracts.MODE && (operation != "insert" || !AvatarGradientContracts.mutationAllowed(method, index, code)))
+            throw PatchException("Avatar gradient contract permits only the typed native shader config guard")
         if (mode in ThemeSurfaceContracts.modes && (operation != (if (mode in setOf(ThemeSurfaceContracts.NAV_MODE, ThemeSurfaceContracts.RENDER_MODE)) "insert-after" else "insert") ||
                 !ThemeSurfaceContracts.mutationAllowed(mode!!, method, originals.getValue(method.definingClass), index, code, originals::get)))
             throw PatchException("Theme surface contract refuses a changed role, register, or insertion point")

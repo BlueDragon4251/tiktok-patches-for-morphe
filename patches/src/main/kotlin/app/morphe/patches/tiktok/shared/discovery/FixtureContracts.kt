@@ -578,6 +578,7 @@ internal object FixtureContracts {
         val oecEntryMatch = (!fullClassMatches || !methodMatches) && acceptedMethod == OEC_CAPTCHA &&
             oldOwner == owner.type && oecCaptchaEntryBoundary(owner, method, callback)
         val siteMode = DownloadSuccessContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
+            ?: AvatarGradientContracts.mode(method, owner, acceptedMethod, contracts, nativeClasses::get)
             ?: ExternalBrowserContracts.mode(method, owner, acceptedMethod, nativeClasses::get)
             ?: ClearDisplayContracts.mode(method, owner, acceptedMethod)
             ?: PlayerFrameContracts.mode(method, owner, acceptedMethod, nativeClasses::get)

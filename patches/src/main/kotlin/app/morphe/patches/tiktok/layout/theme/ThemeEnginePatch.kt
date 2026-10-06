@@ -9,6 +9,7 @@ import app.morphe.patches.tiktok.shared.discovery.ThemeSurfaceContracts
 import app.morphe.patches.tiktok.shared.discovery.ScratchContracts
 import app.morphe.patches.tiktok.shared.discovery.ReceiverAliases
 import app.morphe.patches.tiktok.shared.discovery.ThemeContracts
+import app.morphe.patches.tiktok.shared.discovery.AvatarGradientContracts
 import app.morphe.patches.tiktok.shared.discovery.calls
 import app.morphe.patches.tiktok.shared.discovery.readsField
 import com.android.tools.smali.dexlib2.iface.ClassDef
@@ -129,6 +130,11 @@ private object TuxStyledColorResolverFingerprint : Fingerprint(
     custom = { method, owner -> isTuxFamily(owner) && method.calls("Landroid/content/res/TypedArray;", "getColor") },
 )
 
+private object AvatarGradientConfigFingerprint : Fingerprint(
+    parameters = listOf(AvatarGradientContracts.CONFIG, "Landroid/content/Context;"),
+    custom = { method, owner -> AvatarGradientContracts.boundary(method, owner, HookEvidence::originalClass) },
+)
+
 /** Native half-dp separator writer; the bar itself comes from showBottomTab(). */
 private object MainBottomNavigationDividerFingerprint : Fingerprint(
     custom = { method, classDef ->
@@ -243,7 +249,7 @@ val themeEnginePatch = bytecodePatch(
         listOf(TuxDirectColorResolverFingerprint, TuxGenericAttributeResolverFingerprint,
             TuxSemanticColorResolverFingerprint, TuxStyledColorResolverFingerprint,
             InboxSessionBindFingerprint, MainBottomNavigationDividerFingerprint,
-            ComposePaletteProviderFingerprint).forEach { fingerprint ->
+            ComposePaletteProviderFingerprint, AvatarGradientConfigFingerprint).forEach { fingerprint ->
             val match = fingerprint.observeUniqueSite()
             println("[BlueIT Hook Contract] ${fingerprint.javaClass.simpleName}: ${match.originalMethod}")
         }
@@ -258,6 +264,11 @@ val themeEnginePatch = bytecodePatch(
             val method = fingerprint.uniqueMethod
             val site = ThemeContracts.tuxEntrySite(method, role, patchDefaultPreset)
             method.addInstructions(site.index, site.code)
+        }
+
+        AvatarGradientConfigFingerprint.uniqueMethod.apply {
+            val site = AvatarGradientContracts.site(this)
+            addInstructions(site.index, site.code)
         }
 
         InboxSessionBindFingerprint.uniqueMethod.apply {

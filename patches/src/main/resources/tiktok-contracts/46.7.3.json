@@ -30,6 +30,7 @@
     "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;-\u003eonStop()V"
   ],
   "methods": {
+    "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;": "1fcd81359a493de261c21ecf02d8cc654e645ca154272a46bbe82a79215339f2",
     "LX/01Cd;-\u003eLIZLLL(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;": "13196e7bc96b081c5fc3379470793ed5347fa693f105c8db325c49091cab0bfe",
     "LX/02z2;-\u003eLIZ(ILjava/lang/String;ZZ)Z": "0d397ea956b6befdc47f80c36af5dba8400306561aa452c2d935e1866f58e32e",
     "LX/02z2;-\u003eLIZJ(DILjava/lang/String;Z)D": "18bb84ece2942cc9553f93df201cec9501378f9e702e9168c059ad06b8c6f784",
@@ -199,6 +200,7 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "8d31bf91793b55ca42f2113f9294a2373107fdfa23e429b4e72ef3f78b1854d5"
   },
   "classes": {
+    "LX/0Ezq;": "caf4c9552cb162d8d7f2785f512c7abe85c2e45d07395131a24c1d18c32d8d67",
     "LX/01Cd;": "fc2b4371e4b6fcdd6e41e4a4d32a1622a73dc3f6ce836a52863a5b17e66c3ccf",
     "LX/02z2;": "55397152e118a4e7b560d2eee10e1be23c2016c0569305084423a8e08ceb3b56",
     "LX/02zL;": "3ace73f2237877582e7adad2a954fd3198c1514ef23b3d6414069414ae8de000",
@@ -307,6 +309,7 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "aa1d798a67c36a88341ab3066516b33b0ae73d5edfe11ba9a9f88fe853c56e0f"
   },
   "portableMethods": {
+    "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;": "8475eae085f9ee204180b358a7d04fe906fe859068af4d947183b41fa030b858",
     "LX/01Cd;-\u003eLIZLLL(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;": "3182706cb85dec6996967f9d73052b63ea4e944a5cb6fef9a66d8d77d0be3c40",
     "LX/02z2;-\u003eLIZ(ILjava/lang/String;ZZ)Z": "fefcf9ef65bc078b3b1d7e0477b60c5cb9317ec8fa25174d62f2da845a235ba2",
     "LX/02z2;-\u003eLIZJ(DILjava/lang/String;Z)D": "0f6e39d8f1ae16ddc808dbf5ee72b05c137f1898f7e57ec0c29b2c7c7d543917",
@@ -476,6 +479,7 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "21589ac92261caa365fb5f361532ad6f4bf726f09e8c97a37e22bd3b3bb83e8f"
   },
   "portableClasses": {
+    "LX/0Ezq;": "adb5c27d4f2fda9ce42d2be224c4ec338365cd0ac6b432e601bb85e02d857b93",
     "LX/01Cd;": "7c56fe0a7ba8b70c9970e90685060df14d2a756c2439d7d98b2993703d0cc06d",
     "LX/02z2;": "672f1ccbfd237525f44af0ef2014fb25461d36a6906fe4ecc0adb9acd481b16f",
     "LX/02zL;": "16d383f1aa073140275a365fe23bf7c0b14bda21c9372009e2a81c852472de66",
@@ -584,6 +588,7 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "c9ca48205d95c0cb4bb0de7327ab73b6ba60ed3b12baa2be69926897fee592e3"
   },
   "hookMethods": {
+    "app.morphe.patches.tiktok.layout.theme.AvatarGradientConfigFingerprint::": "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;",
     "app.morphe.patches.tiktok.captchapopup.CaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptchaV2": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;-\u003epopCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V",
     "app.morphe.patches.tiktok.captchapopup.LegacyCaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptcha": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;-\u003epopCaptcha(Landroid/app/Activity;ILX/17qC;)V",
     "app.morphe.patches.tiktok.captchapopup.LiveHostCaptchaPopupFingerprint:/live/livehostimpl/LiveHostUser;:popCaptchaV2": "Lcom/ss/android/ugc/aweme/live/livehostimpl/LiveHostUser;-\u003epopCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/1NRi;Landroidx/fragment/app/Fragment;)V",
