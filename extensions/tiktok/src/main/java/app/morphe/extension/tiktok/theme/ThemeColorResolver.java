@@ -92,7 +92,13 @@ public final class ThemeColorResolver {
             value.type = TypedValue.TYPE_INT_COLOR_ARGB8;
             value.data = color;
             value.resourceId = 0;
-            return invoke.invoke(converter, value);
+            Object converted = invoke.invoke(converter, value);
+            // Gradient/array converters turn one color into one stop. Keep the original native
+            // resource and its full stop/position arrays instead of collapsing them to a scalar.
+            if (converted != null && (converted.getClass().isArray() || converted instanceof Iterable<?>)) {
+                return null;
+            }
+            return converted;
         } catch (Throwable ignored) {
             return null;
         }

@@ -14,6 +14,7 @@ import com.ss.android.ugc.aweme.feed.model.Video;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 public class DownloadsPatch {
@@ -23,6 +24,7 @@ public class DownloadsPatch {
 
     private static volatile String lastLoggedPath;
     private static volatile Boolean lastLoggedRemoveWatermark;
+    private static final AtomicBoolean loggedVideoFailure = new AtomicBoolean();
 
     public static String getDownloadPath() {
         String path = Settings.DOWNLOAD_PATH.get();
@@ -46,11 +48,12 @@ public class DownloadsPatch {
         if (video == null) return;
 
         try {
-            UrlModel original = video.downloadNoWatermarkAddr;
+            // These accessors are present in both verified APKs; 47.1.3 renamed the backing fields.
+            UrlModel original = video.getDownloadNoWatermarkAddr();
 
             UrlModel qualitySelected = DownloadQualitySelector.select(video);
             if (qualitySelected != null) {
-                video.downloadNoWatermarkAddr = qualitySelected;
+                video.setDownloadNoWatermarkAddr(qualitySelected);
                 logSelection("quality:" + Settings.DOWNLOAD_VIDEO_QUALITY.get(), "runtimeVariant", original, qualitySelected);
                 return;
             }
@@ -61,11 +64,13 @@ public class DownloadsPatch {
                 return;
             }
 
-            video.downloadNoWatermarkAddr = selected.model;
+            video.setDownloadNoWatermarkAddr(selected.model);
             logSelection(requestedSource, selected.name, original, selected.model);
         } catch (Throwable ex) {
-            if (BaseSettings.DEBUG.get()) {
-                Logger.printException(() -> "[BlueIT Downloads] patchVideoObject failure", ex);
+            if (BaseSettings.DEBUG.get() && loggedVideoFailure.compareAndSet(false, true)) {
+                // getVideo() is also called by background/preload work. Never queue UI error toasts.
+                Logger.printInfo(() -> "[BlueIT Downloads] patchVideoObject failure",
+                        ex instanceof Exception ? (Exception) ex : new RuntimeException(ex));
             }
         }
     }
@@ -95,8 +100,8 @@ public class DownloadsPatch {
 
     private static Candidate selectRequestedSource(Video video, UrlModel original, String requestedSource) {
         Candidate originalCandidate = new Candidate("downloadNoWatermarkAddr", original);
-        Candidate h264 = new Candidate("h264PlayAddr", video.h264PlayAddr);
-        Candidate play = new Candidate("playAddr", video.playAddr);
+        Candidate h264 = new Candidate("h264PlayAddr", video.getH264PlayAddr());
+        Candidate play = new Candidate("playAddr", video.getPlayAddr());
 
         switch (requestedSource) {
             case "no_watermark":

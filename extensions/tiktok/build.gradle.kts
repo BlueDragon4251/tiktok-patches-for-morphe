@@ -4,6 +4,7 @@ dependencies {
     compileOnly(libs.annotation)
 
     testImplementation(project(":extensions:shared:library"))
+    testImplementation(project(":extensions:tiktok:stub"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
 }
