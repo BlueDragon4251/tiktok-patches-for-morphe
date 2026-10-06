@@ -1,3 +1,20 @@
+# [1.3.0-dev.5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.4...v1.3.0-dev.5) (2026-10-06)
+
+
+### Bug Fixes
+
+* **TikTok:** handle first-frame theme scan timing deterministically ([ebc8b1c](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/ebc8b1c3c3ab2c0d4db550f3150d211403f776ed))
+* **TikTok:** preserve native control states and bind caption hook identity ([df9fd54](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/df9fd54f148580740a936fa1e66ac5eee2f03fbe))
+* **TikTok:** preserve native TUX tint during icon drawing ([c1f4fb2](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/c1f4fb22662151f47822eac902ffc3e14f1e5479))
+* **TikTok:** restore native theme controls and reduce inbox redraw work ([e4a7f2d](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/e4a7f2dc261d103906e30df21f9295f4c4bfd3b6))
+* **TikTok:** theme native note bubbles and verified feed descriptions ([deb905b](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/deb905b2dad93e377c0d9a7c4ca08261af2f2d7d))
+
+
+
+
+
+## 1.3.0-dev.5
+
 # [1.3.0-dev.4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.3...v1.3.0-dev.4) (2026-10-06)
 
 
