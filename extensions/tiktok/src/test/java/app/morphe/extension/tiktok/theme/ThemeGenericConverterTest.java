@@ -25,7 +25,8 @@ public class ThemeGenericConverterTest {
         return ThemeColorResolver.resolveGeneric(0x7f06001c, context, converter, "default");
     }
     @Test public void scalarColorConvertersStillReceiveTheThemeColor() {
-        assertEquals(Integer.valueOf(ThemeEngine.backgroundColor(RuntimeEnvironment.getApplication())), resolve(new Scalar()));
+        Object result = resolve(new Scalar());
+        assertEquals(Integer.valueOf(ThemeEngine.backgroundColor(RuntimeEnvironment.getApplication())), result);
     }
     @Test public void gradientAndPositionArraysKeepTheEntireNativeResource() {
         assertNull(resolve(new Gradient()));
