@@ -4216,7 +4216,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/featurecontrols/FeatureControls.java",
-      "sha256": "5e63bb2cd7d365e6708e89779be33fa8eb20314b0cb6bbd1b0d7bacf9a905c2d",
+      "sha256": "d3f5aada94b1a89b5f3fad86d5264d8b2be3a46d3cae1106949cb0ac756ba0f3",
       "patches": [],
       "findings": [
         {
@@ -4299,31 +4299,31 @@
         },
         {
           "kind": "literal",
-          "line": 81,
+          "line": 88,
           "text": "\"/passport/\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 82,
+          "line": 89,
           "text": "\"/login/\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 83,
+          "line": 90,
           "text": "\"\\\"passport\\\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 84,
+          "line": 91,
           "text": "\"\\\"login\\\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 128,
+          "line": 135,
           "text": "\"enable_non_personalized_search\"",
           "category": "structural-or-semantic-evidence"
         }
