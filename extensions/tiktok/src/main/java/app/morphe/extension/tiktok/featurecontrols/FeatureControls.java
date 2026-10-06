@@ -62,17 +62,24 @@ public final class FeatureControls {
     static Object resolveUserService(Object manager, Class<?> managerApi,
                                      Class<?> userApi, Class<?> accountApi) throws Exception {
         java.lang.reflect.Method getService = managerApi.getMethod("getService", Class.class);
-        Object direct = getService.invoke(manager, userApi);
-        if (direct != null) return direct;
-        Object account = getService.invoke(manager, accountApi);
-        if (account == null) return null;
-        java.lang.reflect.Method accessor = null;
-        for (java.lang.reflect.Method method : accountApi.getMethods()) {
-            if (method.getParameterTypes().length != 0 || !userApi.isAssignableFrom(method.getReturnType())) continue;
-            if (accessor != null) return null;
-            accessor = method;
+        Object account;
+        try { account = getService.invoke(manager, accountApi); }
+        catch (ReflectiveOperationException ignored) { account = null; }
+        if (account != null) {
+            java.lang.reflect.Method accessor = null;
+            for (java.lang.reflect.Method method : accountApi.getMethods()) {
+                if (method.getParameterTypes().length != 0 || !userApi.isAssignableFrom(method.getReturnType())) continue;
+                if (accessor != null) return null;
+                accessor = method;
+            }
+            if (accessor != null) {
+                Object user = accessor.invoke(account);
+                if (user != null) return user;
+            }
         }
-        return accessor == null ? null : accessor.invoke(account);
+        // Missing services may be represented by a proxy whose isLogin() always returns false.
+        Object direct = getService.invoke(manager, userApi);
+        return direct != null && !java.lang.reflect.Proxy.isProxyClass(direct.getClass()) ? direct : null;
     }
 
     private static boolean isAccountRoute(String value) {

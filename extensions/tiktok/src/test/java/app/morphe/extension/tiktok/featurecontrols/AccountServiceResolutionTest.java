@@ -23,9 +23,17 @@ public class AccountServiceResolutionTest {
         manager.account = account;
         assertSame(account.user, FeatureControls.resolveUserService(manager, Manager.class, UserApi.class, AccountApi.class));
     }
-    @Test public void directRegistrationStillTakesPrecedence() throws Exception {
+    @Test public void directRegistrationRemainsAvailableWhenTheAccountServiceIsAbsent() throws Exception {
         Manager manager = new Manager(); manager.direct = new UserImpl();
         assertSame(manager.direct, FeatureControls.resolveUserService(manager, Manager.class, UserApi.class, AccountApi.class));
+    }
+    @Test public void nativeAccountAccessorTakesPrecedenceOverAnUnregisteredServiceProxy() throws Exception {
+        Manager manager = new Manager(); AccountImpl account = new AccountImpl(); manager.account = account;
+        manager.direct = java.lang.reflect.Proxy.newProxyInstance(UserApi.class.getClassLoader(),
+                new Class<?>[]{UserApi.class}, (proxy, method, args) -> false);
+        assertSame(account.user, FeatureControls.resolveUserService(manager, Manager.class, UserApi.class, AccountApi.class));
+        manager.account = null;
+        assertNull(FeatureControls.resolveUserService(manager, Manager.class, UserApi.class, AccountApi.class));
     }
     @Test public void unresolvedAndAmbiguousAccessorsFailOpen() throws Exception {
         Manager manager = new Manager();
