@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.diagnostics.DiagnosticCategory;
 import app.morphe.extension.shared.settings.preference.LogBufferManager;
+import app.morphe.extension.shared.settings.preference.UserSettingsCheckpoint;
 
 public final class JavaCrashCapture {
     private static final String PREFS_NAME = "morphe_prefs";
@@ -34,6 +35,7 @@ public final class JavaCrashCapture {
     }
 
     public static void initialize(Context context) {
+        UserSettingsCheckpoint.restoreForDiagnostics(context);
         if (!isEnabled(context, CAPTURE_KEY)) return;
         if (!INSTALLED.compareAndSet(false, true)) return;
 
@@ -142,8 +144,7 @@ public final class JavaCrashCapture {
     }
 
     private static boolean isEnabled(Context context, String key) {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getBoolean(key, false);
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean(key, false);
     }
 
     private static String utcNow() {

@@ -206,6 +206,17 @@ public final class ThemeDynamicListGuardV3 {
                 Node node = queue.removeFirst();
                 View view = node.view;
                 if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) continue;
+                // Native headers can remain stock white above correctly themed inbox rows.
+                // Only neutral flat fills on this already identified list screen are replaced.
+                if (!(view instanceof android.widget.ImageView)
+                        && view.getBackground() instanceof android.graphics.drawable.ColorDrawable) {
+                    int nativeFill = ((android.graphics.drawable.ColorDrawable) view.getBackground()).getColor();
+                    int rgb = nativeFill & 0xffffff;
+                    if (Color.alpha(nativeFill) == 255
+                            && (rgb == 0xffffff || rgb == 0x161823 || rgb == 0 || rgb == 0x121212)) {
+                        view.setBackgroundColor(background);
+                    }
+                }
                 int[] xy = location(view);
                 if (xy != null) {
                     int bottom = xy[1] + Math.max(0, view.getHeight());

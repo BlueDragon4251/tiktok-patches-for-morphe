@@ -9,6 +9,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
+import android.widget.ImageView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -65,6 +67,41 @@ public class ThemeRuntimeRegressionTest {
     @After
     public void tearDown() {
         controller.pause().stop().destroy();
+    }
+
+    @Test
+    public void nativeSidebarAndProfileKeepTextReadableAndRestoreExactNativeColors() {
+        FrameLayout header = new FrameLayout(activity);
+        header.setBackgroundColor(Color.WHITE);
+        TextView title = new TextView(activity);
+        title.setText("Profile title");
+        title.setTextColor(Color.rgb(22, 24, 35));
+        header.addView(title);
+        profile.addView(header);
+        TextView menu = new TextView(activity);
+        menu.setText("Einstellungen und Datenschutz");
+        menu.setTextColor(Color.BLACK);
+        drawer.addView(menu);
+        ImageView media = new ImageView(activity);
+        media.setBackgroundColor(Color.WHITE);
+        profile.addView(media);
+        ThemeNativeTargets.profilePage(profile);
+        ThemeNativeTargets.sidebar(drawer);
+        assertEquals(ThemeEngine.backgroundColor(activity), ((ColorDrawable) header.getBackground()).getColor());
+        assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
+        assertEquals(ThemeEngine.textColor(activity), menu.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) media.getBackground()).getColor());
+        ThemeNativeTargets.sidebar(drawer); // Repeat pass does not classify already themed colors.
+        assertEquals(ThemeEngine.textColor(activity), menu.getCurrentTextColor());
+        menu.setTextColor(Color.RED); // An asynchronous native rebind retains functional colors.
+        ThemeNativeTargets.sidebar(drawer);
+        assertEquals(Color.RED, menu.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        ThemeNativeTargets.sidebar(drawer);
+        assertEquals(Color.WHITE, ((ColorDrawable) header.getBackground()).getColor());
+        assertEquals(Color.rgb(22, 24, 35), title.getCurrentTextColor());
+        assertEquals(Color.RED, menu.getCurrentTextColor());
     }
 
     @Test
@@ -264,6 +301,27 @@ public class ThemeRuntimeRegressionTest {
         assertEquals(Color.BLACK, ((ColorDrawable) drawer.getBackground()).getColor());
         assertEquals(Color.BLACK, ((ColorDrawable) tabBackground.getBackground()).getColor());
         assertEquals(Color.WHITE, ((ColorDrawable) separator.getBackground()).getColor());
+    }
+
+    @Test
+    public void inboxHeaderFillIsStyledAlongsideItsTextAndMediaStaysNative() throws Exception {
+        FrameLayout header = new FrameLayout(activity);
+        header.setBackgroundColor(Color.WHITE);
+        TextView title = new TextView(activity);
+        title.setText("Posteingang");
+        title.setTextColor(Color.BLACK);
+        header.addView(title);
+        host.addView(header);
+        header.layout(0, 0, 400, 80);
+        title.layout(0, 0, 240, 60);
+        ImageView avatar = new ImageView(activity);
+        avatar.setBackgroundColor(Color.WHITE);
+        header.addView(avatar);
+        Object screen = invoke(ThemeDynamicListGuardV3.class, "detectScreen", new Class<?>[]{View.class}, decor);
+        invoke(ThemeDynamicListGuardV3.class, "style", new Class<?>[]{View.class, screen.getClass()}, decor, screen);
+        assertEquals(ThemeEngine.backgroundColor(activity), ((ColorDrawable) header.getBackground()).getColor());
+        assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) avatar.getBackground()).getColor());
     }
 
     @Test

@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.content.res.ColorStateList;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
+import android.widget.ImageView;
 import java.util.ArrayDeque;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -116,16 +118,45 @@ public final class ThemeNativeTargets {
         ArrayDeque<View> queue = new ArrayDeque<>();
         ViewGroup group = (ViewGroup) root;
         for (int i = 0; i < group.getChildCount(); i++) queue.add(group.getChildAt(i));
-        while (!queue.isEmpty()) {
+        int visited = 0;
+        while (!queue.isEmpty() && visited++ < 1800) {
             View view = queue.removeFirst();
-            if (!(view instanceof ViewGroup) || isOwned(view)) continue;
+            if (isOwned(view) || view instanceof ImageView) continue;
             Drawable background = view.getBackground();
             if (background instanceof ColorDrawable && pageFill(((ColorDrawable) background).getColor(), root)) {
                 color(view, overlay ? Color.TRANSPARENT : ThemeEngine.backgroundColor(root.getContext()), target);
             }
+            if (view instanceof TextView) styleText((TextView) view, target);
+            if (!(view instanceof ViewGroup)) continue;
             ViewGroup child = (ViewGroup) view;
             for (int i = 0; i < child.getChildCount(); i++) queue.add(child.getChildAt(i));
         }
+    }
+
+    private static void styleText(TextView view, Target target) {
+        ColorStateList current = view.getTextColors();
+        TextFill fill = target.texts.get(view);
+        if (fill == null || current != fill.applied) {
+            fill = new TextFill(current);
+            target.texts.put(view, fill);
+        }
+        int nativeColor = fill.original.getDefaultColor();
+        int r = Color.red(nativeColor), g = Color.green(nativeColor), b = Color.blue(nativeColor);
+        // Functional colors and stateful controls retain their native behavior.
+        if (fill.original.isStateful() || Color.alpha(nativeColor) == 0
+                || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) return;
+        boolean secondary = Color.alpha(nativeColor) < 200
+                || Math.max(r, Math.max(g, b)) > 60 && Math.min(r, Math.min(g, b)) < 220;
+        int mapped = secondary ? ThemeEngine.secondaryTextColor(view.getContext())
+                : ThemeEngine.textColor(view.getContext());
+        if (view.getCurrentTextColor() != mapped) view.setTextColor(mapped);
+        fill.applied = view.getTextColors();
+    }
+
+    private static final class TextFill {
+        final ColorStateList original;
+        ColorStateList applied;
+        TextFill(ColorStateList original) { this.original = original; }
     }
 
     private static View visibleSidebar(View main) {
@@ -159,6 +190,7 @@ public final class ThemeNativeTargets {
         float correction;
         float lastApplied;
         final Map<View, Fill> fills = new WeakHashMap<>();
+        final Map<TextView, TextFill> texts = new WeakHashMap<>();
         final Map<ViewGroup, boolean[]> clips = new WeakHashMap<>();
         Target(View view, int kind) { reference = new java.lang.ref.WeakReference<>(view); this.kind = kind; }
         void attach() {
@@ -219,6 +251,7 @@ public final class ThemeNativeTargets {
                 // A native direct translation neutralized at zero needs no ancestor undo later.
                 correction = applied == 0 ? 0 : next;
                 lastApplied = applied;
+                if (enabled) page(view, false, this);
             } else if (enabled && kind == SIDEBAR) page(view, true, this);
             else if (enabled && kind == SEARCH) page(view, false, this);
             else if (enabled && kind == NAV) page(view, true, this);
@@ -233,6 +266,14 @@ public final class ThemeNativeTargets {
                     }
                 }
                 fills.clear();
+            }
+            if (!enabled && !texts.isEmpty()) {
+                for (Map.Entry<TextView, TextFill> entry : texts.entrySet()) {
+                    if (entry.getKey().getTextColors() == entry.getValue().applied) {
+                        entry.getKey().setTextColor(entry.getValue().original);
+                    }
+                }
+                texts.clear();
             }
         }
         @Override public boolean onPreDraw() { try { apply(); } catch (Throwable ignored) { } return true; }

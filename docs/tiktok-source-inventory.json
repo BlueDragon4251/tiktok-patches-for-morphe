@@ -840,198 +840,198 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/diagnostics/JavaCrashCapture.java",
-      "sha256": "e0708aaf9811d8defc81f1d950c6ebc81f215d2b992bafdd38fd41a07f2552a7",
+      "sha256": "54df5bb63126dda8ff3d3b81973f71ce6e3c00ec59000650a075142d4a94945a",
       "patches": [],
       "findings": [
         {
           "kind": "literal",
-          "line": 26,
+          "line": 27,
           "text": "\"morphe_prefs\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 27,
+          "line": 28,
           "text": "\"morphe_capture_java_crashes\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 28,
+          "line": 29,
           "text": "\"morphe_debug\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 48,
+          "line": 50,
           "text": "\"JavaCrashCapture\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 49,
+          "line": 51,
           "text": "\"INFO\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 50,
-          "text": "\"Java crash capture installed after NpthExtent\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
           "line": 52,
           "text": "\"Java crash capture installed after NpthExtent\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 52,
+          "line": 54,
+          "text": "\"Java crash capture installed after NpthExtent\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 54,
           "text": "\"morphe:JavaCrashCapture\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 106,
+          "line": 108,
           "text": "\"schema: 1\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 107,
+          "line": 109,
           "text": "\"complete: true\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 108,
+          "line": 110,
           "text": "\"timestamp_utc: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 109,
+          "line": 111,
           "text": "\"package: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 110,
+          "line": 112,
           "text": "\"tiktok_version: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 111,
+          "line": 113,
           "text": "\"morphe_version: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 112,
+          "line": 114,
           "text": "\"diagnostic_logging: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 113,
+          "line": 115,
           "text": "\"java_crash_capture: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 114,
+          "line": 116,
           "text": "\"android_api: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 115,
+          "line": 117,
           "text": "\",\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 115,
+          "line": 117,
           "text": "\"abis: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 116,
+          "line": 118,
           "text": "\"process: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 117,
+          "line": 119,
           "text": "\"pid: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 118,
+          "line": 120,
           "text": "\"thread: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 119,
+          "line": 121,
           "text": "\"thread_id: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 120,
+          "line": 122,
           "text": "\"exception: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 121,
+          "line": 123,
           "text": "\"message: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 122,
+          "line": 124,
           "text": "\"delegate: \"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 122,
+          "line": 124,
           "text": "\"none\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 123,
+          "line": 125,
           "text": "\"\\n\\n[STACK TRACE]\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 128,
+          "line": 130,
           "text": "\"\\n[RECENT MORPHE EVENTS]\\n\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 141,
+          "line": 143,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 150,
+          "line": 151,
           "text": "\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 151,
+          "line": 152,
           "text": "\"UTC\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -44708,7 +44708,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDynamicListGuardV3.java",
-      "sha256": "5c5e5cfa6dba775586624e389b8f70badf180c75142ab43c86cae10ca86203c6",
+      "sha256": "3543a068725685981a9cf514ca95f0524bd847a7e924346aca726b0d51fd052f",
       "patches": [],
       "findings": [
         {
@@ -44881,25 +44881,25 @@
         },
         {
           "kind": "literal",
-          "line": 218,
+          "line": 229,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 321,
+          "line": 332,
           "text": "\"[BlueIT Dynamic List V3.2] kind=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 322,
+          "line": 333,
           "text": "\" sections=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 322,
+          "line": 333,
           "text": "\" visualRows=\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -45395,30 +45395,30 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "e527426395a60a2c16c51ab2f2b7f449ecae9ee572957c57b5345ba00a670301",
+      "sha256": "7488c92ccf01a300286900decb305a570ddbdf788cd29754b48de246250d8214",
       "patches": [],
       "findings": [
         {
           "kind": "literal",
-          "line": 52,
+          "line": 54,
           "text": "\" view=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 52,
+          "line": 54,
           "text": "\"[BlueIT Native Target v2] role=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 52,
+          "line": 54,
           "text": "v2",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 73,
+          "line": 75,
           "text": "\"default\"",
           "category": "structural-or-semantic-evidence"
         }

@@ -42,12 +42,16 @@ public class SharedPrefCategory {
      * settings and update local Setting values but cannot overwrite the main process snapshot.
      */
     private final boolean persistentWritesAllowed;
+    private final UserSettingsCheckpoint checkpoint;
 
     public SharedPrefCategory(@NonNull String name) {
         this.name = Objects.requireNonNull(name);
         Context context = Objects.requireNonNull(Utils.getContext());
         preferences = context.getSharedPreferences(name, Context.MODE_PRIVATE);
         persistentWritesAllowed = !USER_SETTINGS_CATEGORY.equals(name) || isMainAppProcess(context);
+        checkpoint = persistentWritesAllowed && USER_SETTINGS_CATEGORY.equals(name)
+                && "com.zhiliaoapp.musically".equals(context.getPackageName())
+                ? new UserSettingsCheckpoint(context, preferences) : null;
 
         if (!persistentWritesAllowed) {
             Logger.printInfo(() -> "Preventing secondary-process writes to shared user settings");
@@ -92,6 +96,10 @@ public class SharedPrefCategory {
         return persistentWritesAllowed;
     }
 
+    private void checkpointCommittedWrite(boolean committed) {
+        if (committed && checkpoint != null) checkpoint.save();
+    }
+
     private void removeConflictingPreferenceKeyValue(@NonNull String key) {
         Logger.printException(() -> "Found conflicting preference: " + key);
         removeKey(key);
@@ -100,26 +108,26 @@ public class SharedPrefCategory {
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     private void saveObjectAsString(@NonNull String key, @Nullable Object value) {
         if (!canPersist()) return;
-        preferences.edit().putString(key, (value == null ? null : value.toString())).commit();
+        checkpointCommittedWrite(preferences.edit().putString(key, (value == null ? null : value.toString())).commit());
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void clear() {
         if (!canPersist()) return;
-        preferences.edit().clear().commit();
+        checkpointCommittedWrite(preferences.edit().clear().commit());
     }
 
     /** Removes any preference data type that has the specified key. */
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void removeKey(@NonNull String key) {
         if (!canPersist()) return;
-        preferences.edit().remove(Objects.requireNonNull(key)).commit();
+        checkpointCommittedWrite(preferences.edit().remove(Objects.requireNonNull(key)).commit());
     }
 
     @SuppressLint("ApplySharedPref") // Must use commit to ensure default value is not saved to preferences.
     public void saveBoolean(@NonNull String key, boolean value) {
         if (!canPersist()) return;
-        preferences.edit().putBoolean(key, value).commit();
+        checkpointCommittedWrite(preferences.edit().putBoolean(key, value).commit());
     }
 
     /** @param value a NULL parameter removes the value from the preferences */
