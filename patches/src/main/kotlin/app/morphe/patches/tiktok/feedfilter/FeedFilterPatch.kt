@@ -11,6 +11,7 @@ import app.morphe.patches.tiktok.shared.discovery.tiktokBytecodePatch as bytecod
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patches.tiktok.misc.extension.sharedExtensionPatch
 import app.morphe.patches.tiktok.misc.settings.SettingsStatusLoadFingerprint
+import app.morphe.patches.tiktok.shared.discovery.StartupAdContracts
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -36,6 +37,7 @@ val feedFilterPatch = bytecodePatch(
     compatibleWith(*AppCompatibilities.tiktokVerified())
 
     execute {
+        StartupAdDisplayFingerprint.uniqueMethod.addInstructions(0, StartupAdContracts.code())
         // Enables the feed filter extension after settings were loaded.
         SettingsStatusLoadFingerprint.uniqueMethod.addInstruction(
             0,

@@ -262,6 +262,10 @@ internal object HookEvidence {
             throw PatchException("Return site contract $mode does not permit this mutation in $method at $index")
         if (mode in SettingsContracts.modes && (operation != "insert" || !SettingsContracts.mutationAllowed(mode!!, method, index, code)))
             throw PatchException("Reviewed settings contract $mode does not permit this mutation in $method at $index")
+        if (mode in SettingsCategoryContracts.modes && (operation != "insert-after" || !SettingsCategoryContracts.mutationAllowed(mode!!, method, index, code)))
+            throw PatchException("Settings category contract refuses a changed native list or title result")
+        if (mode == StartupAdContracts.MODE && (operation != "insert" || !StartupAdContracts.mutationAllowed(index, code)))
+            throw PatchException("Startup ad contract permits only the conditional display guard at entry")
         if (mode == StickerSourceContracts.MODE && (operation != "insert" ||
             !StickerSourceContracts.mutationAllowed(method, stickerSourceTargets.getValue(method.toString()), index, code)))
             throw PatchException("Sticker source contract refuses unproven registers or a changed association site")

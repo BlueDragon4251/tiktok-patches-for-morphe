@@ -62,8 +62,7 @@ internal object SettingsComposeRowsFingerprint : Fingerprint(
             method.implementation?.instructions?.any { instruction ->
                 if (instruction.opcode != Opcode.INVOKE_STATIC) return@any false
                 val reference = instruction.getReference<MethodReference>() ?: return@any false
-                reference.name in setOf("LJLJLLL", "LJLLLL") &&
-                    reference.parameterTypes == listOf("Ljava/util/Comparator;", "Ljava/lang/Iterable;") &&
+                reference.parameterTypes == listOf("Ljava/util/Comparator;", "Ljava/lang/Iterable;") &&
                     reference.returnType == "Ljava/util/List;"
             } == true
     },

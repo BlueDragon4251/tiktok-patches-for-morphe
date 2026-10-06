@@ -4,10 +4,17 @@
  */
 package app.morphe.patches.tiktok.feedfilter
 
+import app.morphe.patches.tiktok.shared.discovery.StartupAdContracts
+import app.morphe.patches.tiktok.shared.discovery.HookEvidence
+
 import app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint as Fingerprint
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+
+internal object StartupAdDisplayFingerprint : app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint(
+    custom = { m, owner -> StartupAdContracts.boundary(m, owner, HookEvidence::originalClass) },
+)
 
 /**
  * TikTok 46.7.3 For You response post-processing path.

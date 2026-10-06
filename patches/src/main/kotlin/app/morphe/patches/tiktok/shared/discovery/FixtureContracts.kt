@@ -590,6 +590,8 @@ internal object FixtureContracts {
             ?: PublishDateContracts.mode(method, owner, acceptedMethod)
             ?: TakoContracts.mode(method, owner, acceptedMethod)
             ?: ReturnSiteContracts.mode(method, owner, acceptedMethod)
+            ?: SettingsCategoryContracts.mode(method, owner, acceptedMethod)
+            ?: StartupAdContracts.MODE.takeIf { acceptedMethod == StartupAdContracts.TARGET && StartupAdContracts.boundary(method, owner, nativeClasses::get) }
             ?: SiteContracts.mode(method, acceptedMethod)
             ?: SettingsContracts.mode(method, acceptedMethod).takeIf {
                 owner.superclass == SettingsContracts.BASE ||

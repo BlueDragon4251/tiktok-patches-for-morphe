@@ -10,6 +10,10 @@ import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstru
 import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addInstructionsWithLabels
 import app.morphe.patches.tiktok.shared.discovery.HookEvidence
 import app.morphe.patches.tiktok.shared.discovery.SettingsContracts
+import app.morphe.patches.tiktok.shared.discovery.SettingsCategoryContracts
+import app.morphe.patches.tiktok.shared.discovery.ContractInstructions.addAfterInstruction
+import com.android.tools.smali.dexlib2.builder.MutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
 import app.morphe.patches.tiktok.shared.discovery.singleOrThrow
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.PatchException
@@ -38,6 +42,15 @@ private const val OPEN_DEBUG_CELL_VM_DESCRIPTOR =
     "Lcom/ss/android/ugc/aweme/setting/ui/rvmpcompose/group/support/cells/OpenDebugCellVM;"
 
 private const val ANDROID_CONTEXT_GET_STRING = "Landroid/content/Context;->getString(I)Ljava/lang/String;"
+private var supportEnumType = ""
+private object SupportCategoryRendererFingerprint : app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint(
+    custom = { m, _ -> m.accessFlags == 25 && m.returnType == "V" && m.parameterTypes.size == 5 &&
+        m.parameterTypes[0] == supportEnumType && m.parameterTypes[1] == "Z" && m.parameterTypes[2] == "Z" && m.parameterTypes[4] == "I" },
+)
+private class SettingsRowsHelperFingerprint(helper: String) : app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint(
+    id = "app.morphe.patches.tiktok.misc.settings.SettingsRowsHelperFingerprint:$helper",
+    definingClass = SettingsCategoryContracts.EXTENSION, name = helper, returnType = "Ljava/lang/Object;", parameters = emptyList(),
+)
 
 private data class OpenDebugTargets(
     val stateClass: String,
@@ -261,32 +274,44 @@ val settingsPatch = bytecodePatch(
                     field.takeIf { it.name == "SECTION_HEADER" }
                 } ?: return false
 
-            val sortedListIndex = composeRowsMethod.implementation?.instructions?.indexOfLast {
-                if (it.opcode != Opcode.INVOKE_STATIC) return@indexOfLast false
-                val reference = (it as? ReferenceInstruction)?.reference as? MethodReference
-                    ?: return@indexOfLast false
-                reference.name in setOf("LJLJLLL", "LJLLLL") &&
-                    reference.parameterTypes == listOf("Ljava/util/Comparator;", "Ljava/lang/Iterable;") &&
-                    reference.returnType == "Ljava/util/List;"
-            } ?: -1
-            if (sortedListIndex < 0) return false
-
-            val listRegister = (composeRowsMethod.getInstruction(sortedListIndex + 1) as? OneRegisterInstruction)
-                ?.registerA ?: return false
-
-            composeRowsMethod.addInstructions(
-                sortedListIndex + 2,
-                """
-                    new-instance v0, Ljava/util/ArrayList;
-                    move-object v1, v$listRegister
-                    invoke-direct {v0, v1}, Ljava/util/ArrayList;-><init>(Ljava/util/Collection;)V
-                    sget-object v1, ${openDebugField.definingClass}->OPEN_DEBUG:${openDebugField.type}
-                    const/4 v2, 0x0
-                    invoke-virtual {v0, v2, v1}, Ljava/util/ArrayList;->add(ILjava/lang/Object;)V
-                    move-object v$listRegister, v0
-                """,
-            )
-
+            supportEnumType = openDebugField.type
+            val enumClass = classDefByOrNull(supportEnumType) ?: throw PatchException("Missing native settings enum")
+            if (enumClass.superclass != "Ljava/lang/Enum;" || enumClass.fields.none { it.name == "OPEN_DEBUG" && it.type == supportEnumType })
+                throw PatchException("Changed native Support enum")
+            val ctor = enumClass.methods.singleOrNull { it.name == "<init>" && AccessFlags.PUBLIC.isSet(it.accessFlags) &&
+                it.parameterTypes.map(CharSequence::toString) == List(5) { "Ljava/lang/String;" } + listOf("I", "Z", "I") }
+                ?: throw PatchException("Changed native Support heading constructor")
+            fun replaceHelper(name: String, locals: Int, code: String) {
+                val original = SettingsRowsHelperFingerprint(name).uniqueMethod
+                val replacement = MutableMethod(ImmutableMethod(original.definingClass, original.name,
+                    original.parameters, original.returnType, original.accessFlags, original.annotations,
+                    original.hiddenApiRestrictions, MutableMethodImplementation(locals)))
+                val helperClass = mutableClassDefBy(classDefByOrNull(SettingsCategoryContracts.EXTENSION)!!)
+                check(helperClass.methods.remove(original))
+                helperClass.methods.add(replacement)
+                replacement.addInstructions(0, code)
+            }
+            replaceHelper("nativeHeader", 9, """
+                    new-instance v0, $supportEnumType
+                    const-string v1, "BLUEIT_SERVICES"
+                    const-string v2, "blueit_services_group"
+                    const-string v3, "sectionBlueITServices"
+                    const-string v4, "sectionBlueITServices"
+                    const-string v5, ""
+                    const/4 v6, 0x0
+                    const/4 v7, 0x1
+                    const/4 v8, 0x0
+                    invoke-direct/range {v0 .. v8}, $ctor
+                    return-object v0
+                """)
+            replaceHelper("nativeOpenDebug", 1,
+                "sget-object v0, $supportEnumType->OPEN_DEBUG:$supportEnumType\nreturn-object v0")
+            SupportCategoryRendererFingerprint.uniqueMethod.apply {
+                val site = SettingsCategoryContracts.headerSite(this)
+                addAfterInstruction(site.index, site.code)
+            }
+            val site = SettingsCategoryContracts.rowsSite(composeRowsMethod)
+            composeRowsMethod.addAfterInstruction(site.index, site.code)
             return true
         }
 
@@ -307,28 +332,8 @@ val settingsPatch = bytecodePatch(
         diagnose("settings.activityBack") { AdPersonalizationActivityOnBackPressedFingerprint.uniqueMatch().originalMethod }
 
         if (!addOpenDebugToVisibleSettingsList()) {
-            SupportGroupDefaultStateFingerprint.uniqueMethod.apply {
-                val sectionHeaderSgetIndex = indexOfFirstInstructionOrThrow {
-                    opcode == Opcode.SGET_OBJECT && getReference<FieldReference>()?.name == "SECTION_HEADER"
-                }
+            throw PatchException("Missing native settings category list; refusing an ungrouped fallback")
 
-                val sectionHeaderField = getInstruction<ReferenceInstruction>(sectionHeaderSgetIndex).reference as FieldReference
-                val openDebugEnum = classDefByOrNull(sectionHeaderField.definingClass)?.fields?.singleOrNull {
-                    it.name == "OPEN_DEBUG" && it.type == sectionHeaderField.type && AccessFlags.STATIC.isSet(it.accessFlags)
-                } ?: throw PatchException("OpenDebug settings enum entry missing in ${sectionHeaderField.definingClass}")
-                val addInstruction = getInstruction<Instruction35c>(sectionHeaderSgetIndex + 1)
-                val addReference = addInstruction.reference as MethodReference
-                val listRegister = addInstruction.registerC
-                val itemRegister = addInstruction.registerD
-
-                addInstructions(
-                    sectionHeaderSgetIndex + 2,
-                    """
-                        sget-object v$itemRegister, $openDebugEnum
-                        invoke-virtual { v$listRegister, v$itemRegister }, $addReference
-                    """,
-                )
-            }
         }
 
         AdPersonalizationActivityOnCreateFingerprint.uniqueMethod.apply {
