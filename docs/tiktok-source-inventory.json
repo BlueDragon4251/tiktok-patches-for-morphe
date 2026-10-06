@@ -44076,552 +44076,546 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeColorResolver.java",
-      "sha256": "a6ed2c8a1a0d9e659566249d30a2f72ae5f6a1e60af0bfdaba44b4e9f342a35c",
+      "sha256": "29a3bb4dc17195ff9a1b9745896146e68cf03b90835cc2ca250244df9cd00745",
       "patches": [],
       "findings": [
         {
           "kind": "literal",
-          "line": 20,
+          "line": 19,
           "text": "\"a0p\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 20,
+          "line": 19,
           "text": "\"j3\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 20,
+          "line": 19,
           "text": "\"zt\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 20,
+          "line": 19,
           "text": "46.7.3",
           "category": "version-specific"
         },
         {
           "kind": "literal",
-          "line": 25,
+          "line": 24,
           "text": "\"deprecation\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 25,
+          "line": 24,
           "text": "\"unused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 38,
+          "line": 36,
           "text": "46.7.3",
           "category": "version-specific"
         },
         {
           "kind": "resource",
-          "line": 41,
+          "line": 39,
           "text": "0x7f06001c",
           "category": "hard-coded"
         },
         {
           "kind": "resource",
-          "line": 42,
+          "line": 40,
           "text": "0x7f06039b",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 63,
+          "line": 61,
           "text": "\"default\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "version",
-          "line": 73,
+          "line": 71,
           "text": "46.7.3",
           "category": "version-specific"
         },
         {
           "kind": "resource",
-          "line": 94,
+          "line": 92,
           "text": "resourceId = 0;",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 125,
+          "line": 123,
           "text": "name = null;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 131,
+          "line": 129,
           "text": "name = resourceName(tokenId, context);",
           "category": "stable-named-anchor"
         },
         {
-          "kind": "version",
-          "line": 135,
-          "text": "46.7.3",
-          "category": "version-specific"
-        },
-        {
           "kind": "resource",
-          "line": 196,
+          "line": 193,
           "text": "resourceId != 0) {",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 197,
+          "line": 194,
           "text": "resourceId);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 208,
+          "line": 205,
           "text": "resourceId) {",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 211,
+          "line": 208,
           "text": "resourceId, context.getTheme());",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 213,
+          "line": 210,
           "text": "resourceId);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 302,
+          "line": 237,
           "text": "\"invoke\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 302,
+          "line": 237,
           "text": "getMethod(\"invoke\", Object.class);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 303,
+          "line": 238,
           "text": "setAccessible(true);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 311,
+          "line": 246,
           "text": "\"invoke\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 312,
+          "line": 247,
           "text": "setAccessible(true);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 336,
+          "line": 271,
           "text": "name == null || name.isEmpty()) return ROLE_NONE;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "instruction-selection",
-          "line": 339,
+          "line": 274,
           "text": "indexOf(\"tuxcolor\");",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 339,
+          "line": 274,
           "text": "\"tuxcolor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 341,
+          "line": 276,
           "text": "\"tuxcolor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"bg\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"divider\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"page\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"separator\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"shape\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"sheet\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"text\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 346,
+          "line": 281,
           "text": "\"ui\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 347,
+          "line": 282,
           "text": "\"accent\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 347,
+          "line": 282,
           "text": "\"border\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 347,
+          "line": 282,
           "text": "\"placeholder\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 347,
+          "line": 282,
           "text": "\"stroke\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"brandtiktok\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"danger\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"error\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"imageoverlay\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"info\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"success\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 352,
+          "line": 287,
           "text": "\"warning\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 356,
+          "line": 291,
           "text": "\"bgprimary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 357,
+          "line": 292,
           "text": "\"uipageflat1\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 358,
+          "line": 293,
           "text": "\"uipagegrouped1\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 362,
+          "line": 297,
           "text": "\"bgsecondary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 363,
+          "line": 298,
           "text": "\"uipageflat\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 364,
+          "line": 299,
           "text": "\"uipagegrouped\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 365,
+          "line": 300,
           "text": "\"uisheetflat\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 366,
+          "line": 301,
           "text": "\"uishapeneutral\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 367,
+          "line": 302,
           "text": "\"uishapesecondarymuted\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 371,
+          "line": 306,
           "text": "\"uitext1\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 372,
+          "line": 307,
           "text": "\"uitext1display\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 373,
+          "line": 308,
           "text": "\"uitextprimary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 374,
+          "line": 309,
           "text": "\"uitextprimarydisplay\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 378,
+          "line": 313,
           "text": "\"uitext2\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 379,
+          "line": 314,
           "text": "\"uitext3\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 380,
+          "line": 315,
           "text": "\"uitext3color\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 381,
+          "line": 316,
           "text": "\"uitextplaceholder\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 382,
+          "line": 317,
           "text": "\"placeholder\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 383,
+          "line": 318,
           "text": "\"textsecondary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 387,
+          "line": 322,
           "text": "\"uishapeprimary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 388,
+          "line": 323,
           "text": "\"accent\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 389,
+          "line": 324,
           "text": "\"accentprimary\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 328,
           "text": "\"border\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 328,
           "text": "\"divider\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 328,
           "text": "\"separator\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 393,
+          "line": 328,
           "text": "\"stroke\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 402,
+          "line": 337,
           "text": "getResourceEntryName(tokenId);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 409,
+          "line": 344,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 416,
+          "line": 351,
           "text": "\"?\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 416,
+          "line": 351,
           "text": "name == null || name.isEmpty()) ? \"?\" : name;",
           "category": "stable-named-anchor"
         },
         {
           "kind": "literal",
-          "line": 418,
+          "line": 353,
           "text": "\"unresolved\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 419,
+          "line": 354,
           "text": "\"#%08X\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 420,
+          "line": 355,
           "text": "\"[BlueIT Theme TUX] token=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 421,
+          "line": 356,
           "text": "\" stock=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 422,
+          "line": 357,
           "text": "\" role=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 431,
+          "line": 366,
           "text": "\"background\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 433,
+          "line": 368,
           "text": "\"surface\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 435,
+          "line": 370,
           "text": "\"text\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 437,
+          "line": 372,
           "text": "\"secondary-text\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 439,
+          "line": 374,
           "text": "\"accent\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 441,
+          "line": 376,
           "text": "\"divider\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 443,
+          "line": 378,
           "text": "\"native\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 448,
+          "line": 383,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -45395,7 +45389,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "7488c92ccf01a300286900decb305a570ddbdf788cd29754b48de246250d8214",
+      "sha256": "2437e4fbe516ec1bc8d8b338aeb543d8b4c507299ccfd60dd07f7b39714a984b",
       "patches": [],
       "findings": [
         {

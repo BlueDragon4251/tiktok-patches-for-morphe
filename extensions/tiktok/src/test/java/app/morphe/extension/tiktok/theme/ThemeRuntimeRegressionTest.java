@@ -105,6 +105,14 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void unknownNeutralTuxTokensDoNotTurnTextIntoPageColors() throws Exception {
+        for (int nativeColor : new int[]{Color.BLACK, Color.WHITE, 0xff161823, 0xe0ffffff, 0xff888888}) {
+            assertEquals(0, invoke(ThemeColorResolver.class, "classifyStockColor",
+                    new Class<?>[]{Integer.class, Context.class}, nativeColor, activity));
+        }
+    }
+
+    @Test
     public void legacyPageTokenUsesBackgroundEvenInNightConfiguration() {
         // bx was logged as role=text on dev.19 despite being a background in the exact APK.
         assertEquals(Integer.valueOf(ThemeEngine.backgroundColor(activity)),
@@ -309,6 +317,7 @@ public class ThemeRuntimeRegressionTest {
         header.setBackgroundColor(Color.WHITE);
         TextView title = new TextView(activity);
         title.setText("Posteingang");
+        title.setTextSize(20);
         title.setTextColor(Color.BLACK);
         header.addView(title);
         host.addView(header);

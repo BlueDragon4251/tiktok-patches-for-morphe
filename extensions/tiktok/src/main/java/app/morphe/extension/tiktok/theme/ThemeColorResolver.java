@@ -1,7 +1,6 @@
 package app.morphe.extension.tiktok.theme;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.TypedValue;
@@ -18,9 +17,9 @@ import app.morphe.extension.shared.Utils;
  * Maps TikTok/TUX theme colors to the active BlueIT palette.
  *
  * TikTok 46.7.3 obfuscates resource entry names (for example "j3", "a0p", "zt"), so semantic
- * classification cannot rely on names alone. We still use readable names when available, but fall
- * back to the stock color resolved from TikTok's own Theme and infer only neutral UI roles from it.
- * Colorful/functional colors deliberately remain native unless they are the TikTok brand accent.
+ * classification cannot rely on names alone. Unknown neutral tokens remain native: TikTok can use
+ * light surfaces while Android is in night mode, and a color alone cannot distinguish page fills
+ * from text or video overlays. Verified native View/Compose roots supply those roles instead.
  */
 @SuppressWarnings({"unused", "deprecation"})
 public final class ThemeColorResolver {
@@ -33,7 +32,6 @@ public final class ThemeColorResolver {
     private static final int ROLE_DIVIDER = 6;
 
     private static final int TIKTOK_ACCENT = Color.rgb(254, 44, 85);
-    private static final int TIKTOK_LIGHT_TEXT = Color.rgb(22, 24, 35);
 
     // Exact 46.7.3 resources. bx is the legacy page background used by search/inbox/navigation
     // (res/b/x.xml, d4l.xml, a6y.xml). Some wrappers keep it white even in Android night mode.
@@ -132,9 +130,8 @@ public final class ThemeColorResolver {
             role = tokenId == TIKTOK_PAGE_BACKGROUND || tokenId == TIKTOK_PAGE_FLAT_BACKGROUND
                     ? ROLE_BACKGROUND : classifyName(name);
 
-            // dev.8 proved that 46.7.3 normally exposes only obfuscated names. In that case use the
-            // actual color TikTok resolves for the attribute. This keeps the hook independent of R
-            // entry names while still leaving colorful status/media colors untouched.
+            // Unknown neutral tokens remain native. Android night mode does not identify the
+            // semantic role of a TUX consumer, especially for text over videos.
             if (role == ROLE_NONE) {
                 stockColor = resolveStockColor(tokenId, context);
                 role = classifyStockColor(stockColor, context);
@@ -216,74 +213,12 @@ public final class ThemeColorResolver {
         }
     }
 
-    /**
-     * Infer only roles that are safe to infer from color appearance.
-     *
-     * TikTok's page/surface/text/divider tokens are neutral or nearly neutral in both stock modes.
-     * Success/error/warning/media colors are chromatic, so they intentionally fall through. The
-     * brand pink is matched narrowly and mapped to the active accent.
-     */
+    /** Unknown neutral tokens are ambiguous; preserve native text/media contrast. */
     private static int classifyStockColor(Integer stockColor, Context context) {
-        if (stockColor == null) return ROLE_NONE;
-
-        int color = stockColor;
-        int alpha = Color.alpha(color);
-        if (alpha == 0) return ROLE_NONE;
-
-        int opaque = Color.rgb(Color.red(color), Color.green(color), Color.blue(color));
-
-        // Narrow brand-accent match; do not swallow generic red/error colors.
-        if (rgbDistance(opaque, TIKTOK_ACCENT) <= 34.0) {
-            return ROLE_ACCENT;
-        }
-
-        int r = Color.red(opaque);
-        int g = Color.green(opaque);
-        int b = Color.blue(opaque);
-        int spread = Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b));
-
-        // TikTok's neutral palette can have a slight blue tint (#161823 etc), but highly colorful
-        // values are functional/media colors and must remain native.
-        if (spread > 34) return ROLE_NONE;
-
-        boolean dark = stockDarkMode(context);
-        double y = perceivedLightness(opaque);
-
-        if (dark) {
-            if (y <= 0.045) return ROLE_BACKGROUND;
-            if (y <= 0.18) return ROLE_SURFACE;
-            if (y >= 0.82) return ROLE_TEXT;
-            if (alpha < 100) return ROLE_DIVIDER;
-            if (y >= 0.34) return ROLE_SECONDARY_TEXT;
-            return ROLE_DIVIDER;
-        }
-
-        // Light TikTok uses #161823-ish primary text instead of mathematical black.
-        if (rgbDistance(opaque, TIKTOK_LIGHT_TEXT) <= 48.0 || y <= 0.12) {
-            return ROLE_TEXT;
-        }
-        if (y >= 0.965) return ROLE_BACKGROUND;
-        if (y >= 0.80) return ROLE_SURFACE;
-        if (alpha < 100) return ROLE_DIVIDER;
-        if (y <= 0.64) return ROLE_SECONDARY_TEXT;
-        return ROLE_DIVIDER;
-    }
-
-    private static boolean stockDarkMode(Context context) {
-        try {
-            int mode = context.getResources().getConfiguration().uiMode
-                    & Configuration.UI_MODE_NIGHT_MASK;
-            return mode == Configuration.UI_MODE_NIGHT_YES;
-        } catch (Throwable ignored) {
-            return true;
-        }
-    }
-
-    private static double perceivedLightness(int color) {
-        double r = Color.red(color) / 255.0;
-        double g = Color.green(color) / 255.0;
-        double b = Color.blue(color) / 255.0;
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        if (stockColor == null || Color.alpha(stockColor) == 0) return ROLE_NONE;
+        int opaque = Color.rgb(Color.red(stockColor), Color.green(stockColor), Color.blue(stockColor));
+        // Preserve the narrowly identified native brand accent.
+        return rgbDistance(opaque, TIKTOK_ACCENT) <= 34.0 ? ROLE_ACCENT : ROLE_NONE;
     }
 
     private static double rgbDistance(int first, int second) {

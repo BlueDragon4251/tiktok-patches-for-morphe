@@ -112,8 +112,13 @@ public final class ThemeNativeTargets {
 
     /** Map only flat page fills within a native-owned subtree; media and Compose palettes stay native. */
     private static void page(View root, boolean overlay, Target target) {
-        color(root, overlay ? ThemeEngine.surfaceColor(root.getContext())
-                : ThemeEngine.backgroundColor(root.getContext()), target);
+        Drawable rootFill = root.getBackground();
+        // Profile roots can carry native media/functional fills; preserve those exactly.
+        if (target.kind != PROFILE || rootFill == null
+                || rootFill instanceof ColorDrawable && pageFill(((ColorDrawable) rootFill).getColor(), root)) {
+            color(root, overlay ? ThemeEngine.surfaceColor(root.getContext())
+                    : ThemeEngine.backgroundColor(root.getContext()), target);
+        }
         if (!(root instanceof ViewGroup)) return;
         ArrayDeque<View> queue = new ArrayDeque<>();
         ViewGroup group = (ViewGroup) root;
