@@ -13,7 +13,7 @@ val generateReleaseChannel = tasks.register("generateReleaseChannel") {
         output.writeText("package app.morphe.patches.shared.compat\n\ninternal object ReleaseChannel { const val development = $development }\n")
     }
 }
-kotlin.sourceSets.named("main") { kotlin.srcDir(releaseChannelSources) }
+kotlin.sourceSets.named("main") { kotlin.srcDir(generateReleaseChannel) }
 tasks.named("compileKotlin") { dependsOn(generateReleaseChannel) }
 
 patches {
