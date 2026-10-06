@@ -44708,7 +44708,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDynamicListGuardV3.java",
-      "sha256": "dd963b7e2904a1752d696696041d8ab53b205937bddbd6a8da312d449b6c83ba",
+      "sha256": "f6e4363d893817e4871d084f646a9f32ad1901adf040cf2a9afcb747bdac2783",
       "patches": [],
       "findings": [
         {
@@ -45401,9 +45401,15 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "aa88d98d03116ba012634b43267783810bca2ac0ebaf3bba93e891c4479606fa",
+      "sha256": "837bd862660ef2e0229723a2f8820f476a44be2dd208766360580d4c1603978b",
       "patches": [],
       "findings": [
+        {
+          "kind": "instruction-selection",
+          "line": 50,
+          "text": "lastStyleMs < 0",
+          "category": "requires-cardinality-or-dataflow-review"
+        },
         {
           "kind": "literal",
           "line": 149,
@@ -45437,7 +45443,7 @@
         {
           "kind": "instruction-selection",
           "line": 472,
-          "text": "lastStyleMs < 100 && lastStyleMs != 0",
+          "text": "lastStyleMs < 100 && lastStyleMs >= 0",
           "category": "requires-cardinality-or-dataflow-review"
         }
       ]

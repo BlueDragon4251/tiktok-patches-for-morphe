@@ -525,7 +525,7 @@ public final class ThemeDynamicListGuardV3 {
             View.OnAttachStateChangeListener {
         WeakReference<Activity> activityRef;
         final View root;
-        long lastStyleMs;
+        long lastStyleMs = -1;
         boolean dirty = true;
         String preset = "";
 
@@ -572,7 +572,7 @@ public final class ThemeDynamicListGuardV3 {
                 long now = SystemClock.uptimeMillis();
                 String currentPreset = ThemeStateStore.currentPreset(root.getContext());
                 boolean changed = !currentPreset.equals(preset);
-                if (!changed && lastStyleMs != 0 && now - lastStyleMs < (dirty ? 100 : 500)) return true;
+                if (!changed && lastStyleMs >= 0 && now - lastStyleMs < (dirty ? 100 : 500)) return true;
                 preset = currentPreset;
                 lastStyleMs = now;
                 dirty = false;

@@ -47,7 +47,7 @@ public final class ThemeNativeTargets {
                     PAGER_TEXTS.put(pager, textTarget);
                 }
                 long now = SystemClock.uptimeMillis();
-                if (now - textTarget.lastStyleMs >= 100 || textTarget.lastStyleMs == 0
+                if (now - textTarget.lastStyleMs >= 100 || textTarget.lastStyleMs < 0
                         || !textTarget.preset.equals(ThemeStateStore.currentPreset(pager.getContext()))) {
                     textTarget.palette(pager);
                     repairPagerTextContrast(pager, textTarget);
@@ -354,7 +354,7 @@ public final class ThemeNativeTargets {
         float correction;
         float lastApplied;
         final Map<View, Fill> fills = new WeakHashMap<>();
-        long lastStyleMs;
+        long lastStyleMs = -1;
         String preset = "";
         int background, surface, primary, secondary;
         final Map<ImageView, IconFill> icons = new WeakHashMap<>();
@@ -392,7 +392,7 @@ public final class ThemeNativeTargets {
                 }
             }
             texts.clear();
-            lastStyleMs = 0;
+            lastStyleMs = -1;
         }
         void allowProfileUnderDrawer(View profile, View sidebar) {
             // Only the ancestry between the two native lifecycle roots. The shifted page's
@@ -469,7 +469,7 @@ public final class ThemeNativeTargets {
         void restyle(View view, boolean overlay, boolean force) {
             if (!force && !view.isShown()) return;
             long now = SystemClock.uptimeMillis();
-            if (!force && now - lastStyleMs < 100 && lastStyleMs != 0
+            if (!force && now - lastStyleMs < 100 && lastStyleMs >= 0
                     && preset.equals(ThemeStateStore.currentPreset(view.getContext()))) return;
             palette(view);
             page(view, overlay, this);

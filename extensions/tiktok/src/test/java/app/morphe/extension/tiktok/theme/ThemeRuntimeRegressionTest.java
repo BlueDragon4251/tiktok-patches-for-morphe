@@ -481,7 +481,7 @@ public class ThemeRuntimeRegressionTest {
         bubble.setColor(Color.WHITE);
         bubble.setCornerRadius(12);
         TextView label = new TextView(activity);
-        label.setText("Erz‰hl doch mal");
+        label.setText("Erz√§hl doch mal");
         label.setTextColor(Color.BLACK);
         label.setBackground(bubble);
         profile.addView(label);
