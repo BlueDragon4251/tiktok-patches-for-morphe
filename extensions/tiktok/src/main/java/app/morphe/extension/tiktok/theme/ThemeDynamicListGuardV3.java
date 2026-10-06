@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -41,6 +42,7 @@ public final class ThemeDynamicListGuardV3 {
     private static final int SCREEN_ACTIVITY = 2;
     private static final int MAX_NODES = 1900;
     private static final WeakHashMap<View, Guard> GUARDS = new WeakHashMap<>();
+    private static final WeakHashMap<ViewGroup, Card> CARDS = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> BOUND_INBOX_ROWS = new WeakHashMap<>();
     private static final AtomicInteger INBOX_LOG_BUDGET = new AtomicInteger(10);
     private static final AtomicInteger ACTIVITY_LOG_BUDGET = new AtomicInteger(10);
@@ -65,6 +67,7 @@ public final class ThemeDynamicListGuardV3 {
         // The verified holder's itemView owns the card. Nested full-cell fillers must reveal it,
         // including after an async child bind; keep avatars and compact controls untouched.
         paintRowFillers(row, Color.TRANSPARENT, row.getWidth(), row.getHeight(), 8);
+        ThemeNativeTargets.inboxRow(row);
     }
 
     private static void styleBoundInboxRows(View root) {
@@ -214,7 +217,7 @@ public final class ThemeDynamicListGuardV3 {
                     int rgb = nativeFill & 0xffffff;
                     if (Color.alpha(nativeFill) == 255
                             && (rgb == 0xffffff || rgb == 0x161823 || rgb == 0 || rgb == 0x121212)) {
-                        view.setBackgroundColor(background);
+                        ThemeViewColors.flatBackground(view, background);
                     }
                 }
                 int[] xy = location(view);
@@ -229,8 +232,9 @@ public final class ThemeDynamicListGuardV3 {
                     String raw = value == null ? "" : value.toString().trim();
                     boolean header = isSuggestedLabel(raw);
                     float sp = textSizeSp(tv);
-                    tv.setTextColor(header || sp >= 14.5f ? primary : secondary);
-                    tv.setHintTextColor(secondary);
+                    int foreground = header || sp >= 14.5f ? primary : secondary;
+                    if (tv.getCurrentTextColor() != foreground) tv.setTextColor(foreground);
+                    if (tv.getCurrentHintTextColor() != secondary) tv.setHintTextColor(secondary);
                     if (header) suggested.add(tv);
                 }
 
@@ -260,7 +264,7 @@ public final class ThemeDynamicListGuardV3 {
             if (screen.kind == SCREEN_ACTIVITY) {
                 for (ViewGroup group : activitySections) {
                     try {
-                        group.setBackgroundColor(background);
+                        ThemeViewColors.flatBackground(group, background);
                         sectionCount++;
                     } catch (Throwable ignored) {
                     }
@@ -276,7 +280,7 @@ public final class ThemeDynamicListGuardV3 {
                     ViewGroup group = (ViewGroup) parent;
                     if (group.getWidth() >= rootWidth * 0.62f) {
                         try {
-                            group.setBackgroundColor(background);
+                            ThemeViewColors.flatBackground(group, background);
                         } catch (Throwable ignored) {
                         }
                     }
@@ -310,7 +314,7 @@ public final class ThemeDynamicListGuardV3 {
                     if (bottom <= Math.max(screen.titleBottom, rootHeight * 0.12f)
                             || groupXy[1] >= rootHeight) continue;
                     try {
-                        group.setBackgroundColor(background);
+                        ThemeViewColors.flatBackground(group, background);
                         sectionCount++;
                     } catch (Throwable ignored) {
                     }
@@ -338,12 +342,17 @@ public final class ThemeDynamicListGuardV3 {
 
     private static void applyRowSurface(ViewGroup group, int surface, int divider, int radiusDp) {
         try {
+            Card existing = CARDS.get(group);
+            if (existing != null && existing.drawable == group.getBackground()
+                    && existing.surface == surface && existing.divider == divider && existing.radius == radiusDp
+                    && group.getBackgroundTintList() == null) return;
             GradientDrawable drawable = new GradientDrawable();
             drawable.setShape(GradientDrawable.RECTANGLE);
             drawable.setColor(surface);
             drawable.setCornerRadius(dp(group.getContext(), radiusDp));
             drawable.setStroke(Math.max(1, dp(group.getContext(), 1)), divider);
             group.setBackground(drawable);
+            CARDS.put(group, new Card(drawable, surface, divider, radiusDp));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 group.setBackgroundTintList(null);
                 group.setClipToOutline(true);
@@ -370,7 +379,7 @@ public final class ThemeDynamicListGuardV3 {
                 if (width >= rootWidth * 0.72f
                         && height >= rowHeight * 0.72f
                         && height <= rowHeight * 1.12f) {
-                    group.setBackgroundColor(surface);
+                    ThemeViewColors.flatBackground(group, surface);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         group.setBackgroundTintList(null);
                     }
@@ -503,10 +512,22 @@ public final class ThemeDynamicListGuardV3 {
         }
     }
 
+    private static final class Card {
+        final GradientDrawable drawable;
+        final int surface, divider, radius;
+        Card(GradientDrawable drawable, int surface, int divider, int radius) {
+            this.drawable = drawable; this.surface = surface; this.divider = divider; this.radius = radius;
+        }
+    }
+
     private static final class Guard implements ViewTreeObserver.OnPreDrawListener,
+            ViewTreeObserver.OnGlobalLayoutListener, ViewTreeObserver.OnScrollChangedListener,
             View.OnAttachStateChangeListener {
         WeakReference<Activity> activityRef;
         final View root;
+        long lastStyleMs;
+        boolean dirty = true;
+        String preset = "";
 
         Guard(Activity activity, View root) {
             this.activityRef = new WeakReference<>(activity);
@@ -516,7 +537,11 @@ public final class ThemeDynamicListGuardV3 {
         void attach() {
             try {
                 ViewTreeObserver observer = root.getViewTreeObserver();
-                if (observer.isAlive()) observer.addOnPreDrawListener(this);
+                if (observer.isAlive()) {
+                    observer.addOnPreDrawListener(this);
+                    observer.addOnGlobalLayoutListener(this);
+                    observer.addOnScrollChangedListener(this);
+                }
                 root.addOnAttachStateChangeListener(this);
             } catch (Throwable ignored) {
             }
@@ -525,7 +550,11 @@ public final class ThemeDynamicListGuardV3 {
         void detach() {
             try {
                 ViewTreeObserver observer = root.getViewTreeObserver();
-                if (observer.isAlive()) observer.removeOnPreDrawListener(this);
+                if (observer.isAlive()) {
+                    observer.removeOnPreDrawListener(this);
+                    observer.removeOnGlobalLayoutListener(this);
+                    observer.removeOnScrollChangedListener(this);
+                }
                 root.removeOnAttachStateChangeListener(this);
             } catch (Throwable ignored) {
             }
@@ -540,6 +569,13 @@ public final class ThemeDynamicListGuardV3 {
                     return true;
                 }
                 if (!themeActive(root) || ThemeNativeTargets.hasChat(root)) return true;
+                long now = SystemClock.uptimeMillis();
+                String currentPreset = ThemeStateStore.currentPreset(root.getContext());
+                boolean changed = !currentPreset.equals(preset);
+                if (!changed && lastStyleMs != 0 && now - lastStyleMs < (dirty ? 100 : 500)) return true;
+                preset = currentPreset;
+                lastStyleMs = now;
+                dirty = false;
                 ScreenInfo screen = detectScreen(root);
                 if (screen.kind != SCREEN_NONE) style(root, screen);
                 // Exact holders win after the geometry fallback, including clipped/returning rows.
@@ -549,7 +585,9 @@ public final class ThemeDynamicListGuardV3 {
             return true;
         }
 
-        @Override public void onViewAttachedToWindow(View v) { }
+        @Override public void onGlobalLayout() { dirty = true; }
+        @Override public void onScrollChanged() { dirty = true; }
+        @Override public void onViewAttachedToWindow(View v) { dirty = true; }
         @Override public void onViewDetachedFromWindow(View v) { detachAndForget(); }
 
         private void detachAndForget() {

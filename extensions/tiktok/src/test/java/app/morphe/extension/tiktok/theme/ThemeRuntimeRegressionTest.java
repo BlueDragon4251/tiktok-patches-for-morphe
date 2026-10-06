@@ -393,8 +393,7 @@ public class ThemeRuntimeRegressionTest {
         ActivityController<Activity> secondary = Robolectric.buildActivity(Activity.class).setup().visible();
         try {
             View secondaryDecor = secondary.get().getWindow().getDecorView();
-            for (Class<?> type : new Class<?>[]{ThemeRealtimeUiGuard.class,
-                    ThemeDynamicListGuardV3.class}) {
+            for (Class<?> type : new Class<?>[]{ThemeDynamicListGuardV3.class}) {
                 Field field = type.getDeclaredField("GUARDS");
                 field.setAccessible(true);
                 assertTrue(type.getSimpleName(), ((Map<?, ?>) field.get(null)).containsKey(secondaryDecor));
@@ -444,6 +443,124 @@ public class ThemeRuntimeRegressionTest {
         ThemeComposeColorResolver.mapPalette(palette, "background");
         assertEquals(0xffffffff00000000L, palette.background);
         assertEquals(0xff16182300000000L, palette.text);
+    }
+
+    @Test
+    public void profileControlsBecomeVisibleWithoutTintingPhotosOrFunctionalIcons() {
+        ImageView menu = new ImageView(activity);
+        menu.setClickable(true);
+        menu.setImageDrawable(new ColorDrawable(Color.BLACK));
+        profile.addView(menu);
+        ImageView photo = new ImageView(activity);
+        photo.setClickable(true);
+        photo.setImageBitmap(android.graphics.Bitmap.createBitmap(12, 12, android.graphics.Bitmap.Config.ARGB_8888));
+        profile.addView(photo);
+        ImageView badge = new ImageView(activity);
+        badge.setClickable(true);
+        badge.setImageDrawable(new ColorDrawable(Color.RED));
+        profile.addView(badge);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), menu.getImageTintList().getDefaultColor());
+        assertNull(photo.getImageTintList());
+        assertNull(badge.getImageTintList());
+        assertTrue(menu.isClickable());
+        assertEquals(View.VISIBLE, menu.getVisibility());
+        assertEquals(1f, menu.getAlpha(), 0f);
+        menu.setImageDrawable(new ColorDrawable(Color.MAGENTA)); // Async native functional rebind.
+        menu.setImageTintList(null);
+        ThemeNativeTargets.profilePage(profile);
+        assertNull(menu.getImageTintList());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertNull(menu.getImageTintList());
+    }
+
+    @Test
+    public void profileRoundedWhiteSurfaceKeepsGeometryAndTransparentOverlaysStayTransparent() {
+        GradientDrawable bubble = new GradientDrawable();
+        bubble.setColor(Color.WHITE);
+        bubble.setCornerRadius(12);
+        TextView label = new TextView(activity);
+        label.setText("Erzähl doch mal");
+        label.setTextColor(Color.BLACK);
+        label.setBackground(bubble);
+        profile.addView(label);
+        View overlay = new View(activity);
+        overlay.setBackgroundColor(Color.TRANSPARENT);
+        profile.addView(overlay);
+        ThemeNativeTargets.profilePage(profile);
+        GradientDrawable themed = (GradientDrawable) label.getBackground();
+        assertEquals(ThemeEngine.backgroundColor(activity), themed.getColor().getDefaultColor());
+        assertEquals(12f, themed.getCornerRadius(), 0f);
+        assertEquals(ThemeEngine.textColor(activity), label.getCurrentTextColor());
+        assertEquals(Color.TRANSPARENT, ((ColorDrawable) overlay.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertSame(bubble, label.getBackground());
+        assertEquals(Color.BLACK, label.getCurrentTextColor());
+    }
+
+    @Test
+    public void captionSpansOnDarkGradientScrimAreReadableAndRestoreAfterNativeRebind() {
+        host.setBackgroundColor(Color.BLACK);
+        FrameLayout captionArea = new FrameLayout(activity);
+        captionArea.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{Color.TRANSPARENT, 0xcc000000}));
+        host.addView(captionArea);
+        TextView caption = new TextView(activity);
+        android.text.SpannableString text = new android.text.SpannableString("Caption #tag");
+        text.setSpan(new android.text.style.ForegroundColorSpan(Color.BLACK), 0, 7, 33);
+        text.setSpan(new android.text.style.ForegroundColorSpan(Color.RED), 8, 12, 33);
+        caption.setText(text);
+        caption.setTextColor(Color.BLACK);
+        captionArea.addView(caption);
+        ThemeNativeTargets.beforePagerDraw(host);
+        android.text.Spanned mapped = (android.text.Spanned) caption.getText();
+        assertEquals(ThemeEngine.textColor(activity), mapped.getSpans(0, 7,
+                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
+        assertEquals(Color.RED, mapped.getSpans(8, 12,
+                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(Color.BLACK, ((android.text.Spanned) caption.getText()).getSpans(0, 7,
+                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
+    }
+
+    @Test
+    public void repeatedInboxBindsKeepOneDrawableAndNativeRepaintIsStillRepaired() {
+        FrameLayout row = new FrameLayout(activity);
+        ThemeDynamicListGuardV3.onInboxRowBound(row);
+        Drawable first = row.getBackground();
+        for (int i = 0; i < 120; i++) ThemeDynamicListGuardV3.onInboxRowBound(row);
+        assertSame(first, row.getBackground());
+        row.setBackgroundColor(Color.WHITE);
+        ThemeDynamicListGuardV3.onInboxRowBound(row);
+        assertNotSame(first, row.getBackground());
+        assertEquals(ThemeEngine.surfaceColor(activity), ((GradientDrawable) row.getBackground()).getColor().getDefaultColor());
+    }
+
+    @Test
+    public void inboxIdleFramesDoNotWalkTheWholeWindowOrRecreateCards() throws Exception {
+        TextView title = new TextView(activity);
+        title.setText("Posteingang");
+        host.addView(title);
+        title.layout(0, 0, 200, 50);
+        ThemeDynamicListGuardV3.install(activity);
+        Field guards = ThemeDynamicListGuardV3.class.getDeclaredField("GUARDS");
+        guards.setAccessible(true);
+        Object guard = ((Map<?, ?>) guards.get(null)).get(decor);
+        Method preDraw = guard.getClass().getMethod("onPreDraw");
+        preDraw.setAccessible(true);
+        preDraw.invoke(guard);
+        Field lastStyle = guard.getClass().getDeclaredField("lastStyleMs");
+        lastStyle.setAccessible(true);
+        long first = lastStyle.getLong(guard);
+        for (int i = 0; i < 120; i++) preDraw.invoke(guard);
+        assertEquals(first, lastStyle.getLong(guard));
+        // A preset change is applied before drawing even inside the throttle interval.
+        ThemeStateStore.saveUserPreset(activity, "rose_noir");
+        preDraw.invoke(guard);
+        assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

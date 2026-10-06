@@ -44708,200 +44708,212 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDynamicListGuardV3.java",
-      "sha256": "3543a068725685981a9cf514ca95f0524bd847a7e924346aca726b0d51fd052f",
+      "sha256": "dd963b7e2904a1752d696696041d8ab53b205937bddbd6a8da312d449b6c83ba",
       "patches": [],
       "findings": [
         {
           "kind": "version",
-          "line": 26,
+          "line": 27,
           "text": "46.7.3",
           "category": "version-specific"
         },
         {
           "kind": "literal",
-          "line": 37,
+          "line": 38,
           "text": "\"deprecation\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 37,
+          "line": 38,
           "text": "\"unused\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 95,
+          "line": 98,
           "text": "\"[BlueIT Dynamic List V3.2] installed\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 104,
+          "line": 107,
           "text": "\"default\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 130,
+          "line": 133,
           "text": "\"schreib etwas\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 130,
+          "line": 133,
           "text": "\"schreibe etwas\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 131,
+          "line": 134,
           "text": "\"send a message\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 131,
+          "line": 134,
           "text": "\"write a message\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 132,
+          "line": 135,
           "text": "\"type a message\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 132,
+          "line": 135,
           "text": "\"write something\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 164,
+          "line": 167,
           "text": "\"inbox\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 164,
+          "line": 167,
           "text": "\"posteingang\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 165,
+          "line": 168,
           "text": "\"messages\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 165,
+          "line": 168,
           "text": "\"nachrichten\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 169,
+          "line": 172,
           "text": "\"activity\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 169,
+          "line": 172,
           "text": "\"aktivität\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 170,
+          "line": 173,
           "text": "\"all activity\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 170,
+          "line": 173,
           "text": "\"alle aktivitäten\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 171,
+          "line": 174,
           "text": "\"benachrichtigungen\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 171,
+          "line": 174,
           "text": "\"notifications\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 175,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 176,
-          "text": "\"vorgeschlagene konten\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 177,
-          "text": "\"vorgeschlagene accounts\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
           "line": 178,
-          "text": "\"suggested accounts\"",
+          "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 179,
-          "text": "\"suggested users\"",
+          "text": "\"vorgeschlagene konten\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 180,
-          "text": "\"suggested accounts for you\"",
+          "text": "\"vorgeschlagene accounts\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 181,
+          "text": "\"suggested accounts\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 182,
+          "text": "\"suggested users\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 183,
+          "text": "\"suggested accounts for you\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 184,
           "text": "\"konten, die dir gefallen könnten\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 229,
+          "line": 232,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 332,
+          "line": 336,
           "text": "\"[BlueIT Dynamic List V3.2] kind=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 333,
+          "line": 337,
           "text": "\" sections=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 333,
+          "line": 337,
           "text": "\" visualRows=\"",
           "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 530,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 575,
+          "text": "lastStyleMs < (dirty ? 100 : 500)) return true;",
+          "category": "requires-cardinality-or-dataflow-review"
         }
       ]
     },
@@ -45256,7 +45268,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeEngineBootstrap.java",
-      "sha256": "4163ec8ce49b57c6590bf03f3b5d64b973a23b76e143ad1e36c8993c81a7ec49",
+      "sha256": "600fc30f4475c24e83e7d198752f8435cd49315b1e12edd972762bdb82d34d12",
       "patches": [],
       "findings": [
         {
@@ -45351,12 +45363,6 @@
         },
         {
           "kind": "literal",
-          "line": 90,
-          "text": "\"BlueIT realtime theme guard unavailable\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
           "line": 94,
           "text": "\"BlueIT dynamic list guard V3 unavailable\"",
           "category": "structural-or-semantic-evidence"
@@ -45395,32 +45401,44 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "24668993e82b5d241746a98beab8c1fef7ff6411eb1828d92b9daeb953c4693e",
+      "sha256": "aa88d98d03116ba012634b43267783810bca2ac0ebaf3bba93e891c4479606fa",
       "patches": [],
       "findings": [
         {
           "kind": "literal",
-          "line": 112,
+          "line": 149,
           "text": "\" view=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 112,
+          "line": 149,
           "text": "\"[BlueIT Native Target v2] role=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 112,
+          "line": 149,
           "text": "v2",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 133,
+          "line": 170,
           "text": "\"default\"",
           "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 358,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 472,
+          "text": "lastStyleMs < 100 && lastStyleMs != 0",
+          "category": "requires-cardinality-or-dataflow-review"
         }
       ]
     },
@@ -46427,7 +46445,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeSurfaceStyler.java",
-      "sha256": "9c1bf2dd02bd2b7e0b8af29102eb4649f3440379456682103a67a6982f91a4ae",
+      "sha256": "54e7b9639cd47675cde5c2c515137c04aa7d94832daa0775fe216b735eb14a31",
       "patches": [],
       "findings": [
         {
@@ -47379,6 +47397,12 @@
           "category": "requires-cardinality-or-dataflow-review"
         }
       ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
+      "sha256": "18f32de45af64730b8be8a75f187881812cfa5f2db524267d006423327841e45",
+      "patches": [],
+      "findings": []
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewHooks.java",

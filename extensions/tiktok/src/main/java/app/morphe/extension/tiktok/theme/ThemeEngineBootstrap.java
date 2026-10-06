@@ -87,7 +87,7 @@ public final class ThemeEngineBootstrap {
     /** Each Activity owns a different DecorView and ViewTreeObserver. Installation is idempotent. */
     static void installActivityGuards(Activity activity) {
         // Retain the working Inbox/Activity paths. Native roots now own sidebar motion.
-        installGuard(activity, REALTIME_GUARD_CLASS, "BlueIT realtime theme guard unavailable");
+        // DynamicListGuard owns Inbox/Activity. Do not run a second full-window pass on every scroll.
         installGuard(
                 activity,
                 DYNAMIC_LIST_GUARD_V3_CLASS,

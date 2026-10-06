@@ -63,7 +63,7 @@ final class ThemeSurfaceStyler {
             int rootHeight = decor.getHeight();
             if (ThemeNativeTargets.hasChat(decor)) return;
             ScreenHints hints = scanScreenHints(decor, rootHeight);
-            updateDynamicListWatcher(activity, decor, hints);
+            // Recycler binds and scrolls are handled by ThemeDynamicListGuardV3.
 
             ArrayDeque<Node> queue = new ArrayDeque<>();
             queue.add(new Node(decor, false, false, false, false, false));
