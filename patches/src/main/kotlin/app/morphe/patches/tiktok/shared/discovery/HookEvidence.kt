@@ -1,5 +1,6 @@
 package app.morphe.patches.tiktok.shared.discovery
 
+import app.morphe.patches.shared.compat.DevelopmentTikTokVersions
 import app.morphe.patcher.Match
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
@@ -308,7 +309,9 @@ internal object HookEvidence {
         val baseline = exact?.takeIf { it.apkSha256 == actualApkSha256 }
             ?: FixtureContracts.load("46.7.3")
         val selection = FixtureContracts.select(metadata.packageName, metadata.versionCode.toLong(),
-            actualApkSha256, exact, baseline, System.getenv("TIKTOK_EXPERIMENTAL_PORTABLE") == "1")
+            actualApkSha256, exact, baseline, System.getenv("TIKTOK_EXPERIMENTAL_PORTABLE") == "1" ||
+                DevelopmentTikTokVersions.permitsPortableTest(metadata.packageName, metadata.versionName,
+                    metadata.versionCode.toLong(), actualApkSha256))
         experimental = selection.experimental
         reviewed = selection.contracts
         selection.contracts

@@ -62,6 +62,22 @@ visible-text matching, geometry search or broad recoloring is introduced.
 
 ## Qualification
 
+### Development device test for 47.1.3
+
+At the user's explicit request, dev bundles include global 47.1.3 as a device-test
+target. The build embeds its release channel: only versions ending in `-dev.<number>`
+list this additional target. Stable bundles retain only qualified fixture targets.
+The dev opt-in checks package, version, version code and the original APK SHA-256
+`8b5569f592a5534652ae460ef1d9e7f7394b5b7fdde44ae64f106d76767e2622` before
+using the already reviewed portable and semantic native contracts. It does not
+disable any method, class, register, insertion or ambiguity check. No environment
+variable or forced patching is required for that exact APK in a dev bundle.
+
+The pinned 47.1.3 CI job uses `run_experimental.py --development-bundle` to test
+this normal compatibility path with no `--force` and no experimental environment
+opt-in. The candidate remains unqualified pending device regression results;
+the selectable fixture manifest and generated verified targets are unchanged.
+
 Add an APK as a candidate with its exact hash and provenance; run discovery and the
 matrix; resolve ambiguous/changed contracts; record successful same-head evidence
 and relevant device regression results; only then mark the fixture selectable.

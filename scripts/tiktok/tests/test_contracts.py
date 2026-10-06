@@ -168,7 +168,7 @@ class QualificationTests(unittest.TestCase):
                 return subprocess.CompletedProcess(command, 0)
             import subprocess
             with patch('run_experimental.inspect',return_value=identity), \
-                 patch('run_experimental.subprocess.run',side_effect=run), patch.object(sys,'argv',argv):
+                 patch('run_experimental.subprocess.run',side_effect=run) as runner, patch.object(sys,'argv',argv):
                 experimental_main()
                 self.assertTrue((out/'patched.apk').is_file())
                 success=json.loads((out/'experimental-result.json').read_text())
@@ -177,6 +177,17 @@ class QualificationTests(unittest.TestCase):
                 self.assertEqual(identity['sha256'],success['candidate']['sha256'])
                 self.assertEqual(64,len(success['patchedApk']['sha256']))
                 self.assertEqual(names, success['observedAppliedPatches'])
+                with patch.object(sys, 'argv', argv + ['--development-bundle']):
+                    with self.assertRaisesRegex(SystemExit, 'does not list this APK version'):
+                        experimental_main()
+                    metadata.write_text(json.dumps({'patches':[{'name':n,'compatiblePackages':
+                        {identity['package']:['46.7.3', '47.1.3']}} for n in names]}))
+                    with patch.dict('os.environ', {'TIKTOK_EXPERIMENTAL_PORTABLE':'1'}):
+                        experimental_main()
+                    command = runner.call_args.args[0]
+                    self.assertNotIn('--force', command)
+                    self.assertNotIn('TIKTOK_EXPERIMENTAL_PORTABLE', runner.call_args.kwargs['env'])
+                    self.assertTrue(json.loads((out/'experimental-result.json').read_text())['developmentBundleTest'])
                 failing=True
                 experimental_main()
                 self.assertFalse((out/'patched.apk').exists())

@@ -7,6 +7,34 @@ on:
       - dev
 
 jobs:
+  stable-channel:
+    name: Verify stable channel excludes development targets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: burrunan/gradle-cache-action@v3
+      - name: Build stable-channel metadata without publishing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:generatePatchesList -Pversion=1.2.1 --no-daemon
+      - name: Check all stable TikTok targets remain qualified
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          metadata = json.loads(Path('patches-list.json').read_text())
+          assert metadata['version'] == 'v1.2.1', metadata['version']
+          targets = [p['compatiblePackages']['com.zhiliaoapp.musically']
+                     for p in metadata['patches']
+                     if 'com.zhiliaoapp.musically' in (p.get('compatiblePackages') or {})]
+          assert len(targets) == 37 and all(t == ['46.7.3'] for t in targets), targets
+          PY
   release:
     name: Build
     runs-on: ubuntu-latest

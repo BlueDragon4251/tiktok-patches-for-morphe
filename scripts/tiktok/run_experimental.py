@@ -143,6 +143,8 @@ def main():
     p.add_argument('--metadata', type=Path, default=ROOT / 'patches-list.json')
     p.add_argument('--source', required=True)
     p.add_argument('--expected-sha', help='Optional SHA-256 to pin the downloaded input APK')
+    p.add_argument('--development-bundle', action='store_true',
+                   help='Require listed compatibility and patch without force or an experimental environment opt-in')
     a = p.parse_args()
     out = a.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -156,8 +158,13 @@ def main():
     accepted = json.loads((ROOT / 'fixtures/tiktok/46.7.3/accepted-catalog.json').read_text())
     expected = [patch['name'] for patch in accepted['appliedPatches']]
     names = [p['name'] for p in metadata['patches'] if identity['package'] in (p.get('compatiblePackages') or {})]
+    if a.development_bundle and any(identity['version'] not in p['compatiblePackages'][identity['package']]
+            for p in metadata['patches'] if p['name'] in names):
+        raise SystemExit('Development bundle does not list this APK version for every catalog patch')
     command = ['java', '-Xmx6g', '-jar', str(a.cli.resolve()), 'patch', '-p', str(a.bundle.resolve()),
-               '--force', '--continue-on-error', '--exclusive', '--unsigned', '--result-file', str(result_path)]
+               '--continue-on-error', '--exclusive', '--unsigned', '--result-file', str(result_path)]
+    if not a.development_bundle:
+        command.append('--force')
     for name in names:
         command += ['-e', name]
     command += ['-o', str(patched), str(a.apk.resolve())]
@@ -167,9 +174,12 @@ def main():
     try:
         with log_path.open('w') as log:
             try:
+                environment = dict(os.environ, TIKTOK_FEATURE_HEAD=a.head)
+                environment.pop('TIKTOK_EXPERIMENTAL_PORTABLE', None)
+                if not a.development_bundle:
+                    environment['TIKTOK_EXPERIMENTAL_PORTABLE'] = '1'
                 process = subprocess.run(command, cwd=out, stdout=log, stderr=subprocess.STDOUT,
-                                         env=dict(os.environ, TIKTOK_EXPERIMENTAL_PORTABLE='1',
-                                                  TIKTOK_FEATURE_HEAD=a.head))
+                                         env=environment)
             except OSError as error:
                 process = None
                 launch_error = f'Could not run Morphe: {error}'
@@ -199,6 +209,7 @@ def main():
             patched.unlink(missing_ok=True)
     (out / 'experimental-result.json').write_text(json.dumps({
         'schema': 1, 'head': a.head, 'candidate': identity, 'qualified': False,
+        'developmentBundleTest': a.development_bundle,
         'status': 'blocked' if problems else 'experimental-catalog-passed',
         'blockers': problems, 'expectedPatchCount': len(expected),
         'observedAppliedPatches': applied_observation, 'patchedApk': rebuilt,

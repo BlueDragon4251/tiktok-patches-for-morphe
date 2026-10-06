@@ -1,9 +1,27 @@
 group = "app.morphe"
 
+// Freeze the release channel into the bundle. Stable builds never expose test targets.
+val releaseChannelSources = layout.buildDirectory.dir("generated/release-channel")
+val releaseChannelVersion = providers.provider { project.version.toString() }
+val generateReleaseChannel = tasks.register("generateReleaseChannel") {
+    inputs.property("bundleVersion", releaseChannelVersion)
+    outputs.dir(releaseChannelSources)
+    doLast {
+        val development = Regex(".*-dev\\.\\d+$").matches(releaseChannelVersion.get())
+        val output = releaseChannelSources.get().file("app/morphe/patches/shared/compat/ReleaseChannel.kt").asFile
+        output.parentFile.mkdirs()
+        output.writeText("package app.morphe.patches.shared.compat\n\ninternal object ReleaseChannel { const val development = $development }\n")
+    }
+}
+kotlin.sourceSets.named("main") { kotlin.srcDir(releaseChannelSources) }
+tasks.named("compileKotlin") { dependsOn(generateReleaseChannel) }
+
 patches {
     about {
         name = "BlueIT TikTok Patches"
-        description = "BlueIT Service patches for verified TikTok global versions, built for Morphe."
+        description = if (Regex(".*-dev\\.\\d+$").matches(project.version.toString()))
+            "BlueIT Service development patches. Includes the pinned TikTok global 47.1.3 test target; device testing is pending."
+        else "BlueIT Service patches for verified TikTok global versions, built for Morphe."
         source = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe"
         author = "BlueIT"
         contact = "https://github.com/BlueDragon4251/tiktok-patches-for-morphe/issues"

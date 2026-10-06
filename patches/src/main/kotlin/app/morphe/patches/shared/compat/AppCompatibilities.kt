@@ -227,13 +227,13 @@ internal object AppCompatibilities {
         targets = listOf(AppTarget("25.9.2.0"), AppTarget("26.1.2.0")),
     )
 
-    /** Target: TikTok 46.7.3 global package. */
+    /** Qualified global fixtures, plus an exact, unqualified device-test target in dev bundles. */
     fun tiktokVerified(): Array<Compatibility> = arrayOf(
         Compatibility(
             name = "TikTok",
             packageName = "com.zhiliaoapp.musically",
             appIconColor = TIKTOK_COLOR,
-            targets = VerifiedTikTokVersions.targets,
+            targets = VerifiedTikTokVersions.targets + DevelopmentTikTokVersions.targets,
         ),
     )
 
