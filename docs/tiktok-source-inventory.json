@@ -57312,7 +57312,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/layout/theme/ThemeEnginePatch.kt",
-      "sha256": "8bb7757d59d729b85612dc7f4e3de6627035d795a853871dcc4e60bf90d4e4b8",
+      "sha256": "7c7f3d1524a95eef401f506642f976d9045b69132e016c98237273ea1ba55a9a",
       "patches": [
         {
           "symbol": "themeEnginePatch",

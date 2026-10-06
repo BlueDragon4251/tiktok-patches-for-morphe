@@ -249,7 +249,7 @@ val themeEnginePatch = bytecodePatch(
         listOf(TuxDirectColorResolverFingerprint, TuxGenericAttributeResolverFingerprint,
             TuxSemanticColorResolverFingerprint, TuxStyledColorResolverFingerprint,
             InboxSessionBindFingerprint, MainBottomNavigationDividerFingerprint,
-            ComposePaletteProviderFingerprint, AvatarGradientConfigFingerprint).forEach { fingerprint ->
+            ComposePaletteProviderFingerprint).forEach { fingerprint ->
             val match = fingerprint.observeUniqueSite()
             println("[BlueIT Hook Contract] ${fingerprint.javaClass.simpleName}: ${match.originalMethod}")
         }
