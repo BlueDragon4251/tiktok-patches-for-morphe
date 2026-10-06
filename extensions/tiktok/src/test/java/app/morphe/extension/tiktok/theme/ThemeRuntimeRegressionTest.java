@@ -337,6 +337,22 @@ public class ThemeRuntimeRegressionTest {
         public long media = 0xff00ff0000000000L;
     }
 
+    @Test
+    public void lightTikTokPaletteUsesArcticBackgroundEvenWhenAndroidIsInNightMode() {
+        NativePalette palette = new NativePalette();
+        palette.background = 0xffffffff00000000L;
+        palette.text = 0xff16182300000000L;
+        ThemeComposeColorResolver.mapPalette(palette, "background");
+        assertEquals(Integer.toUnsignedLong(ThemeEngine.backgroundColor(activity)) << 32, palette.background);
+        assertEquals(Integer.toUnsignedLong(ThemeEngine.textColor(activity)) << 32, palette.text);
+        ThemeComposeColorResolver.mapPalette(palette, "background");
+        assertEquals(Integer.toUnsignedLong(ThemeEngine.backgroundColor(activity)) << 32, palette.background);
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeComposeColorResolver.mapPalette(palette, "background");
+        assertEquals(0xffffffff00000000L, palette.background);
+        assertEquals(0xff16182300000000L, palette.text);
+    }
+
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)
             throws Exception {
         Method method = type.getDeclaredMethod(name, parameters);

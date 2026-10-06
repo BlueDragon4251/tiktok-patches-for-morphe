@@ -173,6 +173,10 @@ private object ComposePaletteProviderFingerprint : Fingerprint(
 
 private var settingsGroupRenderer = ""
 private var settingsScreenRenderer = ""
+private object NativeBackgroundFieldFingerprint : Fingerprint(
+    definingClass = THEME_COMPOSE_COLOR_RESOLVER_CLASS_DESCRIPTOR,
+    name = "nativeBackgroundField", returnType = "Ljava/lang/String;", parameters = emptyList(),
+)
 private object SettingsComposeGroupRendererFingerprint : Fingerprint(
     custom = { method, _ -> method.toString() == settingsGroupRenderer },
 )
@@ -350,10 +354,17 @@ val themeEnginePatch = bytecodePatch(
             }
         }
 
-        // Map only the packed color read from the native palette producer. The group renderer
-        // keeps its provider-driven colors and is independently resolved through the screen call.
-        listOf(SettingsComposeGroupRendererFingerprint.uniqueMethod, SettingsComposeScreenRendererFingerprint.uniqueMethod).forEach { method ->
-            ThemeSurfaceContracts.rendererSites(method, HookEvidence::originalClass).asReversed().forEach { method.addAfterInstruction(it.index, it.code) }
+        // Determine TikTok's own light/dark palette from the actual page background, independently
+        // of Android's system mode. The provider already maps every palette field; a second mapping
+        // at renderer reads would turn Arctic Blue's dark background back into its light text color.
+        SettingsComposeGroupRendererFingerprint.uniqueOriginalMethod
+        val pageField = ThemeSurfaceContracts.backgroundField(
+            SettingsComposeScreenRendererFingerprint.uniqueOriginalMethod, HookEvidence::originalClass)
+        NativeBackgroundFieldFingerprint.uniqueMethod.apply {
+            val index = implementation!!.instructions.indexOfFirst { it.opcode == Opcode.CONST_STRING || it.opcode == Opcode.CONST_STRING_JUMBO }
+            if (index < 0) throw PatchException("Missing native background field configuration")
+            val register = getInstruction<OneRegisterInstruction>(index).registerA
+            replaceInstruction(index, "const-string v$register, \"${pageField.name}\"")
         }
 
         MainActivityOnCreateFingerprint.uniqueMethod.apply {

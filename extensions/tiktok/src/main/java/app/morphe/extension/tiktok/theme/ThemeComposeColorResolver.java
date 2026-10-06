@@ -45,12 +45,19 @@ public final class ThemeComposeColorResolver {
 
     private ThemeComposeColorResolver() {}
 
+    /** Filled by the patch from the native Settings background modifier's palette read. */
+    public static String nativeBackgroundField() { return ""; }
+
     /**
      * Called from the exact LX/0VTU.LIZIZ Compose-palette provider.
      *
      * @return the same object, always. Any reflection/layout mismatch fails open to TikTok stock.
      */
     public static Object mapPalette(Object palette) {
+        return mapPalette(palette, nativeBackgroundField());
+    }
+
+    static Object mapPalette(Object palette, String backgroundField) {
         if (palette == null) return null;
 
         try {
@@ -71,10 +78,18 @@ public final class ThemeComposeColorResolver {
                 // Never remap an already-remapped value. Restore the exact native palette first.
                 restorePalette(palette, snapshot);
 
+                boolean nativeDark = stockDarkMode(context);
+                for (PaletteEntry entry : snapshot.entries) {
+                    if (entry.field.getName().equals(backgroundField)) {
+                        nativeDark = lightness((int) (entry.originalValue >>> 32)) < 0.5;
+                        break;
+                    }
+                }
+
                 int changed = 0;
                 if (!"default".equals(preset)) {
                     for (PaletteEntry entry : snapshot.entries) {
-                        long mapped = mapPackedColor(entry.originalValue, context);
+                        long mapped = mapPackedColor(entry.originalValue, context, nativeDark);
                         if (mapped == entry.originalValue) continue;
                         try {
                             entry.field.setLong(palette, mapped);
@@ -107,13 +122,13 @@ public final class ThemeComposeColorResolver {
             if (context == null || "default".equals(ThemeStateStore.currentPreset(context))) {
                 return packed;
             }
-            return mapPackedColor(packed, context);
+            return mapPackedColor(packed, context, stockDarkMode(context));
         } catch (Throwable ignored) {
             return packed;
         }
     }
 
-    private static long mapPackedColor(long packed, Context context) {
+    private static long mapPackedColor(long packed, Context context, boolean nativeDark) {
         try {
             // Compose's common sRGB Color(Int) representation keeps ARGB in the high 32 bits and
             // zero in the low 32 bits. Leave extended color-space encodings untouched.
@@ -123,7 +138,7 @@ public final class ThemeComposeColorResolver {
             int alpha = Color.alpha(stock);
             if (alpha == 0) return packed;
 
-            Integer mapped = mapArgb(stock, context);
+            Integer mapped = mapArgb(stock, context, nativeDark);
             if (mapped == null || mapped == stock) return packed;
 
             int mappedAlpha = Color.alpha(mapped);
@@ -178,7 +193,7 @@ public final class ThemeComposeColorResolver {
         }
     }
 
-    private static Integer mapArgb(int stock, Context context) {
+    private static Integer mapArgb(int stock, Context context, boolean dark) {
         int opaque = Color.rgb(Color.red(stock), Color.green(stock), Color.blue(stock));
 
         if (distance(opaque, TIKTOK_ACCENT) <= 34.0) {
@@ -195,7 +210,6 @@ public final class ThemeComposeColorResolver {
 
         double y = lightness(opaque);
         int alpha = Color.alpha(stock);
-        boolean dark = stockDarkMode(context);
 
         // Dark TikTok: page is black and grouped surfaces are roughly #1E1E1E/#252525/#2C2C2C.
         if (dark) {

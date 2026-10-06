@@ -135,6 +135,19 @@ internal object ThemeSurfaceContracts {
     }
     private fun MethodReference.accessibleSchema(): Boolean = parameterTypes.size == 4 && parameterTypes[0].startsWith("LX/") &&
         parameterTypes[1] == "Ljava/util/List;" && parameterTypes[2].startsWith("LX/") && parameterTypes[3] == "I" && returnType == "V"
+    /** The native modifier consumes this exact packed color as the Settings page background. */
+    fun backgroundField(m: Method, resolve: (String) -> ClassDef?): FieldReference {
+        val insns = m.implementation!!.instructions.toList()
+        return rendererSites(m, resolve).mapNotNull { site ->
+            val read = insns[site.index] as TwoRegisterInstruction
+            val call = insns.getOrNull(site.index + 2)
+            val reference = call?.let(::ref) as? MethodReference
+            if (call == null || reference?.parameterTypes?.size != 3 || reference.parameterTypes[1] != "J" ||
+                reference.returnType != reference.parameterTypes[0] ||
+                call.argumentRegisters().drop(1).take(2) != listOf(read.registerA, read.registerA + 1)) null
+            else ref(insns[site.index]) as FieldReference
+        }.singleOrThrow("Settings native page background palette field")
+    }
     fun rendererSites(m: Method, resolve: (String) -> ClassDef?): List<ThemeContracts.Site> = m.implementation!!.instructions.withIndex().mapNotNull { (n, i) ->
         val field = ref(i) as? FieldReference
         if (i.opcode != Opcode.IGET_WIDE || field?.type != "J" || resolve(field.definingClass)?.fields?.count { it.type == "J" }?.let { it >= 200 } != true) null

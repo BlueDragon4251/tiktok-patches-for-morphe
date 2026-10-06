@@ -17,6 +17,7 @@ public final class FeatureControls {
             "com.ss.android.ugc.aweme.framework.services.ServiceManager";
     private static final String ACCOUNT_USER_SERVICE_CLASS =
             "com.ss.android.ugc.aweme.IAccountUserService";
+    private static final String ACCOUNT_SERVICE_CLASS = "com.ss.android.ugc.aweme.IAccountService";
 
     private FeatureControls() {
     }
@@ -46,14 +47,32 @@ public final class FeatureControls {
             Class<?> serviceManagerClass = Class.forName(SERVICE_MANAGER_CLASS);
             Object serviceManager = serviceManagerClass.getMethod("get").invoke(null);
             Class<?> accountServiceClass = Class.forName(ACCOUNT_USER_SERVICE_CLASS);
-            Object accountService = serviceManagerClass
-                    .getMethod("getService", Class.class)
-                    .invoke(serviceManager, accountServiceClass);
+            Object accountService = resolveUserService(serviceManager, serviceManagerClass,
+                    accountServiceClass, Class.forName(ACCOUNT_SERVICE_CLASS));
             return accountService != null
                     && Boolean.TRUE.equals(accountServiceClass.getMethod("isLogin").invoke(accountService));
         } catch (Throwable ignored) {
             return false;
         }
+    }
+
+    // TikTok also exposes the user service through IAccountService. It need not be registered as
+    // a standalone IAccountUserService in ServiceManager. Resolve the typed accessor, not its
+    // obfuscated method name, so LIVE/FYP suppression still sees the actual login state.
+    static Object resolveUserService(Object manager, Class<?> managerApi,
+                                     Class<?> userApi, Class<?> accountApi) throws Exception {
+        java.lang.reflect.Method getService = managerApi.getMethod("getService", Class.class);
+        Object direct = getService.invoke(manager, userApi);
+        if (direct != null) return direct;
+        Object account = getService.invoke(manager, accountApi);
+        if (account == null) return null;
+        java.lang.reflect.Method accessor = null;
+        for (java.lang.reflect.Method method : accountApi.getMethods()) {
+            if (method.getParameterTypes().length != 0 || !userApi.isAssignableFrom(method.getReturnType())) continue;
+            if (accessor != null) return null;
+            accessor = method;
+        }
+        return accessor == null ? null : accessor.invoke(account);
     }
 
     private static boolean isAccountRoute(String value) {
