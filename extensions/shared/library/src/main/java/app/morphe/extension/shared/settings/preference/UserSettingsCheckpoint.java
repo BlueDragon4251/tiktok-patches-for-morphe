@@ -20,6 +20,7 @@ public final class UserSettingsCheckpoint {
     private static final int MAX_BYTES = 262144;
     private final SharedPreferences preferences;
     private final AtomicFile file;
+    private Map<String, ?> lastSaved;
     // SharedPreferences keeps listeners weakly; retain this one for the category's lifetime.
     private final SharedPreferences.OnSharedPreferenceChangeListener listener;
 
@@ -100,8 +101,12 @@ public final class UserSettingsCheckpoint {
     public synchronized void save() {
         FileOutputStream output = null;
         try {
+            Map<String, ?> current = preferences.getAll();
+            // Initial PreferenceScreen syncing emits many callbacks for the same final snapshot.
+            // Avoid repeated synchronous file writes (and disk syncs) on the UI thread.
+            if (current.equals(lastSaved)) return;
             JSONObject values = new JSONObject();
-            for (Map.Entry<String, ?> entry : preferences.getAll().entrySet()) {
+            for (Map.Entry<String, ?> entry : current.entrySet()) {
                 Object value = entry.getValue();
                 String type = value instanceof Boolean ? "boolean" : value instanceof String ? "string"
                         : value instanceof Integer ? "int" : value instanceof Long ? "long"
@@ -117,6 +122,12 @@ public final class UserSettingsCheckpoint {
             output = file.startWrite();
             output.write(bytes);
             file.finishWrite(output);
+            Map<String, Object> snapshot = new HashMap<>();
+            for (Map.Entry<String, ?> entry : current.entrySet()) {
+                Object value = entry.getValue();
+                snapshot.put(entry.getKey(), value instanceof Set ? new HashSet<>((Set<?>) value) : value);
+            }
+            lastSaved = snapshot;
         } catch (Exception ignored) {
             if (output != null) file.failWrite(output);
         }

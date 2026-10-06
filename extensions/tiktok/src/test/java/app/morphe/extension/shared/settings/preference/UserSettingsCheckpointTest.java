@@ -72,4 +72,13 @@ public class UserSettingsCheckpointTest {
         new UserSettingsCheckpoint(context, prefs);
         assertTrue(prefs.getAll().isEmpty());
     }
+    @Test public void repeatedUiCallbacksDoNotRewriteAnUnchangedCheckpoint() {
+        UserSettingsCheckpoint checkpoint = new UserSettingsCheckpoint(context, prefs);
+        prefs.edit().putBoolean("hide_captcha_popups", true).commit();
+        checkpoint.save();
+        File file = new File(context.getFilesDir(), "blueit-user-settings-checkpoint-v1.json");
+        assertTrue(file.setLastModified(1000L));
+        for (int i = 0; i < 200; i++) checkpoint.save();
+        assertEquals(1000L, file.lastModified());
+    }
 }
