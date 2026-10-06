@@ -1,3 +1,26 @@
+# [1.3.0-dev.4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.3...v1.3.0-dev.4) (2026-10-06)
+
+
+### Bug Fixes
+
+* **TikTok:** checkpoint user settings and pair native page fills with readable text ([9e5baf5](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/9e5baf5c19b1742dd1f2c47e77a3237b281fbbd8))
+* **TikTok:** preserve native media colors and scope profile fills to neutral backgrounds ([4898284](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/4898284bc7e44c99671111e36f7288227e5a92f9))
+* **TikTok:** reject incomplete native avatar gradients before drawing ([1930c58](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/1930c58f6a4f940e3d1de5b04cd1880ef068f2a2))
+* **TikTok:** restore caption contrast on confirmed dark native pager fills ([3ff4ffc](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/3ff4ffcde23bc6a1affbc18300cd966aa3d84a09))
+* **TikTok:** restore native caption color when recycled backdrops change ([2940998](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/2940998dca491a06cf26c0cc66f0727ccb79bf2d))
+* **TikTok:** retain one identity for the avatar gradient contract ([8003fa4](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/8003fa436a0966c621ea4ba0e8ee38f8d427f945))
+
+
+### Performance Improvements
+
+* **TikTok:** avoid repeated checkpoint disk writes during settings sync ([959eb33](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/commit/959eb331792d89e1e7add1cc7e40f50227bf7c71))
+
+
+
+
+
+## 1.3.0-dev.4
+
 # [1.3.0-dev.3](https://github.com/BlueDragon4251/tiktok-patches-for-morphe/compare/v1.3.0-dev.2...v1.3.0-dev.3) (2026-10-06)
 
 
