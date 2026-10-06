@@ -138,6 +138,12 @@ public class ThemeRuntimeRegressionTest {
         assertEquals(Color.BLACK, lightCard.getCurrentTextColor());
         ThemeNativeTargets.beforePagerDraw(host);
         assertEquals(ThemeEngine.textColor(activity), caption.getCurrentTextColor());
+        host.setBackgroundColor(Color.WHITE); // Recycled native content changed its backdrop.
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(Color.BLACK, caption.getCurrentTextColor());
+        host.setBackgroundColor(Color.BLACK);
+        ThemeNativeTargets.beforePagerDraw(host);
+        assertEquals(ThemeEngine.textColor(activity), caption.getCurrentTextColor());
         ThemeStateStore.saveUserPreset(activity, "default");
         ThemeNativeTargets.beforePagerDraw(host);
         assertEquals(Color.BLACK, caption.getCurrentTextColor());

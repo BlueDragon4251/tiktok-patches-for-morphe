@@ -62,6 +62,12 @@ public final class ThemeNativeTargets {
             if (view.getVisibility() != View.VISIBLE || isOwned(view)) continue;
             if (view instanceof TextView) {
                 TextView text = (TextView) view;
+                TextFill previous = target.texts.get(text);
+                if (previous != null && text.getTextColors() == previous.applied
+                        && !hasDarkFlatBackdrop(text)) {
+                    text.setTextColor(previous.original);
+                    target.texts.remove(text);
+                }
                 int current = text.getCurrentTextColor();
                 int r = Color.red(current), g = Color.green(current), b = Color.blue(current);
                 if (Color.alpha(current) > 0 && Math.max(r, Math.max(g, b)) < 90
