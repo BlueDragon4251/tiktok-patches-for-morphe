@@ -12,6 +12,9 @@ import android.os.Build;
 import android.view.View;
 import android.widget.ImageView;
 import java.util.WeakHashMap;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /** Color operations for native-owned controls; never infer a media image from its dimensions. */
 final class ThemeViewColors {
@@ -39,6 +42,11 @@ final class ThemeViewColors {
 
     /** Explicit native image tints, or monochrome non-bitmap drawables in clickable controls. */
     static boolean icon(ImageView view) {
+        NativeTint nativeTint = NativeTint.find(view);
+        if (nativeTint != null) {
+            ColorStateList colors = nativeTint.get(view.getDrawable());
+            if (colors != null) return !colors.isStateful() && neutral(colors.getDefaultColor());
+        }
         ColorStateList tint = view.getImageTintList();
         if (tint != null) return !tint.isStateful() && neutral(tint.getDefaultColor());
         Drawable drawable = view.getDrawable();
@@ -71,6 +79,36 @@ final class ThemeViewColors {
         } finally {
             drawable.setBounds(bounds);
             sample.recycle();
+        }
+    }
+
+    /** TuxIconView's public setter writes the sole ColorStateList consumed again by draw(). */
+    static final class NativeTint {
+        final Method setter;
+        final Field colors;
+        private NativeTint(Method setter, Field colors) { this.setter = setter; this.colors = colors; }
+        static NativeTint find(ImageView view) {
+            try {
+                if (view.getDrawable() == null) return null;
+                Method setter = view.getClass().getMethod("setTintColorStateList$tux_theme_release", ColorStateList.class);
+                Field field = null;
+                for (Field candidate : view.getDrawable().getClass().getDeclaredFields()) {
+                    if (candidate.getType() != ColorStateList.class || Modifier.isStatic(candidate.getModifiers())) continue;
+                    if (field != null) return null;
+                    field = candidate;
+                }
+                if (field == null) return null;
+                field.setAccessible(true);
+                return new NativeTint(setter, field);
+            } catch (ReflectiveOperationException ignored) { return null; }
+        }
+        ColorStateList get(Drawable drawable) {
+            try { return (ColorStateList) colors.get(drawable); }
+            catch (ReflectiveOperationException ignored) { return null; }
+        }
+        void set(ImageView view, ColorStateList value) {
+            try { setter.invoke(view, value); }
+            catch (ReflectiveOperationException ignored) { }
         }
     }
 }

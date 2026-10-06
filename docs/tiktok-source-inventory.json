@@ -45401,7 +45401,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "837bd862660ef2e0229723a2f8820f476a44be2dd208766360580d4c1603978b",
+      "sha256": "59b6e867b7a9f165b45ea6f0f9c4832c555a8ea89411fdd39f36f737a199baa4",
       "patches": [],
       "findings": [
         {
@@ -45436,13 +45436,13 @@
         },
         {
           "kind": "literal",
-          "line": 358,
+          "line": 371,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 472,
+          "line": 488,
           "text": "lastStyleMs < 100 && lastStyleMs >= 0",
           "category": "requires-cardinality-or-dataflow-review"
         }
@@ -47406,9 +47406,34 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
-      "sha256": "18f32de45af64730b8be8a75f187881812cfa5f2db524267d006423327841e45",
+      "sha256": "427739126565765b1efbdb539afa9f71b8f18c0566d0c9e6b261144386390649",
       "patches": [],
-      "findings": []
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 93,
+          "text": "\"setTintColorStateList$tux_theme_release\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 93,
+          "text": "getMethod(\"setTintColorStateList$tux_theme_release\", ColorStateList.class);",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 95,
+          "text": "getDeclaredFields()) {",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 101,
+          "text": "setAccessible(true);",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewHooks.java",

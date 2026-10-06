@@ -543,6 +543,7 @@ public class ThemeRuntimeRegressionTest {
     public void inboxIdleFramesDoNotWalkTheWholeWindowOrRecreateCards() throws Exception {
         TextView title = new TextView(activity);
         title.setText("Posteingang");
+        title.setTextSize(20);
         host.addView(title);
         title.layout(0, 0, 200, 50);
         ThemeDynamicListGuardV3.install(activity);
@@ -561,6 +562,49 @@ public class ThemeRuntimeRegressionTest {
         ThemeStateStore.saveUserPreset(activity, "rose_noir");
         preDraw.invoke(guard);
         assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
+    }
+
+    @Test
+    public void nativeIconDrawUsesThemeTintAndDefaultPreservesAFunctionalRebind() {
+        NativeTintImage icon = new NativeTintImage(activity);
+        NativeTintDrawable drawable = new NativeTintDrawable();
+        icon.setImageDrawable(drawable);
+        profile.addView(icon);
+        ThemeNativeTargets.profilePage(profile);
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(24, 24, android.graphics.Bitmap.Config.ARGB_8888);
+        drawable.setBounds(0, 0, 24, 24);
+        drawable.draw(new android.graphics.Canvas(pixels));
+        assertEquals(ThemeEngine.textColor(activity), pixels.getPixel(12, 12));
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        drawable.draw(new android.graphics.Canvas(pixels));
+        assertEquals(Color.BLACK, pixels.getPixel(12, 12));
+        ThemeStateStore.saveUserPreset(activity, "arctic_blue");
+        ThemeNativeTargets.profilePage(profile);
+        icon.setTintColorStateList$tux_theme_release(android.content.res.ColorStateList.valueOf(Color.RED));
+        ThemeNativeTargets.profilePage(profile);
+        drawable.draw(new android.graphics.Canvas(pixels));
+        assertEquals(Color.RED, pixels.getPixel(12, 12));
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        drawable.draw(new android.graphics.Canvas(pixels));
+        assertEquals(Color.RED, pixels.getPixel(12, 12));
+        pixels.recycle();
+    }
+
+    /** Models the verified TuxIconDrawable draw-time color writer, beyond ImageView tint. */
+    public static final class NativeTintDrawable extends Drawable {
+        private android.content.res.ColorStateList colors = android.content.res.ColorStateList.valueOf(Color.BLACK);
+        @Override public void draw(android.graphics.Canvas canvas) { canvas.drawColor(colors.getDefaultColor()); }
+        @Override public void setAlpha(int alpha) { }
+        @Override public void setColorFilter(android.graphics.ColorFilter filter) { }
+        @Override public int getOpacity() { return android.graphics.PixelFormat.OPAQUE; }
+    }
+    public static final class NativeTintImage extends ImageView {
+        public NativeTintImage(Context context) { super(context); }
+        public void setTintColorStateList$tux_theme_release(android.content.res.ColorStateList colors) {
+            ((NativeTintDrawable) getDrawable()).colors = colors;
+        }
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

@@ -273,22 +273,35 @@ public final class ThemeNativeTargets {
 
     private static void styleIcon(ImageView view, Target target) {
         IconFill fill = target.icons.get(view);
-        if (fill == null || view.getImageTintList() != fill.applied || view.getDrawable() != fill.drawable) {
+        if (fill == null || view.getImageTintList() != fill.applied || view.getDrawable() != fill.drawable
+                || fill.nativeTint != null && fill.nativeTint.get(fill.drawable) != fill.appliedNative) {
             if (!ThemeViewColors.icon(view)) return;
-            fill = new IconFill(view);
+            ColorStateList original = fill != null && view.getImageTintList() == fill.applied
+                    ? fill.original : view.getImageTintList();
+            fill = new IconFill(view, original);
             target.icons.put(view, fill);
         }
         if (fill.applied == null || fill.applied.getDefaultColor() != target.primary) {
             fill.applied = ColorStateList.valueOf(target.primary);
             view.setImageTintList(fill.applied);
+            if (fill.nativeTint != null) {
+                fill.appliedNative = fill.applied;
+                fill.nativeTint.set(view, fill.appliedNative);
+            }
         }
     }
 
     private static final class IconFill {
         final Drawable drawable;
         final ColorStateList original;
-        ColorStateList applied;
-        IconFill(ImageView view) { drawable = view.getDrawable(); original = view.getImageTintList(); }
+        ColorStateList applied, appliedNative;
+        final ThemeViewColors.NativeTint nativeTint;
+        final ColorStateList originalNative;
+        IconFill(ImageView view, ColorStateList original) {
+            drawable = view.getDrawable(); this.original = original;
+            nativeTint = ThemeViewColors.NativeTint.find(view);
+            originalNative = nativeTint == null ? null : nativeTint.get(drawable);
+        }
     }
 
     private static final class TextFill {
@@ -457,8 +470,11 @@ public final class ThemeNativeTargets {
                 for (Map.Entry<ImageView, IconFill> entry : icons.entrySet()) {
                     ImageView icon = entry.getKey();
                     IconFill fill = entry.getValue();
-                    if (icon.getDrawable() == fill.drawable && icon.getImageTintList() == fill.applied)
-                        icon.setImageTintList(fill.original);
+                    if (icon.getDrawable() == fill.drawable) {
+                        if (icon.getImageTintList() == fill.applied) icon.setImageTintList(fill.original);
+                        if (fill.nativeTint != null && fill.nativeTint.get(fill.drawable) == fill.appliedNative)
+                            fill.nativeTint.set(icon, fill.originalNative);
+                    }
                 }
                 icons.clear();
             }
