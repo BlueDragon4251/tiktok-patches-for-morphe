@@ -593,10 +593,49 @@ public class ThemeRuntimeRegressionTest {
         pixels.recycle();
     }
 
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void nativeControlStatesKeepSelectionAndDisabledAlphaWhileNeutralLabelsStayReadable() {
+        android.content.res.ColorStateList nativeStates = new android.content.res.ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_selected}, new int[]{-android.R.attr.state_enabled}, new int[0]},
+                new int[]{Color.RED, 0x66000000, Color.BLACK});
+        NativeTintImage icon = new NativeTintImage(activity);
+        NativeTintDrawable drawable = new NativeTintDrawable();
+        icon.setImageDrawable(drawable);
+        icon.setTintColorStateList$tux_theme_release(nativeStates);
+        profile.addView(icon);
+        TextView label = new TextView(activity);
+        label.setTextColor(nativeStates);
+        profile.addView(label);
+        ThemeNativeTargets.profilePage(profile);
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(24, 24, android.graphics.Bitmap.Config.ARGB_8888);
+        drawable.setBounds(0, 0, 24, 24);
+        drawable.setState(new int[]{android.R.attr.state_enabled});
+        drawable.draw(new android.graphics.Canvas(pixels));
+        assertEquals(ThemeEngine.textColor(activity), pixels.getPixel(12, 12));
+        assertEquals(ThemeEngine.textColor(activity), label.getCurrentTextColor());
+        assertTrue(label.getTextColors().isStateful());
+        drawable.setState(new int[]{android.R.attr.state_enabled, android.R.attr.state_selected});
+        pixels.eraseColor(Color.TRANSPARENT);
+        drawable.draw(new android.graphics.Canvas(pixels));
+        label.setSelected(true);
+        assertEquals(Color.RED, pixels.getPixel(12, 12));
+        assertEquals(Color.RED, label.getCurrentTextColor());
+        label.setSelected(false);
+        label.setEnabled(false);
+        assertEquals(0x66, Color.alpha(label.getCurrentTextColor()));
+        assertEquals(ThemeEngine.textColor(activity) & 0xffffff, label.getCurrentTextColor() & 0xffffff);
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertSame(nativeStates, label.getTextColors());
+        assertSame(nativeStates, drawable.colors);
+        pixels.recycle();
+    }
+
     /** Models the verified TuxIconDrawable draw-time color writer, beyond ImageView tint. */
     public static final class NativeTintDrawable extends Drawable {
         private android.content.res.ColorStateList colors = android.content.res.ColorStateList.valueOf(Color.BLACK);
-        @Override public void draw(android.graphics.Canvas canvas) { canvas.drawColor(colors.getDefaultColor()); }
+        @Override public void draw(android.graphics.Canvas canvas) { canvas.drawColor(colors.getColorForState(getState(), colors.getDefaultColor())); }
         @Override public void setAlpha(int alpha) { }
         @Override public void setColorFilter(android.graphics.ColorFilter filter) { }
         @Override public int getOpacity() { return android.graphics.PixelFormat.OPAQUE; }

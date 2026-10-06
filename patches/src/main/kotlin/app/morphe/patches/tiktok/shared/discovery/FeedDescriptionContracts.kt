@@ -9,7 +9,7 @@ import com.android.tools.smali.dexlib2.iface.reference.*
 internal object FeedDescriptionContracts {
     const val OWNER = "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;"
     const val TEXT = "Lcom/bytedance/tux/input/TuxTextView;"
-    const val HOOK = "app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint::"
+    const val HOOK = "app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint:Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;:"
     const val MODE = "experimental-feed-description-getter"
     fun boundary(method: Method, owner: ClassDef, resolve: (String) -> ClassDef?): Boolean = runCatching {
         if (owner.type != OWNER || method.accessFlags != 17 || method.parameterTypes.isNotEmpty() || method.returnType != TEXT) return false

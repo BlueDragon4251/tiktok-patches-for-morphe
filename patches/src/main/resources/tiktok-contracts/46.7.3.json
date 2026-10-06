@@ -592,7 +592,7 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "c9ca48205d95c0cb4bb0de7327ab73b6ba60ed3b12baa2be69926897fee592e3"
   },
   "hookMethods": {
-    "app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint::": "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;-\u003eBr()Lcom/bytedance/tux/input/TuxTextView;",
+    "app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint:Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;:": "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;-\u003eBr()Lcom/bytedance/tux/input/TuxTextView;",
     "app.morphe.patches.tiktok.layout.theme.AvatarGradientConfigFingerprint::": "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;",
     "app.morphe.patches.tiktok.captchapopup.CaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptchaV2": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;-\u003epopCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V",
     "app.morphe.patches.tiktok.captchapopup.LegacyCaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptcha": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;-\u003epopCaptcha(Landroid/app/Activity;ILX/17qC;)V",

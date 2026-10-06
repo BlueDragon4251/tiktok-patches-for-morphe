@@ -45401,7 +45401,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "5d7412fae5c208c2310b82582feeb880a3581c37c551a1c516962fae84561dbd",
+      "sha256": "a3932ab9b6284ec0d0da879967faff2aca952c8d668b929f13e0c7f28d375c64",
       "patches": [],
       "findings": [
         {
@@ -45436,13 +45436,13 @@
         },
         {
           "kind": "literal",
-          "line": 373,
+          "line": 388,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 496,
+          "line": 511,
           "text": "lastStyleMs < 100 && lastStyleMs >= 0",
           "category": "requires-cardinality-or-dataflow-review"
         }
@@ -47406,7 +47406,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
-      "sha256": "53a2840c588b7766868d940e65e1f7b6c4d15cb9408928332e7962ad749e21d9",
+      "sha256": "eb8a898404d53e432dbd9df801b707cff2f4aeb93dbb270e9350ce8b1bb2ac9e",
       "patches": [],
       "findings": [
         {
@@ -47417,49 +47417,49 @@
         },
         {
           "kind": "literal",
-          "line": 99,
+          "line": 129,
           "text": "\"getFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 99,
+          "line": 129,
           "text": "getMethod(\"getFillColor\");",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 101,
+          "line": 131,
           "text": "\"setFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 101,
+          "line": 131,
           "text": "getMethod(\"setFillColor\", int.class)};",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 151,
+          "line": 181,
           "text": "\"setTintColorStateList$tux_theme_release\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 151,
+          "line": 181,
           "text": "getMethod(\"setTintColorStateList$tux_theme_release\", ColorStateList.class);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 158,
+          "line": 188,
           "text": "getDeclaredFields()) {",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 163,
+          "line": 193,
           "text": "setAccessible(true); TINT_FIELDS.put(drawableType, field); }",
           "category": "structural-or-semantic-evidence"
         }
@@ -74180,7 +74180,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/FeedDescriptionContracts.kt",
-      "sha256": "60cb6787167e10161f73fb233ba15edb5a7e47f969c0bcd802e042965fb724b2",
+      "sha256": "81788e22901176f3aad9523eadadb093ec5b0a9c4ebe9bbc73fab5940c681368",
       "patches": [],
       "findings": [
         {
@@ -74210,8 +74210,14 @@
         {
           "kind": "literal",
           "line": 12,
-          "text": "\"app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint::\"",
+          "text": "\"app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint:Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;:\"",
           "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "native-type",
+          "line": 12,
+          "text": "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;",
+          "category": "stable-named-anchor"
         },
         {
           "kind": "literal",

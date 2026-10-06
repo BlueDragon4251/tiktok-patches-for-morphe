@@ -31,6 +31,36 @@ final class ThemeViewColors {
         return Color.alpha(color) != 0 && Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) <= 34;
     }
 
+    /** Preserve native state selection and functional colors using public ColorStateList APIs. */
+    static ColorStateList stateColors(ColorStateList original, int primary, int secondary) {
+        return new StateColors(original, primary, secondary);
+    }
+
+    private static final class StateColors extends ColorStateList {
+        final ColorStateList original;
+        final int primary, secondary;
+        StateColors(ColorStateList original, int primary, int secondary) {
+            super(new int[][]{new int[0]}, new int[]{map(original.getDefaultColor(), primary, secondary)});
+            this.original = original; this.primary = primary; this.secondary = secondary;
+        }
+        private static int map(int nativeColor, int primary, int secondary) {
+            if (!neutral(nativeColor)) return nativeColor;
+            int low = Math.min(Color.red(nativeColor), Math.min(Color.green(nativeColor), Color.blue(nativeColor)));
+            int high = Math.max(Color.red(nativeColor), Math.max(Color.green(nativeColor), Color.blue(nativeColor)));
+            int target = high > 60 && low < 220 ? secondary : primary;
+            int alpha = Color.alpha(nativeColor) * Color.alpha(target) / 255;
+            return (target & 0x00ffffff) | (alpha << 24);
+        }
+        @Override public boolean isStateful() { return original.isStateful(); }
+        @Override public boolean isOpaque() { return original.isOpaque() && Color.alpha(primary) == 255 && Color.alpha(secondary) == 255; }
+        @Override public int getColorForState(int[] states, int fallback) {
+            return map(original.getColorForState(states, fallback), primary, secondary);
+        }
+        @Override public ColorStateList withAlpha(int alpha) {
+            return stateColors(original.withAlpha(alpha), primary, secondary);
+        }
+    }
+
     static Integer flatColor(Drawable drawable) {
         if (drawable instanceof ColorDrawable) return ((ColorDrawable) drawable).getColor();
         if (Build.VERSION.SDK_INT >= 24 && drawable instanceof GradientDrawable) {
@@ -51,10 +81,10 @@ final class ThemeViewColors {
         NativeTint nativeTint = NativeTint.find(view);
         if (nativeTint != null) {
             ColorStateList colors = nativeTint.get(view.getDrawable());
-            if (colors != null) return !colors.isStateful() && neutral(colors.getDefaultColor());
+            if (colors != null) return neutral(colors.getDefaultColor());
         }
         ColorStateList tint = view.getImageTintList();
-        if (tint != null) return !tint.isStateful() && neutral(tint.getDefaultColor());
+        if (tint != null) return neutral(tint.getDefaultColor());
         Drawable drawable = view.getDrawable();
         if (drawable == null || drawable instanceof BitmapDrawable) return false;
         View control = view;

@@ -262,14 +262,23 @@ public final class ThemeNativeTargets {
         }
         int nativeColor = fill.original.getDefaultColor();
         int r = Color.red(nativeColor), g = Color.green(nativeColor), b = Color.blue(nativeColor);
-        // Functional colors and stateful controls retain their native behavior.
-        if (fill.original.isStateful() || Color.alpha(nativeColor) == 0
+        // Functional colors retain their native behavior.
+        if (Color.alpha(nativeColor) == 0
                 || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) return;
         boolean secondary = Color.alpha(nativeColor) < 200
                 || Math.max(r, Math.max(g, b)) > 60 && Math.min(r, Math.min(g, b)) < 220;
         int mapped = secondary ? target.secondary : target.primary;
-        if (view.getCurrentTextColor() != mapped) view.setTextColor(mapped);
-        fill.applied = view.getTextColors();
+        if (fill.original.isStateful()) {
+            if (fill.applied == null || fill.primary != target.primary || fill.secondary != target.secondary) {
+                fill.applied = ThemeViewColors.stateColors(fill.original, target.primary, target.secondary);
+                fill.primary = target.primary; fill.secondary = target.secondary;
+                view.setTextColor(fill.applied);
+            }
+            mapped = view.getCurrentTextColor();
+        } else {
+            if (view.getCurrentTextColor() != mapped) view.setTextColor(mapped);
+            fill.applied = view.getTextColors();
+        }
         fill.mapSpans(view, mapped);
     }
 
@@ -283,8 +292,12 @@ public final class ThemeNativeTargets {
             fill = new IconFill(view, original);
             target.icons.put(view, fill);
         }
-        if (fill.applied == null || fill.applied.getDefaultColor() != target.primary) {
-            fill.applied = ColorStateList.valueOf(target.primary);
+        if (fill.applied == null || fill.primary != target.primary) {
+            fill.primary = target.primary;
+            ColorStateList source = fill.originalNative != null ? fill.originalNative : fill.original;
+            fill.applied = source != null && source.isStateful()
+                    ? ThemeViewColors.stateColors(source, target.primary, target.primary)
+                    : ColorStateList.valueOf(target.primary);
             view.setImageTintList(fill.applied);
             if (fill.nativeTint != null) {
                 fill.appliedNative = fill.applied;
@@ -297,6 +310,7 @@ public final class ThemeNativeTargets {
         final Drawable drawable;
         final ColorStateList original;
         ColorStateList applied, appliedNative;
+        int primary;
         final ThemeViewColors.NativeTint nativeTint;
         final ColorStateList originalNative;
         IconFill(ImageView view, ColorStateList original) {
@@ -309,6 +323,7 @@ public final class ThemeNativeTargets {
     private static final class TextFill {
         final ColorStateList original;
         ColorStateList applied;
+        int primary, secondary;
         CharSequence originalText, appliedText;
         int spanColor;
         TextFill(ColorStateList original) { this.original = original; }

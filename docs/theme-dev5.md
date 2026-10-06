@@ -15,3 +15,5 @@ The native `VideoDescAssem` getter returns the actual feed-description `TuxTextV
 `TuxIconView` delegates its public `setTintColorStateList$tux_theme_release` to the sole ColorStateList on `TuxIconDrawable`, whose `draw()` reapplies it to its inner drawable. Both pinned APKs were inspected; Android ImageView tint alone is insufficient. The bridge snapshots that native list as well as Android tint and preserves functional native rebinds. Reflection descriptor lookups, including misses, are cached.
 
 47.1.3's `SocialThoughtBaseBubbleBackgroundView` owns its speech-bubble paint through public `getFillColor()/setFillColor(int)`; the geometry remains native. Profile and Inbox passes now style this exact native public API and restore Default without overwriting a later functional fill.
+
+Stateful native icon and label palettes retain selected functional colors and disabled opacity while neutral states use the theme. The native draw test verifies actual pixels across state changes and restoration of the original palette.
