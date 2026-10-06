@@ -19,6 +19,11 @@ import java.lang.reflect.Modifier;
 /** Color operations for native-owned controls; never infer a media image from its dimensions. */
 final class ThemeViewColors {
     private static final WeakHashMap<Drawable, Boolean> MONOCHROME = new WeakHashMap<>();
+    private static final WeakHashMap<Class<?>, Method[]> BUBBLE_API = new WeakHashMap<>();
+    private static final WeakHashMap<Class<?>, Method> TINT_SETTERS = new WeakHashMap<>();
+    private static final WeakHashMap<Class<?>, Field> TINT_FIELDS = new WeakHashMap<>();
+    private static final WeakHashMap<View, BubbleFill> BUBBLES = new WeakHashMap<>();
+    private static final String BUBBLE = "com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView";
     private ThemeViewColors() {}
 
     static boolean neutral(int color) {
@@ -42,6 +47,7 @@ final class ThemeViewColors {
 
     /** Explicit native image tints, or monochrome non-bitmap drawables in clickable controls. */
     static boolean icon(ImageView view) {
+        if (view.getDrawable() == null || view.getDrawable() instanceof BitmapDrawable) return false;
         NativeTint nativeTint = NativeTint.find(view);
         if (nativeTint != null) {
             ColorStateList colors = nativeTint.get(view.getDrawable());
@@ -82,6 +88,54 @@ final class ThemeViewColors {
         }
     }
 
+    static void bubble(View view, int color) {
+        try {
+            BubbleFill fill = BUBBLES.get(view);
+            if (fill == null) {
+                Class<?> type = view.getClass();
+                Method[] api = BUBBLE_API.get(type);
+                if (!BUBBLE_API.containsKey(type)) {
+                    BUBBLE_API.put(type, null);
+                    Method getter = type.getMethod("getFillColor");
+                    if (!getter.getDeclaringClass().getName().equals(BUBBLE) || getter.getReturnType() != int.class) return;
+                    api = new Method[]{getter, type.getMethod("setFillColor", int.class)};
+                    BUBBLE_API.put(type, api);
+                }
+                if (api == null) return;
+                Method getter = api[0], setter = api[1];
+                fill = new BubbleFill(getter, setter, (Integer) getter.invoke(view));
+                BUBBLES.put(view, fill);
+            }
+            int current = (Integer) fill.getter.invoke(view);
+            if (current != fill.applied) fill.original = current;
+            if (!neutral(fill.original)) return;
+            if (current != color) fill.setter.invoke(view, color);
+            fill.applied = color;
+        } catch (ReflectiveOperationException ignored) { }
+    }
+
+    static void restoreBubbles(View root) {
+        java.util.Iterator<java.util.Map.Entry<View, BubbleFill>> entries = BUBBLES.entrySet().iterator();
+        while (entries.hasNext()) {
+            java.util.Map.Entry<View, BubbleFill> entry = entries.next();
+            View view = entry.getKey();
+            if (view.getRootView() != root) continue;
+            BubbleFill fill = entry.getValue();
+            try {
+                if ((Integer) fill.getter.invoke(view) == fill.applied) fill.setter.invoke(view, fill.original);
+            } catch (ReflectiveOperationException ignored) { }
+            entries.remove();
+        }
+    }
+
+    private static final class BubbleFill {
+        final Method getter, setter;
+        int original, applied;
+        BubbleFill(Method getter, Method setter, int original) {
+            this.getter = getter; this.setter = setter; this.original = original; applied = original;
+        }
+    }
+
     /** TuxIconView's public setter writes the sole ColorStateList consumed again by draw(). */
     static final class NativeTint {
         final Method setter;
@@ -90,15 +144,25 @@ final class ThemeViewColors {
         static NativeTint find(ImageView view) {
             try {
                 if (view.getDrawable() == null) return null;
-                Method setter = view.getClass().getMethod("setTintColorStateList$tux_theme_release", ColorStateList.class);
-                Field field = null;
-                for (Field candidate : view.getDrawable().getClass().getDeclaredFields()) {
-                    if (candidate.getType() != ColorStateList.class || Modifier.isStatic(candidate.getModifiers())) continue;
-                    if (field != null) return null;
-                    field = candidate;
+                Class<?> type = view.getClass(), drawableType = view.getDrawable().getClass();
+                Method setter = TINT_SETTERS.get(type);
+                if (!TINT_SETTERS.containsKey(type)) {
+                    TINT_SETTERS.put(type, null);
+                    setter = type.getMethod("setTintColorStateList$tux_theme_release", ColorStateList.class);
+                    TINT_SETTERS.put(type, setter);
+                }
+                if (setter == null) return null;
+                Field field = TINT_FIELDS.get(drawableType);
+                if (!TINT_FIELDS.containsKey(drawableType)) {
+                    TINT_FIELDS.put(drawableType, null);
+                    for (Field candidate : drawableType.getDeclaredFields()) {
+                        if (candidate.getType() != ColorStateList.class || Modifier.isStatic(candidate.getModifiers())) continue;
+                        if (field != null) return null;
+                        field = candidate;
+                    }
+                    if (field != null) { field.setAccessible(true); TINT_FIELDS.put(drawableType, field); }
                 }
                 if (field == null) return null;
-                field.setAccessible(true);
                 return new NativeTint(setter, field);
             } catch (ReflectiveOperationException ignored) { return null; }
         }

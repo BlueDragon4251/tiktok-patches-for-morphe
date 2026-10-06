@@ -565,6 +565,7 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     public void nativeIconDrawUsesThemeTintAndDefaultPreservesAFunctionalRebind() {
         NativeTintImage icon = new NativeTintImage(activity);
         NativeTintDrawable drawable = new NativeTintDrawable();
@@ -605,6 +606,56 @@ public class ThemeRuntimeRegressionTest {
         public void setTintColorStateList$tux_theme_release(android.content.res.ColorStateList colors) {
             ((NativeTintDrawable) getDrawable()).colors = colors;
         }
+    }
+
+    @Test
+    public void thoughtBubbleNativePaintFillIsThemedWithoutChangingLayoutAndRestoresDefault() {
+        com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView bubble =
+                new com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView(activity);
+        profile.addView(bubble);
+        bubble.layout(12, 20, 140, 65);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.backgroundColor(activity), bubble.getFillColor());
+        assertEquals(12, bubble.getLeft());
+        assertEquals(128, bubble.getWidth());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.WHITE, bubble.getFillColor());
+        ThemeStateStore.saveUserPreset(activity, "arctic_blue");
+        ThemeNativeTargets.profilePage(profile);
+        bubble.setFillColor(Color.RED);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.RED, bubble.getFillColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.RED, bubble.getFillColor());
+    }
+
+    @Test
+    public void exactFeedDescriptionStaysReadableOverMediaAndAfterNativeFormattedRebind() throws Exception {
+        TextView caption = new TextView(activity);
+        caption.setTextColor(Color.BLACK);
+        caption.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{Color.RED, Color.GREEN})); // No guessed flat backdrop.
+        host.addView(caption);
+        ThemeNativeTargets.feedDescription(caption);
+        assertEquals(Color.WHITE, caption.getCurrentTextColor());
+        caption.setTextColor(Color.BLACK);
+        android.text.SpannableString text = new android.text.SpannableString("Description");
+        text.setSpan(new android.text.style.ForegroundColorSpan(Color.BLACK), 0, text.length(), 33);
+        caption.setText(text);
+        Field targets = ThemeNativeTargets.class.getDeclaredField("TARGETS");
+        targets.setAccessible(true);
+        Object target = ((Map<?, ?>) targets.get(null)).get(caption);
+        Method preDraw = target.getClass().getMethod("onPreDraw");
+        preDraw.setAccessible(true);
+        preDraw.invoke(target);
+        assertEquals(Color.WHITE, caption.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((android.text.Spanned) caption.getText()).getSpans(0, text.length(),
+                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        preDraw.invoke(target);
+        assertEquals(Color.BLACK, caption.getCurrentTextColor());
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

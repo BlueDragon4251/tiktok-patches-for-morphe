@@ -21,7 +21,7 @@ import app.morphe.extension.shared.Logger;
 
 /** Roots supplied by verified native lifecycle hooks. No labels, dimensions or class-name guesses. */
 public final class ThemeNativeTargets {
-    private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7;
+    private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7, FEED_DESCRIPTION = 8;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private static final Map<ViewGroup, Target> PAGER_TEXTS = new WeakHashMap<>();
     private ThemeNativeTargets() {}
@@ -32,6 +32,7 @@ public final class ThemeNativeTargets {
     public static void chat(View view) { register(view, CHAT); }
     public static void navigation(View view) { register(view, NAV); }
     public static void navigationDivider(View view) { register(view, NAV_DIVIDER); }
+    public static void feedDescription(TextView view) { register(view, FEED_DESCRIPTION); }
     static void inboxRow(View view) { register(view, INBOX_ROW); }
 
     /** Native pager entry after computeScroll, before any child is drawn in this frame. */
@@ -239,6 +240,7 @@ public final class ThemeNativeTargets {
                 styleIcon((ImageView) view, target);
                 continue;
             }
+            ThemeViewColors.bubble(view, target.background);
             Drawable background = view.getBackground();
             Integer flat = ThemeViewColors.flatColor(background);
             if (flat != null && pageFill(flat, target)) {
@@ -431,7 +433,12 @@ public final class ThemeNativeTargets {
             View view = reference.get();
             if (view == null) return;
             boolean enabled = active(view);
-            if (kind == PROFILE) {
+            if (kind == FEED_DESCRIPTION && enabled && view instanceof TextView) {
+                // Native video descriptions overlay media, independently of a light/dark page preset.
+                primary = Color.WHITE;
+                secondary = Color.WHITE;
+                styleText((TextView) view, this);
+            } else if (kind == PROFILE) {
                 View sidebar = enabled ? visibleSidebar(view) : null;
                 if (sidebar != null) allowProfileUnderDrawer(view, sidebar);
                 else restoreClips();
@@ -467,6 +474,7 @@ public final class ThemeNativeTargets {
                 fills.clear();
             }
             if (!enabled) {
+                ThemeViewColors.restoreBubbles(view.getRootView());
                 for (Map.Entry<ImageView, IconFill> entry : icons.entrySet()) {
                     ImageView icon = entry.getKey();
                     IconFill fill = entry.getValue();

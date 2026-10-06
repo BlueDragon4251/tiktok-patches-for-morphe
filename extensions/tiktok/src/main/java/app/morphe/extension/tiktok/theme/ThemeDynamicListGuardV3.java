@@ -209,6 +209,7 @@ public final class ThemeDynamicListGuardV3 {
                 Node node = queue.removeFirst();
                 View view = node.view;
                 if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) continue;
+                ThemeViewColors.bubble(view, background);
                 // Native headers can remain stock white above correctly themed inbox rows.
                 // Only neutral flat fills on this already identified list screen are replaced.
                 if (!(view instanceof android.widget.ImageView)
@@ -568,7 +569,8 @@ public final class ThemeDynamicListGuardV3 {
                     detachAndForget();
                     return true;
                 }
-                if (!themeActive(root) || ThemeNativeTargets.hasChat(root)) return true;
+                if (!themeActive(root)) { ThemeViewColors.restoreBubbles(root); return true; }
+                if (ThemeNativeTargets.hasChat(root)) return true;
                 long now = SystemClock.uptimeMillis();
                 String currentPreset = ThemeStateStore.currentPreset(root.getContext());
                 boolean changed = !currentPreset.equals(preset);

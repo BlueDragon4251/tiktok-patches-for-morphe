@@ -9,6 +9,7 @@ import app.morphe.patches.tiktok.shared.discovery.ThemeSurfaceContracts
 import app.morphe.patches.tiktok.shared.discovery.ScratchContracts
 import app.morphe.patches.tiktok.shared.discovery.ReceiverAliases
 import app.morphe.patches.tiktok.shared.discovery.ThemeContracts
+import app.morphe.patches.tiktok.shared.discovery.FeedDescriptionContracts
 import app.morphe.patches.tiktok.shared.discovery.AvatarGradientContracts
 import app.morphe.patches.tiktok.shared.discovery.calls
 import app.morphe.patches.tiktok.shared.discovery.readsField
@@ -128,6 +129,11 @@ private object TuxSemanticColorResolverFingerprint : Fingerprint(
 private object TuxStyledColorResolverFingerprint : Fingerprint(
     parameters = listOf("I", "Landroid/content/Context;", "[I"), returnType = "Ljava/lang/Integer;",
     custom = { method, owner -> isTuxFamily(owner) && method.calls("Landroid/content/res/TypedArray;", "getColor") },
+)
+
+private object FeedDescriptionGetterFingerprint : Fingerprint(
+    definingClass = FeedDescriptionContracts.OWNER, parameters = emptyList(), returnType = FeedDescriptionContracts.TEXT,
+    custom = { method, owner -> FeedDescriptionContracts.boundary(method, owner, HookEvidence::originalClass) },
 )
 
 private object AvatarGradientConfigFingerprint : Fingerprint(
@@ -264,6 +270,11 @@ val themeEnginePatch = bytecodePatch(
             val method = fingerprint.uniqueMethod
             val site = ThemeContracts.tuxEntrySite(method, role, patchDefaultPreset)
             method.addInstructions(site.index, site.code)
+        }
+
+        FeedDescriptionGetterFingerprint.uniqueMethod.apply {
+            val site = FeedDescriptionContracts.site(this)
+            addInstruction(site.index, site.code)
         }
 
         AvatarGradientConfigFingerprint.uniqueMethod.apply {
