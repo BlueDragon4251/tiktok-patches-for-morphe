@@ -66,8 +66,9 @@ public class UserSettingsCheckpointTest {
         assertTrue(prefs.getAll().isEmpty());
     }
     @Test public void corruptCheckpointFailsOpenWithoutPartialRestore() throws Exception {
-        Files.writeString(new File(context.getFilesDir(), "blueit-user-settings-checkpoint-v1.json").toPath(),
-                "{\"schema\":1,\"values\":{\"good\":{\"type\":\"boolean\",\"value\":true},\"bad\":{\"type\":\"unsupported\"}}}");
+        Files.write(new File(context.getFilesDir(), "blueit-user-settings-checkpoint-v1.json").toPath(),
+                "{\"schema\":1,\"values\":{\"good\":{\"type\":\"boolean\",\"value\":true},\"bad\":{\"type\":\"unsupported\"}}}"
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
         new UserSettingsCheckpoint(context, prefs);
         assertTrue(prefs.getAll().isEmpty());
     }
