@@ -49,8 +49,13 @@ final class ThemeDefaultContrast {
                         if (fill == null || fill.drawable.get() != drawable || current != fill.applied) {
                             fill = new IconFill(drawable, nativeTint, current); ICONS.put(icon, fill);
                         }
-                        // Null native tint resolves from TikTok's resource; a verified monochrome
-                        // icon still needs a foreground contrasting with this actual flat backdrop.
+                        Integer nativeColor = fill.original == null ? fill.nativeColor
+                                : fill.original.getColorForState(icon.getDrawableState(), fill.original.getDefaultColor());
+                        if (nativeColor == null || !ThemeViewColors.neutral(nativeColor)
+                                || light(nativeColor) != light(backdrop)) {
+                            if (current == fill.applied) fill.tint.set(icon, fill.original);
+                            continue;
+                        }
                         if (fill.applied == null || fill.primary != primary) {
                             fill.primary = primary;
                             fill.applied = fill.original == null ? ColorStateList.valueOf(primary)
@@ -79,6 +84,21 @@ final class ThemeDefaultContrast {
             view = (View) view.getParent();
         }
         return null;
+    }
+    private static Integer sampleColor(Drawable drawable) {
+        android.graphics.Rect bounds = new android.graphics.Rect(drawable.getBounds());
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(24, 24, android.graphics.Bitmap.Config.ARGB_8888);
+        try {
+            drawable.setBounds(0, 0, 24, 24); drawable.draw(new android.graphics.Canvas(pixels));
+            Integer result = null;
+            for (int y = 0; y < 24; y++) for (int x = 0; x < 24; x++) {
+                int color = pixels.getPixel(x, y);
+                if (Color.alpha(color) < 32) continue;
+                if (!ThemeViewColors.neutral(color)) return null;
+                if (result == null || Color.alpha(color) > Color.alpha(result)) result = color;
+            }
+            return result;
+        } finally { drawable.setBounds(bounds); pixels.recycle(); }
     }
     static void restore(View root) {
         java.util.Iterator<Map.Entry<TextView, TextFill>> texts = TEXTS.entrySet().iterator();
@@ -109,10 +129,12 @@ final class ThemeDefaultContrast {
         final java.lang.ref.WeakReference<Drawable> drawable;
         final ThemeViewColors.NativeTint tint;
         final ColorStateList original;
+        final Integer nativeColor;
         ColorStateList applied;
         int primary;
         IconFill(Drawable drawable, ThemeViewColors.NativeTint tint, ColorStateList original) {
             this.drawable = new java.lang.ref.WeakReference<>(drawable); this.tint = tint; this.original = original;
+            nativeColor = original == null ? sampleColor(drawable) : null;
         }
     }
 }

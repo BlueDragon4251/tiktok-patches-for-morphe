@@ -567,6 +567,7 @@ public class ThemeRuntimeRegressionTest {
     @Test
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     public void nativeIconDrawUsesThemeTintAndDefaultPreservesAFunctionalRebind() {
+        profile.setBackgroundColor(Color.WHITE); // Native black icons already have a readable Default backdrop.
         NativeTintImage icon = new NativeTintImage(activity);
         NativeTintDrawable drawable = new NativeTintDrawable();
         icon.setImageDrawable(drawable);
@@ -596,6 +597,7 @@ public class ThemeRuntimeRegressionTest {
     @Test
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     public void nativeControlStatesKeepSelectionAndDisabledAlphaWhileNeutralLabelsStayReadable() {
+        profile.setBackgroundColor(Color.WHITE); // Native black icons already have a readable Default backdrop.
         android.content.res.ColorStateList nativeStates = new android.content.res.ColorStateList(
                 new int[][]{new int[]{android.R.attr.state_selected}, new int[]{-android.R.attr.state_enabled}, new int[0]},
                 new int[]{Color.RED, 0x66000000, Color.BLACK});
@@ -751,6 +753,7 @@ public class ThemeRuntimeRegressionTest {
     @Test
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     public void modelDispatchedIconWithNoNativeStateTintStillDrawsAndRestoresItsNativeColor() {
+        profile.setBackgroundColor(Color.WHITE); // Native black icons already have a readable Default backdrop.
         NativeTintImage icon = new NativeTintImage(activity);
         NativeTintDrawable drawable = new NativeTintDrawable();
         drawable.colors = null;

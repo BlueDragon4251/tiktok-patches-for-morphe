@@ -44794,7 +44794,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDefaultContrast.java",
-      "sha256": "af4a1315de69e75cf816f5316ea324b843957a6e94e32f437beade15e8ad1e80",
+      "sha256": "4690f9f7fc69b0bb7260bc8f37efcf3679e5b5eec0720285fca8c22241fab28e",
       "patches": [],
       "findings": []
     },
