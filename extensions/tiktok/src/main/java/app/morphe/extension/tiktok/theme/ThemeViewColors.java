@@ -94,7 +94,9 @@ final class ThemeViewColors {
             if (!(control.getParent() instanceof View)) break;
             control = (View) control.getParent();
         }
-        if (!clickable) return false;
+        // TuxNavBar dispatches actions from its model; its child icons and their first
+        // ancestors need not be clickable. The verified native tint API still owns them.
+        if (!clickable && nativeTint == null) return false;
         Boolean cached = MONOCHROME.get(drawable);
         if (cached != null) return cached;
         android.graphics.Rect bounds = new android.graphics.Rect(drawable.getBounds());
@@ -119,6 +121,7 @@ final class ThemeViewColors {
     }
 
     static void bubble(View view, int color) {
+        ThemeThoughtRenderer.style(view, color);
         try {
             BubbleFill fill = BUBBLES.get(view);
             if (fill == null) {
@@ -145,6 +148,7 @@ final class ThemeViewColors {
     }
 
     static void restoreBubbles(View root) {
+        ThemeThoughtRenderer.restore(root);
         java.util.Iterator<java.util.Map.Entry<View, BubbleFill>> entries = BUBBLES.entrySet().iterator();
         while (entries.hasNext()) {
             java.util.Map.Entry<View, BubbleFill> entry = entries.next();

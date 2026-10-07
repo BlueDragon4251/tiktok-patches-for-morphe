@@ -635,7 +635,7 @@ public class ThemeRuntimeRegressionTest {
     /** Models the verified TuxIconDrawable draw-time color writer, beyond ImageView tint. */
     public static final class NativeTintDrawable extends Drawable {
         private android.content.res.ColorStateList colors = android.content.res.ColorStateList.valueOf(Color.BLACK);
-        @Override public void draw(android.graphics.Canvas canvas) { canvas.drawColor(colors.getColorForState(getState(), colors.getDefaultColor())); }
+        @Override public void draw(android.graphics.Canvas canvas) { canvas.drawColor(colors == null ? Color.BLACK : colors.getColorForState(getState(), colors.getDefaultColor())); }
         @Override public void setAlpha(int alpha) { }
         @Override public void setColorFilter(android.graphics.ColorFilter filter) { }
         @Override public int getOpacity() { return android.graphics.PixelFormat.OPAQUE; }
@@ -736,10 +736,74 @@ public class ThemeRuntimeRegressionTest {
         assertTrue("Native Layout must draw visible light glyphs over red media", glyphs > 50);
         ThemeStateStore.saveUserPreset(activity, "default");
         ThemeCaptionRenderer.beforeDraw(nativeView, layout);
-        assertEquals(Color.BLACK, paint.getColor());
-        assertEquals(1, text.getSpans(0, text.length(), android.text.style.CharacterStyle.class).length);
-        assertSame(appearance, text.getSpans(0, text.length(), android.text.style.CharacterStyle.class)[0]);
+        assertEquals(Color.WHITE, paint.getColor());
+        assertEquals(0, text.getSpanStart(appearance));
+        pixels.eraseColor(Color.RED); layout.draw(canvas);
+        int defaultGlyphs = 0;
+        for (int y = 0; y < height; y++) for (int x = 0; x < 350; x++) {
+            int pixel = pixels.getPixel(x, y);
+            if (Color.green(pixel) > 200 && Color.blue(pixel) > 200) defaultGlyphs++;
+        }
+        assertTrue("Caption repair must remain visible with TikTok Default", defaultGlyphs > 50);
         pixels.recycle();
+    }
+
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void modelDispatchedIconWithNoNativeStateTintStillDrawsAndRestoresItsNativeColor() {
+        NativeTintImage icon = new NativeTintImage(activity);
+        NativeTintDrawable drawable = new NativeTintDrawable();
+        drawable.colors = null;
+        icon.setImageDrawable(drawable);
+        profile.addView(icon);
+        assertFalse(icon.isClickable());
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), drawable.colors.getDefaultColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertNull(drawable.colors);
+    }
+
+    @Test
+    public void nativeNotePathPainterAndHintAreThemedWhileGradientAndStickerRebindsStayNative() {
+        NoteView note = new NoteView(activity);
+        note.setHintTextColor(0x77000000);
+        profile.addView(note);
+        int nativeHint = note.getCurrentHintTextColor();
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.backgroundColor(activity), note.painter.fill.getColor());
+        assertEquals(ThemeEngine.secondaryTextColor(activity), note.getCurrentHintTextColor());
+        assertEquals(0x77, Color.alpha(note.painter.shadow.getColor()));
+        assertEquals(Color.RED, note.painter.accent.getColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.WHITE, note.painter.fill.getColor());
+        assertEquals(nativeHint, note.getCurrentHintTextColor());
+        ThemeStateStore.saveUserPreset(activity, "arctic_blue");
+        note.gradient = new Object();
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.WHITE, note.painter.fill.getColor());
+        note.gradient = null; note.sticker = true;
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.WHITE, note.painter.fill.getColor());
+    }
+
+    /** Captures the three Paint/four Path native painter and its public note APIs. */
+    public static final class NoteView extends TextView {
+        final NotePainter painter = new NotePainter();
+        Object gradient; boolean sticker;
+        public NoteView(Context context) { super(context); }
+        public Object getBubbleStyle() { return this; }
+        public Object getBubbleBackgroundGradientImgData() { return gradient; }
+        public boolean getEnableStarSticker() { return sticker; }
+    }
+    public static final class NotePainter {
+        final android.graphics.Path a = new android.graphics.Path(), b = new android.graphics.Path(),
+                c = new android.graphics.Path(), d = new android.graphics.Path();
+        final android.graphics.Paint fill = new android.graphics.Paint(), shadow = new android.graphics.Paint(),
+                accent = new android.graphics.Paint();
+        android.graphics.Shader shader; Drawable image;
+        NotePainter() { fill.setColor(Color.WHITE); shadow.setColor(0x77ffffff); accent.setColor(Color.RED); }
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

@@ -22,15 +22,8 @@ public final class ThemeCaptionRenderer {
         try {
             TextPaint paint = layout.getPaint();
             Fill fill = FILLS.get(layout);
-            boolean active = !"default".equals(ThemeStateStore.currentPreset(view.getContext()));
-            if (!active) {
-                if (fill != null) {
-                    if (paint.getColor() == fill.applied) paint.setColor(fill.original);
-                    if (layout.getText() instanceof Spannable) ((Spannable) layout.getText()).removeSpan(fill.contrast);
-                    FILLS.remove(layout);
-                }
-                return;
-            }
+            // This native View renders captions over video, including when the user selects
+            // TikTok Default. Caption contrast is a feed repair, independent of the page theme.
             if (fill == null) {
                 fill = new Fill(paint.getColor());
                 FILLS.put(layout, fill);

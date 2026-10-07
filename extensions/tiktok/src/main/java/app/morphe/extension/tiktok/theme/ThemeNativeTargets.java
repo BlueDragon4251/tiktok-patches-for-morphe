@@ -258,6 +258,12 @@ public final class ThemeNativeTargets {
             ViewGroup child = (ViewGroup) view;
             for (int i = 0; i < child.getChildCount(); i++) queue.add(child.getChildAt(i));
         }
+        if (target.kind == PROFILE && visited > 50 && !target.profileScanned) {
+            target.profileScanned = true;
+            final int nodes = visited;
+            Logger.printInfo(() -> "[BlueIT Profile Scan v1] nodes=" + nodes + " texts=" + target.texts.size()
+                + " icons=" + target.icons.size() + " fills=" + target.fills.size());
+        }
     }
 
     private static void styleText(TextView view, Target target) {
@@ -392,6 +398,7 @@ public final class ThemeNativeTargets {
         float lastApplied;
         final Map<View, Fill> fills = new WeakHashMap<>();
         boolean stateLogged;
+        boolean profileScanned;
         long lastStyleMs = -1;
         String preset = "";
         int background, surface, primary, secondary;

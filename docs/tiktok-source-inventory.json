@@ -44082,66 +44082,60 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeCaptionRenderer.java",
-      "sha256": "f953f2561ac91f99c19107b6e2afa0293be2c79c90800d56442a735bac87bebb",
+      "sha256": "bdffd366151a55a0079d25781e4a5b3207154094721ad3eb14741f56a25f554c",
       "patches": [],
       "findings": [
         {
           "kind": "literal",
-          "line": 25,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 38,
+          "line": 31,
           "text": "\"[BlueIT Caption Draw v1] chars=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 38,
+          "line": 31,
           "text": "v1",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 39,
+          "line": 32,
           "text": "\" layout=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 39,
+          "line": 32,
           "text": "\"x\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 40,
+          "line": 33,
           "text": "\" paint=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 40,
+          "line": 33,
           "text": "\" visible=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 41,
+          "line": 34,
           "text": "\" alpha=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 41,
+          "line": 34,
           "text": "\" class=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 59,
+          "line": 52,
           "text": "\"BlueIT caption draw failed\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -45468,7 +45462,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "28747846c81a359bcb78191e6044fc8343f770cc3c30167f8922ce4c57b9af38",
+      "sha256": "25ef712aaba950fb25a82556a71b5a8c382f33478590dbcb11de05b0a7c0ebfb",
       "patches": [],
       "findings": [
         {
@@ -45509,49 +45503,79 @@
         },
         {
           "kind": "literal",
-          "line": 396,
-          "text": "\"\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "instruction-selection",
-          "line": 518,
-          "text": "lastStyleMs < 100 && lastStyleMs >= 0",
-          "category": "requires-cardinality-or-dataflow-review"
-        },
-        {
-          "kind": "literal",
-          "line": 524,
+          "line": 264,
           "text": "\" texts=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 524,
-          "text": "\"[BlueIT Native Styled v3] role=\"",
+          "line": 264,
+          "text": "\"[BlueIT Profile Scan v1] nodes=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 524,
-          "text": "v3",
+          "line": 264,
+          "text": "v1",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 525,
-          "text": "\" class=\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 525,
+          "line": 265,
           "text": "\" fills=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
+          "line": 265,
+          "text": "\" icons=\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 403,
+          "text": "\"\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "instruction-selection",
           "line": 525,
+          "text": "lastStyleMs < 100 && lastStyleMs >= 0",
+          "category": "requires-cardinality-or-dataflow-review"
+        },
+        {
+          "kind": "literal",
+          "line": 531,
+          "text": "\" texts=\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 531,
+          "text": "\"[BlueIT Native Styled v3] role=\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 531,
+          "text": "v3",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "literal",
+          "line": 532,
+          "text": "\" class=\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 532,
+          "text": "\" fills=\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 532,
           "text": "\" icons=\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -47514,6 +47538,85 @@
       ]
     },
     {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeThoughtRenderer.java",
+      "sha256": "e61876540c507d95c2ad3fe00a0d3ee166bb477da96800d5d254344a54d93c0f",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 74,
+          "text": "\"getBubbleBackgroundGradientImgData\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 74,
+          "text": "getMethod(\"getBubbleBackgroundGradientImgData\");",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 75,
+          "text": "\"getEnableStarSticker\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 75,
+          "text": "getMethod(\"getEnableStarSticker\");",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 76,
+          "text": "\"getBubbleStyle\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 76,
+          "text": "getMethod(\"getBubbleStyle\");",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 79,
+          "text": "getDeclaredFields()) {",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 84,
+          "text": "getDeclaredFields()) {",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 93,
+          "text": "setAccessible(true); shader.setAccessible(true); image.setAccessible(true);",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 94,
+          "text": "setAccessible(true);",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 98,
+          "text": "\"[BlueIT Note Painter v1] reviewed public note API and native path painter resolved\"",
+          "category": "hard-coded"
+        },
+        {
+          "kind": "register",
+          "line": 98,
+          "text": "v1",
+          "category": "hard-coded"
+        }
+      ]
+    },
+    {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeUiThread.java",
       "sha256": "dda9c7772e82607f0f28d9dd6cf1f980ca6dfbfd2c42c5f3240341137afb0132",
       "patches": [],
@@ -47521,7 +47624,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
-      "sha256": "eb8a898404d53e432dbd9df801b707cff2f4aeb93dbb270e9350ce8b1bb2ac9e",
+      "sha256": "97b23c53cb785068540742ac66111c12b2a7488efddc491408dd8cba4e1cc652",
       "patches": [],
       "findings": [
         {
@@ -47532,49 +47635,49 @@
         },
         {
           "kind": "literal",
-          "line": 129,
+          "line": 132,
           "text": "\"getFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 129,
+          "line": 132,
           "text": "getMethod(\"getFillColor\");",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 131,
+          "line": 134,
           "text": "\"setFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 131,
+          "line": 134,
           "text": "getMethod(\"setFillColor\", int.class)};",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 181,
+          "line": 185,
           "text": "\"setTintColorStateList$tux_theme_release\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 181,
+          "line": 185,
           "text": "getMethod(\"setTintColorStateList$tux_theme_release\", ColorStateList.class);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 188,
+          "line": 192,
           "text": "getDeclaredFields()) {",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 193,
+          "line": 197,
           "text": "setAccessible(true); TINT_FIELDS.put(drawableType, field); }",
           "category": "structural-or-semantic-evidence"
         }
