@@ -671,30 +671,75 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
-    public void exactFeedDescriptionStaysReadableOverMediaAndAfterNativeFormattedRebind() throws Exception {
+    public void asynchronousDescriptionDiscoveryDoesNotRewriteNativeTextOrColors() throws Exception {
         TextView caption = new TextView(activity);
-        caption.setTextColor(Color.BLACK);
-        caption.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[]{Color.RED, Color.GREEN})); // No guessed flat backdrop.
-        host.addView(caption);
-        ThemeNativeTargets.feedDescription(caption);
-        assertEquals(Color.WHITE, caption.getCurrentTextColor());
-        caption.setTextColor(Color.BLACK);
-        android.text.SpannableString text = new android.text.SpannableString("Description");
+        android.text.SpannableString text = new android.text.SpannableString("Native description");
         text.setSpan(new android.text.style.ForegroundColorSpan(Color.BLACK), 0, text.length(), 33);
         caption.setText(text);
-        Field targets = ThemeNativeTargets.class.getDeclaredField("TARGETS");
-        targets.setAccessible(true);
-        Object target = ((Map<?, ?>) targets.get(null)).get(caption);
-        Method preDraw = target.getClass().getMethod("onPreDraw");
-        preDraw.setAccessible(true);
-        preDraw.invoke(target);
-        assertEquals(Color.WHITE, caption.getCurrentTextColor());
-        assertEquals(Color.WHITE, ((android.text.Spanned) caption.getText()).getSpans(0, text.length(),
-                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
-        ThemeStateStore.saveUserPreset(activity, "default");
-        preDraw.invoke(target);
+        caption.setTextColor(Color.BLACK);
+        host.addView(caption);
+        CharSequence nativeText = caption.getText();
+        Thread bind = new Thread(() -> { for (int i = 0; i < 100; i++) ThemeNativeTargets.feedDescription(caption); });
+        bind.start(); bind.join();
+        assertSame(nativeText, caption.getText());
         assertEquals(Color.BLACK, caption.getCurrentTextColor());
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertSame(nativeText, caption.getText());
+        assertEquals(Color.BLACK, caption.getCurrentTextColor());
+        assertEquals(1, ((android.text.Spanned) caption.getText()).getSpans(0, text.length(),
+                android.text.style.ForegroundColorSpan.class).length);
+    }
+
+    @Test
+    public void backgroundInboxBindDefersAllViewWritesToMainThread() throws Exception {
+        FrameLayout row = new FrameLayout(activity);
+        row.setBackgroundColor(Color.WHITE);
+        TextView label = new TextView(activity);
+        label.setTextColor(Color.BLACK);
+        row.addView(label);
+        host.addView(row);
+        Thread bind = new Thread(() -> ThemeDynamicListGuardV3.onInboxRowBound(row));
+        bind.start(); bind.join();
+        assertEquals(Color.WHITE, ((ColorDrawable) row.getBackground()).getColor());
+        assertEquals(Color.BLACK, label.getCurrentTextColor());
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();
+        assertEquals(ThemeEngine.textColor(activity), label.getCurrentTextColor());
+        assertTrue(row.getBackground() instanceof GradientDrawable);
+    }
+
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void visibleCaptionLayoutDrawsNeutralGlyphsAndRetainsNativeTextGeometryAndSpans() {
+        android.text.SpannableString text = new android.text.SpannableString("Visible video description");
+        android.text.style.TextAppearanceSpan appearance = new android.text.style.TextAppearanceSpan(null, 0, 28,
+                android.content.res.ColorStateList.valueOf(Color.BLACK), null);
+        text.setSpan(appearance, 0, text.length(), 33);
+        android.text.TextPaint paint = new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        paint.setTextSize(28); paint.setColor(Color.BLACK);
+        android.text.StaticLayout layout = android.text.StaticLayout.Builder.obtain(text, 0, text.length(), paint, 350).build();
+        View nativeView = new View(activity);
+        int height = layout.getHeight();
+        ThemeCaptionRenderer.beforeDraw(nativeView, layout);
+        assertSame(text, layout.getText());
+        assertEquals(height, layout.getHeight());
+        assertEquals(350, layout.getWidth());
+        assertEquals(Color.WHITE, paint.getColor());
+        assertEquals(0, text.getSpanStart(appearance));
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(350, height, android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas = new android.graphics.Canvas(pixels);
+        canvas.drawColor(Color.RED); layout.draw(canvas);
+        int glyphs = 0;
+        for (int y = 0; y < height; y++) for (int x = 0; x < 350; x++) {
+            int pixel = pixels.getPixel(x, y);
+            if (Color.green(pixel) > 200 && Color.blue(pixel) > 200) glyphs++;
+        }
+        assertTrue("Native Layout must draw visible light glyphs over red media", glyphs > 50);
+        ThemeStateStore.saveUserPreset(activity, "default");
+        ThemeCaptionRenderer.beforeDraw(nativeView, layout);
+        assertEquals(Color.BLACK, paint.getColor());
+        assertEquals(1, text.getSpans(0, text.length(), android.text.style.CharacterStyle.class).length);
+        assertSame(appearance, text.getSpans(0, text.length(), android.text.style.CharacterStyle.class)[0]);
+        pixels.recycle();
     }
 
     private static Object invoke(Class<?> type, String name, Class<?>[] parameters, Object... args)

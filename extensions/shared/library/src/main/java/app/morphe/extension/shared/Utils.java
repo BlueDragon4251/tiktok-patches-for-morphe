@@ -403,6 +403,11 @@ public class Utils {
     private static final java.util.concurrent.atomic.AtomicBoolean missingContextLogged =
             new java.util.concurrent.atomic.AtomicBoolean();
 
+    /** Context-only bootstrap before native Application startup can query Setting classes. */
+    public static void primeContext(Context appContext) {
+        if (appContext != null && context == null) context = appContext;
+    }
+
     public static void setContext(Context appContext) {
         // Intentionally use logger before context is set,
         // to expose any bugs in the 'no context available' logger code.

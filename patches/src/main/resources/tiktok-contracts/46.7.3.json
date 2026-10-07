@@ -30,6 +30,8 @@
     "Lcom/ss/android/ugc/aweme/ecommerce/galleryviewer/GalleryFragment;-\u003eonStop()V"
   ],
   "methods": {
+    "LX/09K3;-\u003eonDraw(Landroid/graphics/Canvas;)V": "94e7eeead158ea0c71f674545b832d5bf73686d20fe9a8bb5412503696eaf1d3",
+    "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;-\u003eattachBaseContext(Landroid/content/Context;)V": "bf1303e4209d5f416e4dcc27d290384808009491411b4614d21e443747f2c2d0",
     "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;-\u003eBr()Lcom/bytedance/tux/input/TuxTextView;": "387d6092cc5bcaa6c2f7ed3577879a4d744b566152104b78656246f04238793b",
     "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;": "1fcd81359a493de261c21ecf02d8cc654e645ca154272a46bbe82a79215339f2",
     "LX/01Cd;-\u003eLIZLLL(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;": "13196e7bc96b081c5fc3379470793ed5347fa693f105c8db325c49091cab0bfe",
@@ -201,6 +203,8 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "8d31bf91793b55ca42f2113f9294a2373107fdfa23e429b4e72ef3f78b1854d5"
   },
   "classes": {
+    "LX/09K3;": "e9cda6ae4095b5254e94328d32abf67fbf98f73ce2bc3cef752490c8a8cd7aea",
+    "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;": "c819de90b07319915dce113683caf6248326f13e48da36db5f13298dde3f5381",
     "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;": "48373f809cb62498c15fc356182e0ad308591dc692db474e1b1c83ac19c29179",
     "LX/0Ezq;": "caf4c9552cb162d8d7f2785f512c7abe85c2e45d07395131a24c1d18c32d8d67",
     "LX/01Cd;": "fc2b4371e4b6fcdd6e41e4a4d32a1622a73dc3f6ce836a52863a5b17e66c3ccf",
@@ -311,6 +315,8 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "aa1d798a67c36a88341ab3066516b33b0ae73d5edfe11ba9a9f88fe853c56e0f"
   },
   "portableMethods": {
+    "LX/09K3;-\u003eonDraw(Landroid/graphics/Canvas;)V": "c1ec62fb5e359760b960cd822586d63b89aa44e5da1c6f04845700bc1026a13a",
+    "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;-\u003eattachBaseContext(Landroid/content/Context;)V": "9d128cda2c2a8f1ec0a10da00563e75f6ad6755cc2ed18c93b3e9c015797c574",
     "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;-\u003eBr()Lcom/bytedance/tux/input/TuxTextView;": "8f0ec54edd39fe427c2bf22596f32ac2da41d95edac4a04ff42e51095aa66089",
     "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;": "8475eae085f9ee204180b358a7d04fe906fe859068af4d947183b41fa030b858",
     "LX/01Cd;-\u003eLIZLLL(Landroid/content/Context;Ljava/lang/String;)Landroid/net/Uri;": "3182706cb85dec6996967f9d73052b63ea4e944a5cb6fef9a66d8d77d0be3c40",
@@ -482,6 +488,8 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "21589ac92261caa365fb5f361532ad6f4bf726f09e8c97a37e22bd3b3bb83e8f"
   },
   "portableClasses": {
+    "LX/09K3;": "fdbe464f2a48d97e1c7f33aa99c0ffe179628555c6e032ee3d8afa017e805cf9",
+    "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;": "1174d81aa79bc97ff062228ec9998b77f83ee55bd4853ff13102155f5435671e",
     "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;": "bd628cb2bb7f526bee1f3b35c920c487b9efbbd85d63fcc6919045165abde08f",
     "LX/0Ezq;": "adb5c27d4f2fda9ce42d2be224c4ec338365cd0ac6b432e601bb85e02d857b93",
     "LX/01Cd;": "7c56fe0a7ba8b70c9970e90685060df14d2a756c2439d7d98b2993703d0cc06d",
@@ -592,6 +600,8 @@
     "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "c9ca48205d95c0cb4bb0de7327ab73b6ba60ed3b12baa2be69926897fee592e3"
   },
   "hookMethods": {
+    "app.morphe.patches.tiktok.layout.theme.FeedCaptionDrawFingerprint::": "LX/09K3;-\u003eonDraw(Landroid/graphics/Canvas;)V",
+    "app.morphe.patches.tiktok.misc.extension.ApplicationContextFingerprint::": "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;-\u003eattachBaseContext(Landroid/content/Context;)V",
     "app.morphe.patches.tiktok.layout.theme.FeedDescriptionGetterFingerprint:Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;:": "Lcom/ss/android/ugc/aweme/feed/assem/desc/VideoDescAssem;-\u003eBr()Lcom/bytedance/tux/input/TuxTextView;",
     "app.morphe.patches.tiktok.layout.theme.AvatarGradientConfigFingerprint::": "LX/0Ezq;-\u003eLIZ(Lcom/ss/android/ugc/aweme/story/setting/ui/color/ColorConfig;Landroid/content/Context;)LX/0Ebd;",
     "app.morphe.patches.tiktok.captchapopup.CaptchaPopupFingerprint:/sec/SecApiImpl;:popCaptchaV2": "Lcom/ss/android/ugc/aweme/sec/SecApiImpl;-\u003epopCaptchaV2(Landroid/app/Activity;Ljava/lang/String;LX/17qC;Landroidx/fragment/app/Fragment;)V",

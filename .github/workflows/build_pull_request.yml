@@ -140,6 +140,9 @@ jobs:
               assert result['developmentBundleTest'] is True
               assert len(result['observedAppliedPatches']) == 37
               assert result['patchedApk'] and result['qualified'] is False
+              subprocess.run(['python3', 'scripts/tiktok/verify_combined_runtime.py',
+                              '--metadata', 'patches-list.json', '--output', 'reports/combined-39'] +
+                             common[:6] + ['--head', os.environ['FEATURE_HEAD']], check=True)
           PY
       - name: Upload patching and rebuild evidence
         if: always()

@@ -137,6 +137,7 @@ public final class ThemeNativeTargets {
 
     private static void register(View view, int kind) {
         if (view == null) return;
+        if (ThemeUiThread.defer(view, () -> register(view, kind))) return;
         try {
             Target target = TARGETS.get(view);
             if (target == null) {
@@ -147,10 +148,16 @@ public final class ThemeNativeTargets {
                     target.attach();
                 }
                 final int role = kind;
-                Logger.printInfo(() -> "[BlueIT Native Target v2] role=" + role + " view=" + view.getClass().getName());
+                Logger.printInfo(() -> "[BlueIT Native Target v3] role=" + role + " view=" + view.getClass().getName());
             }
             target.apply(true);
-        } catch (Throwable ignored) { }
+        } catch (Throwable error) { logFailure(error); }
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger STATE_LOG_BUDGET = new java.util.concurrent.atomic.AtomicInteger(24);
+    private static final java.util.concurrent.atomic.AtomicBoolean FAILURE_LOGGED = new java.util.concurrent.atomic.AtomicBoolean();
+    private static void logFailure(Throwable error) {
+        if (FAILURE_LOGGED.compareAndSet(false, true)) Logger.printInfo(() -> "BlueIT native theme operation failed", new Exception(error));
     }
 
     static boolean isOwned(View view) {
@@ -384,6 +391,7 @@ public final class ThemeNativeTargets {
         float correction;
         float lastApplied;
         final Map<View, Fill> fills = new WeakHashMap<>();
+        boolean stateLogged;
         long lastStyleMs = -1;
         String preset = "";
         int background, surface, primary, secondary;
@@ -449,10 +457,9 @@ public final class ThemeNativeTargets {
             if (view == null) return;
             boolean enabled = active(view);
             if (kind == FEED_DESCRIPTION && enabled && view instanceof TextView) {
-                // Native video descriptions overlay media, independently of a light/dark page preset.
-                primary = Color.WHITE;
-                secondary = Color.WHITE;
-                styleText((TextView) view, this);
+                // This is the native measurement TextView. The visible title owns a separate
+                // Layout; ThemeCaptionRenderer styles it at draw time without resetting text.
+                return;
             } else if (kind == PROFILE) {
                 View sidebar = enabled ? visibleSidebar(view) : null;
                 if (sidebar != null) allowProfileUnderDrawer(view, sidebar);
@@ -512,10 +519,15 @@ public final class ThemeNativeTargets {
                     && preset.equals(ThemeStateStore.currentPreset(view.getContext()))) return;
             palette(view);
             page(view, overlay, this);
+            if (!stateLogged) {
+                stateLogged = true;
+                if (STATE_LOG_BUDGET.getAndDecrement() > 0) Logger.printInfo(() -> "[BlueIT Native Styled v3] role=" + kind + " texts=" + texts.size()
+                    + " icons=" + icons.size() + " fills=" + fills.size() + " class=" + view.getClass().getName());
+            }
             lastStyleMs = now;
         }
-        @Override public boolean onPreDraw() { try { apply(false); } catch (Throwable ignored) { } return true; }
-        @Override public void onScrollChanged() { try { apply(false); } catch (Throwable ignored) { } }
+        @Override public boolean onPreDraw() { try { apply(false); } catch (Throwable error) { logFailure(error); } return true; }
+        @Override public void onScrollChanged() { try { apply(false); } catch (Throwable error) { logFailure(error); } }
         @Override public void onViewAttachedToWindow(View view) { attach(); }
         @Override public void onViewDetachedFromWindow(View view) { detach(); }
     }

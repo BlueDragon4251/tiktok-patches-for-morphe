@@ -224,6 +224,9 @@ internal object HookEvidence {
         } else matching.forEach { it["required"] = true }
         requireReviewed(method)
         val mode = validationMode[method.toString()]
+        if (mode in setOf(ThemeRenderContracts.APP_MODE, ThemeRenderContracts.DRAW_MODE) &&
+            (operation != "insert" || !ThemeRenderContracts.mutationAllowed(method, index, code)))
+            throw app.morphe.patcher.patch.PatchException("Unreviewed native render/startup mutation")
         if (mode == FeedDescriptionContracts.MODE && (operation != "insert" || !FeedDescriptionContracts.mutationAllowed(method, index, code)))
             throw PatchException("Feed description getter: unexpected mutation")
         if (mode == AvatarGradientContracts.MODE && (operation != "insert" || !AvatarGradientContracts.mutationAllowed(method, index, code)))

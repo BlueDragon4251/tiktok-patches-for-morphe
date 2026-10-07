@@ -131,6 +131,12 @@ private object TuxStyledColorResolverFingerprint : Fingerprint(
     custom = { method, owner -> isTuxFamily(owner) && method.calls("Landroid/content/res/TypedArray;", "getColor") },
 )
 
+private object FeedCaptionDrawFingerprint : Fingerprint(
+    id = app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.DRAW_HOOK,
+    name = "onDraw", parameters = listOf("Landroid/graphics/Canvas;"), returnType = "V",
+    custom = { method, owner -> app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.drawBoundary(method, owner) },
+)
+
 private object FeedDescriptionGetterFingerprint : Fingerprint(
     definingClass = FeedDescriptionContracts.OWNER, parameters = emptyList(), returnType = FeedDescriptionContracts.TEXT,
     custom = { method, owner -> FeedDescriptionContracts.boundary(method, owner, HookEvidence::originalClass) },
@@ -272,6 +278,10 @@ val themeEnginePatch = bytecodePatch(
             method.addInstructions(site.index, site.code)
         }
 
+        FeedCaptionDrawFingerprint.uniqueMethod.apply {
+            val site = app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.site(this)
+            addInstruction(site.index, site.code)
+        }
         FeedDescriptionGetterFingerprint.uniqueMethod.apply {
             val site = FeedDescriptionContracts.site(this)
             addInstruction(site.index, site.code)

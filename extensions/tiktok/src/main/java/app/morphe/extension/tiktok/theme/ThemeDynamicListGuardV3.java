@@ -51,6 +51,7 @@ public final class ThemeDynamicListGuardV3 {
 
     /** Exact SessionListBaseVH.Z5 bind hook; works before measurement and without title heuristics. */
     public static void onInboxRowBound(View row) {
+        if (row != null && ThemeUiThread.defer(row, () -> onInboxRowBound(row))) return;
         try {
             if (!(row instanceof ViewGroup) || !themeActive(row)) return;
             synchronized (BOUND_INBOX_ROWS) {

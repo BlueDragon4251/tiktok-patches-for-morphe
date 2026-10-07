@@ -39,6 +39,12 @@ internal object StoreRegionInitTaskRunFingerprint : Fingerprint(
     parameters = listOf("Landroid/content/Context;"),
 )
 
+private object ApplicationContextFingerprint : Fingerprint(
+    id = app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.APP_HOOK,
+    name = "attachBaseContext", parameters = listOf("Landroid/content/Context;"), returnType = "V",
+    custom = { method, owner -> app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.appBoundary(method, owner) },
+)
+
 private val initHook = ExtensionHook(
     fingerprint = MainActivityOnCreateFingerprint,
     methodResolver = { MainActivityOnCreateFingerprint.uniqueMethod },
@@ -69,5 +75,9 @@ val sharedExtensionPatch = app.morphe.patches.tiktok.shared.discovery.tiktokByte
     dependsOn(baseExtensionPatch)
     execute {
         app.morphe.patches.tiktok.shared.discovery.TikTokFingerprint.captureOriginalClasses()
+        ApplicationContextFingerprint.uniqueMethod.apply {
+            val site = app.morphe.patches.tiktok.shared.discovery.ThemeRenderContracts.site(this)
+            app.morphe.patches.tiktok.shared.discovery.ContractInstructions.run { addInstruction(site.index, site.code) }
+        }
     }
 }
