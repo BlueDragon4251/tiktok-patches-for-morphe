@@ -81,10 +81,10 @@ final class ThemeViewColors {
         NativeTint nativeTint = NativeTint.find(view);
         if (nativeTint != null) {
             ColorStateList colors = nativeTint.get(view.getDrawable());
-            if (colors != null) return neutral(colors.getDefaultColor());
+            if (colors != null) return neutral(colors.getColorForState(view.getDrawableState(), colors.getDefaultColor())) || neutral(colors.getDefaultColor());
         }
         ColorStateList tint = view.getImageTintList();
-        if (tint != null) return neutral(tint.getDefaultColor());
+        if (tint != null) return neutral(tint.getColorForState(view.getDrawableState(), tint.getDefaultColor())) || neutral(tint.getDefaultColor());
         Drawable drawable = view.getDrawable();
         if (drawable == null || drawable instanceof BitmapDrawable) return false;
         View control = view;
@@ -97,6 +97,11 @@ final class ThemeViewColors {
         // TuxNavBar dispatches actions from its model; its child icons and their first
         // ancestors need not be clickable. The verified native tint API still owns them.
         if (!clickable && nativeTint == null) return false;
+        return monochrome(drawable);
+    }
+
+    static boolean monochrome(Drawable drawable) {
+        if (drawable == null || drawable instanceof BitmapDrawable) return false;
         Boolean cached = MONOCHROME.get(drawable);
         if (cached != null) return cached;
         android.graphics.Rect bounds = new android.graphics.Rect(drawable.getBounds());
@@ -112,7 +117,9 @@ final class ThemeViewColors {
                 if (!neutral(pixel)) { monochrome = false; MONOCHROME.put(drawable, false); return false; }
                 monochrome = true;
             }
-            MONOCHROME.put(drawable, monochrome);
+            // Native async icon resources may not draw any pixels on the first bind.
+            // An empty sample is unresolved, not permanently classified as a media image.
+            if (monochrome) MONOCHROME.put(drawable, true);
             return monochrome;
         } finally {
             drawable.setBounds(bounds);

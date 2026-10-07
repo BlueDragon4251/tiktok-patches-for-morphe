@@ -788,6 +788,91 @@ public class ThemeRuntimeRegressionTest {
         assertEquals(Color.WHITE, note.painter.fill.getColor());
     }
 
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void transparentNativeCaptionAndSpanDrawVisibleGlyphsInDefault() {
+        ThemeStateStore.saveUserPreset(activity, "default");
+        android.text.SpannableString text = new android.text.SpannableString("Transparent native caption");
+        text.setSpan(new android.text.style.ForegroundColorSpan(Color.TRANSPARENT), 0, text.length(), 33);
+        android.text.TextPaint paint = new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+        paint.setTextSize(28); paint.setColor(Color.TRANSPARENT);
+        android.text.StaticLayout layout = android.text.StaticLayout.Builder.obtain(text, 0, text.length(), paint, 350).build();
+        ThemeCaptionRenderer.beforeDraw(new View(activity), layout);
+        assertEquals(Color.WHITE, paint.getColor());
+        assertSame(text, layout.getText());
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(350, layout.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas = new android.graphics.Canvas(pixels); canvas.drawColor(Color.RED); layout.draw(canvas);
+        int glyphs = 0;
+        for (int y = 0; y < pixels.getHeight(); y++) for (int x = 0; x < 350; x++)
+            if (Color.green(pixels.getPixel(x, y)) > 200) glyphs++;
+        assertTrue("Transparent native description must render visible glyphs", glyphs > 50);
+        pixels.recycle();
+    }
+
+    @Test
+    public void defaultRepairsForegroundContrastAgainstNativeFlatBackdropsWithoutThemingTheirFills() {
+        ThemeStateStore.saveUserPreset(activity, "default");
+        profile.setBackgroundColor(Color.WHITE);
+        TextView whiteOnWhite = new TextView(activity); whiteOnWhite.setTextColor(Color.WHITE);
+        profile.addView(whiteOnWhite);
+        FrameLayout header = new FrameLayout(activity); header.setBackgroundColor(Color.BLACK); profile.addView(header);
+        TextView darkOnDark = new TextView(activity); darkOnDark.setTextColor(Color.BLACK); header.addView(darkOnDark);
+        TextView functional = new TextView(activity); functional.setTextColor(Color.RED); header.addView(functional);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.BLACK, whiteOnWhite.getCurrentTextColor());
+        assertEquals(Color.WHITE, darkOnDark.getCurrentTextColor());
+        assertEquals(Color.RED, functional.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) profile.getBackground()).getColor());
+        assertEquals(Color.BLACK, ((ColorDrawable) header.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "arctic_blue"); ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), whiteOnWhite.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.BLACK, whiteOnWhite.getCurrentTextColor());
+    }
+
+    @Test
+    public void tabSwitchRepairsSystemBarsWithoutRestylingTheActivityTreeAndPreservesDefault() {
+        ThemeEngine.onMainActivityCreated(activity);
+        activity.getWindow().setNavigationBarColor(Color.WHITE);
+        ThemeNativeTargets.profilePage(profile);
+        assertNotEquals(Color.WHITE, activity.getWindow().getNavigationBarColor());
+        activity.getWindow().setNavigationBarColor(Color.WHITE);
+        profile.getViewTreeObserver().dispatchOnPreDraw();
+        assertNotEquals(Color.WHITE, activity.getWindow().getNavigationBarColor());
+        ThemeStateStore.saveUserPreset(activity, "default");
+        activity.getWindow().setNavigationBarColor(Color.WHITE);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.WHITE, activity.getWindow().getNavigationBarColor());
+    }
+
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void emptyAsyncNativeIconSampleCanBeResolvedAfterItsResourceArrives() {
+        Drawable icon = new Drawable() {
+            boolean loaded;
+            @Override public void draw(android.graphics.Canvas canvas) { if (loaded) canvas.drawColor(Color.BLACK); loaded = true; }
+            @Override public void setAlpha(int alpha) { }
+            @Override public void setColorFilter(android.graphics.ColorFilter filter) { }
+            @Override public int getOpacity() { return android.graphics.PixelFormat.TRANSLUCENT; }
+        };
+        assertFalse(ThemeViewColors.monochrome(icon));
+        assertTrue(ThemeViewColors.monochrome(icon));
+    }
+
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void textCompoundTuxIconDrawsReadableGlyphAndRestoresNullNativeTint() {
+        TextView label = new TextView(activity); label.setText("Add bio");
+        com.bytedance.tux.drawable.TuxIconDrawable plus = new com.bytedance.tux.drawable.TuxIconDrawable();
+        plus.setBounds(0, 0, 24, 24);
+        label.setCompoundDrawablesRelative(plus, null, null, null); profile.addView(label);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), plus.colors.getDefaultColor());
+        assertEquals(24, plus.getBounds().width());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertNull(plus.colors);
+    }
+
     /** Captures the three Paint/four Path native painter and its public note APIs. */
     public static final class NoteView extends TextView {
         final NotePainter painter = new NotePainter();

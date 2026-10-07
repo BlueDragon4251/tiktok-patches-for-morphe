@@ -44082,7 +44082,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeCaptionRenderer.java",
-      "sha256": "bdffd366151a55a0079d25781e4a5b3207154094721ad3eb14741f56a25f554c",
+      "sha256": "0529e7172825774d5561b84a318a557c7c7f9a90a694c25b75145047c20ac470",
       "patches": [],
       "findings": [
         {
@@ -44768,6 +44768,37 @@
       ]
     },
     {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeCompoundIcons.java",
+      "sha256": "1f5fb308163d05176b8ef5e8ed17b6a54b96a9a67850d7a12cac7c569e408b94",
+      "patches": [],
+      "findings": [
+        {
+          "kind": "literal",
+          "line": 62,
+          "text": "\"com.bytedance.tux.drawable.TuxIconDrawable\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 64,
+          "text": "getDeclaredFields()) {",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "reflection",
+          "line": 69,
+          "text": "setAccessible(true); FIELDS.put(type, found); }",
+          "category": "structural-or-semantic-evidence"
+        }
+      ]
+    },
+    {
+      "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDefaultContrast.java",
+      "sha256": "af4a1315de69e75cf816f5316ea324b843957a6e94e32f437beade15e8ad1e80",
+      "patches": [],
+      "findings": []
+    },
+    {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDynamicListGuardV3.java",
       "sha256": "3ffb6921b8ebb5f65df1d5a3bda0c4e087dbecf3fb95c365fb40ea6ccddb89d4",
       "patches": [],
@@ -44980,7 +45011,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeEngine.java",
-      "sha256": "314c7cbdbf28728c14b2fdf61f0f7d55eee7e6d6e0bc8c852809b7cc132dd605",
+      "sha256": "3c01edc24fe712e156e5465d841ebbec5bae4c5b9106a0f76ce940c530da2798",
       "patches": [],
       "findings": [
         {
@@ -45081,247 +45112,247 @@
         },
         {
           "kind": "literal",
-          "line": 301,
+          "line": 314,
           "text": "\"BlueIT Theme Engine palette resolution failed\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 317,
+          "line": 330,
           "text": "\"material_you\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 320,
+          "line": 333,
           "text": "\"system_neutral1_50\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 320,
+          "line": 333,
           "text": "\"system_neutral1_900\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 325,
+          "line": 338,
           "text": "\"system_neutral1_100\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 325,
+          "line": 338,
           "text": "\"system_neutral1_800\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 330,
+          "line": 343,
           "text": "\"system_accent1_400\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 330,
+          "line": 343,
           "text": "\"system_accent1_600\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 337,
+          "line": 350,
           "text": "\"material_you_amoled\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 340,
+          "line": 353,
           "text": "\"system_accent1_400\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 340,
+          "line": 353,
           "text": "\"system_accent1_600\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 345,
+          "line": 358,
           "text": "\"system_neutral1_900\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 351,
+          "line": 364,
           "text": "\"oled_black\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 360,
+          "line": 373,
           "text": "\"liquid_glass\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 363,
+          "line": 376,
           "text": "\"system_accent1_400\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 388,
+          "line": 401,
           "text": "\"frosted_graphite\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 391,
+          "line": 404,
           "text": "\"midnight_neon\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 394,
+          "line": 407,
           "text": "\"rose_noir\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 397,
+          "line": 410,
           "text": "\"arctic_blue\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 400,
+          "line": 413,
           "text": "\"aurora_violet\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 403,
+          "line": 416,
           "text": "\"sunset_ember\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 406,
+          "line": 419,
           "text": "\"custom\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 415,
+          "line": 428,
           "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 457,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 462,
-          "text": "\"default\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 465,
-          "text": "\"material_you\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 466,
-          "text": "\"material_you_amoled\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 467,
-          "text": "\"oled_black\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 468,
-          "text": "\"liquid_glass\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 469,
-          "text": "\"frosted_graphite\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
           "line": 470,
-          "text": "\"midnight_neon\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 471,
-          "text": "\"rose_noir\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 472,
-          "text": "\"arctic_blue\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 473,
-          "text": "\"aurora_violet\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 474,
-          "text": "\"sunset_ember\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 475,
-          "text": "\"custom\"",
-          "category": "structural-or-semantic-evidence"
-        },
-        {
-          "kind": "literal",
-          "line": 478,
           "text": "\"default\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 503,
+          "line": 475,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 478,
+          "text": "\"material_you\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 479,
+          "text": "\"material_you_amoled\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 480,
+          "text": "\"oled_black\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 481,
+          "text": "\"liquid_glass\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 482,
+          "text": "\"frosted_graphite\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 483,
+          "text": "\"midnight_neon\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 484,
+          "text": "\"rose_noir\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 485,
+          "text": "\"arctic_blue\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 486,
+          "text": "\"aurora_violet\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 487,
+          "text": "\"sunset_ember\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 488,
+          "text": "\"custom\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 491,
+          "text": "\"default\"",
+          "category": "structural-or-semantic-evidence"
+        },
+        {
+          "kind": "literal",
+          "line": 516,
           "text": "\"android\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 503,
+          "line": 516,
           "text": "\"color\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "resource",
-          "line": 503,
+          "line": 516,
           "text": "getIdentifier(name, \"color\", \"android\");",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 602,
+          "line": 615,
           "text": "\": \"",
           "category": "structural-or-semantic-evidence"
         }
@@ -45462,7 +45493,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "25ef712aaba950fb25a82556a71b5a8c382f33478590dbcb11de05b0a7c0ebfb",
+      "sha256": "bb213ad878ba1ea5b41bd22ddd984d780d68cde57a9218c0445be280638f0535",
       "patches": [],
       "findings": [
         {
@@ -45533,49 +45564,55 @@
         },
         {
           "kind": "literal",
-          "line": 403,
+          "line": 405,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 525,
+          "line": 527,
+          "text": "lastDefaultContrastMs < 0 || now - lastDefaultContrastMs >= 100) {",
+          "category": "requires-cardinality-or-dataflow-review"
+        },
+        {
+          "kind": "instruction-selection",
+          "line": 540,
           "text": "lastStyleMs < 100 && lastStyleMs >= 0",
           "category": "requires-cardinality-or-dataflow-review"
         },
         {
           "kind": "literal",
-          "line": 531,
+          "line": 546,
           "text": "\" texts=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 531,
+          "line": 546,
           "text": "\"[BlueIT Native Styled v3] role=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 531,
+          "line": 546,
           "text": "v3",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 532,
+          "line": 547,
           "text": "\" class=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 532,
+          "line": 547,
           "text": "\" fills=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 532,
+          "line": 547,
           "text": "\" icons=\"",
           "category": "structural-or-semantic-evidence"
         }
@@ -47539,7 +47576,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeThoughtRenderer.java",
-      "sha256": "e61876540c507d95c2ad3fe00a0d3ee166bb477da96800d5d254344a54d93c0f",
+      "sha256": "94d31ac24ecdf11ee7126510b4e245efafb5403f408ce1a0145f68df5c5e9c1f",
       "patches": [],
       "findings": [
         {
@@ -47624,7 +47661,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
-      "sha256": "97b23c53cb785068540742ac66111c12b2a7488efddc491408dd8cba4e1cc652",
+      "sha256": "2c4c387ef935f76fc04ff695c6b381095beb77842cae97625a6d98e6de093b1b",
       "patches": [],
       "findings": [
         {
@@ -47635,49 +47672,49 @@
         },
         {
           "kind": "literal",
-          "line": 132,
+          "line": 139,
           "text": "\"getFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 132,
+          "line": 139,
           "text": "getMethod(\"getFillColor\");",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 134,
+          "line": 141,
           "text": "\"setFillColor\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 134,
+          "line": 141,
           "text": "getMethod(\"setFillColor\", int.class)};",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 185,
+          "line": 192,
           "text": "\"setTintColorStateList$tux_theme_release\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 185,
+          "line": 192,
           "text": "getMethod(\"setTintColorStateList$tux_theme_release\", ColorStateList.class);",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 192,
+          "line": 199,
           "text": "getDeclaredFields()) {",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "reflection",
-          "line": 197,
+          "line": 204,
           "text": "setAccessible(true); TINT_FIELDS.put(drawableType, field); }",
           "category": "structural-or-semantic-evidence"
         }

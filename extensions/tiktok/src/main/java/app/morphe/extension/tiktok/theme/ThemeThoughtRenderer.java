@@ -31,7 +31,7 @@ final class ThemeThoughtRenderer {
                     || Boolean.TRUE.equals(adapter.sticker.invoke(view))
                     || adapter.shader.get(painter) != null || adapter.image.get(painter) != null) return;
             Fill fill = FILLS.get(text);
-            if (fill == null || fill.painter != painter) {
+            if (fill == null || fill.painter.get() != painter) {
                 fill = new Fill(painter, adapter, text.getHintTextColors());
                 FILLS.put(text, fill);
             }
@@ -108,12 +108,12 @@ final class ThemeThoughtRenderer {
         }
     }
     private static final class Fill {
-        final Object painter;
+        final java.lang.ref.WeakReference<Object> painter;
         final Paint[] paints;
         final int[] original, applied;
         ColorStateList originalHint, appliedHint;
         Fill(Object painter, Adapter adapter, ColorStateList hint) throws IllegalAccessException {
-            this.painter = painter; originalHint = hint;
+            this.painter = new java.lang.ref.WeakReference<>(painter); originalHint = hint;
             paints = new Paint[adapter.paints.length]; original = new int[paints.length]; applied = new int[paints.length];
             for (int i = 0; i < paints.length; i++) {
                 paints[i] = (Paint) adapter.paints[i].get(painter);

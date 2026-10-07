@@ -289,9 +289,22 @@ public final class ThemeEngine {
                 }
             }
 
-            decor.setSystemUiVisibility(visibility);
+            if (decor.getSystemUiVisibility() != visibility) decor.setSystemUiVisibility(visibility);
         } catch (Throwable ignored) {
         }
+    }
+
+    /** Native tab changes can reset bars after the bounded activity startup passes. */
+    static void repairSystemBars(View page, int background, int surface) {
+        Activity activity = activityRef.get();
+        if (activity == null || activity.isFinishing() || !page.isShown()) return;
+        Window window = activity.getWindow();
+        if (window == null || page.getRootView() != window.getDecorView()) return;
+        int opaqueBackground = opaque(background);
+        int opaqueSurface = compositeOver(surface, opaqueBackground);
+        if (window.getStatusBarColor() != opaqueBackground) window.setStatusBarColor(opaqueBackground);
+        if (window.getNavigationBarColor() != opaqueSurface) window.setNavigationBarColor(opaqueSurface);
+        updateSystemBarIconContrast(window.getDecorView(), opaqueBackground, opaqueSurface);
     }
 
     private static Palette safePalette(Context context) {

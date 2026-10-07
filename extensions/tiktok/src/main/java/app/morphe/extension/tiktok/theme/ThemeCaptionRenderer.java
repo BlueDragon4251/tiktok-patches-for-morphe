@@ -36,7 +36,7 @@ public final class ThemeCaptionRenderer {
                 }
             }
             if (paint.getColor() != fill.applied) fill.original = paint.getColor();
-            if (ThemeViewColors.neutral(fill.original)) {
+            if (captionNeutral(fill.original)) {
                 paint.setColor(Color.WHITE);
                 fill.applied = Color.WHITE;
             }
@@ -52,6 +52,12 @@ public final class ThemeCaptionRenderer {
             if (LOG_BUDGET.getAndDecrement() > 0) Logger.printInfo(() -> "BlueIT caption draw failed", new Exception(error));
         }
     }
+    private static boolean captionNeutral(int color) {
+        // The reviewed visible caption Layout also arrives with a zero-alpha black
+        // paint in TikTok Default. View alpha owns native fades; transparent glyph
+        // colors here otherwise hide the entire description even over bright video.
+        return ThemeViewColors.neutral(color | 0xff000000);
+    }
     private static final class Fill {
         int original, applied;
         final Contrast contrast = new Contrast();
@@ -59,7 +65,7 @@ public final class ThemeCaptionRenderer {
     }
     private static final class Contrast extends CharacterStyle implements UpdateAppearance {
         @Override public void updateDrawState(TextPaint paint) {
-            if (ThemeViewColors.neutral(paint.getColor())) paint.setColor(Color.WHITE);
+            if (captionNeutral(paint.getColor())) paint.setColor(Color.WHITE);
         }
     }
 }

@@ -267,6 +267,7 @@ public final class ThemeNativeTargets {
     }
 
     private static void styleText(TextView view, Target target) {
+        ThemeCompoundIcons.style(view, target.primary);
         ColorStateList current = view.getTextColors();
         TextFill fill = target.texts.get(view);
         if (fill == null || current != fill.applied) {
@@ -400,6 +401,7 @@ public final class ThemeNativeTargets {
         boolean stateLogged;
         boolean profileScanned;
         long lastStyleMs = -1;
+        long lastDefaultContrastMs = -1;
         String preset = "";
         int background, surface, primary, secondary;
         final Map<ImageView, IconFill> icons = new WeakHashMap<>();
@@ -463,6 +465,7 @@ public final class ThemeNativeTargets {
             View view = reference.get();
             if (view == null) return;
             boolean enabled = active(view);
+            if (enabled) ThemeDefaultContrast.restore(view);
             if (kind == FEED_DESCRIPTION && enabled && view instanceof TextView) {
                 // This is the native measurement TextView. The visible title owns a separate
                 // Layout; ThemeCaptionRenderer styles it at draw time without resetting text.
@@ -504,6 +507,7 @@ public final class ThemeNativeTargets {
             }
             if (!enabled) {
                 ThemeViewColors.restoreBubbles(view.getRootView());
+                ThemeCompoundIcons.restore(view);
                 for (Map.Entry<ImageView, IconFill> entry : icons.entrySet()) {
                     ImageView icon = entry.getKey();
                     IconFill fill = entry.getValue();
@@ -518,9 +522,20 @@ public final class ThemeNativeTargets {
             if (!enabled && !texts.isEmpty()) {
                 restoreTexts();
             }
+            if (!enabled && (kind == PROFILE || kind == SIDEBAR || kind == NAV) && view.isShown()) {
+                long now = SystemClock.uptimeMillis();
+                if (force || lastDefaultContrastMs < 0 || now - lastDefaultContrastMs >= 100) {
+                    ThemeDefaultContrast.apply(view);
+                    lastDefaultContrastMs = now;
+                }
+            }
         }
         void restyle(View view, boolean overlay, boolean force) {
             if (!force && !view.isShown()) return;
+            if (kind == PROFILE || kind == SIDEBAR || kind == NAV) {
+                if (preset.isEmpty() || !preset.equals(ThemeStateStore.currentPreset(view.getContext()))) palette(view);
+                ThemeEngine.repairSystemBars(view, background, surface);
+            }
             long now = SystemClock.uptimeMillis();
             if (!force && now - lastStyleMs < 100 && lastStyleMs >= 0
                     && preset.equals(ThemeStateStore.currentPreset(view.getContext()))) return;
