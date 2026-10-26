@@ -167,7 +167,7 @@ jobs:
               failures.append("full catalog: morphe-full-result.json was not produced")
           else:
               data = json.loads(path.read_text())
-              applied = {item.get("name") for item in (data.get("appliedPatches") or [])}
+              applied = {item if isinstance(item, str) else item.get("name") for item in (data.get("appliedPatches") or [])}
               failed = data.get("failedPatches") or []
               missing = sorted(expected - applied)
               unexpected = sorted(applied - expected)
