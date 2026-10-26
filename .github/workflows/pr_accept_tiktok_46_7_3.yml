@@ -124,6 +124,7 @@ jobs:
           if [ "$options_code" -ne 0 ]; then echo "exit_code=$options_code" >> "$GITHUB_OUTPUT"; exit 0; fi
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
           path = Path('morphe-full-options.json')
           data = json.loads(path.read_text())
