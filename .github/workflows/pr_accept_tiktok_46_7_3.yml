@@ -130,13 +130,19 @@ jobs:
           data = json.loads(path.read_text())
           assert isinstance(data, list), 'Unexpected Morphe options format'
           tiktok = extras = None
+          tiktok_filename = Path(os.environ['MPP']).name
           for bundle in data:
               source = str((bundle.get('meta') or {}).get('source') or '')
-              if 'tiktok-patches' in source or '/patches-' in source and 'morphe-extra' not in source:
+              filename = Path(source).name
+              if filename == tiktok_filename:
                   tiktok = bundle
-              elif 'morphe-extra-patches.mpp' in source:
+              elif filename == 'morphe-extra-patches.mpp':
                   extras = bundle
-          assert tiktok is not None and extras is not None, 'Both patch bundles must appear in options'
+          assert tiktok is not None and extras is not None, (
+              'Both patch bundles must appear in options: '
+              f'expected {tiktok_filename!r} and morphe-extra-patches.mpp; '
+              f'found {[str((bundle.get("meta") or {}).get("source")) for bundle in data]}'
+          )
           expected = {p['name'] for p in json.loads(Path('patches-list.json').read_text())['patches'] if '46.7.3' in (p.get('compatiblePackages') or {}).get('com.zhiliaoapp.musically', [])}
           tiktok_patches = tiktok.get('patches') or {}
           assert expected == set(tiktok_patches), f'TikTok patch catalog mismatch: {sorted(expected ^ set(tiktok_patches))}'
