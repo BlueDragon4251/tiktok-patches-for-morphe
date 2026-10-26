@@ -103,6 +103,15 @@ jobs:
           test -n "$URL" && test "$URL" != null
           curl -fL --retry 3 "$URL" -o morphe-desktop.jar
 
+      - name: Download latest stable Morphe extras
+        shell: bash
+        run: |
+          set -euo pipefail
+          RELEASE_JSON="$(curl -fsSL -H 'Accept: application/vnd.github+json' https://api.github.com/repos/MorpheApp/morphe-patches/releases/latest)"
+          URL="$(printf '%s' "$RELEASE_JSON" | jq -r '.assets[] | select(.name | endswith(".mpp")) | .browser_download_url' | head -n 1)"
+          test -n "$URL" && test "$URL" != null
+          curl -fL --retry 3 "$URL" -o morphe-extra-patches.mpp
+
       - name: Apply full 46.7.3 catalog once
         id: patch_full
         shell: bash
@@ -123,8 +132,10 @@ jobs:
           while IFS= read -r name; do
             [ -n "$name" ] && args+=(-e "$name")
           done <<< "$PATCH_NAMES"
+          args+=(-e "Change installer source" -e "Disable Play Store updates")
           java -jar morphe-desktop.jar patch \
             -p "$MPP" \
+            -p morphe-extra-patches.mpp \
             --continue-on-error \
             --unsigned \
             --result-file morphe-full-result.json \
@@ -170,7 +181,9 @@ jobs:
               applied = {item if isinstance(item, str) else item.get("name") for item in (data.get("appliedPatches") or [])}
               failed = data.get("failedPatches") or []
               missing = sorted(expected - applied)
-              unexpected = sorted(applied - expected)
+              extras = {"Change installer source", "Disable Play Store updates"}
+              unexpected = sorted(applied - expected - extras)
+              missing_extras = sorted(extras - applied)
               print(f"full catalog: applied={len(applied)} expected={len(expected)} failed={len(failed)}")
               if failed:
                   failures.append(f"full catalog: failed patches: {failed}")
@@ -178,6 +191,8 @@ jobs:
                   failures.append(f"full catalog: compatible patches not applied: {missing}")
               if unexpected:
                   failures.append(f"full catalog: unexpected applied patches: {unexpected}")
+              if missing_extras:
+                  failures.append(f"full catalog: stable Morphe extras not applied: {missing_extras}")
               if not expected:
                   failures.append("full catalog: generated metadata selected no 46.7.3 patches")
 
