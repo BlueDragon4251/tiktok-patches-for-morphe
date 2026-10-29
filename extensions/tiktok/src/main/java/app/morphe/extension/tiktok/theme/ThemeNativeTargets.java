@@ -258,7 +258,7 @@ public final class ThemeNativeTargets {
             Integer flat = view.getBackgroundTintList() == null ? ThemeViewColors.flatColor(background)
                     : view.getBackgroundTintList().getDefaultColor();
             if (flat != null && pageFill(flat, target)) {
-                int pageColor = background instanceof GradientDrawable && ((GradientDrawable) background).getCornerRadius() > 0
+                int pageColor = (target.kind == SYSTEM_NOTIFICATIONS || target.kind == SHEET) && background instanceof GradientDrawable && ((GradientDrawable) background).getCornerRadius() > 0
                         ? target.surface : target.background;
                 color(view, overlay ? Color.TRANSPARENT : pageColor, target);
             }

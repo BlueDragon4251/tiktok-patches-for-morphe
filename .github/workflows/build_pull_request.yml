@@ -59,6 +59,7 @@ jobs:
         run: ./gradlew :patches:buildAndroid :patches:generatePatchesList :patches:test :extensions:tiktok:testDebugUnitTest --no-daemon
 
       - name: Upload tested feature-head bundle for local reproduction
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: tiktok-tested-bundle-${{ github.event.pull_request.head.sha || github.sha }}

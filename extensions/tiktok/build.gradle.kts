@@ -25,3 +25,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+
+// Keep assertion values visible when a visual regression fails on CI.
+tasks.withType<Test>().configureEach {
+    testLogging.exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+}
