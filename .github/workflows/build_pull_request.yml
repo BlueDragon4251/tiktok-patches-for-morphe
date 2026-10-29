@@ -154,3 +154,64 @@ jobs:
             reports/**/*.json
             reports/**/*.log
           if-no-files-found: warn
+
+  modern-manager-runtime:
+    name: Patcher 2.0.1 / TikTok ${{ matrix.version }} / 39 patches
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['46.7.3', '47.1.3']
+    env:
+      FEATURE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      TIKTOK_VERSION: ${{ matrix.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: tiktok-tested-bundle-${{ env.FEATURE_HEAD }}
+      - run: python3 -m pip install -r scripts/tiktok/requirements.txt
+      - run: python3 scripts/tiktok/toolchain_modern.py
+      - name: Verify current two-source combination and merged native hooks
+        run: |
+          python3 - <<'PY'
+          import os, subprocess
+          from pathlib import Path
+          version = os.environ['TIKTOK_VERSION']
+          if version == '46.7.3':
+              subprocess.run(['python3', 'scripts/tiktok/fixtures.py', 'fetch', '--fixture',
+                              'global-46.7.3', '--apk', 'fixture.apk'], check=True)
+          else:
+              subprocess.run(['curl', '-fLsS', '--proto', '=https', '--proto-redir', '=https',
+                              '--retry', '3', '--max-time', '900',
+                              'https://d.apkpure.net/b/APK/com.zhiliaoapp.musically?versionCode=2024701030',
+                              '-o', 'fixture.apk'], check=True)
+          bundles = [p for p in Path('patches/build/libs').glob('*.mpp')
+                     if not p.name.endswith(('-sources.mpp', '-javadoc.mpp'))]
+          assert len(bundles) == 1, bundles
+          subprocess.run(['python3', 'scripts/tiktok/verify_combined_runtime.py', '--apk', 'fixture.apk',
+                          '--bundle', str(bundles[0]), '--cli', 'morphe-modern.jar', '--metadata',
+                          'patches-list.json', '--head', os.environ['FEATURE_HEAD'], '--version', version,
+                          '--output', 'reports/modern-' + version,
+                          '--official-url', 'https://github.com/MorpheApp/morphe-patches/releases/download/v2.0.0-dev.1/patches-2.0.0-dev.1.mpp',
+                          '--official-sha', 'a2213394ec234d7c58b63163d5dec76a6928939c5a1b2d1a491bbf4ad7541b8c'], check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tiktok-modern-runtime-${{ matrix.version }}-${{ env.FEATURE_HEAD }}
+          path: |
+            reports/**/*.json
+            reports/**/*.log
+          if-no-files-found: warn
