@@ -26,6 +26,20 @@ def sha(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def successful_selection(result, expected_names, version):
+    """Validate both pinned CLI result schemas without relaxing success checks."""
+    entries = result['appliedPatches']
+    assert isinstance(entries, list), entries
+    applied = [p if isinstance(p, str) else p['name'] for p in entries]
+    assert all(isinstance(name, str) for name in applied), applied
+    assert not result['failedPatches'] and len(applied) == len(expected_names) and set(applied) == set(expected_names), result
+    assert result.get('success', True) is True, result
+    assert (result['packageName'], result['packageVersion']) == ('com.zhiliaoapp.musically', version), result
+    steps = result.get('stepResults', result.get('patchingSteps'))
+    assert isinstance(steps, list) and len(steps) == 2 and {s['step'] for s in steps} == {'PATCHING', 'REBUILDING'} and all(s['success'] is True for s in steps), steps
+    return applied
+
+
 def verify_dex(path):
     from loguru import logger
     logger.remove()
@@ -98,11 +112,7 @@ def main():
     with (out / 'patch.log').open('w', encoding='utf-8') as log:
         subprocess.run(command, cwd=out, env=env, stdout=log, stderr=subprocess.STDOUT, check=True)
     result = json.loads(result_path.read_text(encoding='utf-8'))
-    applied = [p['name'] for p in result['appliedPatches']]
-    assert not result['failedPatches'] and len(applied) == 39 and set(applied) == set(names + EXTRA), result
-    assert (result['packageName'], result['packageVersion']) == ('com.zhiliaoapp.musically', args.version), result
-    steps = result['patchingSteps']
-    assert len(steps) == 2 and {s['step'] for s in steps} == {'PATCHING', 'REBUILDING'} and all(s['success'] is True for s in steps), steps
+    applied = successful_selection(result, names + EXTRA, args.version)
     rebuilt = output_identity(patched)
     merged = verify_dex(patched)
     evidence = {'featureHead': args.head, 'officialSha256': args.official_sha, 'officialUrl': args.official_url, 'version': args.version,

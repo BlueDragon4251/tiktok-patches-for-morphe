@@ -14,6 +14,38 @@ from run_experimental import blockers, main as experimental_main, observed_appli
 from probe_latest import candidate_status
 from run_fixture import validate_catalog, validate_hooks
 from verify_qualification import validate_run, validate_evidence
+from verify_combined_runtime import successful_selection
+
+
+class CombinedRuntimeResultTests(unittest.TestCase):
+    def result(self, modern):
+        return {'success': True, 'packageName': 'com.zhiliaoapp.musically',
+                'packageVersion': '46.7.3', 'failedPatches': [],
+                'appliedPatches': ['a', 'b'] if modern else [{'name': 'a'}, {'name': 'b'}],
+                ('stepResults' if modern else 'patchingSteps'):
+                    [{'step': 'PATCHING', 'success': True}, {'step': 'REBUILDING', 'success': True}]}
+
+    def test_both_pinned_cli_schemas_require_complete_selection(self):
+        for modern in (False, True):
+            with self.subTest(modern=modern):
+                self.assertEqual(['a', 'b'], successful_selection(self.result(modern), ['a', 'b'], '46.7.3'))
+                with self.assertRaises(AssertionError):
+                    successful_selection(self.result(modern), ['a', 'c'], '46.7.3')
+
+    def test_modern_failed_rebuild_or_false_success_is_rejected(self):
+        for failure in ('step', 'success', 'patch'):
+            result = self.result(True)
+            if failure == 'step': result['stepResults'][1]['success'] = False
+            elif failure == 'success': result['success'] = False
+            else: result['failedPatches'] = ['bad']
+            with self.subTest(failure=failure), self.assertRaises(AssertionError):
+                successful_selection(result, ['a', 'b'], '46.7.3')
+
+    def test_duplicate_selection_does_not_count_as_complete(self):
+        result = self.result(True)
+        result['appliedPatches'].append('a')
+        with self.assertRaises(AssertionError):
+            successful_selection(result, ['a', 'b'], '46.7.3')
 
 class DiscoveryTests(unittest.TestCase):
     def test_candidate_of_same_version_but_other_sha_is_not_the_fixture(self):
