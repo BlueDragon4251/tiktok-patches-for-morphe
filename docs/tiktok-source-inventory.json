@@ -89890,7 +89890,7 @@
     },
     {
       "source": "patches/src/main/kotlin/app/morphe/patches/tiktok/shared/discovery/TikTokFingerprint.kt",
-      "sha256": "0520fd61a1c91ea2d1a9c6a3a39fadc505159ed66a12a24bc703433af6fbfaab",
+      "sha256": "6c3ec4e7f40e8d0a8d20568f0e45d91bbf888bc0c6fcfdb3df8e2c003b1b749f",
       "patches": [],
       "findings": [
         {
@@ -89973,103 +89973,103 @@
         },
         {
           "kind": "literal",
-          "line": 58,
+          "line": 49,
           "text": "\";\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 58,
+          "line": 49,
           "text": "\"L\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 65,
+          "line": 56,
           "text": "definingClass = definingClass, name = name,",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 66,
+          "line": 57,
           "text": "returnType = returnType, parameters = parameters,",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 66,
+          "line": 57,
           "text": "parameters = parameters,",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 77,
+          "line": 68,
           "text": "\"*\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "member",
-          "line": 77,
+          "line": 68,
           "text": "name = name?.takeUnless { HookEvidence.normalizedMember(oldOwner, it) == \"*\" },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 79,
+          "line": 70,
           "text": "returnType = returnType?.takeIf { HookEvidence.normalizedType(it) == it },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "member",
-          "line": 80,
+          "line": 71,
           "text": "parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },",
           "category": "stable-named-anchor"
         },
         {
           "kind": "register",
-          "line": 80,
+          "line": 71,
           "text": "parameters = parameters?.takeIf { types -> types.all { HookEvidence.normalizedType(it) == it } },",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 106,
+          "line": 97,
           "text": "\"Ambiguous hook $hookId: ${matches.map { it.originalMethod }}\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 107,
+          "line": 98,
           "text": "singleOrNull()",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 114,
+          "line": 105,
           "text": "singleOrThrow(\"Hook $hookId\")",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 114,
+          "line": 105,
           "text": "\"Hook $hookId\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 122,
+          "line": 113,
           "text": "singleOrThrow(\"Hook $hookId\")",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 122,
+          "line": 113,
           "text": "\"Hook $hookId\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 129,
+          "line": 120,
           "text": "\"Hook $hookId: expected $range matches, found ${matches.size}\"",
           "category": "structural-or-semantic-evidence"
         }

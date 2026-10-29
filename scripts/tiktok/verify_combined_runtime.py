@@ -68,14 +68,18 @@ def main():
     for name in ('apk', 'bundle', 'cli', 'metadata', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--head', required=True)
+    parser.add_argument('--version', choices=['46.7.3', '47.1.3'], default='47.1.3')
+    parser.add_argument('--official-url', default=OFFICIAL_URL)
+    parser.add_argument('--official-sha', default=OFFICIAL_SHA)
     args = parser.parse_args()
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=False)
-    assert sha(args.apk) == APK_SHA, 'Unexpected original APK'
+    expected_apk = APK_SHA if args.version == '47.1.3' else 'b9e96e64e94ac0f9ea229dd0ba743f1930121a8b6941cf9fd87191604da0129e'
+    assert sha(args.apk) == expected_apk, 'Unexpected original APK'
     official = out / 'official.mpp'
     subprocess.run(['curl', '-fLsS', '--proto', '=https', '--proto-redir', '=https',
-                    '--retry', '3', '--max-time', '180', OFFICIAL_URL, '-o', str(official)], check=True)
-    assert sha(official) == OFFICIAL_SHA, 'Unexpected official bundle'
+                    '--retry', '3', '--max-time', '180', args.official_url, '-o', str(official)], check=True)
+    assert sha(official) == args.official_sha, 'Unexpected official bundle'
     metadata = json.loads(args.metadata.read_text(encoding='utf-8'))
     names = [p['name'] for p in metadata['patches']
              if 'com.zhiliaoapp.musically' in (p.get('compatiblePackages') or {})]
@@ -96,13 +100,13 @@ def main():
     result = json.loads(result_path.read_text(encoding='utf-8'))
     applied = [p['name'] for p in result['appliedPatches']]
     assert not result['failedPatches'] and len(applied) == 39 and set(applied) == set(names + EXTRA), result
-    assert (result['packageName'], result['packageVersion']) == ('com.zhiliaoapp.musically', '47.1.3'), result
+    assert (result['packageName'], result['packageVersion']) == ('com.zhiliaoapp.musically', args.version), result
     steps = result['patchingSteps']
     assert len(steps) == 2 and {s['step'] for s in steps} == {'PATCHING', 'REBUILDING'} and all(s['success'] is True for s in steps), steps
     rebuilt = output_identity(patched)
     merged = verify_dex(patched)
-    evidence = {'featureHead': args.head, 'officialSha256': OFFICIAL_SHA,
-                'blueitSha256': sha(args.bundle), 'apkSha256': APK_SHA,
+    evidence = {'featureHead': args.head, 'officialSha256': args.official_sha, 'officialUrl': args.official_url, 'version': args.version,
+                'blueitSha256': sha(args.bundle), 'apkSha256': expected_apk,
                 'appliedPatches': applied, 'rebuilt': rebuilt, 'mergedDex': merged,
                 'onDeviceVerified': False}
     (out / 'combined-evidence.json').write_text(json.dumps(evidence, indent=2) + '\n', encoding='utf-8')

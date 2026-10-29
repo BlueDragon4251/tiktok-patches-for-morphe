@@ -34,15 +34,6 @@ open class TikTokFingerprint(
     val hookId: String get() = id ?: (javaClass.name + ":" + (definingClass ?: "") + ":" +
         (name ?: "") + if (javaClass == TikTokFingerprint::class.java) ":" + (strings ?: parameters ?: emptyList<String>()).joinToString("|") else "")
 
-    internal companion object {
-        fun matchesSubstringMarkers(method: Method, markers: List<String>): Boolean {
-            val literals = method.implementation?.instructions?.mapNotNull {
-                ((it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference as?
-                    com.android.tools.smali.dexlib2.iface.reference.StringReference)?.string
-            }?.toList().orEmpty()
-            return markers.all { marker -> literals.any { it.contains(marker) } }
-        }
-    }
 
     context(BytecodePatchContext)
     private fun candidates(): List<Match> {
@@ -148,6 +139,13 @@ open class TikTokFingerprint(
     val uniqueOriginalClassDef get() = uniqueMatch().also { HookEvidence.requireReviewed(it.originalMethod) }.originalClassDef
 
     companion object {
+        fun matchesSubstringMarkers(method: Method, markers: List<String>): Boolean {
+            val literals = method.implementation?.instructions?.mapNotNull {
+                ((it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference as?
+                    com.android.tools.smali.dexlib2.iface.reference.StringReference)?.string
+            }?.toList().orEmpty()
+            return markers.all { marker -> literals.any { it.contains(marker) } }
+        }
         context(BytecodePatchContext)
         fun captureOriginalClasses() = HookEvidence.begin(this@BytecodePatchContext)
         context(BytecodePatchContext)
