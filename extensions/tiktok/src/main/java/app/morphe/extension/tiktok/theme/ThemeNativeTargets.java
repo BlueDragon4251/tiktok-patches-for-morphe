@@ -289,7 +289,10 @@ public final class ThemeNativeTargets {
         int r = Color.red(nativeColor), g = Color.green(nativeColor), b = Color.blue(nativeColor);
         // Functional colors retain their native behavior.
         if (Color.alpha(nativeColor) == 0
-                || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) return;
+                || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) {
+            fill.mapSpans(view, primary);
+            return;
+        }
         boolean secondary = Color.alpha(nativeColor) < 200
                 || Math.max(r, Math.max(g, b)) > 60 && Math.min(r, Math.min(g, b)) < 220;
         int mapped = secondary ? secondaryColor : primary;
@@ -370,10 +373,30 @@ public final class ThemeNativeTargets {
                 mapped.setSpan(new ForegroundColorSpan(color), spans.getSpanStart(span),
                         spans.getSpanEnd(span), spans.getSpanFlags(span));
             }
+            // TextAppearanceSpan and native CharacterStyles can override TextView colors
+            // without exposing a ForegroundColorSpan. Preserve them and append an
+            // appearance-only neutral contrast override, just as in the visible feed Layout.
+            for (android.text.style.CharacterStyle span : spans.getSpans(0, spans.length(), android.text.style.CharacterStyle.class)) {
+                if (span instanceof ForegroundColorSpan) continue;
+                if (mapped == null) mapped = new SpannableString(originalText);
+                mapped.setSpan(new TextContrast(color), 0, mapped.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                break;
+            }
             if (mapped != null) {
                 view.setText(mapped);
                 appliedText = view.getText();
                 spanColor = color;
+            }
+        }
+    }
+
+    private static final class TextContrast extends android.text.style.CharacterStyle implements android.text.style.UpdateAppearance {
+        final int color;
+        TextContrast(int color) { this.color = color; }
+        @Override public void updateDrawState(android.text.TextPaint paint) {
+            if (ThemeViewColors.neutral(paint.getColor())) {
+                int alpha = Color.alpha(paint.getColor()) * Color.alpha(color) / 255;
+                paint.setColor((color & 0xffffff) | (alpha << 24));
             }
         }
     }

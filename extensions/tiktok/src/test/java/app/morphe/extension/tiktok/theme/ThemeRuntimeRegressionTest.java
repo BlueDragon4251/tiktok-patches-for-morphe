@@ -938,6 +938,28 @@ public class ThemeRuntimeRegressionTest {
         ThemeNativeTargets.profilePage(profile); assertEquals(Color.RED, redAction.getCurrentTextColor());
     }
 
+    @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void nativeTextAppearanceColorCannotHideThemedProfileGlyphs() {
+        TextView label = new TextView(activity); label.setTextSize(28); label.setTextColor(Color.WHITE);
+        android.text.SpannableString nativeText = new android.text.SpannableString("Profile heading");
+        android.text.style.TextAppearanceSpan appearance = new android.text.style.TextAppearanceSpan(null, 0, 28,
+                android.content.res.ColorStateList.valueOf(Color.BLACK), null);
+        nativeText.setSpan(appearance, 0, nativeText.length(), 33); label.setText(nativeText); profile.addView(label);
+        CharSequence original = label.getText(); ThemeNativeTargets.profilePage(profile);
+        label.measure(View.MeasureSpec.makeMeasureSpec(350, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
+        label.layout(0, 0, 350, 100);
+        android.graphics.Bitmap pixels = android.graphics.Bitmap.createBitmap(350, 100, android.graphics.Bitmap.Config.ARGB_8888);
+        android.graphics.Canvas canvas = new android.graphics.Canvas(pixels); canvas.drawColor(Color.BLACK); label.draw(canvas);
+        int glyphs = 0;
+        for (int y = 0; y < 100; y++) for (int x = 0; x < 350; x++)
+            if (Color.red(pixels.getPixel(x, y)) > 200 && Color.green(pixels.getPixel(x, y)) > 200) glyphs++;
+        assertTrue("Native TextAppearanceSpan must not leave black glyphs on the dark profile", glyphs > 50);
+        assertTrue(((android.text.Spanned) label.getText()).getSpanStart(appearance) >= 0);
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertSame(original, label.getText()); pixels.recycle();
+    }
+
     /** Captures the three Paint/four Path native painter and its public note APIs. */
     public static final class NoteView extends TextView {
         final NotePainter painter = new NotePainter();

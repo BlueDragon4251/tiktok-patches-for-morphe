@@ -45493,7 +45493,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "779dc83c66beb9af2c6449397987d2ab201f6472ed0f373d01740fc4ede2b6f5",
+      "sha256": "6c8f19b30a46e4872df9658cf2a0b7d3458f0de2a4f823bfdae6925670953694",
       "patches": [],
       "findings": [
         {
@@ -45564,55 +45564,55 @@
         },
         {
           "kind": "literal",
-          "line": 418,
+          "line": 441,
           "text": "\"\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "instruction-selection",
-          "line": 543,
+          "line": 566,
           "text": "lastDefaultContrastMs < 0 || now - lastDefaultContrastMs >= 100) {",
           "category": "requires-cardinality-or-dataflow-review"
         },
         {
           "kind": "instruction-selection",
-          "line": 556,
+          "line": 579,
           "text": "lastStyleMs < 100 && lastStyleMs >= 0",
           "category": "requires-cardinality-or-dataflow-review"
         },
         {
           "kind": "literal",
-          "line": 563,
+          "line": 586,
           "text": "\" texts=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 563,
+          "line": 586,
           "text": "\"[BlueIT Native Styled v3] role=\"",
           "category": "hard-coded"
         },
         {
           "kind": "register",
-          "line": 563,
+          "line": 586,
           "text": "v3",
           "category": "hard-coded"
         },
         {
           "kind": "literal",
-          "line": 564,
+          "line": 587,
           "text": "\" class=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 564,
+          "line": 587,
           "text": "\" fills=\"",
           "category": "structural-or-semantic-evidence"
         },
         {
           "kind": "literal",
-          "line": 564,
+          "line": 587,
           "text": "\" icons=\"",
           "category": "structural-or-semantic-evidence"
         }
