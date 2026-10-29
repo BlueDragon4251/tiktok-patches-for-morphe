@@ -91,12 +91,16 @@ public final class ThemeColorResolver {
             value.data = color;
             value.resourceId = 0;
             Object converted = invoke.invoke(converter, value);
-            // Gradient/array converters turn one color into one stop. Keep the original native
-            // resource and its full stop/position arrays instead of collapsing them to a scalar.
-            if (converted != null && (converted.getClass().isArray() || converted instanceof Iterable<?>)) {
-                return null;
-            }
-            return converted;
+            // This helper is generic: native callers also request style resource IDs, flags and
+            // dimensions. A resource-ID converter sees resourceId=0 in a color TypedValue. Returning
+            // that zero would skip its native fallback and can prevent a TUX text/menu from inflating.
+            // Accept only a result that demonstrably carries the requested color.
+            if (converted instanceof Integer && ((Integer) converted).intValue() == color) return converted;
+            if (converted instanceof android.content.res.ColorStateList
+                    && ((android.content.res.ColorStateList) converted).getDefaultColor() == color) return converted;
+            if (converted instanceof android.graphics.drawable.ColorDrawable
+                    && ((android.graphics.drawable.ColorDrawable) converted).getColor() == color) return converted;
+            return null;
         } catch (Throwable ignored) {
             return null;
         }

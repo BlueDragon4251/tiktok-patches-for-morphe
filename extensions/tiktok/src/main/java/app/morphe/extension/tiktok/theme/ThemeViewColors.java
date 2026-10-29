@@ -67,6 +67,61 @@ final class ThemeViewColors {
             ColorStateList fill = ((GradientDrawable) drawable).getColor();
             if (fill != null) return fill.getDefaultColor();
         }
+        if (drawable instanceof android.graphics.drawable.InsetDrawable)
+            return flatColor(((android.graphics.drawable.InsetDrawable) drawable).getDrawable());
+        if (drawable instanceof android.graphics.drawable.StateListDrawable && drawable.getCurrent() != drawable)
+            return flatColor(drawable.getCurrent());
+        if (drawable instanceof android.graphics.drawable.LayerDrawable) {
+            android.graphics.drawable.LayerDrawable layers = (android.graphics.drawable.LayerDrawable) drawable;
+            for (int i = 0; i < layers.getNumberOfLayers(); i++) {
+                if (layers.getId(i) == android.R.id.mask) continue;
+                Integer fill = flatColor(layers.getDrawable(i));
+                if (fill != null && Color.alpha(fill) == 255) return fill;
+            }
+        }
+        return null;
+    }
+
+    /** Copy native wrappers instead of flattening their rounded content, masks or ripple states. */
+    static Drawable copyFlatFill(Drawable nativeDrawable, int color) {
+        if (nativeDrawable == null || nativeDrawable.getConstantState() == null) return null;
+        Drawable copy = nativeDrawable.getConstantState().newDrawable().mutate();
+        if (copy instanceof ColorDrawable) { ((ColorDrawable) copy).setColor(color); return copy; }
+        if (copy instanceof GradientDrawable && flatColor(copy) != null) {
+            GradientDrawable shape = (GradientDrawable) copy;
+            ColorStateList states = shape.getColor();
+            shape.setColor(states != null && states.isStateful() ? stateColors(states, color, color) : ColorStateList.valueOf(color));
+            return shape;
+        }
+        if (Build.VERSION.SDK_INT >= 23 && copy instanceof android.graphics.drawable.InsetDrawable) {
+            android.graphics.drawable.InsetDrawable inset = (android.graphics.drawable.InsetDrawable) copy;
+            Drawable child = copyFlatFill(inset.getDrawable(), color);
+            if (child != null) { inset.setDrawable(child); return inset; }
+        }
+        if (Build.VERSION.SDK_INT >= 29 && copy instanceof android.graphics.drawable.StateListDrawable) {
+            android.graphics.drawable.StateListDrawable source = (android.graphics.drawable.StateListDrawable) copy;
+            android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+            for (int i = 0; i < source.getStateCount(); i++) {
+                Drawable child = source.getStateDrawable(i);
+                Integer fill = flatColor(child);
+                Drawable mapped = fill != null && neutral(fill) ? copyFlatFill(child, color) : null;
+                states.addState(source.getStateSet(i), mapped == null ? child : mapped);
+            }
+            states.setState(nativeDrawable.getState());
+            return states;
+        }
+        if (copy instanceof android.graphics.drawable.LayerDrawable) {
+            android.graphics.drawable.LayerDrawable layers = (android.graphics.drawable.LayerDrawable) copy;
+            boolean changed = false;
+            for (int i = 0; i < layers.getNumberOfLayers(); i++) {
+                if (layers.getId(i) == android.R.id.mask) continue;
+                Integer fill = flatColor(layers.getDrawable(i));
+                if (fill == null || !neutral(fill)) continue;
+                Drawable child = copyFlatFill(layers.getDrawable(i), color);
+                if (child != null && Build.VERSION.SDK_INT >= 23) { layers.setDrawable(i, child); changed = true; }
+            }
+            if (changed) return layers;
+        }
         return null;
     }
 

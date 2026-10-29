@@ -24,6 +24,7 @@ public final class ThemeNativeTargets {
     private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7, FEED_DESCRIPTION = 8, SYSTEM_NOTIFICATIONS = 9, HEADER = 10, SHEET = 11;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private static final Map<ViewGroup, Target> PAGER_TEXTS = new WeakHashMap<>();
+    private static final java.util.Set<String> SURFACE_SAMPLES = new java.util.HashSet<>();
     private ThemeNativeTargets() {}
 
     public static void profilePage(View view) { register(view, PROFILE); }
@@ -198,14 +199,8 @@ public final class ThemeNativeTargets {
         if (ThemeViewColors.flatColor(current) == null || ThemeViewColors.flatColor(current) != value) {
             // Do not mutate TikTok's ColorDrawable: keep the native snapshot intact for Default.
             Drawable replacement = new ColorDrawable(value);
-            if (current instanceof GradientDrawable && ThemeViewColors.flatColor(current) != null
-                    && current.getConstantState() != null) {
-                GradientDrawable shape = (GradientDrawable) current.getConstantState().newDrawable().mutate();
-                ColorStateList nativeColors = ((GradientDrawable) current).getColor();
-                shape.setColor(nativeColors != null && nativeColors.isStateful()
-                        ? ThemeViewColors.stateColors(nativeColors, value, value) : ColorStateList.valueOf(value));
-                replacement = shape;
-            }
+            Drawable nativeShape = ThemeViewColors.copyFlatFill(current, value);
+            if (nativeShape != null) replacement = nativeShape;
             view.setBackground(replacement);
         }
         if (view.getBackgroundTintList() != null) view.setBackgroundTintList(null);
@@ -249,6 +244,7 @@ public final class ThemeNativeTargets {
         while (!queue.isEmpty() && visited++ < 1800) {
             View view = queue.removeFirst();
             if (isOwned(view) || view.getVisibility() != View.VISIBLE) continue;
+            sampleNativeSurface(view, target.kind);
             if (view instanceof ImageView) {
                 styleIcon((ImageView) view, target);
                 continue;
@@ -273,6 +269,23 @@ public final class ThemeNativeTargets {
             Logger.printInfo(() -> "[BlueIT Profile Scan v1] nodes=" + nodes + " texts=" + target.texts.size()
                 + " icons=" + target.icons.size() + " fills=" + target.fills.size());
         }
+    }
+
+    /** Bounded structural diagnostics; never records text, account names or media URLs. */
+    private static void sampleNativeSurface(View view, int kind) {
+        if (SURFACE_SAMPLES.size() >= 32) return;
+        Drawable fill = view.getBackground();
+        Drawable icon = view instanceof ImageView ? ((ImageView) view).getDrawable() : null;
+        String key = kind + ":" + view.getClass().getName() + ":" + (fill == null ? "none" : fill.getClass().getName())
+                + ":" + (icon == null ? "none" : icon.getClass().getName());
+        if (!SURFACE_SAMPLES.add(key)) return;
+        Integer flat = ThemeViewColors.flatColor(fill);
+        String details = "[BlueIT Native Surface] " + key + " fill=" + (flat == null ? "unknown" : Integer.toHexString(flat))
+                + (view instanceof TextView ? " textColor=" + Integer.toHexString(((TextView) view).getCurrentTextColor())
+                        + " chars=" + ((TextView) view).length() : "")
+                + (view instanceof ImageView ? " iconEligible=" + ThemeViewColors.icon((ImageView) view)
+                        + " nativeTint=" + (ThemeViewColors.NativeTint.find((ImageView) view) != null) : "");
+        Logger.printInfo(() -> details);
     }
 
     private static void styleText(TextView view, Target target) {

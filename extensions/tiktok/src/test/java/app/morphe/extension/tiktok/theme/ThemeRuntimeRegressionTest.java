@@ -928,6 +928,43 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void insetRippleCardKeepsItsRoundedContentAndUntintedMask() {
+        FrameLayout notifications = new FrameLayout(activity); profile.addView(notifications);
+        FrameLayout card = new FrameLayout(activity); notifications.addView(card);
+        GradientDrawable content = new GradientDrawable(); content.setColor(Color.WHITE); content.setCornerRadius(18);
+        GradientDrawable mask = new GradientDrawable(); mask.setColor(Color.WHITE); mask.setCornerRadius(18);
+        android.graphics.drawable.RippleDrawable ripple = new android.graphics.drawable.RippleDrawable(
+                android.content.res.ColorStateList.valueOf(0x33000000), content, mask);
+        android.graphics.drawable.InsetDrawable original = new android.graphics.drawable.InsetDrawable(ripple, 5);
+        card.setBackground(original);
+        ThemeNativeTargets.systemNotifications(notifications);
+        assertTrue(card.getBackground() instanceof android.graphics.drawable.InsetDrawable);
+        android.graphics.drawable.RippleDrawable styled = (android.graphics.drawable.RippleDrawable)
+                ((android.graphics.drawable.InsetDrawable) card.getBackground()).getDrawable();
+        GradientDrawable styledContent = (GradientDrawable) styled.getDrawable(0);
+        assertEquals(18f, styledContent.getCornerRadius(), 0.01f);
+        assertEquals(ThemeEngine.backgroundColor(activity), styledContent.getColor().getDefaultColor());
+        assertEquals(Color.WHITE, ((GradientDrawable) styled.findDrawableByLayerId(android.R.id.mask)).getColor().getDefaultColor());
+        assertEquals(Color.WHITE, content.getColor().getDefaultColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.systemNotifications(notifications);
+        assertSame(original, card.getBackground());
+    }
+
+    @Test @Config(sdk = 29)
+    public void nativeStateListCardKeepsItsFunctionalPressedFill() {
+        android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_pressed}, new ColorDrawable(Color.RED));
+        GradientDrawable normal = new GradientDrawable(); normal.setColor(Color.WHITE); normal.setCornerRadius(12);
+        states.addState(new int[0], normal); states.setState(new int[0]);
+        Drawable styled = ThemeViewColors.copyFlatFill(states, 0xff06121a);
+        assertNotNull(styled); styled.setState(new int[0]);
+        assertEquals(Integer.valueOf(0xff06121a), ThemeViewColors.flatColor(styled));
+        styled.setState(new int[]{android.R.attr.state_pressed});
+        assertEquals(Integer.valueOf(Color.RED), ThemeViewColors.flatColor(styled));
+        assertEquals(Color.WHITE, normal.getColor().getDefaultColor());
+    }
+
+    @Test
     public void brightFunctionalActionRetainsItsCyanFillAndGetsReadableDarkText() {
         TextView button = new TextView(activity); button.setText("Follow");
         button.setBackgroundColor(0xff20d5ec); button.setTextColor(Color.WHITE); profile.addView(button);
