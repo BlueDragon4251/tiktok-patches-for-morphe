@@ -209,7 +209,7 @@ public final class ThemeDynamicListGuardV3 {
             while (!queue.isEmpty() && visited++ < MAX_NODES) {
                 Node node = queue.removeFirst();
                 View view = node.view;
-                if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f) continue;
+                if (view == null || view.getVisibility() != View.VISIBLE || view.getAlpha() <= 0f || ThemeNativeTargets.isOwned(view)) continue;
                 ThemeViewColors.bubble(view, background);
                 // Native headers can remain stock white above correctly themed inbox rows.
                 // Only neutral flat fills on this already identified list screen are replaced.
@@ -234,7 +234,7 @@ public final class ThemeDynamicListGuardV3 {
                     String raw = value == null ? "" : value.toString().trim();
                     boolean header = isSuggestedLabel(raw);
                     float sp = textSizeSp(tv);
-                    int foreground = header || sp >= 14.5f ? primary : secondary;
+                    int foreground = ThemeViewColors.contrastForeground(tv, header || sp >= 14.5f ? primary : secondary);
                     if (tv.getCurrentTextColor() != foreground) tv.setTextColor(foreground);
                     if (tv.getCurrentHintTextColor() != secondary) tv.setHintTextColor(secondary);
                     if (header) suggested.add(tv);

@@ -876,6 +876,68 @@ public class ThemeRuntimeRegressionTest {
         assertNull(plus.colors);
     }
 
+    @Test
+    public void nativeHeaderRepairsALateWhiteChildBeforeItsFirstFrame() {
+        FrameLayout header = new FrameLayout(activity); profile.addView(header); header.layout(0, 0, 400, 90);
+        header.setBackgroundColor(Color.WHITE); ThemeNativeTargets.header(header);
+        FrameLayout nativeFill = new FrameLayout(activity); nativeFill.setBackgroundColor(0xfff5f5f5);
+        TextView title = new TextView(activity); title.setText("Inbox"); title.setTextColor(Color.BLACK);
+        nativeFill.addView(title); header.addView(nativeFill); nativeFill.layout(0, 0, 400, 90);
+        // A late bind inside the ordinary 100ms throttle must still get its first frame themed.
+        header.getViewTreeObserver().dispatchOnGlobalLayout(); header.getViewTreeObserver().dispatchOnPreDraw();
+        assertEquals(ThemeEngine.backgroundColor(activity), ((ColorDrawable) nativeFill.getBackground()).getColor());
+        assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.header(header);
+        assertEquals(0xfff5f5f5, ((ColorDrawable) nativeFill.getBackground()).getColor());
+        assertEquals(Color.BLACK, title.getCurrentTextColor());
+    }
+
+    @Test
+    public void systemNotificationCardsKeepCornersAndFunctionalPressedColorsAndRestoreNativeFill() {
+        FrameLayout notifications = new FrameLayout(activity); profile.addView(notifications);
+        FrameLayout card = new FrameLayout(activity);
+        GradientDrawable nativeFill = new GradientDrawable(); nativeFill.setCornerRadius(20);
+        android.content.res.ColorStateList states = new android.content.res.ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_pressed}, new int[0]}, new int[]{Color.RED, Color.WHITE});
+        nativeFill.setColor(states); card.setBackground(nativeFill); notifications.addView(card);
+        TextView title = new TextView(activity); title.setTextColor(Color.BLACK); card.addView(title);
+        ImageView media = new ImageView(activity); media.setBackgroundColor(Color.WHITE); card.addView(media);
+        ThemeNativeTargets.systemNotifications(notifications);
+        GradientDrawable themed = (GradientDrawable) card.getBackground();
+        assertEquals(20f, themed.getCornerRadius(), 0.01f);
+        assertEquals(ThemeEngine.surfaceColor(activity), themed.getColor().getDefaultColor());
+        assertEquals(Color.RED, themed.getColor().getColorForState(new int[]{android.R.attr.state_pressed}, Color.RED));
+        assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) media.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.systemNotifications(notifications);
+        assertSame(nativeFill, card.getBackground()); assertSame(states, nativeFill.getColor());
+    }
+
+    @Test
+    public void nativeSheetKeepsDismissBackdropTransparentAndThemesItsRoundedContent() {
+        FrameLayout sheet = new FrameLayout(activity); profile.addView(sheet);
+        FrameLayout content = new FrameLayout(activity); GradientDrawable fill = new GradientDrawable();
+        fill.setColor(Color.WHITE); fill.setCornerRadius(24); content.setBackground(fill); sheet.addView(content);
+        TextView option = new TextView(activity); option.setTextColor(Color.BLACK); content.addView(option);
+        ThemeNativeTargets.sheet(sheet);
+        assertNull(sheet.getBackground());
+        assertEquals(ThemeEngine.surfaceColor(activity), ((GradientDrawable) content.getBackground()).getColor().getDefaultColor());
+        assertEquals(ThemeEngine.textColor(activity), option.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.sheet(sheet);
+        assertSame(fill, content.getBackground()); assertEquals(Color.BLACK, option.getCurrentTextColor());
+    }
+
+    @Test
+    public void brightFunctionalActionRetainsItsCyanFillAndGetsReadableDarkText() {
+        TextView button = new TextView(activity); button.setText("Follow");
+        button.setBackgroundColor(0xff20d5ec); button.setTextColor(Color.WHITE); profile.addView(button);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(0xff20d5ec, ((ColorDrawable) button.getBackground()).getColor());
+        assertEquals(Color.BLACK, button.getCurrentTextColor());
+        TextView redAction = new TextView(activity); redAction.setTextColor(Color.RED); profile.addView(redAction);
+        ThemeNativeTargets.profilePage(profile); assertEquals(Color.RED, redAction.getCurrentTextColor());
+    }
+
     /** Captures the three Paint/four Path native painter and its public note APIs. */
     public static final class NoteView extends TextView {
         final NotePainter painter = new NotePainter();

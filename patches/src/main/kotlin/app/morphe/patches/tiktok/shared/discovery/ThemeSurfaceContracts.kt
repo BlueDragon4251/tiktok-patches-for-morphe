@@ -14,6 +14,11 @@ internal object ThemeSurfaceContracts {
     const val OLD_INBOX = "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/v2/SessionListBaseVH;"
     const val INBOX = "Lcom/ss/android/ugc/aweme/im/chatlist/impl/ui/viewholder/chatlistvo/ChatListBaseVH;"
     const val NAV = "Lcom/bytedance/tiktok/homepage/mainpagefragment/assem/MainPageBusinessAssem;"
+    const val HEADER = "Lcom/bytedance/tux/navigation/TuxNavBar;"
+    const val SHEET = "Lcom/bytedance/tux/sheet/sheet/TuxSheet;"
+    const val SYSTEM_CONTAINER = "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;"
+    const val SYSTEM_PAGE = "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;"
+    const val HEADER_MODE = "experimental-theme-native-header-writer"
     const val HOME = "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;"
     const val VIEW = "Landroid/view/View;"
     private const val HOLDER = "Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;"
@@ -23,8 +28,9 @@ internal object ThemeSurfaceContracts {
     const val NAV_MODE = "experimental-theme-navigation-writer"
     const val RENDER_MODE = "experimental-theme-compose-color-read"
     const val VIEW_MODE = "experimental-theme-settings-view-return"
-    val modes = setOf(ROOT_MODE, BIND_MODE, NAV_MODE, RENDER_MODE, VIEW_MODE)
+    val modes = setOf(ROOT_MODE, BIND_MODE, NAV_MODE, RENDER_MODE, VIEW_MODE, HEADER_MODE)
     val rootRoles = mapOf(
+        SYSTEM_CONTAINER to "systemNotifications", SYSTEM_PAGE to "systemNotifications", SHEET to "sheet",
         "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
         "Lcom/ss/android/ugc/aweme/sidebar/profile/ProfileSidebarPageFragment;" to "sidebar",
         "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
@@ -46,7 +52,8 @@ internal object ThemeSurfaceContracts {
     fun inboxOwner(resolve: (String) -> ClassDef?): String = if (resolve(OLD_INBOX) != null) OLD_INBOX else INBOX
     fun chatOwner(resolve: (String) -> ClassDef?): String = if (resolve(OLD_CHAT) != null) OLD_CHAT else CHAT
     fun rootBoundary(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): Boolean =
-        owner.type in rootRoles && m.toString() == "${owner.type}->$CREATE" && m.accessFlags == 17 &&
+        owner.type in rootRoles && m.toString() == "${owner.type}->$CREATE" && m.accessFlags == (if (owner.type == SHEET) 1 else 17) &&
+            (owner.type != SHEET || m.implementation?.instructions?.any { (ref(it) as? TypeReference)?.type == "Lcom/bytedance/tux/widget/RadiusLayout;" } == true) &&
             subtype(owner.type, "Landroidx/fragment/app/Fragment;", resolve) &&
             m.implementation?.instructions?.any { it.opcode == Opcode.RETURN_OBJECT } == true &&
             (owner.type !in setOf(CHAT, OLD_CHAT) || calls(m).any { it.name == "getRootView" && it.returnType == VIEW } &&
@@ -64,7 +71,25 @@ internal object ThemeSurfaceContracts {
         }.distinct()
         types.size == 1 && subtype(types.single(), "Landroid/view/ViewGroup;", resolve)
     }.getOrDefault(false)
+    /** The public native header writer has exactly two field operations and one framework paint. */
+    fun headerBoundary(m: Method, owner: ClassDef): Boolean = runCatching {
+        if (owner.type != HEADER || owner.superclass != "Landroid/widget/FrameLayout;" ||
+            m.name != "setNavBackground" || m.accessFlags != 17 || m.returnType != "V" || params(m) != listOf("I")) return false
+        val body = m.implementation ?: return false
+        val ins = body.instructions.toList()
+        if (body.registerCount != 3 || body.tryBlocks.isNotEmpty() || ins.map { it.opcode } !=
+            listOf(Opcode.IPUT, Opcode.IGET_OBJECT, Opcode.INVOKE_VIRTUAL, Opcode.RETURN_VOID)) return false
+        val color = ref(ins[0]) as? FieldReference ?: return false
+        val child = ref(ins[1]) as? FieldReference ?: return false
+        color.definingClass == HEADER && color.type == "I" && child.definingClass == HEADER && child.type.startsWith("LX/") &&
+            (ins[0] as TwoRegisterInstruction).let { it.registerA == 2 && it.registerB == 1 } &&
+            (ins[1] as TwoRegisterInstruction).let { it.registerA == 0 && it.registerB == 1 } &&
+            ref(ins[2]).toString() == "$VIEW->setBackgroundColor(I)V" && ins[2].argumentRegisters() == listOf(0, 2)
+    }.getOrDefault(false)
+    fun headerSite(m: Method): ThemeContracts.Site = ThemeContracts.Site(3,
+        "invoke-static {v1}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->header($VIEW)V")
     fun explicitTarget(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): String? = when {
+        headerBoundary(m, owner) -> "$HEADER->setNavBackground(I)V"
         rootBoundary(m, owner, resolve) -> "${if (m.definingClass == CHAT) OLD_CHAT else m.definingClass}->$CREATE"
         inboxBoundary(m, owner) -> "$OLD_INBOX->Z5(LX/0CcN;I)V"
         navigationSites(m, owner).isNotEmpty() -> "$NAV->" + when {
@@ -75,6 +100,7 @@ internal object ThemeSurfaceContracts {
         else -> null
     }
     fun mode(m: Method, owner: ClassDef, accepted: String, resolve: (String) -> ClassDef?): String? = runCatching {
+        if (headerBoundary(m, owner) && accepted == "$HEADER->setNavBackground(I)V") return HEADER_MODE
         if (rootBoundary(m, owner, resolve) && accepted == "${if (owner.type == CHAT) OLD_CHAT else owner.type}->$CREATE") return ROOT_MODE
         if (accepted == "$OLD_INBOX->Z5(LX/0CcN;I)V" && inboxBoundary(m, owner)) { inboxSites(m); return BIND_MODE }
         if (accepted.startsWith("$NAV->") && explicitTarget(m, owner, resolve) == accepted) return NAV_MODE
@@ -198,6 +224,7 @@ internal object ThemeSurfaceContracts {
     }.getOrDefault(emptyList())
     fun mutationAllowed(mode: String, m: Method, owner: ClassDef, index: Int?, code: String?, resolve: (String) -> ClassDef?): Boolean = runCatching {
         val sites = when (mode) {
+            HEADER_MODE -> listOf(headerSite(m))
             ROOT_MODE -> rootSites(m)
             BIND_MODE -> inboxSites(m)
             VIEW_MODE -> settingsViewSites(m)

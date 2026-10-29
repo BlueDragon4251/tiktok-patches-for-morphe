@@ -243,6 +243,7 @@ public final class ThemeEngine {
             try {
                 window.setStatusBarColor(opaqueBackground);
                 window.setNavigationBarColor(opaqueSurface);
+                if (Build.VERSION.SDK_INT >= 29) window.setNavigationBarContrastEnforced(false);
             } catch (Throwable ignored) {
             }
 
@@ -304,6 +305,15 @@ public final class ThemeEngine {
         int opaqueSurface = compositeOver(surface, opaqueBackground);
         if (window.getStatusBarColor() != opaqueBackground) window.setStatusBarColor(opaqueBackground);
         if (window.getNavigationBarColor() != opaqueSurface) window.setNavigationBarColor(opaqueSurface);
+        if (Build.VERSION.SDK_INT >= 29 && window.isNavigationBarContrastEnforced()) window.setNavigationBarContrastEnforced(false);
+        if (Build.VERSION.SDK_INT >= 30 && window.getInsetsController() != null) {
+            int mask = android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                    | android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            int appearance = (luminance(opaqueBackground) > 0.58 ? android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0)
+                    | (luminance(opaqueSurface) > 0.58 ? android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS : 0);
+            if ((window.getInsetsController().getSystemBarsAppearance() & mask) != appearance)
+                window.getInsetsController().setSystemBarsAppearance(appearance, mask);
+        }
         updateSystemBarIconContrast(window.getDecorView(), opaqueBackground, opaqueSurface);
     }
 

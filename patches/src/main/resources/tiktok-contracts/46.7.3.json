@@ -200,7 +200,11 @@
     "Lcom/tts/oecverify/verify/RiskControlService;-\u003eexecute(LX/16eW;Lcom/tts/oecverify/BdTuringCallback;)Z": "ccf42f8f0dac4872c5bcd0d5b0efce1eaa8e362b6c61f4508fc7ef873af46595",
     "Lkotlin/jvm/internal/AwS375S0200000_28_I1;-\u003einvoke$155(Lkotlin/jvm/internal/AwS375S0200000_28_I1;Ljava/lang/Object;)Ljava/lang/Object;": "898099ff2995ed4bccdd9e94d6d9e08eac8fd00b3ef4b827f6a80b9ad5835e86",
     "Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;": "091fbbdd125b4b625c950a8c5a04408b711c432bacfa3c711210ff03064aaba8",
-    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "8d31bf91793b55ca42f2113f9294a2373107fdfa23e429b4e72ef3f78b1854d5"
+    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "8d31bf91793b55ca42f2113f9294a2373107fdfa23e429b4e72ef3f78b1854d5",
+    "Lcom/bytedance/tux/sheet/sheet/TuxSheet;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "fe54d7f705442e506f26bf247d445d5e4e8b9ed3c864e3b9f2562ca123a78928",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "e3288f6c62dd0803c823fb48003e8d650d15d3f532e5a8e2336ef41378aec4e9",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "8a1102ff1bcb6ca869bd7c1b24067bae561e0896f56d3d7f1a9d99b3dfd24c07",
+    "Lcom/bytedance/tux/navigation/TuxNavBar;-\u003esetNavBackground(I)V": "763a2e8c3fde988b9f74b2a310189f70ddd77182097a02e1930fc2c4199a0bb3"
   },
   "classes": {
     "LX/09K3;": "e9cda6ae4095b5254e94328d32abf67fbf98f73ce2bc3cef752490c8a8cd7aea",
@@ -312,7 +316,11 @@
     "Lcom/tts/oecverify/verify/RiskControlService;": "7d022c1658f830cad76b59c5a47da116677d1c80b76b853ebd696375f5f41042",
     "Lkotlin/jvm/internal/AwS375S0200000_28_I1;": "e996dae0a4c2066dc01e0943d5e09d1d5835915acf92a9d6597338008d6f84dd",
     "Lkotlin/jvm/internal/AwS398S0200000_21_I1;": "7032de8dabd13d903009cbb2570cc97189eeea133cd27122784441e1bbf85825",
-    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "aa1d798a67c36a88341ab3066516b33b0ae73d5edfe11ba9a9f88fe853c56e0f"
+    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "aa1d798a67c36a88341ab3066516b33b0ae73d5edfe11ba9a9f88fe853c56e0f",
+    "Lcom/bytedance/tux/sheet/sheet/TuxSheet;": "c6ac94b100cfd7bd1bc4d240b952153cfd5cf48782745f3d260d9e4ce6e1eaaf",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;": "0888302022a8bf9c586dd4f5957d338c3e0d692e8968c34ef215705873068e36",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;": "393fef2f049b372714d8a0d0650aed291e9fcb114135656acee0296d8bf5bfc2",
+    "Lcom/bytedance/tux/navigation/TuxNavBar;": "00d5315121dd63a2abfe2833e04d792f2576ab3e79cfc37db7ab766e010d3ff9"
   },
   "portableMethods": {
     "LX/09K3;-\u003eonDraw(Landroid/graphics/Canvas;)V": "c1ec62fb5e359760b960cd822586d63b89aa44e5da1c6f04845700bc1026a13a",
@@ -485,7 +493,11 @@
     "Lcom/tts/oecverify/verify/RiskControlService;-\u003eexecute(LX/16eW;Lcom/tts/oecverify/BdTuringCallback;)Z": "0b5599df1187ded70827960803ff73b46fa90e8397bd03c22de0275bf0ca4ae9",
     "Lkotlin/jvm/internal/AwS375S0200000_28_I1;-\u003einvoke$155(Lkotlin/jvm/internal/AwS375S0200000_28_I1;Ljava/lang/Object;)Ljava/lang/Object;": "827e209867679a7855ec4b55e324fba18a13ec1e8f16aefae749fcda4cea768f",
     "Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;": "f85c5182eccbe160135c9e5437281e344102ea843855de4b2e7ed2d4c14d95ba",
-    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "21589ac92261caa365fb5f361532ad6f4bf726f09e8c97a37e22bd3b3bb83e8f"
+    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "21589ac92261caa365fb5f361532ad6f4bf726f09e8c97a37e22bd3b3bb83e8f",
+    "Lcom/bytedance/tux/sheet/sheet/TuxSheet;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "f0054e4f8488ddb3c26742164cb4dab49ab5248ad709b1b0ecc7603d65aff4d1",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "592a7e0b9381b7d82a6b2b24ab168ece398789aa09d348b2ec2a7c1555fef35a",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;": "be034674aa78ee991079b7be5234826c17a4e92b1944c2429c53955223434b5b",
+    "Lcom/bytedance/tux/navigation/TuxNavBar;-\u003esetNavBackground(I)V": "ab9c3e0cb2f7a7655a5ec638cf68c095684426d5caf39d3d2c0da22245c81333"
   },
   "portableClasses": {
     "LX/09K3;": "fdbe464f2a48d97e1c7f33aa99c0ffe179628555c6e032ee3d8afa017e805cf9",
@@ -597,7 +609,11 @@
     "Lcom/tts/oecverify/verify/RiskControlService;": "73e2a692580b690bcb0397c7a3a95bf9d46cb69f70d3a2d92fd524f13584b5b6",
     "Lkotlin/jvm/internal/AwS375S0200000_28_I1;": "64a614229696f20dbae8dfd9099f08837fc81cb476114d6b219bc570f10926fb",
     "Lkotlin/jvm/internal/AwS398S0200000_21_I1;": "a567e964dc65748a1342503d879c90a116252a00e13c7338a354d3fa3072c9c3",
-    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "c9ca48205d95c0cb4bb0de7327ab73b6ba60ed3b12baa2be69926897fee592e3"
+    "Lkotlin/jvm/internal/AwS567S0100000_21_I1;": "c9ca48205d95c0cb4bb0de7327ab73b6ba60ed3b12baa2be69926897fee592e3",
+    "Lcom/bytedance/tux/sheet/sheet/TuxSheet;": "b4d5289fc7d67dba0d3d39572f4f7fd801c5553703b2443178215750ea124a42",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;": "4537c9819dcb7428346911f7ef5bdc3afa89a58749cdbed57a00f3c7180c1680",
+    "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;": "ed08f3f12d4db2080bc0abf57c578229e27b08098b945e13bc5cd353f9437bb9",
+    "Lcom/bytedance/tux/navigation/TuxNavBar;": "517bb983b63a5b85f3770a851fb5f3e121d0ffd82985891abaee2aa58cbc10fb"
   },
   "hookMethods": {
     "app.morphe.patches.tiktok.layout.theme.FeedCaptionDrawFingerprint::": "LX/09K3;-\u003eonDraw(Landroid/graphics/Canvas;)V",
@@ -777,7 +793,11 @@
     "native-injection:Lcom/ss/android/vesdk/VEConfigCenter;-\u003egetValue(Ljava/lang/String;Z)Ljava/lang/Boolean;": "Lcom/ss/android/vesdk/VEConfigCenter;-\u003egetValue(Ljava/lang/String;Z)Ljava/lang/Boolean;",
     "native-injection:Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;": "Lkotlin/jvm/internal/AwS398S0200000_21_I1;-\u003einvoke$60(Lkotlin/jvm/internal/AwS398S0200000_21_I1;)Ljava/lang/Object;",
     "native-injection:Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;": "Lkotlin/jvm/internal/AwS567S0100000_21_I1;-\u003einvoke$13(Lkotlin/jvm/internal/AwS567S0100000_21_I1;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-    "offline.native-options-provider": "LX/0AIU;-\u003eLJFF()Ljava/util/List;"
+    "offline.native-options-provider": "LX/0AIU;-\u003eLJFF()Ljava/util/List;",
+    "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/bytedance/tux/sheet/sheet/TuxSheet;:onCreateView": "Lcom/bytedance/tux/sheet/sheet/TuxSheet;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+    "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;:onCreateView": "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+    "app.morphe.patches.tiktok.layout.theme.NativeRootFingerprint:Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;:onCreateView": "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;-\u003eonCreateView(Landroid/view/LayoutInflater;Landroid/view/ViewGroup;Landroid/os/Bundle;)Landroid/view/View;",
+    "app.morphe.patches.tiktok.layout.theme.NativeHeaderBackgroundFingerprint:Lcom/bytedance/tux/navigation/TuxNavBar;:setNavBackground": "Lcom/bytedance/tux/navigation/TuxNavBar;-\u003esetNavBackground(I)V"
   },
   "scopedMethods": {
     "LX/02z2;-\u003eLIZ(ILjava/lang/String;ZZ)Z": "34515f7ae697b3225aed7189e26b50926d5a87a8f77246e15b20e7d8071fb64a",

@@ -51,9 +51,18 @@ private class NativeRootFingerprint(owner: String) : Fingerprint(
     parameters = listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;"),
 )
 
+private object NativeHeaderBackgroundFingerprint : Fingerprint(
+    definingClass = ThemeSurfaceContracts.HEADER, name = "setNavBackground",
+    parameters = listOf("I"), returnType = "V",
+    custom = { method, owner -> ThemeSurfaceContracts.headerBoundary(method, owner) },
+)
+
 private val nativeRoots = mapOf(
     "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
     PROFILE_SIDEBAR_FRAGMENT to "sidebar",
+    ThemeSurfaceContracts.SYSTEM_CONTAINER to "systemNotifications",
+    ThemeSurfaceContracts.SYSTEM_PAGE to "systemNotifications",
+    ThemeSurfaceContracts.SHEET to "sheet",
     "Lcom/ss/android/ugc/aweme/sidebar/SidebarPageFragment;" to "sidebar",
     "Lcom/ss/android/ugc/profile/business/profile/menu/ProfilePageMenuFragment;" to "sidebar",
     "Lcom/ss/android/ugc/aweme/search/middle/AbstractSearchIntermediateFragmentNew;" to "search",
@@ -276,6 +285,11 @@ val themeEnginePatch = bytecodePatch(
             val method = fingerprint.uniqueMethod
             val site = ThemeContracts.tuxEntrySite(method, role, patchDefaultPreset)
             method.addInstructions(site.index, site.code)
+        }
+
+        NativeHeaderBackgroundFingerprint.uniqueMethod.apply {
+            val site = ThemeSurfaceContracts.headerSite(this)
+            addInstruction(site.index, site.code)
         }
 
         FeedCaptionDrawFingerprint.uniqueMethod.apply {

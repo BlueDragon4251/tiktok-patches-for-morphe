@@ -65,9 +65,35 @@ final class ThemeViewColors {
         if (drawable instanceof ColorDrawable) return ((ColorDrawable) drawable).getColor();
         if (Build.VERSION.SDK_INT >= 24 && drawable instanceof GradientDrawable) {
             ColorStateList fill = ((GradientDrawable) drawable).getColor();
-            if (fill != null && !fill.isStateful()) return fill.getDefaultColor();
+            if (fill != null) return fill.getDefaultColor();
         }
         return null;
+    }
+
+    /** Preserve functional filled buttons: light theme text can be unreadable on a cyan action. */
+    static int contrastForeground(View view, int candidate) {
+        View current = view;
+        for (int i = 0; i < 8; i++) {
+            Integer fill = current.getBackgroundTintList() == null ? flatColor(current.getBackground())
+                    : current.getBackgroundTintList().getColorForState(current.getDrawableState(), 0);
+            if (fill != null && Color.alpha(fill) == 255) {
+                if (neutral(fill)) return candidate;
+                double backdrop = luminance(fill), foreground = luminance(candidate);
+                double ratio = (Math.max(backdrop, foreground) + 0.05) / (Math.min(backdrop, foreground) + 0.05);
+                if (ratio >= 4.5) return candidate;
+                return (backdrop + 0.05) / 0.05 > 1.05 / (backdrop + 0.05) ? Color.BLACK : Color.WHITE;
+            }
+            if (current.getBackground() != null && fill == null) return candidate;
+            if (!(current.getParent() instanceof View)) break;
+            current = (View) current.getParent();
+        }
+        return candidate;
+    }
+    private static double luminance(int color) {
+        double[] channels = {Color.red(color) / 255d, Color.green(color) / 255d, Color.blue(color) / 255d};
+        for (int i = 0; i < channels.length; i++) channels[i] = channels[i] <= 0.04045
+                ? channels[i] / 12.92 : Math.pow((channels[i] + 0.055) / 1.055, 2.4);
+        return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
     }
 
     static void flatBackground(View view, int color) {

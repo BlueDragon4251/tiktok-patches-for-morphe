@@ -21,12 +21,15 @@ import app.morphe.extension.shared.Logger;
 
 /** Roots supplied by verified native lifecycle hooks. No labels, dimensions or class-name guesses. */
 public final class ThemeNativeTargets {
-    private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7, FEED_DESCRIPTION = 8;
+    private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7, FEED_DESCRIPTION = 8, SYSTEM_NOTIFICATIONS = 9, HEADER = 10, SHEET = 11;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private static final Map<ViewGroup, Target> PAGER_TEXTS = new WeakHashMap<>();
     private ThemeNativeTargets() {}
 
     public static void profilePage(View view) { register(view, PROFILE); }
+    public static void systemNotifications(View view) { register(view, SYSTEM_NOTIFICATIONS); }
+    public static void header(View view) { register(view, HEADER); }
+    public static void sheet(View view) { register(view, SHEET); }
     public static void sidebar(View view) { register(view, SIDEBAR); }
     public static void search(View view) { register(view, SEARCH); }
     public static void chat(View view) { register(view, CHAT); }
@@ -198,7 +201,9 @@ public final class ThemeNativeTargets {
             if (current instanceof GradientDrawable && ThemeViewColors.flatColor(current) != null
                     && current.getConstantState() != null) {
                 GradientDrawable shape = (GradientDrawable) current.getConstantState().newDrawable().mutate();
-                shape.setColor(value);
+                ColorStateList nativeColors = ((GradientDrawable) current).getColor();
+                shape.setColor(nativeColors != null && nativeColors.isStateful()
+                        ? ThemeViewColors.stateColors(nativeColors, value, value) : ColorStateList.valueOf(value));
                 replacement = shape;
             }
             view.setBackground(replacement);
@@ -219,7 +224,8 @@ public final class ThemeNativeTargets {
     private static boolean pageFill(int color, Target target) {
         if (Color.alpha(color) == 0) return false;
         int rgb = color & 0xffffff;
-        return rgb == (target.background & 0xffffff)
+        return Color.alpha(color) == 255 && ThemeViewColors.neutral(color)
+                || rgb == (target.background & 0xffffff)
                 || rgb == (target.surface & 0xffffff)
                 || rgb == 0 || rgb == 0x121212 || rgb == 0x161823
                 || rgb == 0x1e1e1e || rgb == 0x252525 || rgb == 0xffffff;
@@ -230,7 +236,7 @@ public final class ThemeNativeTargets {
         Drawable rootFill = root.getBackground();
         // Profile roots can carry native media/functional fills; preserve those exactly.
         Integer rootColor = ThemeViewColors.flatColor(rootFill);
-        if (target.kind != INBOX_ROW && (target.kind != PROFILE || rootFill == null
+        if (target.kind != INBOX_ROW && target.kind != SHEET && (target.kind != PROFILE || rootFill == null
                 || rootColor != null && pageFill(rootColor, target))) {
             color(root, overlay ? target.surface
                     : target.background, target);
@@ -249,9 +255,12 @@ public final class ThemeNativeTargets {
             }
             ThemeViewColors.bubble(view, target.background);
             Drawable background = view.getBackground();
-            Integer flat = ThemeViewColors.flatColor(background);
+            Integer flat = view.getBackgroundTintList() == null ? ThemeViewColors.flatColor(background)
+                    : view.getBackgroundTintList().getDefaultColor();
             if (flat != null && pageFill(flat, target)) {
-                color(view, overlay ? Color.TRANSPARENT : target.background, target);
+                int pageColor = background instanceof GradientDrawable && ((GradientDrawable) background).getCornerRadius() > 0
+                        ? target.surface : target.background;
+                color(view, overlay ? Color.TRANSPARENT : pageColor, target);
             }
             if (view instanceof TextView) styleText((TextView) view, target);
             if (!(view instanceof ViewGroup)) continue;
@@ -267,7 +276,9 @@ public final class ThemeNativeTargets {
     }
 
     private static void styleText(TextView view, Target target) {
-        ThemeCompoundIcons.style(view, target.primary);
+        int primary = ThemeViewColors.contrastForeground(view, target.primary);
+        int secondaryColor = primary == target.primary ? target.secondary : primary;
+        ThemeCompoundIcons.style(view, primary);
         ColorStateList current = view.getTextColors();
         TextFill fill = target.texts.get(view);
         if (fill == null || current != fill.applied) {
@@ -281,11 +292,11 @@ public final class ThemeNativeTargets {
                 || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) return;
         boolean secondary = Color.alpha(nativeColor) < 200
                 || Math.max(r, Math.max(g, b)) > 60 && Math.min(r, Math.min(g, b)) < 220;
-        int mapped = secondary ? target.secondary : target.primary;
+        int mapped = secondary ? secondaryColor : primary;
         if (fill.original.isStateful()) {
-            if (fill.applied == null || fill.primary != target.primary || fill.secondary != target.secondary) {
-                fill.applied = ThemeViewColors.stateColors(fill.original, target.primary, target.secondary);
-                fill.primary = target.primary; fill.secondary = target.secondary;
+            if (fill.applied == null || fill.primary != primary || fill.secondary != secondaryColor) {
+                fill.applied = ThemeViewColors.stateColors(fill.original, primary, secondaryColor);
+                fill.primary = primary; fill.secondary = secondaryColor;
                 view.setTextColor(fill.applied);
             }
             mapped = view.getCurrentTextColor();
@@ -390,7 +401,7 @@ public final class ThemeNativeTargets {
     }
 
     private static final class Target implements View.OnAttachStateChangeListener,
-            ViewTreeObserver.OnPreDrawListener, ViewTreeObserver.OnScrollChangedListener {
+            ViewTreeObserver.OnPreDrawListener, ViewTreeObserver.OnScrollChangedListener, ViewTreeObserver.OnGlobalLayoutListener {
         // WeakHashMap values must not retain their keys.
         final java.lang.ref.WeakReference<View> reference;
         final int kind;
@@ -400,6 +411,8 @@ public final class ThemeNativeTargets {
         final Map<View, Fill> fills = new WeakHashMap<>();
         boolean stateLogged;
         boolean profileScanned;
+        boolean dirty = true;
+        final android.graphics.Rect visibleBounds = new android.graphics.Rect();
         long lastStyleMs = -1;
         long lastDefaultContrastMs = -1;
         String preset = "";
@@ -414,11 +427,13 @@ public final class ThemeNativeTargets {
             detach();
             observer = view.getViewTreeObserver();
             observer.addOnPreDrawListener(this);
+            observer.addOnGlobalLayoutListener(this);
             if (kind == PROFILE) observer.addOnScrollChangedListener(this);
         }
         void detach() {
             if (observer != null && observer.isAlive()) {
                 observer.removeOnPreDrawListener(this);
+                observer.removeOnGlobalLayoutListener(this);
                 observer.removeOnScrollChangedListener(this);
             }
             observer = null;
@@ -490,6 +505,7 @@ public final class ThemeNativeTargets {
                 lastApplied = applied;
                 if (enabled) restyle(view, false, force);
             } else if (enabled && kind == SIDEBAR) restyle(view, true, force);
+            else if (enabled && (kind == SYSTEM_NOTIFICATIONS || kind == HEADER || kind == SHEET)) restyle(view, false, force);
             else if (enabled && kind == SEARCH) restyle(view, false, force);
             else if (enabled && kind == NAV) restyle(view, true, force);
             else if (enabled && kind == INBOX_ROW) restyle(view, true, force);
@@ -531,16 +547,17 @@ public final class ThemeNativeTargets {
             }
         }
         void restyle(View view, boolean overlay, boolean force) {
-            if (!force && !view.isShown()) return;
-            if (kind == PROFILE || kind == SIDEBAR || kind == NAV) {
+            if (!force && (!view.isShown() || !view.getGlobalVisibleRect(visibleBounds))) return;
+            if (kind == PROFILE || kind == SIDEBAR || kind == NAV || kind == HEADER || kind == SYSTEM_NOTIFICATIONS) {
                 if (preset.isEmpty() || !preset.equals(ThemeStateStore.currentPreset(view.getContext()))) palette(view);
                 ThemeEngine.repairSystemBars(view, background, surface);
             }
             long now = SystemClock.uptimeMillis();
-            if (!force && now - lastStyleMs < 100 && lastStyleMs >= 0
+            if (!force && !dirty && now - lastStyleMs < 100 && lastStyleMs >= 0
                     && preset.equals(ThemeStateStore.currentPreset(view.getContext()))) return;
             palette(view);
             page(view, overlay, this);
+            dirty = false;
             if (!stateLogged) {
                 stateLogged = true;
                 if (STATE_LOG_BUDGET.getAndDecrement() > 0) Logger.printInfo(() -> "[BlueIT Native Styled v3] role=" + kind + " texts=" + texts.size()
@@ -548,6 +565,7 @@ public final class ThemeNativeTargets {
             }
             lastStyleMs = now;
         }
+        @Override public void onGlobalLayout() { dirty = true; }
         @Override public boolean onPreDraw() { try { apply(false); } catch (Throwable error) { logFailure(error); } return true; }
         @Override public void onScrollChanged() { try { apply(false); } catch (Throwable error) { logFailure(error); } }
         @Override public void onViewAttachedToWindow(View view) { attach(); }

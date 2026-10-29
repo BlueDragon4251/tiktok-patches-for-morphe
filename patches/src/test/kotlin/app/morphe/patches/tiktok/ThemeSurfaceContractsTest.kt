@@ -75,4 +75,32 @@ class ThemeSurfaceContractsTest {
         assertThrows(PatchException::class.java) { m.insertAfterNative(0, "nop") }
         assertEquals(3, m.implementation!!.instructions.size)
     }
+    @Test fun nativeHeaderRequiresTheExactWriterAndRejectsWrongReceiverAndTiming() {
+        fun writer(wrong: Boolean) = method(ThemeSurfaceContracts.HEADER, "setNavBackground", listOf("I"), "V",
+            MethodImplementationBuilder(3).apply {
+                addInstruction(BuilderInstruction22c(Opcode.IPUT, 2, 1, ImmutableFieldReference(ThemeSurfaceContracts.HEADER, "color", "I")))
+                addInstruction(BuilderInstruction22c(Opcode.IGET_OBJECT, 0, 1, ImmutableFieldReference(ThemeSurfaceContracts.HEADER, "background", "LX/HeaderBackground;")))
+                addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 2, if (wrong) 1 else 0, 2, 0, 0, 0,
+                    ImmutableMethodReference(view, "setBackgroundColor", listOf("I"), "V")))
+                addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+            })
+        val m = writer(false); val cls = owner(m, "Landroid/widget/FrameLayout;")
+        assertTrue(ThemeSurfaceContracts.headerBoundary(m, cls))
+        assertFalse(ThemeSurfaceContracts.headerBoundary(writer(true), cls))
+        val site = ThemeSurfaceContracts.headerSite(m)
+        assertTrue(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.HEADER_MODE, m, cls, site.index, site.code) { null })
+        assertFalse(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.HEADER_MODE, m, cls, site.index + 1, site.code) { null })
+        assertFalse(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.HEADER_MODE, m, cls, site.index, site.code.replace("v1", "v2")) { null })
+    }
+    @Test fun systemNotificationRootRolesRemainDistinctFromPrivateChatRoots() {
+        for (type in listOf(ThemeSurfaceContracts.SYSTEM_CONTAINER, ThemeSurfaceContracts.SYSTEM_PAGE)) {
+            val m = method(type, "onCreateView", listOf("Landroid/view/LayoutInflater;", "Landroid/view/ViewGroup;", "Landroid/os/Bundle;"), view,
+                MethodImplementationBuilder(5).apply { addInstruction(BuilderInstruction11n(Opcode.CONST_4, 0, 0)); addInstruction(BuilderInstruction11x(Opcode.RETURN_OBJECT, 0)) })
+            val cls = owner(m, "Landroidx/fragment/app/Fragment;")
+            assertTrue(ThemeSurfaceContracts.rootBoundary(m, cls) { if (it == type) cls else null })
+            assertTrue(ThemeSurfaceContracts.rootSites(m).single().code.contains("->systemNotifications("))
+            assertFalse(ThemeSurfaceContracts.rootSites(m).single().code.contains("->chat("))
+        }
+    }
+
 }

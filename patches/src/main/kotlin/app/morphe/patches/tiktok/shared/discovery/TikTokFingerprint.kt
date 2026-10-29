@@ -23,6 +23,7 @@ open class TikTokFingerprint(
     private val id: String? = null,
 ) : Fingerprint(definingClass = definingClass, name = name, accessFlags = accessFlags,
     returnType = returnType, parameters = parameters, filters = filters, strings = strings ?: exactStrings.takeIf { it.isNotEmpty() }, custom = custom) {
+    private val semanticStrings = strings
     private val semanticFilters = filters
     private val selectorAccessFlags = accessFlags
     // Retain the declared mask: newer patchers no longer expose Fingerprint.getAccessFlags().
@@ -32,6 +33,16 @@ open class TikTokFingerprint(
     private var selected: List<Match>? = null
     val hookId: String get() = id ?: (javaClass.name + ":" + (definingClass ?: "") + ":" +
         (name ?: "") + if (javaClass == TikTokFingerprint::class.java) ":" + (strings ?: parameters ?: emptyList<String>()).joinToString("|") else "")
+
+    internal companion object {
+        fun matchesSubstringMarkers(method: Method, markers: List<String>): Boolean {
+            val literals = method.implementation?.instructions?.mapNotNull {
+                ((it as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)?.reference as?
+                    com.android.tools.smali.dexlib2.iface.reference.StringReference)?.string
+            }?.toList().orEmpty()
+            return markers.all { marker -> literals.any { it.contains(marker) } }
+        }
+    }
 
     context(BytecodePatchContext)
     private fun candidates(): List<Match> {
@@ -46,7 +57,18 @@ open class TikTokFingerprint(
         clearMatch()
         val owner = definingClass?.takeIf { it.startsWith("L") && it.endsWith(";") }
             ?.let { classDefByOrNull(it) }
-        val initial = (if (owner != null) super.matchAllOrNull(owner) else super.matchAllOrNull()).orEmpty()
+        val indexed = (if (owner != null) super.matchAllOrNull(owner) else super.matchAllOrNull()).orEmpty()
+        // Patcher 2.x indexes declared strings by equality. These fingerprints were reviewed
+        // with substring markers. Retry only an empty indexed result with the same typed,
+        // opcode and custom predicates plus the complete original substring requirement.
+        val initial = if (indexed.isEmpty() && !semanticStrings.isNullOrEmpty()) {
+            val compatible = Fingerprint(definingClass = definingClass, name = name,
+                accessFlags = selectorAccessFlags, returnType = returnType, parameters = parameters,
+                filters = semanticFilters, custom = { method, candidate ->
+                    matchesSubstringMarkers(method, semanticStrings) && (semanticCustom?.invoke(method, candidate) != false)
+                })
+            (if (owner != null) compatible.matchAllOrNull(owner) else compatible.matchAllOrNull()).orEmpty()
+        } else indexed
         val oldOwner = definingClass
         val relocated = if (initial.isEmpty() && oldOwner != null && HookEvidence.normalizedType(oldOwner) != oldOwner &&
             HookEvidence.canRelocate(hookId)) {
