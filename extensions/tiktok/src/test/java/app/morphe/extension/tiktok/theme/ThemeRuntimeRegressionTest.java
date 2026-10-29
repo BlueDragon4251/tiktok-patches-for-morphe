@@ -962,7 +962,7 @@ public class ThemeRuntimeRegressionTest {
 
     @Test
     public void aMissingBackgroundIsNotUnboxedOrTreatedAsAFunctionalFill() {
-        TextView unpainted = new TextView(activity);
+        TextView unpainted = new TextView(activity); unpainted.setTextColor(Color.BLACK);
         assertNull(unpainted.getBackground()); assertNull(unpainted.getBackgroundTintList());
         assertEquals(ThemeEngine.textColor(activity), ThemeViewColors.contrastForeground(unpainted, ThemeEngine.textColor(activity)));
         profile.addView(unpainted); ThemeNativeTargets.profilePage(profile);
