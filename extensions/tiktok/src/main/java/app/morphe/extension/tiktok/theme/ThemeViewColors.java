@@ -75,7 +75,7 @@ final class ThemeViewColors {
         View current = view;
         for (int i = 0; i < 8; i++) {
             Integer fill = current.getBackgroundTintList() == null ? flatColor(current.getBackground())
-                    : current.getBackgroundTintList().getColorForState(current.getDrawableState(), 0);
+                    : Integer.valueOf(current.getBackgroundTintList().getColorForState(current.getDrawableState(), 0));
             if (fill != null && Color.alpha(fill) == 255) {
                 if (neutral(fill)) return candidate;
                 double backdrop = luminance(fill), foreground = luminance(candidate);

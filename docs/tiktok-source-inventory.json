@@ -44794,7 +44794,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeDefaultContrast.java",
-      "sha256": "4690f9f7fc69b0bb7260bc8f37efcf3679e5b5eec0720285fca8c22241fab28e",
+      "sha256": "017a47064a7e6e04d4cc459635d242126244c4d122d8d39c481f43236786e18c",
       "patches": [],
       "findings": []
     },
@@ -45493,7 +45493,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeNativeTargets.java",
-      "sha256": "a67eb69f8d5a832b529ebd15a1db140058a100e2d9c5c9cb44281d004a173270",
+      "sha256": "be29ba518f533afe07c53881f4b03b6b8f429ee01232b5f1bd6ce4dc8187d441",
       "patches": [],
       "findings": [
         {
@@ -47661,7 +47661,7 @@
     },
     {
       "source": "extensions/tiktok/src/main/java/app/morphe/extension/tiktok/theme/ThemeViewColors.java",
-      "sha256": "abca33813dd67f7032adf6174899382acfe00541ee1f2e8fa2581323879b172c",
+      "sha256": "2548b9eb65f98df7434a891d8d965bf5961eeb6d3937ebb73d1d33416f6bb3ad",
       "patches": [],
       "findings": [
         {

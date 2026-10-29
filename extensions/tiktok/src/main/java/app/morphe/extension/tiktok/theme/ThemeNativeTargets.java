@@ -256,7 +256,7 @@ public final class ThemeNativeTargets {
             ThemeViewColors.bubble(view, target.background);
             Drawable background = view.getBackground();
             Integer flat = view.getBackgroundTintList() == null ? ThemeViewColors.flatColor(background)
-                    : view.getBackgroundTintList().getDefaultColor();
+                    : Integer.valueOf(view.getBackgroundTintList().getDefaultColor());
             if (flat != null && pageFill(flat, target)) {
                 int pageColor = (target.kind == SYSTEM_NOTIFICATIONS || target.kind == SHEET) && background instanceof GradientDrawable && ((GradientDrawable) background).getCornerRadius() > 0
                         ? target.surface : target.background;

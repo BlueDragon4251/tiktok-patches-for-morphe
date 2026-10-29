@@ -50,7 +50,7 @@ final class ThemeDefaultContrast {
                             fill = new IconFill(drawable, nativeTint, current); ICONS.put(icon, fill);
                         }
                         Integer nativeColor = fill.original == null ? fill.nativeColor
-                                : fill.original.getColorForState(icon.getDrawableState(), fill.original.getDefaultColor());
+                                : Integer.valueOf(fill.original.getColorForState(icon.getDrawableState(), fill.original.getDefaultColor()));
                         if (nativeColor == null || !ThemeViewColors.neutral(nativeColor)
                                 || light(nativeColor) != light(backdrop)) {
                             if (current == fill.applied) fill.tint.set(icon, fill.original);

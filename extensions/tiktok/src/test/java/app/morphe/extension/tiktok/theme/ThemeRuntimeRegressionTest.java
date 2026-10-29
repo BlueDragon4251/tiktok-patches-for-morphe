@@ -960,6 +960,15 @@ public class ThemeRuntimeRegressionTest {
         assertSame(original, label.getText()); pixels.recycle();
     }
 
+    @Test
+    public void aMissingBackgroundIsNotUnboxedOrTreatedAsAFunctionalFill() {
+        TextView unpainted = new TextView(activity);
+        assertNull(unpainted.getBackground()); assertNull(unpainted.getBackgroundTintList());
+        assertEquals(ThemeEngine.textColor(activity), ThemeViewColors.contrastForeground(unpainted, ThemeEngine.textColor(activity)));
+        profile.addView(unpainted); ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), unpainted.getCurrentTextColor());
+    }
+
     /** Captures the three Paint/four Path native painter and its public note APIs. */
     public static final class NoteView extends TextView {
         final NotePainter painter = new NotePainter();
