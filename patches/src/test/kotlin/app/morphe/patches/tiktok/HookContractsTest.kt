@@ -149,6 +149,37 @@ class HookContractsTest {
         }
     }
 
+    @Test fun injectedInternalBranchesBelongToTheDestinationBody() {
+        // Entry fallbacks and mid-method avatar guards both use internal labels. Their
+        // code must branch to the inserted block, never the inline compiler's temporary body.
+        for (index in listOf(0, 7)) {
+            val b = MethodImplementationBuilder(2)
+            repeat(9) { b.addInstruction(BuilderInstruction10x(Opcode.NOP)) }
+            b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 0))
+            val m = method(b)
+            m.insertAtTarget(index, """
+                const/4 v0, 0x0
+                :again
+                add-int/lit8 v0, v0, 0x1
+                if-eqz v0, :again
+                if-nez v0, :native
+                return v0
+                :native
+                nop
+            """.trimIndent())
+            val body = m.implementation!!
+            val branches = body.instructions.filterIsInstance<com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction>()
+            assertEquals(2, branches.size)
+            branches.forEach { branch ->
+                assertSame(body.instructions[branch.target.location.index].location, branch.target.location)
+            }
+            assertEquals(Opcode.ADD_INT_LIT8, branches[0].target.location.instruction!!.opcode)
+            assertEquals(Opcode.NOP, branches[1].target.location.instruction!!.opcode)
+            assertTrue(branches[0].target.location.index < branches[0].location.index)
+            assertTrue(branches[1].target.location.index > branches[1].location.index)
+        }
+    }
+
     @Test fun fixtureContractRejectsChangedRegistersAndLiterals() {
         fun fixture(count: Int, value: Int): MutableMethod {
             val b = MethodImplementationBuilder(count)

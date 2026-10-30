@@ -82,8 +82,10 @@ internal fun MutableMethod.insertAtTarget(index: Int, code: String, labels: Arra
     rawReplaceInstruction(index, "nop")
     rawAddInstruction(index + 1, original)
     // Total size is unsuitable: dexlib can adjust switch payload alignment NOPs.
-    if (labels == null) rawAddInstructions(original.location.index, code)
-    else rawAddWithLabels(original.location.index, code, *labels)
+    // Inline compilation owns a separate MethodImplementation. Plain addInstructions moves
+    // its instructions but leaves internal branch labels bound to that temporary body.
+    // Relocate internal labels too, even when the snippet has no external labels.
+    rawAddWithLabels(original.location.index, code, *(labels ?: emptyArray()))
 }
 
 /** Retain continuation labels: a branch that skips the native producer also skips its hook. */
@@ -94,7 +96,7 @@ internal fun MutableMethod.insertAfterNative(index: Int, code: String) {
     if (producer.opcode != Opcode.IPUT_OBJECT && producer.opcode != Opcode.IGET_WIDE &&
         !(producer.opcode.name.startsWith("invoke-") && ref?.returnType == "V"))
         throw PatchException("After-producer injection requires a native View write, packed color read or void call")
-    rawAddInstructions(index + 1, code)
+    rawAddWithLabels(index + 1, code)
 }
 
 internal fun MutableMethod.checkReplacementBlock(index: Int, count: Int) {
@@ -123,8 +125,7 @@ internal object ContractInstructions {
         try {
             val target = body.instructions.getOrNull(index)
             if (target != null) insertAtTarget(index, code, labels)
-            else if (labels != null) rawAddWithLabels(index, code, *labels)
-            else rawAddInstructions(index, code)
+            else rawAddWithLabels(index, code, *(labels ?: emptyArray()))
             HookEvidence.injection(this, index, code)
         } catch (error: PatchException) {
             throw error
