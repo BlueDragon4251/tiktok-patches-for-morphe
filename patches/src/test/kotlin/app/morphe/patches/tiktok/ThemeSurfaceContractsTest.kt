@@ -41,11 +41,12 @@ class ThemeSurfaceContractsTest {
             listOf(constructor, show(1)))
         val m = show(1)
         val owner = cls("Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;")
-        assertTrue(ThemeSurfaceContracts.filterPopupBoundary(m, owner) { null })
-        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(show(2), owner) { null })
-        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(m, cls("Ljava/lang/Object;")) { null })
-        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(m,
-            cls("Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;", true)) { null })
+        fun valid(method: ImmutableMethod, candidate: ImmutableClassDef) =
+            ThemeSurfaceContracts.filterPopupBoundary(method, candidate) { if (it == type) candidate else null }
+        assertTrue(valid(m, owner))
+        assertFalse(valid(show(2), owner))
+        assertFalse(valid(m, cls("Ljava/lang/Object;")))
+        assertFalse(valid(m, cls("Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;", true)))
         val site = ThemeSurfaceContracts.filterPopupSites(m, owner) { null }.single()
         assertEquals(1, site.index)
         assertTrue(site.code.contains("$type->menu:$recycler"))
