@@ -351,9 +351,8 @@ public class ThemeRuntimeRegressionTest {
         ImageView avatar = new ImageView(activity);
         avatar.setBackgroundColor(Color.WHITE);
         header.addView(avatar);
-        ImageView action = new ImageView(activity);
-        com.bytedance.tux.drawable.TuxIconDrawable icon = new com.bytedance.tux.drawable.TuxIconDrawable();
-        icon.colors = android.content.res.ColorStateList.valueOf(Color.BLACK);
+        NativeTintImage action = new NativeTintImage(activity);
+        NativeTintDrawable icon = new NativeTintDrawable();
         action.setImageDrawable(icon); action.setClickable(true); header.addView(action);
         Object screen = invoke(ThemeDynamicListGuardV3.class, "detectScreen", new Class<?>[]{View.class}, decor);
         invoke(ThemeDynamicListGuardV3.class, "style", new Class<?>[]{View.class, screen.getClass()}, decor, screen);
