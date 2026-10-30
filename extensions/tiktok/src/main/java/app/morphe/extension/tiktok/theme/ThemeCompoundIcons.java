@@ -15,7 +15,9 @@ final class ThemeCompoundIcons {
     private static final Map<TextView, Map<Drawable, Fill>> FILLS = new WeakHashMap<>();
     private ThemeCompoundIcons() { }
     static void style(TextView view, int primary) {
-        for (Drawable drawable : view.getCompoundDrawablesRelative()) {
+        java.util.List<Drawable> drawables = ThemeInlineContent.objects(view.getText(), Drawable.class);
+        java.util.Collections.addAll(drawables, view.getCompoundDrawablesRelative());
+        for (Drawable drawable : drawables) {
             if (drawable == null) continue;
             Field field = field(drawable.getClass());
             if (field == null) continue;
@@ -45,15 +47,22 @@ final class ThemeCompoundIcons {
         while (it.hasNext()) {
             Map.Entry<TextView, Map<Drawable, Fill>> entry = it.next();
             if (entry.getKey().getRootView() != root.getRootView()) continue;
-            for (Map.Entry<Drawable, Fill> icon : entry.getValue().entrySet()) {
-                try {
-                    if (icon.getValue().field.get(icon.getKey()) == icon.getValue().applied) {
-                        icon.getValue().field.set(icon.getKey(), icon.getValue().original);
-                        icon.getKey().invalidateSelf();
-                    }
-                } catch (ReflectiveOperationException ignored) { }
-            }
+            restoreIcons(entry.getValue());
             it.remove();
+        }
+    }
+    static void restoreText(TextView view) {
+        Map<Drawable, Fill> icons = FILLS.remove(view);
+        if (icons != null) restoreIcons(icons);
+    }
+    private static void restoreIcons(Map<Drawable, Fill> icons) {
+        for (Map.Entry<Drawable, Fill> icon : icons.entrySet()) {
+            try {
+                if (icon.getValue().field.get(icon.getKey()) == icon.getValue().applied) {
+                    icon.getValue().field.set(icon.getKey(), icon.getValue().original);
+                    icon.getKey().invalidateSelf();
+                }
+            } catch (ReflectiveOperationException ignored) { }
         }
     }
     private static Field field(Class<?> type) {

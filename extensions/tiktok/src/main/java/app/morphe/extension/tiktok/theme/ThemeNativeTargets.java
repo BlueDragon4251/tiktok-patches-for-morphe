@@ -291,6 +291,26 @@ public final class ThemeNativeTargets {
     }
 
     private static void styleText(TextView view, Target target) {
+        if (target.inlineDepth < 4) {
+            target.inlineDepth++;
+            try {
+                java.util.ArrayDeque<View> pending = new java.util.ArrayDeque<>(
+                        ThemeInlineContent.objects(view.getText(), View.class));
+                int visited = 0;
+                while (!pending.isEmpty() && visited++ < 64) {
+                    View inline = pending.removeFirst();
+                    if (inline == view) continue;
+                    if (inline instanceof TextView) styleText((TextView) inline, target);
+                    else if (inline instanceof ImageView) styleIcon((ImageView) inline, target);
+                    if (inline instanceof ViewGroup) {
+                        ViewGroup group = (ViewGroup) inline;
+                        for (int i = 0; i < group.getChildCount() && pending.size() < 64; i++) {
+                            pending.addLast(group.getChildAt(i));
+                        }
+                    }
+                }
+            } finally { target.inlineDepth--; }
+        }
         int primary = ThemeViewColors.contrastForeground(view, target.primary);
         int secondaryColor = primary == target.primary ? target.secondary : primary;
         ThemeCompoundIcons.style(view, primary);
@@ -462,6 +482,7 @@ public final class ThemeNativeTargets {
         long lastDefaultContrastMs = -1;
         String preset = "";
         int background, surface, primary, secondary;
+        int inlineDepth;
         final Map<ImageView, IconFill> icons = new WeakHashMap<>();
         final Map<TextView, TextFill> texts = new WeakHashMap<>();
         final Map<ViewGroup, boolean[]> clips = new WeakHashMap<>();
@@ -493,6 +514,7 @@ public final class ThemeNativeTargets {
         }
         void restoreTexts() {
             for (Map.Entry<TextView, TextFill> entry : texts.entrySet()) {
+                ThemeCompoundIcons.restoreText(entry.getKey());
                 if (entry.getKey().getTextColors() == entry.getValue().applied) {
                     entry.getKey().setTextColor(entry.getValue().original);
                     entry.getValue().restoreSpans(entry.getKey());

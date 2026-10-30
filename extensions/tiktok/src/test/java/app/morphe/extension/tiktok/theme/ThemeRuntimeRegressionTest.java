@@ -1103,6 +1103,68 @@ public class ThemeRuntimeRegressionTest {
         assertEquals(ThemeEngine.textColor(activity), unpainted.getCurrentTextColor());
     }
 
+    @Test
+    public void detachedViewInNativeReplacementSpanGetsContrastAndRestoresWithoutChangingSpanGeometry() {
+        TextView embedded = new TextView(activity); embedded.setText("Add bio"); embedded.setTextColor(Color.BLACK);
+        com.bytedance.tux.drawable.TuxIconDrawable plus = new com.bytedance.tux.drawable.TuxIconDrawable();
+        android.content.res.ColorStateList originalIcon = android.content.res.ColorStateList.valueOf(Color.BLACK);
+        plus.colors = originalIcon; embedded.setCompoundDrawablesRelative(plus, null, null, null);
+        ViewReplacementSpan span = new ViewReplacementSpan(embedded);
+        TextView label = new TextView(activity); label.setTextColor(Color.WHITE);
+        android.text.SpannableString text = new android.text.SpannableString("Bio");
+        text.setSpan(span, 0, text.length(), 33); label.setText(text); profile.addView(label);
+        assertNull("Embedded tag is not a child in the profile hierarchy", embedded.getParent());
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), embedded.getCurrentTextColor());
+        assertEquals(ThemeEngine.textColor(activity), plus.colors.getDefaultColor());
+        android.text.Spanned themed = (android.text.Spanned) label.getText();
+        assertSame(span, themed.getSpans(0, themed.length(), android.text.style.ReplacementSpan.class)[0]);
+        assertEquals(73, span.getSize(new android.graphics.Paint(), themed, 0, themed.length(), null));
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertEquals(Color.BLACK, embedded.getCurrentTextColor()); assertSame(originalIcon, plus.colors);
+        assertSame(span, ((android.text.Spanned) label.getText()).getSpans(0, text.length(),
+                android.text.style.ReplacementSpan.class)[0]);
+    }
+
+    @Test
+    public void inlineNativeDrawableRetainsBoundsAndFunctionalColorsAndRestoresItsExactPalette() {
+        com.bytedance.tux.drawable.TuxIconDrawable icon = new com.bytedance.tux.drawable.TuxIconDrawable();
+        android.content.res.ColorStateList original = android.content.res.ColorStateList.valueOf(Color.BLACK);
+        icon.colors = original; icon.setBounds(1, 2, 20, 24);
+        DrawableReplacementSpan span = new DrawableReplacementSpan(icon);
+        com.bytedance.tux.drawable.TuxIconDrawable colored = new com.bytedance.tux.drawable.TuxIconDrawable();
+        colored.colors = android.content.res.ColorStateList.valueOf(Color.RED);
+        android.text.SpannableString text = new android.text.SpannableString("++");
+        text.setSpan(span, 0, 1, 33); text.setSpan(new DrawableReplacementSpan(colored), 1, 2, 33);
+        TextView label = new TextView(activity); label.setText(text); profile.addView(label);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), icon.colors.getDefaultColor());
+        assertEquals(Color.RED, colored.colors.getDefaultColor());
+        assertEquals(new android.graphics.Rect(1, 2, 20, 24), icon.getBounds());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertSame(original, icon.colors);
+    }
+
+    private static class ViewSpanBase extends android.text.style.ReplacementSpan {
+        private final View content;
+        ViewSpanBase(View content) { this.content = content; }
+        @Override public int getSize(android.graphics.Paint paint, CharSequence text, int start, int end,
+                android.graphics.Paint.FontMetricsInt metrics) { return 73; }
+        @Override public void draw(android.graphics.Canvas canvas, CharSequence text, int start, int end,
+                float x, int top, int y, int bottom, android.graphics.Paint paint) { content.draw(canvas); }
+    }
+    private static final class ViewReplacementSpan extends ViewSpanBase {
+        ViewReplacementSpan(View content) { super(content); }
+    }
+    private static final class DrawableReplacementSpan extends android.text.style.ReplacementSpan {
+        private final Drawable content;
+        DrawableReplacementSpan(Drawable content) { this.content = content; }
+        @Override public int getSize(android.graphics.Paint paint, CharSequence text, int start, int end,
+                android.graphics.Paint.FontMetricsInt metrics) { return content.getBounds().width(); }
+        @Override public void draw(android.graphics.Canvas canvas, CharSequence text, int start, int end,
+                float x, int top, int y, int bottom, android.graphics.Paint paint) { content.draw(canvas); }
+    }
+
     /** Captures the three Paint/four Path native painter and its public note APIs. */
     public static final class NoteView extends TextView {
         final NotePainter painter = new NotePainter();
