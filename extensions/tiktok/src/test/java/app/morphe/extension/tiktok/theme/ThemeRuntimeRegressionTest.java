@@ -113,12 +113,11 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
-    public void legacyPageTokenUsesBackgroundEvenInNightConfiguration() {
-        // bx was logged as role=text on dev.19 despite being a background in the exact APK.
-        assertEquals(Integer.valueOf(ThemeEngine.backgroundColor(activity)),
-                ThemeColorResolver.resolve(0x7f06001c, activity, "default"));
-        assertNotEquals(Integer.valueOf(ThemeEngine.textColor(activity)),
-                ThemeColorResolver.resolve(0x7f06001c, activity, "default"));
+    public void missingLegacyPageTokenKeepsNativeFallbackEvenInNightConfiguration() {
+        // This Activity has Android resources, not TikTok's bx attribute. Night mode
+        // must not manufacture a TUX value and conceal that missing native theme.
+        assertFalse(activity.getTheme().resolveAttribute(0x7f06001c, new android.util.TypedValue(), true));
+        assertNull(ThemeColorResolver.resolve(0x7f06001c, activity, "default"));
         ThemeStateStore.saveUserPreset(activity, "default");
         assertNull(ThemeColorResolver.resolve(0x7f06001c, activity, "arctic_blue"));
     }
