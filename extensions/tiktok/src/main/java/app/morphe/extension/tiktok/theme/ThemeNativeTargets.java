@@ -47,6 +47,7 @@ public final class ThemeNativeTargets {
         if (target == null) { target = new Target(root, 0); LIST_TEXTS.put(root, target); }
         target.palette(root);
         target.primary = primary; target.secondary = secondary;
+        target.semanticText = true;
         styleText(view, target);
     }
 
@@ -337,6 +338,15 @@ public final class ThemeNativeTargets {
             target.texts.put(view, fill);
         }
         int nativeColor = fill.original.getDefaultColor();
+        // The dynamic list guard already chose primary/secondary from the native text role
+        // and actual button backdrop. Retain that readable semantic color, including on
+        // preset changes, while extending its treatment to native text spans.
+        if (target.semanticText) {
+            if (view.getCurrentTextColor() != primary) view.setTextColor(primary);
+            fill.applied = view.getTextColors();
+            fill.mapSpans(view, primary);
+            return;
+        }
         int r = Color.red(nativeColor), g = Color.green(nativeColor), b = Color.blue(nativeColor);
         // Functional colors retain their native behavior.
         if (!fill.original.isStateful() && (Color.alpha(nativeColor) == 0
@@ -500,6 +510,7 @@ public final class ThemeNativeTargets {
         String preset = "";
         int background, surface, primary, secondary;
         int inlineDepth;
+        boolean semanticText;
         final Map<ImageView, IconFill> icons = new WeakHashMap<>();
         final Map<TextView, TextFill> texts = new WeakHashMap<>();
         final Map<ViewGroup, boolean[]> clips = new WeakHashMap<>();

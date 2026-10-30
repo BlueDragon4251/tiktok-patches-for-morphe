@@ -719,7 +719,7 @@ public class ThemeRuntimeRegressionTest {
         CharSequence original = label.getText();
         ThemeNativeTargets.listText(label, ThemeEngine.textColor(activity), ThemeEngine.secondaryTextColor(activity));
         android.text.Spanned themed = (android.text.Spanned) label.getText();
-        assertEquals(ThemeEngine.secondaryTextColor(activity), themed.getSpans(0, 7,
+        assertEquals(ThemeEngine.textColor(activity), themed.getSpans(0, 7,
                 android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
         assertSame(functional, themed.getSpans(16, 18, android.text.style.ForegroundColorSpan.class)[0]);
         ThemeNativeTargets.restoreListTexts(decor);
