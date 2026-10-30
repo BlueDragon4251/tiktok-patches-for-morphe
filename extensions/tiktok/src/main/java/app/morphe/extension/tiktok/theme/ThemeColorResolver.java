@@ -122,10 +122,14 @@ public final class ThemeColorResolver {
     }
 
     private static Integer resolveMappedColor(int tokenId, Context context) {
+        // A null native result is also a context-initialization signal. Do not make an
+        // unthemed Context look initialized merely because we recognize a page token.
+        // Native callers must retain their fallback that supplies component attributes.
+        Integer stockColor = resolveStockColor(tokenId, context);
+        if (stockColor == null) return null;
         Integer cachedRole = ROLE_CACHE.get(tokenId);
         int role;
         String name = null;
-        Integer stockColor = null;
 
         if (cachedRole != null) {
             role = cachedRole;
@@ -137,7 +141,6 @@ public final class ThemeColorResolver {
             // Unknown neutral tokens remain native. Android night mode does not identify the
             // semantic role of a TUX consumer, especially for text over videos.
             if (role == ROLE_NONE) {
-                stockColor = resolveStockColor(tokenId, context);
                 role = classifyStockColor(stockColor, context);
             }
             ROLE_CACHE.put(tokenId, role);
@@ -149,7 +152,6 @@ public final class ThemeColorResolver {
 
         // Preserve stronger transparency from TikTok tokens. Theme surfaces may intentionally have
         // their own alpha (Liquid Glass), so use the smaller alpha rather than forcing opacity.
-        if (stockColor == null) stockColor = resolveStockColor(tokenId, context);
         if (stockColor != null) {
             int stockAlpha = Color.alpha(stockColor);
             int mappedAlpha = Color.alpha(mapped);

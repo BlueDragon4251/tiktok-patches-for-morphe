@@ -1,6 +1,8 @@
 package app.morphe.extension.tiktok.theme;
 
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.res.Resources;
 import android.util.TypedValue;
 import app.morphe.extension.shared.Utils;
 import org.junit.Test;
@@ -23,10 +25,21 @@ public class ThemeGenericConverterTest {
     public static class Dimension { public Object invoke(TypedValue value) { return (float) value.data; } }
     public static class StateColor { public Object invoke(TypedValue value) { return android.content.res.ColorStateList.valueOf(value.data); } }
     private Object resolve(Object converter) {
-        Context context = RuntimeEnvironment.getApplication();
+        Context app = RuntimeEnvironment.getApplication();
+        // Supply a real, natively resolved theme color. The alias models TikTok's
+        // semantic resource name without inventing a value for a missing attribute.
+        Context context = new ContextWrapper(app) {
+            final Resources names = new Resources(app.getAssets(), app.getResources().getDisplayMetrics(),
+                    app.getResources().getConfiguration()) {
+                @Override public String getResourceEntryName(int id) {
+                    return id == android.R.attr.colorBackground ? "bgPrimary" : super.getResourceEntryName(id);
+                }
+            };
+            @Override public Resources getResources() { return names; }
+        };
         Utils.setContext(context);
         ThemeStateStore.saveUserPreset(context, "arctic_blue");
-        return ThemeColorResolver.resolveGeneric(0x7f06001c, context, converter, "default");
+        return ThemeColorResolver.resolveGeneric(android.R.attr.colorBackground, context, converter, "default");
     }
     @Test public void scalarColorConvertersStillReceiveTheThemeColor() {
         Object result = resolve(new Scalar());
@@ -48,5 +61,18 @@ public class ThemeGenericConverterTest {
         android.content.res.ColorStateList result = (android.content.res.ColorStateList) resolve(new StateColor());
         assertNotNull(result);
         assertEquals(ThemeEngine.backgroundColor(RuntimeEnvironment.getApplication()), result.getDefaultColor());
+    }
+    @Test public void missingNativePageAttributeRetainsTheContextInitializationFallback() {
+        Context context = RuntimeEnvironment.getApplication();
+        ThemeStateStore.saveUserPreset(context, "arctic_blue");
+        TypedValue value = new TypedValue();
+        assertFalse(context.getTheme().resolveAttribute(0x7f06001c, value, true));
+        assertNull(ThemeColorResolver.resolve(0x7f06001c, context, "default"));
+        final int[] calls = {0};
+        Object converter = new Object() {
+            public Object invoke(TypedValue ignored) { calls[0]++; return 0; }
+        };
+        assertNull(ThemeColorResolver.resolveGeneric(0x7f06001c, context, converter, "default"));
+        assertEquals(0, calls[0]);
     }
 }
