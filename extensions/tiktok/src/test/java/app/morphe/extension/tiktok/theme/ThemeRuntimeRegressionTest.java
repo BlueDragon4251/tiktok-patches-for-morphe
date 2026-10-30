@@ -691,6 +691,44 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    public void asyncLayerChildGainsNativeTintAfterTheOuterDrawableWasAlreadyStyled() {
+        FrameLayout header = new FrameLayout(activity); profile.addView(header);
+        LayerTintImage view = new LayerTintImage(activity); view.setClickable(true); header.addView(view);
+        android.graphics.drawable.LayerDrawable layer = new android.graphics.drawable.LayerDrawable(
+                new Drawable[]{new ColorDrawable(Color.BLACK)});
+        view.setImageDrawable(layer); ThemeNativeTargets.header(header);
+        assertNotNull(view.getImageTintList());
+        NativeTintDrawable actual = new NativeTintDrawable();
+        android.content.res.ColorStateList original = actual.colors;
+        layer.setDrawable(0, actual); // Native async bind retains the outer LayerDrawable.
+        ThemeNativeTargets.header(header);
+        assertEquals(ThemeEngine.textColor(activity), actual.colors.getDefaultColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.header(header);
+        assertSame(original, actual.colors); assertNull(view.getImageTintList());
+    }
+
+    @Test
+    public void activityRowSpanColorsBecomeReadableAndRestoreTheirNativeSpans() {
+        TextView label = new TextView(activity); label.setTextColor(Color.GRAY); profile.addView(label);
+        android.text.SpannableString text = new android.text.SpannableString("Account replied 1d");
+        android.text.style.ForegroundColorSpan name = new android.text.style.ForegroundColorSpan(Color.BLACK);
+        text.setSpan(name, 0, 7, 33);
+        android.text.style.ForegroundColorSpan functional = new android.text.style.ForegroundColorSpan(Color.RED);
+        text.setSpan(functional, 16, 18, 33); label.setText(text);
+        CharSequence original = label.getText();
+        ThemeNativeTargets.listText(label, ThemeEngine.textColor(activity), ThemeEngine.secondaryTextColor(activity));
+        android.text.Spanned themed = (android.text.Spanned) label.getText();
+        assertEquals(ThemeEngine.secondaryTextColor(activity), themed.getSpans(0, 7,
+                android.text.style.ForegroundColorSpan.class)[0].getForegroundColor());
+        assertSame(functional, themed.getSpans(16, 18, android.text.style.ForegroundColorSpan.class)[0]);
+        ThemeNativeTargets.restoreListTexts(decor);
+        assertEquals(Color.GRAY, label.getCurrentTextColor()); assertSame(original, label.getText());
+        assertSame(name, ((android.text.Spanned) label.getText()).getSpans(0, 7,
+                android.text.style.ForegroundColorSpan.class)[0]);
+    }
+
+    @Test
     public void thoughtBubbleNativePaintFillIsThemedWithoutChangingLayoutAndRestoresDefault() {
         com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView bubble =
                 new com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView(activity);

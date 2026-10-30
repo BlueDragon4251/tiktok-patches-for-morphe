@@ -24,6 +24,7 @@ public final class ThemeNativeTargets {
     private static final int PROFILE = 1, SIDEBAR = 2, SEARCH = 3, CHAT = 4, NAV = 5, NAV_DIVIDER = 6, INBOX_ROW = 7, FEED_DESCRIPTION = 8, SYSTEM_NOTIFICATIONS = 9, HEADER = 10, SHEET = 11;
     private static final Map<View, Target> TARGETS = new WeakHashMap<>();
     private static final Map<ViewGroup, Target> PAGER_TEXTS = new WeakHashMap<>();
+    private static final Map<View, Target> LIST_TEXTS = new WeakHashMap<>();
     private static final java.util.Set<String> SURFACE_SAMPLES = new java.util.HashSet<>();
     private ThemeNativeTargets() {}
 
@@ -38,6 +39,21 @@ public final class ThemeNativeTargets {
     public static void navigationDivider(View view) { register(view, NAV_DIVIDER); }
     public static void feedDescription(TextView view) { register(view, FEED_DESCRIPTION); }
     static void inboxRow(View view) { register(view, INBOX_ROW); }
+
+    /** Dynamic Activity rows are rebound independently of the exact inbox-holder hook. */
+    static void listText(TextView view, int primary, int secondary) {
+        View root = view.getRootView();
+        Target target = LIST_TEXTS.get(root);
+        if (target == null) { target = new Target(root, 0); LIST_TEXTS.put(root, target); }
+        target.palette(root);
+        target.primary = primary; target.secondary = secondary;
+        styleText(view, target);
+    }
+
+    static void restoreListTexts(View root) {
+        Target target = LIST_TEXTS.remove(root.getRootView());
+        if (target != null) target.restoreTexts();
+    }
 
     /** Native pager entry after computeScroll, before any child is drawn in this frame. */
     public static void beforePagerDraw(ViewGroup pager) {
@@ -354,6 +370,7 @@ public final class ThemeNativeTargets {
     private static void styleIcon(ImageView view, Target target) {
         IconFill fill = target.icons.get(view);
         if (fill == null || view.getImageTintList() != fill.applied || view.getDrawable() != fill.drawable
+                || fill.nativeTint == null && ThemeViewColors.NativeTint.find(view) != null
                 || fill.nativeTint != null && fill.nativeTint.get(fill.drawable) != fill.appliedNative) {
             if (!ThemeViewColors.icon(view) && !((target.kind == NAV || target.kind == HEADER || target.kind == SHEET)
                     && ThemeViewColors.flatBitmapGlyph(view))) return;

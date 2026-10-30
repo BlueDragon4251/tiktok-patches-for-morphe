@@ -278,7 +278,7 @@ public final class ThemeDynamicListGuardV3 {
                     boolean header = isSuggestedLabel(raw);
                     float sp = textSizeSp(tv);
                     int foreground = ThemeViewColors.contrastForeground(tv, header || sp >= 14.5f ? primary : secondary);
-                    if (tv.getCurrentTextColor() != foreground) tv.setTextColor(foreground);
+                    ThemeNativeTargets.listText(tv, foreground, secondary);
                     if (tv.getCurrentHintTextColor() != secondary) tv.setHintTextColor(secondary);
                     if (header) suggested.add(tv);
                 }
@@ -613,7 +613,10 @@ public final class ThemeDynamicListGuardV3 {
                     detachAndForget();
                     return true;
                 }
-                if (!themeActive(root)) { restoreListFills(root); ThemeViewColors.restoreBubbles(root); return true; }
+                if (!themeActive(root)) {
+                    restoreListFills(root); ThemeNativeTargets.restoreListTexts(root);
+                    ThemeViewColors.restoreBubbles(root); return true;
+                }
                 if (ThemeNativeTargets.hasChat(root)) return true;
                 long now = SystemClock.uptimeMillis();
                 String currentPreset = ThemeStateStore.currentPreset(root.getContext());
