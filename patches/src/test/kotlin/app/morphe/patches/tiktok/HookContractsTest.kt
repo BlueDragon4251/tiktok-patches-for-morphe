@@ -180,6 +180,20 @@ class HookContractsTest {
         }
     }
 
+    @Test fun trailingContinuationLabelReachesTheOriginalInstruction() {
+        val b = MethodImplementationBuilder(2)
+        b.addInstruction(BuilderInstruction11x(Opcode.RETURN, 1))
+        val m = method(b)
+        m.insertAtTarget(0, "if-eqz v0, :native\nreturn v0\n:native\n# native continuation")
+        val body = m.implementation!!
+        val branch = body.instructions.filterIsInstance<com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction>().single()
+        val continuation = branch.target.location
+        assertSame(body.instructions[continuation.index].location, continuation)
+        assertEquals(Opcode.NOP, continuation.instruction!!.opcode)
+        assertEquals(Opcode.RETURN, body.instructions[continuation.index + 1].opcode)
+        assertEquals(1, (body.instructions[continuation.index + 1] as com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction).registerA)
+    }
+
     @Test fun fixtureContractRejectsChangedRegistersAndLiterals() {
         fun fixture(count: Int, value: Int): MutableMethod {
             val b = MethodImplementationBuilder(count)

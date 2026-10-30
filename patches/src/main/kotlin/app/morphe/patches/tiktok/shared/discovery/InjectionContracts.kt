@@ -68,6 +68,12 @@ internal fun Method.resultRegister(callIndex: Int, expectedReturn: String): Int 
 
 internal val returnOpcodes = setOf(Opcode.RETURN_VOID, Opcode.RETURN, Opcode.RETURN_OBJECT, Opcode.RETURN_WIDE)
 
+/** The label-aware compiler needs an instruction at an internal continuation label. */
+private fun String.anchorTrailingLabel(): String {
+    val last = lineSequence().map { it.substringBefore('#').trim() }.lastOrNull { it.isNotEmpty() }
+    return if (last?.startsWith(":") == true) "$this\nnop" else this
+}
+
 /** No incoming branch, switch case or handler can enter in the middle of an injection. */
 internal fun MutableMethod.insertAtTarget(index: Int, code: String, labels: Array<out ExternalLabel>? = null) {
     val body = implementation ?: throw PatchException("Injection contract: no body: $this")
@@ -85,7 +91,7 @@ internal fun MutableMethod.insertAtTarget(index: Int, code: String, labels: Arra
     // Inline compilation owns a separate MethodImplementation. Plain addInstructions moves
     // its instructions but leaves internal branch labels bound to that temporary body.
     // Relocate internal labels too, even when the snippet has no external labels.
-    rawAddWithLabels(original.location.index, code, *(labels ?: emptyArray()))
+    rawAddWithLabels(original.location.index, code.anchorTrailingLabel(), *(labels ?: emptyArray()))
 }
 
 /** Retain continuation labels: a branch that skips the native producer also skips its hook. */
@@ -96,7 +102,7 @@ internal fun MutableMethod.insertAfterNative(index: Int, code: String) {
     if (producer.opcode != Opcode.IPUT_OBJECT && producer.opcode != Opcode.IGET_WIDE &&
         !(producer.opcode.name.startsWith("invoke-") && ref?.returnType == "V"))
         throw PatchException("After-producer injection requires a native View write, packed color read or void call")
-    rawAddWithLabels(index + 1, code)
+    rawAddWithLabels(index + 1, code.anchorTrailingLabel())
 }
 
 internal fun MutableMethod.checkReplacementBlock(index: Int, count: Int) {
@@ -125,7 +131,7 @@ internal object ContractInstructions {
         try {
             val target = body.instructions.getOrNull(index)
             if (target != null) insertAtTarget(index, code, labels)
-            else rawAddWithLabels(index, code, *(labels ?: emptyArray()))
+            else rawAddWithLabels(index, code.anchorTrailingLabel(), *(labels ?: emptyArray()))
             HookEvidence.injection(this, index, code)
         } catch (error: PatchException) {
             throw error
