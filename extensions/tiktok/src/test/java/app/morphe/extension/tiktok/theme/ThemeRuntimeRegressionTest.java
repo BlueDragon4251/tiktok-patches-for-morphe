@@ -648,6 +648,27 @@ public class ThemeRuntimeRegressionTest {
         }
     }
 
+    public static final class LayerTintImage extends ImageView {
+        final NativeTintDrawable cachedIcon = new NativeTintDrawable();
+        public LayerTintImage(Context context) { super(context); }
+        public void setTintColorStateList$tux_theme_release(android.content.res.ColorStateList colors) {
+            cachedIcon.colors = colors;
+        }
+    }
+
+    @Test
+    public void nativeLayerIconTintsTheDisplayedChildAndRestoresItsOwnOriginalColors() {
+        FrameLayout header = new FrameLayout(activity); profile.addView(header);
+        LayerTintImage view = new LayerTintImage(activity); header.addView(view);
+        NativeTintDrawable actual = new NativeTintDrawable();
+        android.content.res.ColorStateList original = actual.colors;
+        view.setImageDrawable(new android.graphics.drawable.LayerDrawable(new Drawable[]{actual}));
+        ThemeNativeTargets.header(header);
+        assertEquals(ThemeEngine.textColor(activity), actual.colors.getDefaultColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.header(header);
+        assertSame(original, actual.colors);
+    }
+
     @Test
     public void thoughtBubbleNativePaintFillIsThemedWithoutChangingLayoutAndRestoresDefault() {
         com.ss.android.ugc.aweme.social.thought.view.SocialThoughtBaseBubbleBackgroundView bubble =

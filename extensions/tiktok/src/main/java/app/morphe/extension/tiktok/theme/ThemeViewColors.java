@@ -315,7 +315,7 @@ final class ThemeViewColors {
         static NativeTint find(ImageView view) {
             try {
                 if (view.getDrawable() == null) return null;
-                Class<?> type = view.getClass(), drawableType = view.getDrawable().getClass();
+                Class<?> type = view.getClass();
                 Method setter = TINT_SETTERS.get(type);
                 if (!TINT_SETTERS.containsKey(type)) {
                     TINT_SETTERS.put(type, null);
@@ -323,7 +323,14 @@ final class ThemeViewColors {
                     TINT_SETTERS.put(type, setter);
                 }
                 if (setter == null) return null;
-                Field field = TINT_FIELDS.get(drawableType);
+                Drawable nativeDrawable = tintDrawable(view.getDrawable(), 0);
+                if (nativeDrawable == null) return null;
+                Field field = colorField(nativeDrawable.getClass());
+                return field == null ? null : new NativeTint(setter, field);
+            } catch (ReflectiveOperationException ignored) { return null; }
+        }
+        private static Field colorField(Class<?> drawableType) {
+            Field field = TINT_FIELDS.get(drawableType);
                 if (!TINT_FIELDS.containsKey(drawableType)) {
                     TINT_FIELDS.put(drawableType, null);
                     for (Field candidate : drawableType.getDeclaredFields()) {
@@ -333,16 +340,44 @@ final class ThemeViewColors {
                     }
                     if (field != null) { field.setAccessible(true); TINT_FIELDS.put(drawableType, field); }
                 }
-                if (field == null) return null;
-                return new NativeTint(setter, field);
-            } catch (ReflectiveOperationException ignored) { return null; }
+            return field;
+        }
+        private static Drawable tintDrawable(Drawable drawable, int depth) {
+            if (drawable == null || depth > 8) return null;
+            if (drawable instanceof android.graphics.drawable.InsetDrawable)
+                return tintDrawable(((android.graphics.drawable.InsetDrawable) drawable).getDrawable(), depth + 1);
+            if (drawable instanceof android.graphics.drawable.LayerDrawable) {
+                android.graphics.drawable.LayerDrawable layers = (android.graphics.drawable.LayerDrawable) drawable;
+                Drawable result = null;
+                for (int i = 0; i < layers.getNumberOfLayers(); i++) {
+                    Drawable candidate = tintDrawable(layers.getDrawable(i), depth + 1);
+                    if (candidate == null) continue;
+                    if (result != null && result != candidate) return null;
+                    result = candidate;
+                }
+                return result;
+            }
+            return colorField(drawable.getClass()) == null ? null : drawable;
         }
         ColorStateList get(Drawable drawable) {
-            try { return (ColorStateList) colors.get(drawable); }
+            try {
+                Drawable nativeDrawable = tintDrawable(drawable, 0);
+                return nativeDrawable == null || !colors.getDeclaringClass().isInstance(nativeDrawable)
+                        ? null : (ColorStateList) colors.get(nativeDrawable);
+            }
             catch (ReflectiveOperationException ignored) { return null; }
         }
         void set(ImageView view, ColorStateList value) {
-            try { setter.invoke(view, value); }
+            try {
+                setter.invoke(view, value);
+                // TuxIconView's setter writes its cached icon. A later LayerDrawable can
+                // contain a different actual icon; Android image tint does not update its paint.
+                Drawable nativeDrawable = tintDrawable(view.getDrawable(), 0);
+                if (nativeDrawable != null && colors.getDeclaringClass().isInstance(nativeDrawable)) {
+                    colors.set(nativeDrawable, value);
+                    nativeDrawable.invalidateSelf();
+                }
+            }
             catch (ReflectiveOperationException ignored) { }
         }
     }
