@@ -18,6 +18,44 @@ class ThemeSurfaceContractsTest {
         ImmutableMethod(owner, name, params.map { ImmutableMethodParameter(it, emptySet(), null) }, result, 17,
             emptySet(), emptySet(), body.methodImplementation)
     private fun owner(m: ImmutableMethod, parent: String) = ImmutableClassDef(m.definingClass, 1, parent, emptyList(), null, emptySet(), emptyList(), listOf(m))
+    @Test fun notificationPopupStylesOnlyItsVerifiedMenuAfterNativeShowAndRejectsAnotherReceiver() {
+        val type = "LX/FilterPopup;"
+        val popup = "Landroid/widget/PopupWindow;"
+        val recycler = "Landroidx/recyclerview/widget/RecyclerView;"
+        fun show(receiver: Int) = method(type, "showAsDropDown", listOf(view), "V", MethodImplementationBuilder(3).apply {
+            addInstruction(BuilderInstruction35c(Opcode.INVOKE_SUPER, 2, receiver, 2, 0, 0, 0,
+                ImmutableMethodReference(popup, "showAsDropDown", listOf(view), "V")))
+            addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+        })
+        val constructor = method(type, "<init>", emptyList(), "V", MethodImplementationBuilder(2).apply {
+            addInstruction(BuilderInstruction35c(Opcode.INVOKE_VIRTUAL, 2, 1, 0, 0, 0, 0,
+                ImmutableMethodReference(popup, "setContentView", listOf(view), "V")))
+            addInstruction(BuilderInstruction21c(Opcode.CONST_CLASS, 0,
+                ImmutableTypeReference("Lcom/ss/android/ugc/aweme/notification/adapter/GroupFilterViewHolder;")))
+            addInstruction(BuilderInstruction10x(Opcode.RETURN_VOID))
+        })
+        fun cls(model: String, duplicate: Boolean = false) = ImmutableClassDef(type, 1, popup, emptyList(), null, emptySet(),
+            listOf(ImmutableField(type, "menu", recycler, 1, null, emptySet(), emptySet()),
+                ImmutableField(type, "model", model, 1, null, emptySet(), emptySet())) +
+                if (duplicate) listOf(ImmutableField(type, "other", recycler, 1, null, emptySet(), emptySet())) else emptyList(),
+            listOf(constructor, show(1)))
+        val m = show(1)
+        val owner = cls("Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;")
+        assertTrue(ThemeSurfaceContracts.filterPopupBoundary(m, owner) { null })
+        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(show(2), owner) { null })
+        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(m, cls("Ljava/lang/Object;")) { null })
+        assertFalse(ThemeSurfaceContracts.filterPopupBoundary(m,
+            cls("Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;", true)) { null })
+        val site = ThemeSurfaceContracts.filterPopupSites(m, owner) { null }.single()
+        assertEquals(1, site.index)
+        assertTrue(site.code.contains("$type->menu:$recycler"))
+        assertTrue(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.FILTER_POPUP_MODE, m, owner,
+            site.index, site.code) { null })
+        assertFalse(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.FILTER_POPUP_MODE, m, owner,
+            0, site.code) { null })
+        assertFalse(ThemeSurfaceContracts.mutationAllowed(ThemeSurfaceContracts.FILTER_POPUP_MODE, m, owner,
+            site.index, site.code.replace("->menu:", "->backdrop:")) { null })
+    }
     @Test fun coexistingOwnersKeepTheReviewedBaselineInsteadOfCreatingTwoCandidates() {
         fun native(type: String) = ImmutableClassDef(type, 1, "Ljava/lang/Object;", emptyList(), null, emptySet(), emptyList(), emptyList())
         val owners = listOf(ThemeSurfaceContracts.OLD_INBOX, ThemeSurfaceContracts.INBOX, ThemeSurfaceContracts.OLD_CHAT, ThemeSurfaceContracts.CHAT).associateWith(::native)

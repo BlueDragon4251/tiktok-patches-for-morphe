@@ -19,6 +19,9 @@ internal object ThemeSurfaceContracts {
     const val SYSTEM_CONTAINER = "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationContainerFragment;"
     const val SYSTEM_PAGE = "Lcom/ss/android/ugc/aweme/notification/sysnotice/SystemNotificationFragment;"
     const val HEADER_MODE = "experimental-theme-native-header-writer"
+    const val FILTER_POPUP_MODE = "experimental-theme-notification-filter-popup"
+    private const val FILTER_POPUP_ACCEPTED = "LX/1E8k;->showAsDropDown(Landroid/view/View;)V"
+    private const val POPUP = "Landroid/widget/PopupWindow;"
     const val HOME = "Lcom/ss/android/ugc/aweme/main/assems/ui/HomepageViewPagerAssem;"
     const val VIEW = "Landroid/view/View;"
     private const val HOLDER = "Landroidx/recyclerview/widget/RecyclerView\$ViewHolder;"
@@ -28,7 +31,7 @@ internal object ThemeSurfaceContracts {
     const val NAV_MODE = "experimental-theme-navigation-writer"
     const val RENDER_MODE = "experimental-theme-compose-color-read"
     const val VIEW_MODE = "experimental-theme-settings-view-return"
-    val modes = setOf(ROOT_MODE, BIND_MODE, NAV_MODE, RENDER_MODE, VIEW_MODE, HEADER_MODE)
+    val modes = setOf(ROOT_MODE, BIND_MODE, NAV_MODE, RENDER_MODE, VIEW_MODE, HEADER_MODE, FILTER_POPUP_MODE)
     val rootRoles = mapOf(
         SYSTEM_CONTAINER to "systemNotifications", SYSTEM_PAGE to "systemNotifications", SHEET to "sheet",
         "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
@@ -88,7 +91,39 @@ internal object ThemeSurfaceContracts {
     }.getOrDefault(false)
     fun headerSite(m: Method): ThemeContracts.Site = ThemeContracts.Site(3,
         "invoke-static {v1}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->header($VIEW)V")
+    private fun filterMenuField(owner: ClassDef, resolve: (String) -> ClassDef?) = owner.fields.filter {
+        it.accessFlags and 8 == 0 && subtype(it.type, "Landroidx/recyclerview/widget/RecyclerView;", resolve)
+    }.singleOrNull()
+    /** The notification filter owns a separate PopupWindow; its dim backdrop is not menu content. */
+    fun filterPopupBoundary(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): Boolean = runCatching {
+        if (m.definingClass != owner.type || m.name != "showAsDropDown" || m.accessFlags != 17 || params(m) != listOf(VIEW) || m.returnType != "V"
+            || !subtype(owner.type, POPUP, resolve) || filterMenuField(owner, resolve) == null
+            || owner.fields.count { it.type == "Lcom/ss/android/ugc/aweme/notification/adapter/FilterViewModel;" } != 1) return false
+        val body = m.implementation ?: return false
+        val first = body.instructions.first()
+        val receiver = body.registerCount - 2
+        first.opcode == Opcode.INVOKE_SUPER && ref(first).toString() == "$POPUP->showAsDropDown($VIEW)V"
+            && first.argumentRegisters() == listOf(receiver, receiver + 1)
+            && calls(m).count { it.toString() == "$POPUP->showAsDropDown($VIEW)V" } == 1
+            && owner.methods.any { constructor -> constructor.name == "<init>"
+                && calls(constructor).count { it.toString() == "$POPUP->setContentView($VIEW)V" } == 1
+                && constructor.implementation?.instructions?.any {
+                    (ref(it) as? TypeReference)?.type == "Lcom/ss/android/ugc/aweme/notification/adapter/GroupFilterViewHolder;"
+                } == true }
+            && filterPopupSites(m, owner, resolve).isNotEmpty()
+    }.getOrDefault(false)
+    fun filterPopupSites(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): List<ThemeContracts.Site> {
+        val menu = filterMenuField(owner, resolve) ?: throw PatchException("Notification filter menu is ambiguous")
+        val aliases = ReceiverAliases.atEveryInstruction(m)
+        return m.implementation!!.instructions.withIndex().filter { it.value.opcode == Opcode.RETURN_VOID }.map { (n, _) ->
+            val receiver = aliases[n]?.minOrNull() ?: throw PatchException("Notification popup receiver was overwritten")
+            val scratch = ScratchContracts.locals(m, n, setOf(receiver), 1).single()
+            ThemeContracts.Site(n, "move-object/from16 v$scratch, v$receiver\niget-object v$scratch, v$scratch, $menu\n" +
+                "invoke-static/range {v$scratch .. v$scratch}, Lapp/morphe/extension/tiktok/theme/ThemeNativeTargets;->sheet($VIEW)V")
+        }
+    }
     fun explicitTarget(m: Method, owner: ClassDef, resolve: (String) -> ClassDef?): String? = when {
+        filterPopupBoundary(m, owner, resolve) -> FILTER_POPUP_ACCEPTED
         headerBoundary(m, owner) -> "$HEADER->setNavBackground(I)V"
         rootBoundary(m, owner, resolve) -> "${if (m.definingClass == CHAT) OLD_CHAT else m.definingClass}->$CREATE"
         inboxBoundary(m, owner) -> "$OLD_INBOX->Z5(LX/0CcN;I)V"
@@ -100,6 +135,7 @@ internal object ThemeSurfaceContracts {
         else -> null
     }
     fun mode(m: Method, owner: ClassDef, accepted: String, resolve: (String) -> ClassDef?): String? = runCatching {
+        if (accepted == FILTER_POPUP_ACCEPTED && filterPopupBoundary(m, owner, resolve)) return FILTER_POPUP_MODE
         if (headerBoundary(m, owner) && accepted == "$HEADER->setNavBackground(I)V") return HEADER_MODE
         if (rootBoundary(m, owner, resolve) && accepted == "${if (owner.type == CHAT) OLD_CHAT else owner.type}->$CREATE") return ROOT_MODE
         if (accepted == "$OLD_INBOX->Z5(LX/0CcN;I)V" && inboxBoundary(m, owner)) { inboxSites(m); return BIND_MODE }
@@ -224,6 +260,7 @@ internal object ThemeSurfaceContracts {
     }.getOrDefault(emptyList())
     fun mutationAllowed(mode: String, m: Method, owner: ClassDef, index: Int?, code: String?, resolve: (String) -> ClassDef?): Boolean = runCatching {
         val sites = when (mode) {
+            FILTER_POPUP_MODE -> filterPopupSites(m, owner, resolve)
             HEADER_MODE -> listOf(headerSite(m))
             ROOT_MODE -> rootSites(m)
             BIND_MODE -> inboxSites(m)

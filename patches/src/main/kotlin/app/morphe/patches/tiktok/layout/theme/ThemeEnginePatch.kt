@@ -57,6 +57,11 @@ private object NativeHeaderBackgroundFingerprint : Fingerprint(
     custom = { method, owner -> ThemeSurfaceContracts.headerBoundary(method, owner) },
 )
 
+private object NotificationFilterPopupFingerprint : Fingerprint(
+    name = "showAsDropDown", parameters = listOf("Landroid/view/View;"), returnType = "V",
+    custom = { method, owner -> ThemeSurfaceContracts.filterPopupBoundary(method, owner, HookEvidence::originalClass) },
+)
+
 private val nativeRoots = mapOf(
     "Lcom/ss/android/ugc/profile/business/profile/ui/v2/I18nMyProfileFragment;" to "profilePage",
     PROFILE_SIDEBAR_FRAGMENT to "sidebar",
@@ -290,6 +295,13 @@ val themeEnginePatch = bytecodePatch(
         NativeHeaderBackgroundFingerprint.uniqueMethod.apply {
             val site = ThemeSurfaceContracts.headerSite(this)
             addInstruction(site.index, site.code)
+        }
+
+        NotificationFilterPopupFingerprint.uniqueMethod.apply {
+            val owner = HookEvidence.originalClass(definingClass) ?: throw PatchException("Missing notification filter popup")
+            ThemeSurfaceContracts.filterPopupSites(this, owner, HookEvidence::originalClass).asReversed().forEach {
+                addInstructions(it.index, it.code)
+            }
         }
 
         FeedCaptionDrawFingerprint.uniqueMethod.apply {
