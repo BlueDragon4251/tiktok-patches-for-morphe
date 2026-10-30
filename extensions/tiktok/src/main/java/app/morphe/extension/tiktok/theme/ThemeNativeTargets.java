@@ -229,11 +229,13 @@ public final class ThemeNativeTargets {
     /** Map only flat page fills within a native-owned subtree; media and Compose palettes stay native. */
     private static void page(View root, boolean overlay, Target target) {
         Drawable rootFill = root.getBackground();
-        // Profile roots can carry native media/functional fills; preserve those exactly.
+        // Profile/sheet roots can carry native media/functional fills; preserve those exactly.
+        // TuxSheet returns its RadiusLayout content, not the dismiss backdrop. It often has no
+        // Drawable and exposes a white parent; theme that content before recoloring its text.
         Integer rootColor = ThemeViewColors.flatColor(rootFill);
-        if (target.kind != INBOX_ROW && target.kind != SHEET && (target.kind != PROFILE || rootFill == null
+        if (target.kind != INBOX_ROW && (target.kind != PROFILE && target.kind != SHEET || rootFill == null
                 || rootColor != null && pageFill(rootColor, target))) {
-            color(root, overlay ? target.surface
+            color(root, overlay || target.kind == SHEET ? target.surface
                     : target.background, target);
         }
         if (!(root instanceof ViewGroup)) return;

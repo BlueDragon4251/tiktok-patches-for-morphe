@@ -918,12 +918,29 @@ public class ThemeRuntimeRegressionTest {
         FrameLayout content = new FrameLayout(activity); GradientDrawable fill = new GradientDrawable();
         fill.setColor(Color.WHITE); fill.setCornerRadius(24); content.setBackground(fill); sheet.addView(content);
         TextView option = new TextView(activity); option.setTextColor(Color.BLACK); content.addView(option);
-        ThemeNativeTargets.sheet(sheet);
+        // The verified TuxSheet return is the content root; the dismiss backdrop is its parent.
+        ThemeNativeTargets.sheet(content);
         assertNull(sheet.getBackground());
         assertEquals(ThemeEngine.surfaceColor(activity), ((GradientDrawable) content.getBackground()).getColor().getDefaultColor());
         assertEquals(ThemeEngine.textColor(activity), option.getCurrentTextColor());
-        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.sheet(sheet);
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.sheet(content);
         assertSame(fill, content.getBackground()); assertEquals(Color.BLACK, option.getCurrentTextColor());
+    }
+
+    @Test
+    public void nativeSheetContentWithoutDrawableDoesNotExposeItsWhiteParentBehindThemedText() {
+        FrameLayout backdrop = new FrameLayout(activity); backdrop.setBackgroundColor(Color.WHITE);
+        profile.addView(backdrop);
+        FrameLayout content = new FrameLayout(activity); backdrop.addView(content);
+        TextView option = new TextView(activity); option.setText("Save"); option.setTextColor(Color.BLACK);
+        content.addView(option);
+        ThemeNativeTargets.sheet(content);
+        assertEquals(ThemeEngine.surfaceColor(activity), ((ColorDrawable) content.getBackground()).getColor());
+        assertEquals(ThemeEngine.textColor(activity), option.getCurrentTextColor());
+        assertEquals(Color.WHITE, ((ColorDrawable) backdrop.getBackground()).getColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.sheet(content);
+        assertNull(content.getBackground());
+        assertEquals(Color.BLACK, option.getCurrentTextColor());
     }
 
     @Test
