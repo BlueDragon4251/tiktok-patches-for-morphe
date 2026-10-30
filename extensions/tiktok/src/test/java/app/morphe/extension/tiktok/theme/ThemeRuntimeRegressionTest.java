@@ -351,11 +351,33 @@ public class ThemeRuntimeRegressionTest {
         ImageView avatar = new ImageView(activity);
         avatar.setBackgroundColor(Color.WHITE);
         header.addView(avatar);
+        ImageView action = new ImageView(activity);
+        com.bytedance.tux.drawable.TuxIconDrawable icon = new com.bytedance.tux.drawable.TuxIconDrawable();
+        icon.colors = android.content.res.ColorStateList.valueOf(Color.BLACK);
+        action.setImageDrawable(icon); action.setClickable(true); header.addView(action);
         Object screen = invoke(ThemeDynamicListGuardV3.class, "detectScreen", new Class<?>[]{View.class}, decor);
         invoke(ThemeDynamicListGuardV3.class, "style", new Class<?>[]{View.class, screen.getClass()}, decor, screen);
         assertEquals(ThemeEngine.backgroundColor(activity), ((ColorDrawable) header.getBackground()).getColor());
         assertEquals(ThemeEngine.textColor(activity), title.getCurrentTextColor());
         assertEquals(Color.WHITE, ((ColorDrawable) avatar.getBackground()).getColor());
+        assertEquals(ThemeEngine.textColor(activity), action.getImageTintList().getDefaultColor());
+        assertEquals(ThemeEngine.textColor(activity), icon.colors.getDefaultColor());
+    }
+
+    @Test
+    public void listBannerMapsWrappedWhiteFillPreservesRadiiAndRestoresDefault() throws Exception {
+        FrameLayout banner = new FrameLayout(activity); profile.addView(banner);
+        GradientDrawable shape = new GradientDrawable(); shape.setColor(Color.WHITE); shape.setCornerRadius(18);
+        android.graphics.drawable.InsetDrawable original = new android.graphics.drawable.InsetDrawable(shape, 3);
+        banner.setBackground(original);
+        invoke(ThemeDynamicListGuardV3.class, "styleListFill", new Class<?>[]{View.class, int.class},
+                banner, ThemeEngine.backgroundColor(activity));
+        assertEquals(Integer.valueOf(ThemeEngine.backgroundColor(activity)), ThemeViewColors.flatColor(banner.getBackground()));
+        assertEquals(18f, ((GradientDrawable) ((android.graphics.drawable.InsetDrawable)
+                banner.getBackground()).getDrawable()).getCornerRadius(), 0.01f);
+        assertEquals(Color.WHITE, shape.getColor().getDefaultColor());
+        invoke(ThemeDynamicListGuardV3.class, "restoreListFills", new Class<?>[]{View.class}, decor);
+        assertSame(original, banner.getBackground());
     }
 
     @Test

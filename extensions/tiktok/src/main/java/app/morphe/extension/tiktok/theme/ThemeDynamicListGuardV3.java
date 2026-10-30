@@ -44,6 +44,7 @@ public final class ThemeDynamicListGuardV3 {
     private static final WeakHashMap<View, Guard> GUARDS = new WeakHashMap<>();
     private static final WeakHashMap<ViewGroup, Card> CARDS = new WeakHashMap<>();
     private static final WeakHashMap<View, Boolean> BOUND_INBOX_ROWS = new WeakHashMap<>();
+    private static final WeakHashMap<View, ListFill> LIST_FILLS = new WeakHashMap<>();
     private static final AtomicInteger INBOX_LOG_BUDGET = new AtomicInteger(10);
     private static final AtomicInteger ACTIVITY_LOG_BUDGET = new AtomicInteger(10);
 
@@ -185,6 +186,53 @@ public final class ThemeDynamicListGuardV3 {
                 || lower.equals("konten, die dir gefallen könnten");
     }
 
+    // This inbox header is a RelativeLayout, not TuxNavBar. Keep discovery tied to the
+    // already identified list title and its compact native ancestor, never the whole page.
+    private static void styleTitleHeader(TextView title, int rootWidth, int titleBottom) {
+        View current = title;
+        for (int depth = 0; depth < 5 && current.getParent() instanceof ViewGroup; depth++) {
+            current = (ViewGroup) current.getParent();
+            int[] xy = location(current);
+            if (xy == null || current.getHeight() > dp(title.getContext(), 96)
+                    || xy[1] + current.getHeight() > titleBottom + dp(title.getContext(), 32)) return;
+            if (current.getWidth() >= rootWidth * 0.62f) {
+                ThemeNativeTargets.header(current);
+                return;
+            }
+        }
+    }
+
+    private static void styleListFill(View view, int background) {
+        android.graphics.drawable.Drawable current = view.getBackground();
+        Integer color = ThemeViewColors.flatColor(current);
+        if (color == null || Color.alpha(color) != 255 || !ThemeViewColors.neutral(color)) return;
+        if (color == background) return;
+        android.graphics.drawable.Drawable replacement = ThemeViewColors.copyFlatFill(current, background);
+        if (replacement == null) return;
+        ListFill fill = LIST_FILLS.get(view);
+        if (fill == null || current != fill.applied) {
+            fill = new ListFill(current); LIST_FILLS.put(view, fill);
+        }
+        view.setBackground(replacement); fill.applied = replacement;
+    }
+
+    private static void restoreListFills(View root) {
+        java.util.Iterator<Map.Entry<View, ListFill>> iterator = LIST_FILLS.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<View, ListFill> entry = iterator.next();
+            if (entry.getKey().getRootView() != root.getRootView()) continue;
+            if (entry.getKey().getBackground() == entry.getValue().applied)
+                entry.getKey().setBackground(entry.getValue().original);
+            iterator.remove();
+        }
+    }
+
+    private static final class ListFill {
+        final android.graphics.drawable.Drawable original;
+        android.graphics.drawable.Drawable applied;
+        ListFill(android.graphics.drawable.Drawable original) { this.original = original; }
+    }
+
     private static void style(View root, ScreenInfo screen) {
         try {
             Context context = root.getContext();
@@ -213,15 +261,7 @@ public final class ThemeDynamicListGuardV3 {
                 ThemeViewColors.bubble(view, background);
                 // Native headers can remain stock white above correctly themed inbox rows.
                 // Only neutral flat fills on this already identified list screen are replaced.
-                if (!(view instanceof android.widget.ImageView)
-                        && view.getBackground() instanceof android.graphics.drawable.ColorDrawable) {
-                    int nativeFill = ((android.graphics.drawable.ColorDrawable) view.getBackground()).getColor();
-                    int rgb = nativeFill & 0xffffff;
-                    if (Color.alpha(nativeFill) == 255
-                            && (rgb == 0xffffff || rgb == 0x161823 || rgb == 0 || rgb == 0x121212)) {
-                        ThemeViewColors.flatBackground(view, background);
-                    }
-                }
+                if (!(view instanceof android.widget.ImageView)) styleListFill(view, background);
                 int[] xy = location(view);
                 if (xy != null) {
                     int bottom = xy[1] + Math.max(0, view.getHeight());
@@ -232,6 +272,9 @@ public final class ThemeDynamicListGuardV3 {
                     TextView tv = (TextView) view;
                     CharSequence value = tv.getText();
                     String raw = value == null ? "" : value.toString().trim();
+                    if (isInboxTitle(raw.toLowerCase(Locale.ROOT)) || isActivityTitle(raw.toLowerCase(Locale.ROOT))) {
+                        styleTitleHeader(tv, rootWidth, screen.titleBottom);
+                    }
                     boolean header = isSuggestedLabel(raw);
                     float sp = textSizeSp(tv);
                     int foreground = ThemeViewColors.contrastForeground(tv, header || sp >= 14.5f ? primary : secondary);
@@ -570,7 +613,7 @@ public final class ThemeDynamicListGuardV3 {
                     detachAndForget();
                     return true;
                 }
-                if (!themeActive(root)) { ThemeViewColors.restoreBubbles(root); return true; }
+                if (!themeActive(root)) { restoreListFills(root); ThemeViewColors.restoreBubbles(root); return true; }
                 if (ThemeNativeTargets.hasChat(root)) return true;
                 long now = SystemClock.uptimeMillis();
                 String currentPreset = ThemeStateStore.currentPreset(root.getContext());
