@@ -54,7 +54,11 @@ public class SharedPrefCategory {
                 ? new UserSettingsCheckpoint(context, preferences) : null;
 
         if (!persistentWritesAllowed) {
-            Logger.printInfo(() -> "Preventing secondary-process writes to shared user settings");
+            // Setting.preferences constructs this category while BaseSettings is still
+            // initializing. Logger reads BaseSettings flags and would re-enter that
+            // initialization with null DEBUG_STACKTRACE/DEBUG fields in a secondary process.
+            android.util.Log.i("morphe: SharedPrefCategory",
+                    "Preventing secondary-process writes to shared user settings");
         }
     }
 
@@ -87,7 +91,8 @@ public class SharedPrefCategory {
             // unexpectedly making settings read-only on an unsupported device.
             return currentProcessName == null || expectedProcessName.equals(currentProcessName);
         } catch (Throwable throwable) {
-            Logger.printException(() -> "Failed to determine app process for settings persistence", throwable);
+            android.util.Log.e("morphe: SharedPrefCategory",
+                    "Failed to determine app process for settings persistence", throwable);
             return true;
         }
     }
