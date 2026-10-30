@@ -303,8 +303,13 @@ public final class ThemeNativeTargets {
         int nativeColor = fill.original.getDefaultColor();
         int r = Color.red(nativeColor), g = Color.green(nativeColor), b = Color.blue(nativeColor);
         // Functional colors retain their native behavior.
-        if (Color.alpha(nativeColor) == 0
-                || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34) {
+        if (!fill.original.isStateful() && (Color.alpha(nativeColor) == 0
+                || Math.max(r, Math.max(g, b)) - Math.min(r, Math.min(g, b)) > 34)) {
+            if (target.kind == SYSTEM_NOTIFICATIONS && Color.alpha(nativeColor) == 255) {
+                int readable = ThemeViewColors.readableFunctionalColor(nativeColor, target.background);
+                if (view.getCurrentTextColor() != readable) view.setTextColor(readable);
+                fill.applied = view.getTextColors();
+            }
             fill.mapSpans(view, primary);
             return;
         }
@@ -313,7 +318,8 @@ public final class ThemeNativeTargets {
         int mapped = secondary ? secondaryColor : primary;
         if (fill.original.isStateful()) {
             if (fill.applied == null || fill.primary != primary || fill.secondary != secondaryColor) {
-                fill.applied = ThemeViewColors.stateColors(fill.original, primary, secondaryColor);
+                fill.applied = ThemeViewColors.stateColors(fill.original, primary, secondaryColor,
+                        target.kind == SYSTEM_NOTIFICATIONS ? target.background : null);
                 fill.primary = primary; fill.secondary = secondaryColor;
                 view.setTextColor(fill.applied);
             }
@@ -329,7 +335,8 @@ public final class ThemeNativeTargets {
         IconFill fill = target.icons.get(view);
         if (fill == null || view.getImageTintList() != fill.applied || view.getDrawable() != fill.drawable
                 || fill.nativeTint != null && fill.nativeTint.get(fill.drawable) != fill.appliedNative) {
-            if (!ThemeViewColors.icon(view)) return;
+            if (!ThemeViewColors.icon(view) && !((target.kind == NAV || target.kind == HEADER || target.kind == SHEET)
+                    && ThemeViewColors.flatBitmapGlyph(view))) return;
             ColorStateList original = fill != null && view.getImageTintList() == fill.applied
                     ? fill.original : view.getImageTintList();
             fill = new IconFill(view, original);

@@ -19,6 +19,7 @@ import java.lang.reflect.Modifier;
 /** Color operations for native-owned controls; never infer a media image from its dimensions. */
 final class ThemeViewColors {
     private static final WeakHashMap<Drawable, Boolean> MONOCHROME = new WeakHashMap<>();
+    private static final WeakHashMap<Drawable, Boolean> BITMAP_GLYPHS = new WeakHashMap<>();
     private static final WeakHashMap<Class<?>, Method[]> BUBBLE_API = new WeakHashMap<>();
     private static final WeakHashMap<Class<?>, Method> TINT_SETTERS = new WeakHashMap<>();
     private static final WeakHashMap<Class<?>, Field> TINT_FIELDS = new WeakHashMap<>();
@@ -33,18 +34,23 @@ final class ThemeViewColors {
 
     /** Preserve native state selection and functional colors using public ColorStateList APIs. */
     static ColorStateList stateColors(ColorStateList original, int primary, int secondary) {
-        return new StateColors(original, primary, secondary);
+        return new StateColors(original, primary, secondary, null);
+    }
+
+    static ColorStateList stateColors(ColorStateList original, int primary, int secondary, Integer background) {
+        return new StateColors(original, primary, secondary, background);
     }
 
     private static final class StateColors extends ColorStateList {
         final ColorStateList original;
         final int primary, secondary;
-        StateColors(ColorStateList original, int primary, int secondary) {
-            super(new int[][]{new int[0]}, new int[]{map(original.getDefaultColor(), primary, secondary)});
-            this.original = original; this.primary = primary; this.secondary = secondary;
+        final Integer background;
+        StateColors(ColorStateList original, int primary, int secondary, Integer background) {
+            super(new int[][]{new int[0]}, new int[]{map(original.getDefaultColor(), primary, secondary, background)});
+            this.original = original; this.primary = primary; this.secondary = secondary; this.background = background;
         }
-        private static int map(int nativeColor, int primary, int secondary) {
-            if (!neutral(nativeColor)) return nativeColor;
+        private static int map(int nativeColor, int primary, int secondary, Integer background) {
+            if (!neutral(nativeColor)) return background == null ? nativeColor : readableFunctionalColor(nativeColor, background);
             int low = Math.min(Color.red(nativeColor), Math.min(Color.green(nativeColor), Color.blue(nativeColor)));
             int high = Math.max(Color.red(nativeColor), Math.max(Color.green(nativeColor), Color.blue(nativeColor)));
             int target = high > 60 && low < 220 ? secondary : primary;
@@ -54,10 +60,10 @@ final class ThemeViewColors {
         @Override public boolean isStateful() { return original.isStateful(); }
         @Override public boolean isOpaque() { return original.isOpaque() && Color.alpha(primary) == 255 && Color.alpha(secondary) == 255; }
         @Override public int getColorForState(int[] states, int fallback) {
-            return map(original.getColorForState(states, fallback), primary, secondary);
+            return map(original.getColorForState(states, fallback), primary, secondary, background);
         }
         @Override public ColorStateList withAlpha(int alpha) {
-            return stateColors(original.withAlpha(alpha), primary, secondary);
+            return stateColors(original.withAlpha(alpha), primary, secondary, background);
         }
     }
 
@@ -129,8 +135,11 @@ final class ThemeViewColors {
     static int contrastForeground(View view, int candidate) {
         View current = view;
         for (int i = 0; i < 8; i++) {
-            Integer fill = current.getBackgroundTintList() == null ? flatColor(current.getBackground())
-                    : Integer.valueOf(current.getBackgroundTintList().getColorForState(current.getDrawableState(), 0));
+            Drawable drawable = current.getBackground();
+            Integer fill = flatColor(drawable);
+            // An unused tint cannot paint a missing/fully transparent Drawable.
+            if (fill != null && Color.alpha(fill) != 0 && current.getBackgroundTintList() != null)
+                fill = current.getBackgroundTintList().getColorForState(current.getDrawableState(), 0);
             if (fill != null && Color.alpha(fill) == 255) {
                 if (neutral(fill)) return candidate;
                 double backdrop = luminance(fill), foreground = luminance(candidate);
@@ -143,6 +152,22 @@ final class ThemeViewColors {
             current = (View) current.getParent();
         }
         return candidate;
+    }
+
+    /** Keep a functional hue while making an opaque label readable on its themed page. */
+    static int readableFunctionalColor(int color, int background) {
+        if (Color.alpha(color) < 255) return color; // Preserve disabled/translucent states.
+        double back = luminance(background);
+        int end = back < 0.5 ? 255 : 0;
+        for (int step = 0; step <= 20; step++) {
+            float amount = step / 20f;
+            int mapped = Color.rgb(Math.round(Color.red(color) + (end - Color.red(color)) * amount),
+                    Math.round(Color.green(color) + (end - Color.green(color)) * amount),
+                    Math.round(Color.blue(color) + (end - Color.blue(color)) * amount));
+            double fore = luminance(mapped);
+            if ((Math.max(back, fore) + 0.05) / (Math.min(back, fore) + 0.05) >= 4.5) return mapped;
+        }
+        return color;
     }
     private static double luminance(int color) {
         double[] channels = {Color.red(color) / 255d, Color.green(color) / 255d, Color.blue(color) / 255d};
@@ -179,6 +204,30 @@ final class ThemeViewColors {
         // ancestors need not be clickable. The verified native tint API still owns them.
         if (!clickable && nativeTint == null) return false;
         return monochrome(drawable);
+    }
+
+    /** Only called for verified navigation/header/sheet controls; photos retain their pixels. */
+    static boolean flatBitmapGlyph(ImageView view) {
+        Drawable drawable = view.getDrawable();
+        if (!(drawable instanceof BitmapDrawable)) return false;
+        Boolean cached = BITMAP_GLYPHS.get(drawable);
+        if (cached != null) return cached;
+        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        if (bitmap == null || bitmap.isRecycled() || (long) bitmap.getWidth() * bitmap.getHeight() > 65536) return false;
+        boolean ink = false, transparent = false, eligible = true;
+        int low = 255, high = 0;
+        for (int y = 0; y < bitmap.getHeight() && eligible; y++) for (int x = 0; x < bitmap.getWidth(); x++) {
+            int pixel = bitmap.getPixel(x, y);
+            if (Color.alpha(pixel) < 32) { transparent = true; continue; }
+            if (!neutral(pixel)) { eligible = false; break; }
+            ink = true;
+            low = Math.min(low, Math.min(Color.red(pixel), Math.min(Color.green(pixel), Color.blue(pixel))));
+            high = Math.max(high, Math.max(Color.red(pixel), Math.max(Color.green(pixel), Color.blue(pixel))));
+            if (high - low > 34) { eligible = false; break; }
+        }
+        eligible &= ink && transparent;
+        BITMAP_GLYPHS.put(drawable, eligible);
+        return eligible;
     }
 
     static boolean monochrome(Drawable drawable) {

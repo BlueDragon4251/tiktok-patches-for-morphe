@@ -944,6 +944,66 @@ public class ThemeRuntimeRegressionTest {
     }
 
     @Test
+    public void enabledTextIsThemedWhenItsDefaultStateIsTransparent() {
+        TextView control = new TextView(activity); profile.addView(control);
+        android.content.res.ColorStateList colors = new android.content.res.ColorStateList(
+                new int[][]{new int[]{android.R.attr.state_enabled}, new int[0]},
+                new int[]{Color.BLACK, Color.TRANSPARENT});
+        control.setTextColor(colors);
+        ThemeNativeTargets.profilePage(profile);
+        assertEquals(ThemeEngine.textColor(activity), control.getCurrentTextColor());
+        control.setEnabled(false);
+        assertEquals(Color.TRANSPARENT, control.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.profilePage(profile);
+        assertSame(colors, control.getTextColors());
+    }
+
+    @Test
+    public void unusedBackgroundTintDoesNotTurnLightTextBlack() {
+        TextView control = new TextView(activity); profile.addView(control);
+        control.setBackground(null);
+        control.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.CYAN));
+        assertEquals(Color.WHITE, ThemeViewColors.contrastForeground(control, Color.WHITE));
+        control.setBackgroundColor(Color.TRANSPARENT);
+        assertEquals(Color.WHITE, ThemeViewColors.contrastForeground(control, Color.WHITE));
+    }
+
+    @Test
+    public void navigationBitmapGlyphIsTintedButPhotosAndColoredArtKeepTheirPixels() {
+        FrameLayout navigation = new FrameLayout(activity); profile.addView(navigation);
+        ImageView glyph = new ImageView(activity); navigation.addView(glyph);
+        android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(8, 8, android.graphics.Bitmap.Config.ARGB_8888);
+        for (int y = 2; y < 6; y++) for (int x = 2; x < 6; x++) bitmap.setPixel(x, y, Color.BLACK);
+        glyph.setImageBitmap(bitmap);
+        ImageView photo = new ImageView(activity); navigation.addView(photo);
+        android.graphics.Bitmap image = bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, true);
+        image.setPixel(3, 3, Color.WHITE); photo.setImageBitmap(image);
+        ImageView brand = new ImageView(activity); navigation.addView(brand);
+        android.graphics.Bitmap art = bitmap.copy(android.graphics.Bitmap.Config.ARGB_8888, true);
+        art.setPixel(3, 3, Color.RED); brand.setImageBitmap(art);
+        ThemeNativeTargets.navigation(navigation);
+        assertEquals(ThemeEngine.textColor(activity), glyph.getImageTintList().getDefaultColor());
+        assertNull(photo.getImageTintList()); assertNull(brand.getImageTintList());
+        assertEquals(Color.BLACK, bitmap.getPixel(3, 3));
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.navigation(navigation);
+        assertNull(glyph.getImageTintList());
+    }
+
+    @Test
+    public void selectedNotificationFilterKeepsItsHueWithReadableContrast() {
+        FrameLayout notifications = new FrameLayout(activity); profile.addView(notifications);
+        TextView filter = new TextView(activity); filter.setTextColor(0xff00505c); notifications.addView(filter);
+        TextView warning = new TextView(activity); warning.setTextColor(Color.RED); notifications.addView(warning);
+        ThemeNativeTargets.systemNotifications(notifications);
+        int mapped = filter.getCurrentTextColor();
+        assertNotEquals(0xff00505c, mapped);
+        assertTrue(Color.blue(mapped) > Color.red(mapped));
+        assertEquals(Color.RED, warning.getCurrentTextColor());
+        ThemeStateStore.saveUserPreset(activity, "default"); ThemeNativeTargets.systemNotifications(notifications);
+        assertEquals(0xff00505c, filter.getCurrentTextColor());
+    }
+
+    @Test
     public void insetRippleCardKeepsItsRoundedContentAndUntintedMask() {
         FrameLayout notifications = new FrameLayout(activity); profile.addView(notifications);
         FrameLayout card = new FrameLayout(activity); notifications.addView(card);
